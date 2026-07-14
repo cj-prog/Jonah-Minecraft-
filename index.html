@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#87ceeb">
+<title>JonahCraft – Minecraft für unterwegs</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='10' y='6' fill='%23795c34'/><rect width='16' height='6' fill='%2367c04b'/></svg>">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#87ceeb; touch-action:none; overscroll-behavior:none;
+    font-family:'Segoe UI',system-ui,sans-serif; user-select:none; -webkit-user-select:none; }
+  #c { position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+
+  .hud { position:fixed; z-index:10; }
+  #crosshair { left:50%; top:50%; width:20px; height:20px; margin:-10px 0 0 -10px; pointer-events:none; opacity:.8; }
+  #crosshair:before,#crosshair:after { content:''; position:absolute; background:#fff; mix-blend-mode:difference; }
+  #crosshair:before { left:9px; top:0; width:2px; height:20px; }
+  #crosshair:after { left:0; top:9px; width:20px; height:2px; }
+
+  #hotbar { left:50%; bottom:calc(8px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    display:flex; gap:4px; padding:4px; background:rgba(0,0,0,.35); border-radius:8px; }
+  .slot { width:44px; height:44px; border:2px solid rgba(255,255,255,.35); border-radius:6px;
+    background:rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; }
+  .slot img { width:34px; height:34px; image-rendering:pixelated; pointer-events:none; }
+  .slot.sel { border-color:#fff; background:rgba(255,255,255,.25); }
+  @media (max-width:430px){ .slot{ width:38px; height:38px; } .slot img{ width:30px; height:30px; } }
+
+  .btn { display:flex; align-items:center; justify-content:center; border-radius:50%;
+    background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
+  #jumpBtn { right:calc(18px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:64px; height:64px; font-size:30px; }
+  #modeBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
+  #fsBtn   { right:calc(12px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
+  .btn:active { background:rgba(255,255,255,.35); }
+
+  #joyBase { width:110px; height:110px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
+    background:rgba(0,0,0,.2); display:none; pointer-events:none; }
+  #joyKnob { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.55); display:none; pointer-events:none; }
+
+  #toast { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    background:rgba(0,0,0,.55); color:#fff; padding:6px 14px; border-radius:8px; font-size:14px;
+    opacity:0; transition:opacity .25s; pointer-events:none; white-space:nowrap; }
+
+  #waterFx { inset:0; background:rgba(20,60,160,.35); display:none; pointer-events:none; }
+
+  #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
+  #start h1 { font-size:44px; color:#fff; text-shadow:3px 3px 0 rgba(0,0,0,.3); letter-spacing:2px; }
+  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px; line-height:1.6; font-size:15px; }
+  #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
+    padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
+  #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
+  #err { color:#b00; background:#fff; padding:8px 14px; border-radius:8px; display:none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hud" id="crosshair"></div>
+<div class="hud" id="hotbar"></div>
+<div class="hud btn" id="jumpBtn">⬆</div>
+<div class="hud btn" id="modeBtn">⛏️</div>
+<div class="hud btn" id="fsBtn">⛶</div>
+<div class="hud btn" id="resetBtn">🔄</div>
+<div class="hud" id="joyBase"></div>
+<div class="hud" id="joyKnob"></div>
+<div class="hud" id="toast"></div>
+<div class="hud" id="waterFx"></div>
+
+<div class="hud" id="start">
+  <h1>⛏️ JonahCraft</h1>
+  <p id="helpTouch">
+    <b>Steuerung:</b><br>
+    🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
+    👀 Rechte Hälfte: Umsehen (wischen)<br>
+    👆 Tippen: Block abbauen / setzen (⛏️/🧱 umschalten)<br>
+    ⬆ Knopf: Springen &amp; Schwimmen
+  </p>
+  <p id="helpDesk" style="display:none">
+    <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
+    Rechtsklick setzen · Leertaste springen · Tasten 1–8 Block wählen
+  </p>
+  <button id="playBtn">▶ Spielen</button>
+  <div id="err"></div>
+</div>
+
+<script>
+'use strict';
+// ============================================================================
+// JonahCraft – ein kleines Minecraft für den Browser (Handy + PC)
+// Komplett ohne externe Bibliotheken: eigene WebGL-Voxel-Engine.
+// ============================================================================
+
+// ------------------------------ Konstanten ---------------------------------
+const CS = 16;            // Chunk-Größe (x/z)
+const CH = 64;            // Welt-Höhe
+const SEA = 29;           // Meeresspiegel
+const VIEW_R = 3;         // Sichtweite in Chunks
+const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
+const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
+const REACH = 5.5;
+const SAVE_KEY = 'jonahcraft_save_v1';
+
+const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9;
+
+// tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
+const BLOCKS = {
+  [GRASS]: { name:'Gras',    tiles:[1,0,2],  solid:true  },
+  [DIRT]:  { name:'Erde',    tiles:[2,2,2],  solid:true  },
+  [STONE]: { name:'Stein',   tiles:[3,3,3],  solid:true  },
+  [SAND]:  { name:'Sand',    tiles:[4,4,4],  solid:true  },
+  [WOOD]:  { name:'Holz',    tiles:[5,6,6],  solid:true  },
+  [LEAF]:  { name:'Laub',    tiles:[7,7,7],  solid:true  },
+  [WATER]: { name:'Wasser',  tiles:[9,9,9],  solid:false },
+  [PLANK]: { name:'Bretter', tiles:[8,8,8],  solid:true  },
+  [BRICK]: { name:'Ziegel',  tiles:[11,11,11], solid:true },
+};
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK];
+
+// ------------------------------ Zufall & Rauschen --------------------------
+let seed = (Math.random()*1e9)|0;
+
+function hash2(x, z, salt) {
+  let n = (x|0)*374761393 + (z|0)*668265263 + (seed + (salt||0))*974711 | 0;
+  n = Math.imul(n ^ (n>>>13), 1274126177);
+  n = n ^ (n>>>16);
+  return (n>>>0) / 4294967296;
+}
+function fade(t){ return t*t*t*(t*(t*6-15)+10); }
+function vnoise(x, z, salt) {
+  const xi = Math.floor(x), zi = Math.floor(z);
+  const xf = x-xi, zf = z-zi, u = fade(xf), v = fade(zf);
+  const a = hash2(xi,zi,salt),   b = hash2(xi+1,zi,salt);
+  const c = hash2(xi,zi+1,salt), d = hash2(xi+1,zi+1,salt);
+  return (a + (b-a)*u + (c-a)*v + (a-b-c+d)*u*v) * 2 - 1;
+}
+function fbm(x, z) {
+  return (vnoise(x,z,0) + 0.5*vnoise(x*2,z*2,11) + 0.25*vnoise(x*4,z*4,23) + 0.125*vnoise(x*8,z*8,37)) / 1.875;
+}
+function terrainHeight(x, z) {
+  const base = fbm(x*0.013, z*0.013);
+  const hills = vnoise(x*0.05, z*0.05, 51)*0.3;
+  let h = Math.floor(31 + base*15 + hills*5);
+  return Math.max(2, Math.min(CH-10, h));
+}
+function isTree(x, z) {
+  return hash2(x, z, 7777) < 0.007 && terrainHeight(x,z) > SEA+1;
+}
+
+// ------------------------------ Welt / Chunks ------------------------------
+const chunks = new Map();               // "cx,cz" -> chunk
+const edits = new Map();                // "cx,cz" -> Map(idx -> blockId)
+const ckey = (cx,cz)=>cx+','+cz;
+const bidx = (lx,y,lz)=>(y<<8)|(lz<<4)|lx;
+
+function genChunkData(cx, cz) {
+  const data = new Uint8Array(CS*CS*CH);
+  const x0 = cx*CS, z0 = cz*CS;
+  for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
+    const wx = x0+lx, wz = z0+lz;
+    const h = terrainHeight(wx, wz);
+    const beach = h <= SEA+1;
+    for (let y=0; y<=h; y++) {
+      let b;
+      if (y===0) b = STONE;
+      else if (y < h-3) b = STONE;
+      else if (y < h) b = beach ? SAND : DIRT;
+      else b = beach ? SAND : GRASS;
+      data[bidx(lx,y,lz)] = b;
+    }
+    for (let y=h+1; y<=SEA; y++) data[bidx(lx,y,lz)] = WATER;
+  }
+  // Bäume (mit 2 Blöcken Rand, damit Kronen über Chunk-Grenzen reichen)
+  for (let tz=z0-2; tz<z0+CS+2; tz++) for (let tx=x0-2; tx<x0+CS+2; tx++) {
+    if (!isTree(tx,tz)) continue;
+    const h = terrainHeight(tx,tz);
+    const th = 4 + Math.floor(hash2(tx,tz,881)*2);
+    const put = (wx,wy,wz,b,onlyAir) => {
+      const lx=wx-x0, lz=wz-z0;
+      if (lx<0||lx>=CS||lz<0||lz>=CS||wy<1||wy>=CH) return;
+      const i = bidx(lx,wy,lz);
+      if (onlyAir && data[i]!==AIR) return;
+      data[i]=b;
+    };
+    for (let i=1;i<=th;i++) put(tx,h+i,tz,WOOD,false);
+    for (let ly=h+th-2; ly<=h+th+1; ly++) {
+      const r = ly >= h+th ? 1 : 2;
+      for (let dx=-r;dx<=r;dx++) for (let dz=-r;dz<=r;dz++) {
+        if (dx===0&&dz===0&&ly<=h+th) continue;
+        if (Math.abs(dx)===r && Math.abs(dz)===r && hash2(tx+dx,tz+dz,ly)<0.5) continue;
+        put(tx+dx,ly,tz+dz,LEAF,true);
+      }
+    }
+  }
+  // gespeicherte Änderungen des Spielers anwenden
+  const e = edits.get(ckey(cx,cz));
+  if (e) for (const [i,v] of e) data[i]=v;
+  return data;
+}
+
+function getChunk(cx,cz){ return chunks.get(ckey(cx,cz)); }
+function ensureData(cx,cz) {
+  let ch = getChunk(cx,cz);
+  if (!ch) { ch = {cx,cz,data:null,dirty:true,vbo:null,vcount:0,vboW:null,wcount:0}; chunks.set(ckey(cx,cz),ch); }
+  if (!ch.data) ch.data = genChunkData(cx,cz);
+  return ch;
+}
+function getBlock(wx,wy,wz) {
+  if (wy<0) return STONE;
+  if (wy>=CH) return AIR;
+  const ch = getChunk(wx>>4, wz>>4);
+  if (!ch || !ch.data) return AIR;
+  return ch.data[bidx(wx&15,wy,wz&15)];
+}
+function isSolid(wx,wy,wz) {
+  const b = getBlock(wx,wy,wz);
+  return b!==AIR && BLOCKS[b].solid;
+}
+function setBlock(wx,wy,wz,v) {
+  if (wy<1 || wy>=CH) return;
+  const cx=wx>>4, cz=wz>>4;
+  const ch = getChunk(cx,cz);
+  if (!ch || !ch.data) return;
+  const lx=wx&15, lz=wz&15, i=bidx(lx,wy,lz);
+  if (ch.data[i]===v) return;
+  ch.data[i]=v;
+  let e = edits.get(ckey(cx,cz));
+  if (!e) { e=new Map(); edits.set(ckey(cx,cz),e); }
+  e.set(i,v);
+  ch.dirty = true;
+  const mark=(x,z)=>{ const c=getChunk(x,z); if(c) c.dirty=true; };
+  if (lx===0) mark(cx-1,cz); if (lx===15) mark(cx+1,cz);
+  if (lz===0) mark(cx,cz-1); if (lz===15) mark(cx,cz+1);
+  scheduleSave();
+}
+
+// ------------------------------ Speichern ----------------------------------
+let saveTimer = null;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
+function saveGame() {
+  try {
+    const ed = {};
+    for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      seed, edits:ed,
+      player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
+    }));
+  } catch(e) {}
+}
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (typeof s.seed !== 'number') return null;
+    seed = s.seed;
+    for (const k in (s.edits||{})) {
+      const a=s.edits[k], m=new Map();
+      for (let i=0;i<a.length;i+=2) m.set(a[i],a[i+1]);
+      edits.set(k,m);
+    }
+    return s.player || null;
+  } catch(e) { return null; }
+}
+
+// ------------------------------ Texturen (Atlas) ---------------------------
+const T = 16, ATLAS_N = 4;
+const atlas = document.createElement('canvas');
+atlas.width = atlas.height = T*ATLAS_N;
+(function makeAtlas(){
+  const ctx = atlas.getContext('2d');
+  let rs = 12345;
+  const rnd = ()=>{ rs = (rs*1103515245+12345) & 0x7fffffff; return rs/0x7fffffff; };
+  function tile(n, fn) {
+    const ox=(n%ATLAS_N)*T, oy=Math.floor(n/ATLAS_N)*T;
+    for (let y=0;y<T;y++) for (let x=0;x<T;x++){ ctx.fillStyle=fn(x,y); ctx.fillRect(ox+x,oy+y,1,1); }
+  }
+  const vary=(r,g,b,a)=>{ const v=(rnd()-0.5)*a; return `rgb(${Math.round(r+v)},${Math.round(g+v)},${Math.round(b+v)})`; };
+  tile(0,()=>vary(96,170,60,36));                                   // Gras oben
+  tile(1,(x,y)=> y<3 ? vary(96,170,60,36) : (y<4&&rnd()<0.5 ? vary(96,170,60,36) : vary(133,96,63,30))); // Gras Seite
+  tile(2,()=>vary(133,96,63,30));                                   // Erde
+  tile(3,()=>vary(127,127,127,34));                                 // Stein
+  tile(4,()=>vary(219,206,160,22));                                 // Sand
+  tile(5,(x)=> (x%4===0) ? vary(84,62,38,14) : vary(107,82,50,16)); // Holz Seite
+  tile(6,(x,y)=>{ const d=Math.max(Math.abs(x-7.5),Math.abs(y-7.5)); return (Math.floor(d)%2===0)?vary(151,120,73,12):vary(107,82,50,12); }); // Holz oben
+  tile(7,()=> rnd()<0.12 ? vary(38,80,24,16) : vary(58,120,38,36)); // Laub
+  tile(8,(x,y)=> (y%4===3)||(x===(Math.floor(y/4)%2?3:11)&&y%4<3) ? vary(122,92,55,10) : vary(168,132,82,18)); // Bretter
+  tile(9,()=>vary(52,96,200,30));                                   // Wasser
+  tile(10,()=> 'rgb(255,255,255)');                                 // Weiß (Umriss)
+  tile(11,(x,y)=>{ const row=Math.floor(y/4), off=(row%2)*4; return (y%4===3)||((x+off)%8===7) ? vary(188,188,188,10) : vary(168,72,58,22); }); // Ziegel
+})();
+
+// ------------------------------ WebGL --------------------------------------
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl', {antialias:false, alpha:false, powerPreference:'high-performance'})
+        || canvas.getContext('experimental-webgl');
+if (!gl) {
+  const e=document.getElementById('err');
+  e.style.display='block';
+  e.textContent='WebGL wird von diesem Browser leider nicht unterstützt.';
+  throw new Error('no webgl');
+}
+
+const VS = `
+attribute vec3 aPos; attribute vec2 aUV; attribute float aShade;
+uniform mat4 uMVP; uniform vec3 uCam;
+varying vec2 vUV; varying float vShade; varying float vDist;
+void main(){
+  gl_Position = uMVP * vec4(aPos,1.0);
+  vUV = aUV; vShade = aShade;
+  vDist = distance(aPos, uCam);
+}`;
+const FS = `
+precision mediump float;
+uniform sampler2D uTex; uniform vec3 uFogColor; uniform float uFogNear, uFogFar, uAlpha;
+varying vec2 vUV; varying float vShade; varying float vDist;
+void main(){
+  vec4 c = texture2D(uTex, vUV);
+  c.rgb *= vShade;
+  float f = clamp((vDist-uFogNear)/(uFogFar-uFogNear), 0.0, 1.0);
+  gl_FragColor = vec4(mix(c.rgb, uFogColor, f), c.a*uAlpha);
+}`;
+function shader(type, src) {
+  const s = gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER,VS));
+gl.attachShader(prog, shader(gl.FRAGMENT_SHADER,FS));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+const loc = {
+  aPos:gl.getAttribLocation(prog,'aPos'), aUV:gl.getAttribLocation(prog,'aUV'), aShade:gl.getAttribLocation(prog,'aShade'),
+  uMVP:gl.getUniformLocation(prog,'uMVP'), uCam:gl.getUniformLocation(prog,'uCam'),
+  uFogColor:gl.getUniformLocation(prog,'uFogColor'), uFogNear:gl.getUniformLocation(prog,'uFogNear'),
+  uFogFar:gl.getUniformLocation(prog,'uFogFar'), uAlpha:gl.getUniformLocation(prog,'uAlpha'),
+};
+const tex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, tex);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.enable(gl.DEPTH_TEST);
+gl.enable(gl.CULL_FACE);
+
+const SKY = [0.53,0.81,0.92];
+gl.clearColor(SKY[0],SKY[1],SKY[2],1);
+
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio||1, 1.75);
+  canvas.width = Math.floor(innerWidth*dpr);
+  canvas.height = Math.floor(innerHeight*dpr);
+  gl.viewport(0,0,canvas.width,canvas.height);
+}
+addEventListener('resize', resize); resize();
+
+// ------------------------------ Mesh-Erzeugung -----------------------------
+// Flächen: 0:+X 1:-X 2:+Y 3:-Y 4:+Z 5:-Z  – Ecken gegen den Uhrzeigersinn (außen)
+const FACES = [
+  {d:[ 1,0,0], s:0.80, c:[[1,0,1,0,1],[1,0,0,1,1],[1,1,0,1,0],[1,1,1,0,0]]},
+  {d:[-1,0,0], s:0.80, c:[[0,0,0,0,1],[0,0,1,1,1],[0,1,1,1,0],[0,1,0,0,0]]},
+  {d:[ 0,1,0], s:1.00, c:[[0,1,1,0,1],[1,1,1,1,1],[1,1,0,1,0],[0,1,0,0,0]]},
+  {d:[ 0,-1,0],s:0.55, c:[[0,0,0,0,1],[1,0,0,1,1],[1,0,1,1,0],[0,0,1,0,0]]},
+  {d:[ 0,0,1], s:0.65, c:[[0,0,1,0,1],[1,0,1,1,1],[1,1,1,1,0],[0,1,1,0,0]]},
+  {d:[ 0,0,-1],s:0.65, c:[[1,0,0,0,1],[0,0,0,1,1],[0,1,0,1,0],[1,1,0,0,0]]},
+];
+const TRI = [0,1,2,0,2,3];
+const TILE_F = 1/ATLAS_N, TILE_PAD = 0.5/(T*ATLAS_N);
+
+function tileUV(tile,u,v) {
+  const tu = (tile%ATLAS_N)*TILE_F, tv = Math.floor(tile/ATLAS_N)*TILE_F;
+  return [tu + TILE_PAD + u*(TILE_F-2*TILE_PAD), tv + TILE_PAD + v*(TILE_F-2*TILE_PAD)];
+}
+
+function buildMesh(ch) {
+  const opq=[], wat=[];
+  const x0=ch.cx*CS, z0=ch.cz*CS;
+  const data = ch.data;
+  for (let y=0;y<CH;y++) for (let lz=0;lz<CS;lz++) for (let lx=0;lx<CS;lx++) {
+    const b = data[bidx(lx,y,lz)];
+    if (b===AIR) continue;
+    const def = BLOCKS[b];
+    const wx=x0+lx, wz=z0+lz;
+    for (let f=0;f<6;f++) {
+      const F=FACES[f];
+      const nb = getBlock(wx+F.d[0], y+F.d[1], wz+F.d[2]);
+      let visible;
+      if (b===WATER) visible = (nb===AIR);
+      else visible = (nb===AIR || nb===WATER);
+      if (!visible) continue;
+      const tile = def.tiles[f===2?1:f===3?2:0];
+      const arr = (b===WATER) ? wat : opq;
+      for (let k=0;k<6;k++) {
+        const c = F.c[TRI[k]];
+        const uv = tileUV(tile, c[3], c[4]);
+        arr.push(wx+c[0], y+c[1], wz+c[2], uv[0], uv[1], F.s);
+      }
+    }
+  }
+  uploadBuf(ch,'vbo','vcount',opq);
+  uploadBuf(ch,'vboW','wcount',wat);
+  ch.dirty = false;
+}
+function uploadBuf(ch, bufName, cntName, arr) {
+  if (arr.length===0) {
+    if (ch[bufName]) { gl.deleteBuffer(ch[bufName]); ch[bufName]=null; }
+    ch[cntName]=0; return;
+  }
+  if (!ch[bufName]) ch[bufName]=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, ch[bufName]);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
+  ch[cntName]=arr.length/6;
+}
+function freeChunk(ch) {
+  if (ch.vbo) gl.deleteBuffer(ch.vbo);
+  if (ch.vboW) gl.deleteBuffer(ch.vboW);
+  chunks.delete(ckey(ch.cx,ch.cz));
+}
+
+// Umriss des anvisierten Blocks
+const outlineBuf = gl.createBuffer();
+const OUT_EDGES = [[0,0,0,1,0,0],[1,0,0,1,0,1],[1,0,1,0,0,1],[0,0,1,0,0,0],
+                   [0,1,0,1,1,0],[1,1,0,1,1,1],[1,1,1,0,1,1],[0,1,1,0,1,0],
+                   [0,0,0,0,1,0],[1,0,0,1,1,0],[1,0,1,1,1,1],[0,0,1,0,1,1]];
+function drawOutline(bx,by,bz,mvp) {
+  const uvw = tileUV(10,0.5,0.5);
+  const a=[], e=0.004;
+  for (const ed of OUT_EDGES) {
+    a.push(bx+ed[0]*(1+2*e)-e, by+ed[1]*(1+2*e)-e, bz+ed[2]*(1+2*e)-e, uvw[0],uvw[1], 0.0);
+    a.push(bx+ed[3]*(1+2*e)-e, by+ed[4]*(1+2*e)-e, bz+ed[5]*(1+2*e)-e, uvw[0],uvw[1], 0.0);
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, outlineBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW);
+  setAttribs();
+  gl.drawArrays(gl.LINES, 0, 24);
+}
+function setAttribs() {
+  gl.enableVertexAttribArray(loc.aPos);
+  gl.enableVertexAttribArray(loc.aUV);
+  gl.enableVertexAttribArray(loc.aShade);
+  gl.vertexAttribPointer(loc.aPos, 3, gl.FLOAT, false, 24, 0);
+  gl.vertexAttribPointer(loc.aUV, 2, gl.FLOAT, false, 24, 12);
+  gl.vertexAttribPointer(loc.aShade, 1, gl.FLOAT, false, 24, 20);
+}
+
+// ------------------------------ Mathe ---------------------------------------
+function perspective(fovy, aspect, near, far) {
+  const f = 1/Math.tan(fovy/2), nf = 1/(near-far);
+  return [f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0];
+}
+function viewMatrix(ex,ey,ez,yaw,pitch) {
+  const cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pitch), sp=Math.sin(pitch);
+  // M = Rx(pitch)*Ry(yaw)
+  const m00=cy,      m01=0,   m02=sy;
+  const m10=sp*sy,   m11=cp,  m12=-sp*cy;
+  const m20=-cp*sy,  m21=sp,  m22=cp*cy;
+  return [
+    m00,m10,m20,0,
+    m01,m11,m21,0,
+    m02,m12,m22,0,
+    -(m00*ex+m01*ey+m02*ez), -(m10*ex+m11*ey+m12*ez), -(m20*ex+m21*ey+m22*ez), 1
+  ];
+}
+function mat4mul(a,b) { // a*b, column-major
+  const o = new Array(16);
+  for (let c=0;c<4;c++) for (let r=0;r<4;r++) {
+    o[c*4+r] = a[r]*b[c*4] + a[4+r]*b[c*4+1] + a[8+r]*b[c*4+2] + a[12+r]*b[c*4+3];
+  }
+  return o;
+}
+
+// ------------------------------ Spieler -------------------------------------
+const player = { x:8.5, y:40, z:8.5, vx:0, vy:0, vz:0, onGround:false };
+let yaw = 0, pitch = 0;
+let selSlot = 0;
+let placeMode = false;          // false = abbauen, true = setzen
+const keys = {};
+let jumpHeld = false;
+
+function eyePos(){ return [player.x, player.y+P_EYE, player.z]; }
+function forwardVec() {
+  const cp=Math.cos(pitch);
+  return [Math.sin(yaw)*cp, -Math.sin(pitch), -Math.cos(yaw)*cp];
+}
+function inWaterAt(y){ return getBlock(Math.floor(player.x), Math.floor(player.y+y), Math.floor(player.z))===WATER; }
+
+function collide(px,py,pz) { // steht die Spieler-AABB an dieser Position in einem festen Block?
+  const x0=Math.floor(px-P_HALF), x1=Math.floor(px+P_HALF);
+  const y0=Math.floor(py), y1=Math.floor(py+P_HEIGHT-0.001);
+  const z0=Math.floor(pz-P_HALF), z1=Math.floor(pz+P_HALF);
+  for (let x=x0;x<=x1;x++) for (let y=y0;y<=y1;y++) for (let z=z0;z<=z1;z++)
+    if (isSolid(x,y,z)) return true;
+  return false;
+}
+
+function physics(dt) {
+  const ch = getChunk(Math.floor(player.x)>>4, Math.floor(player.z)>>4);
+  if (!ch || !ch.data) return;   // warten bis der Boden geladen ist
+
+  const swim = inWaterAt(0.4) || inWaterAt(1.0);
+
+  // Bewegungs-Eingabe
+  let mf = 0, ms = 0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf,ms);
+  if (ml>1) { mf/=ml; ms/=ml; }
+  const speed = swim ? 3.0 : WALK_SPEED;
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+  player.vx = (fx*mf + rx*ms) * speed;
+  player.vz = (fz*mf + rz*ms) * speed;
+
+  if (swim) {
+    player.vy -= 9*dt;
+    if (jumpHeld || keys['Space']) player.vy = Math.min(player.vy+30*dt, 3.5);
+    player.vy = Math.max(player.vy, -3.5);
+  } else {
+    player.vy -= GRAVITY*dt;
+    if ((jumpHeld || keys['Space']) && player.onGround) { player.vy = JUMP_V; player.onGround=false; }
+    player.vy = Math.max(player.vy, -50);
+  }
+
+  // Achsenweise bewegen und kollidieren
+  let nx = player.x + player.vx*dt;
+  if (!collide(nx, player.y, player.z)) player.x = nx; else player.vx = 0;
+  let nz = player.z + player.vz*dt;
+  if (!collide(player.x, player.y, nz)) player.z = nz; else player.vz = 0;
+  let ny = player.y + player.vy*dt;
+  player.onGround = false;
+  if (!collide(player.x, ny, player.z)) {
+    player.y = ny;
+  } else {
+    if (player.vy < 0) { player.onGround = true; player.y = Math.floor(player.y*1000)/1000; }
+    player.vy = 0;
+  }
+
+  if (player.y < -12) { spawn(); }
+}
+
+function spawn() {
+  // Land in Spawn-Nähe suchen
+  let sx=8, sz=8;
+  outer:
+  for (let r=0;r<20;r++) for (let a=0;a<8;a++) {
+    const x = 8+Math.round(Math.cos(a*0.785)*r*8), z = 8+Math.round(Math.sin(a*0.785)*r*8);
+    if (terrainHeight(x,z) > SEA+1) { sx=x; sz=z; break outer; }
+  }
+  player.x = sx+0.5; player.z = sz+0.5;
+  player.y = terrainHeight(sx,sz) + 6;   // etwas höher, falls dort ein Baum steht
+  player.vx=player.vy=player.vz=0;
+  yaw = 0.6; pitch = 0.1;
+}
+
+// ------------------------------ Raycast ------------------------------------
+function raycast(ox,oy,oz,dx,dy,dz,maxDist) {
+  let x=Math.floor(ox), y=Math.floor(oy), z=Math.floor(oz);
+  const stx=Math.sign(dx)||1, sty=Math.sign(dy)||1, stz=Math.sign(dz)||1;
+  const tdx=Math.abs(1/(dx||1e-9)), tdy=Math.abs(1/(dy||1e-9)), tdz=Math.abs(1/(dz||1e-9));
+  let tx=(dx>0 ? (x+1-ox) : (ox-x))*tdx;
+  let ty=(dy>0 ? (y+1-oy) : (oy-y))*tdy;
+  let tz=(dz>0 ? (z+1-oz) : (oz-z))*tdz;
+  let face=[0,0,0], t=0;
+  while (t<=maxDist) {
+    const b=getBlock(x,y,z);
+    if (b!==AIR && b!==WATER) return {x,y,z,face,block:b};
+    if (tx<ty && tx<tz) { x+=stx; t=tx; tx+=tdx; face=[-stx,0,0]; }
+    else if (ty<tz)     { y+=sty; t=ty; ty+=tdy; face=[0,-sty,0]; }
+    else                { z+=stz; t=tz; tz+=tdz; face=[0,0,-stz]; }
+  }
+  return null;
+}
+function screenRay(px,py) { // Strahl durch einen Bildschirmpunkt (CSS-Pixel)
+  const ndcX=(px/innerWidth)*2-1, ndcY=1-(py/innerHeight)*2;
+  const th=Math.tan(FOV/2), aspect=innerWidth/innerHeight;
+  const f=forwardVec();
+  const cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pitch), sp=Math.sin(pitch);
+  const r=[cy,0,sy], u=[sy*sp,cp,-cy*sp];
+  let dx=f[0]+r[0]*ndcX*th*aspect+u[0]*ndcY*th;
+  let dy=f[1]+r[1]*ndcX*th*aspect+u[1]*ndcY*th;
+  let dz=f[2]+r[2]*ndcX*th*aspect+u[2]*ndcY*th;
+  const l=Math.hypot(dx,dy,dz);
+  return [dx/l,dy/l,dz/l];
+}
+
+function doBreak(dir) {
+  const e=eyePos();
+  const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
+  if (!hit || hit.y<1) return;
+  setBlock(hit.x,hit.y,hit.z,AIR);
+  blip(160,0.09);
+}
+function doPlace(dir) {
+  const e=eyePos();
+  const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
+  if (!hit) return;
+  const px=hit.x+hit.face[0], py=hit.y+hit.face[1], pz=hit.z+hit.face[2];
+  if (py<0||py>=CH) return;
+  const cur=getBlock(px,py,pz);
+  if (cur!==AIR && cur!==WATER) return;
+  // nicht im Spieler platzieren
+  const b=HOTBAR_ITEMS[selSlot];
+  if (BLOCKS[b].solid) {
+    const ox=Math.abs(px+0.5-player.x)<0.5+P_HALF;
+    const oy=(py+1>player.y) && (py<player.y+P_HEIGHT);
+    const oz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
+    if (ox&&oy&&oz) return;
+  }
+  setBlock(px,py,pz,b);
+  blip(330,0.06);
+}
+
+// ------------------------------ Sound ---------------------------------------
+let actx=null;
+function blip(freq,dur) {
+  try {
+    if (!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type='square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.12,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime+dur);
+  } catch(e) {}
+}
+
+// ------------------------------ HUD -----------------------------------------
+const toastEl=document.getElementById('toast');
+let toastTimer=null;
+function toast(msg) {
+  toastEl.textContent=msg; toastEl.style.opacity=1;
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.style.opacity=0,1200);
+}
+function tileImg(tile) {
+  const c=document.createElement('canvas'); c.width=c.height=T;
+  c.getContext('2d').drawImage(atlas,(tile%ATLAS_N)*T,Math.floor(tile/ATLAS_N)*T,T,T,0,0,T,T);
+  return c.toDataURL();
+}
+const hotbarEl=document.getElementById('hotbar');
+HOTBAR_ITEMS.forEach((b,i)=>{
+  const d=document.createElement('div');
+  d.className='slot'+(i===0?' sel':'');
+  const img=document.createElement('img');
+  img.src=tileImg(BLOCKS[b].tiles[b===GRASS?1:0]);
+  d.appendChild(img);
+  const pick=(ev)=>{ ev.preventDefault(); selectSlot(i); };
+  d.addEventListener('touchstart',pick,{passive:false});
+  d.addEventListener('mousedown',pick);
+  hotbarEl.appendChild(d);
+});
+function selectSlot(i) {
+  selSlot=i;
+  document.querySelectorAll('.slot').forEach((s,k)=>s.classList.toggle('sel',k===i));
+  toast(BLOCKS[HOTBAR_ITEMS[i]].name);
+}
+const modeBtn=document.getElementById('modeBtn');
+function setMode(place) {
+  placeMode=place;
+  modeBtn.textContent=place?'🧱':'⛏️';
+  toast(place?'Bauen: Tippen setzt Blöcke':'Abbauen: Tippen zerstört Blöcke');
+}
+modeBtn.addEventListener('touchstart',e=>{e.preventDefault();setMode(!placeMode);},{passive:false});
+modeBtn.addEventListener('mousedown',e=>{e.preventDefault();setMode(!placeMode);});
+
+const jumpBtn=document.getElementById('jumpBtn');
+jumpBtn.addEventListener('touchstart',e=>{e.preventDefault();jumpHeld=true;},{passive:false});
+jumpBtn.addEventListener('touchend',e=>{e.preventDefault();jumpHeld=false;},{passive:false});
+jumpBtn.addEventListener('touchcancel',()=>jumpHeld=false);
+jumpBtn.addEventListener('mousedown',()=>jumpHeld=true);
+jumpBtn.addEventListener('mouseup',()=>jumpHeld=false);
+
+document.getElementById('fsBtn').addEventListener('click',()=>{
+  const el=document.documentElement;
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (el.requestFullscreen) el.requestFullscreen();
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if (confirm('Neue Welt erstellen? Deine gebaute Welt wird gelöscht!')) {
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    location.reload();
+  }
+});
+
+// ------------------------------ Eingabe: Touch ------------------------------
+const joy={ id:null, ox:0, oy:0, fwd:0, strafe:0 };
+const look={ id:null, lx:0, ly:0, sx:0, sy:0, t0:0, moved:0 };
+const joyBase=document.getElementById('joyBase'), joyKnob=document.getElementById('joyKnob');
+
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (t.clientX < innerWidth*0.45 && joy.id===null) {
+      joy.id=t.identifier; joy.ox=t.clientX; joy.oy=t.clientY;
+      joyBase.style.display='block';
+      joyBase.style.left=(joy.ox-55)+'px'; joyBase.style.top=(joy.oy-55)+'px';
+      joyKnob.style.display='block';
+      joyKnob.style.left=(joy.ox-24)+'px'; joyKnob.style.top=(joy.oy-24)+'px';
+    } else if (look.id===null) {
+      look.id=t.identifier; look.lx=look.sx=t.clientX; look.ly=look.sy=t.clientY;
+      look.t0=performance.now(); look.moved=0;
+    }
+  }
+},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (t.identifier===joy.id) {
+      let dx=t.clientX-joy.ox, dy=t.clientY-joy.oy;
+      const l=Math.hypot(dx,dy), max=45;
+      if (l>max){ dx*=max/l; dy*=max/l; }
+      joy.strafe=dx/max; joy.fwd=-dy/max;
+      joyKnob.style.left=(joy.ox+dx-24)+'px'; joyKnob.style.top=(joy.oy+dy-24)+'px';
+    } else if (t.identifier===look.id) {
+      const dx=t.clientX-look.lx, dy=t.clientY-look.ly;
+      look.moved+=Math.abs(dx)+Math.abs(dy);
+      yaw += dx*0.0045;
+      pitch = Math.max(-1.55, Math.min(1.55, pitch + dy*0.0045));
+      look.lx=t.clientX; look.ly=t.clientY;
+    }
+  }
+},{passive:false});
+function touchEnd(e){
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (t.identifier===joy.id) {
+      joy.id=null; joy.fwd=0; joy.strafe=0;
+      joyBase.style.display='none'; joyKnob.style.display='none';
+    } else if (t.identifier===look.id) {
+      const dt=performance.now()-look.t0;
+      if (dt<350 && look.moved<14) {           // kurzes Tippen = Aktion
+        const dir=screenRay(t.clientX,t.clientY);
+        if (placeMode) doPlace(dir); else doBreak(dir);
+      }
+      look.id=null;
+    }
+  }
+}
+canvas.addEventListener('touchend',touchEnd,{passive:false});
+canvas.addEventListener('touchcancel',touchEnd,{passive:false});
+
+// ------------------------------ Eingabe: Tastatur/Maus ----------------------
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if (e.code.startsWith('Digit')) {
+    const n=parseInt(e.code.slice(5),10);
+    if (n>=1 && n<=HOTBAR_ITEMS.length) selectSlot(n-1);
+  }
+  if (e.code==='Space') e.preventDefault();
+});
+addEventListener('keyup',e=>keys[e.code]=false);
+canvas.addEventListener('mousedown',e=>{
+  if (!started) return;
+  if (!isTouch && document.pointerLockElement!==canvas) { canvas.requestPointerLock(); return; }
+  if (document.pointerLockElement===canvas) {
+    const dir=forwardVec();
+    if (e.button===0) doBreak(dir);
+    if (e.button===2) doPlace(dir);
+  }
+});
+addEventListener('mousemove',e=>{
+  if (document.pointerLockElement===canvas) {
+    yaw += e.movementX*0.0026;
+    pitch = Math.max(-1.55, Math.min(1.55, pitch + e.movementY*0.0026));
+  }
+});
+addEventListener('contextmenu',e=>e.preventDefault());
+
+// ------------------------------ Chunk-Streaming -----------------------------
+const spiral=[];
+for (let dz=-VIEW_R;dz<=VIEW_R;dz++) for (let dx=-VIEW_R;dx<=VIEW_R;dx++) spiral.push([dx,dz]);
+spiral.sort((a,b)=>(a[0]*a[0]+a[1]*a[1])-(b[0]*b[0]+b[1]*b[1]));
+
+function streamChunks() {
+  const pcx=Math.floor(player.x)>>4, pcz=Math.floor(player.z)>>4;
+  let genBudget=3, meshBudget=2;
+  for (const [dx,dz] of spiral) {
+    const cx=pcx+dx, cz=pcz+dz;
+    let ch=getChunk(cx,cz);
+    if (!ch || !ch.data) {
+      if (genBudget>0) { ensureData(cx,cz); genBudget--; }
+      continue;
+    }
+    if (ch.dirty && meshBudget>0) {
+      // Nachbarn müssen Daten haben, sonst fehlen Flächen am Rand
+      let ok=true;
+      for (const [nx,nz] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const n=getChunk(cx+nx,cz+nz);
+        if (!n || !n.data) { if (genBudget>0){ ensureData(cx+nx,cz+nz); genBudget--; } ok=false; }
+      }
+      if (ok) { buildMesh(ch); meshBudget--; }
+    }
+  }
+  // weit entfernte Chunks freigeben
+  if ((frameNo & 63)===0) {
+    for (const ch of [...chunks.values()]) {
+      const d=Math.max(Math.abs(ch.cx-pcx),Math.abs(ch.cz-pcz));
+      if (d>VIEW_R+2) freeChunk(ch);
+    }
+  }
+}
+
+// ------------------------------ Renderloop -----------------------------------
+const FOV=70*Math.PI/180;
+let lastT=performance.now(), frameNo=0, started=false;
+const waterFx=document.getElementById('waterFx');
+
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt=Math.min((now-lastT)/1000, 0.05);
+  lastT=now; frameNo++;
+  if (!started) return;
+
+  streamChunks();
+  physics(dt);
+
+  const e=eyePos();
+  const eyeInWater = getBlock(Math.floor(e[0]),Math.floor(e[1]),Math.floor(e[2]))===WATER;
+  waterFx.style.display = eyeInWater?'block':'none';
+
+  const proj=perspective(FOV, canvas.width/canvas.height, 0.1, 300);
+  const view=viewMatrix(e[0],e[1],e[2],yaw,pitch);
+  const mvp=mat4mul(proj,view);
+
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.uniformMatrix4fv(loc.uMVP,false,new Float32Array(mvp));
+  gl.uniform3f(loc.uCam,e[0],e[1],e[2]);
+  if (eyeInWater) {
+    gl.uniform3f(loc.uFogColor,0.1,0.3,0.7);
+    gl.uniform1f(loc.uFogNear,2); gl.uniform1f(loc.uFogFar,18);
+  } else {
+    gl.uniform3f(loc.uFogColor,SKY[0],SKY[1],SKY[2]);
+    gl.uniform1f(loc.uFogNear,CS*(VIEW_R-1)); gl.uniform1f(loc.uFogFar,CS*(VIEW_R+0.8));
+  }
+  gl.uniform1f(loc.uAlpha,1);
+
+  // sichtbare Chunks sortiert (nah -> fern)
+  const pcx=Math.floor(player.x)>>4, pcz=Math.floor(player.z)>>4;
+  const vis=[];
+  for (const ch of chunks.values()) {
+    if (!ch.data) continue;
+    const d=Math.max(Math.abs(ch.cx-pcx),Math.abs(ch.cz-pcz));
+    if (d<=VIEW_R && (ch.vcount||ch.wcount)) { ch._d=d; vis.push(ch); }
+  }
+  vis.sort((a,b)=>a._d-b._d);
+
+  for (const ch of vis) {
+    if (!ch.vcount) continue;
+    gl.bindBuffer(gl.ARRAY_BUFFER,ch.vbo);
+    setAttribs();
+    gl.drawArrays(gl.TRIANGLES,0,ch.vcount);
+  }
+
+  // Block-Umriss
+  const f=forwardVec();
+  const hit=raycast(e[0],e[1],e[2],f[0],f[1],f[2],REACH);
+  if (hit) drawOutline(hit.x,hit.y,hit.z,mvp);
+
+  // Wasser (transparent, fern -> nah)
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.depthMask(false);
+  gl.disable(gl.CULL_FACE);
+  gl.uniform1f(loc.uAlpha,0.62);
+  for (let i=vis.length-1;i>=0;i--) {
+    const ch=vis[i];
+    if (!ch.wcount) continue;
+    gl.bindBuffer(gl.ARRAY_BUFFER,ch.vboW);
+    setAttribs();
+    gl.drawArrays(gl.TRIANGLES,0,ch.wcount);
+  }
+  gl.uniform1f(loc.uAlpha,1);
+  gl.enable(gl.CULL_FACE);
+  gl.depthMask(true);
+  gl.disable(gl.BLEND);
+}
+
+// ------------------------------ Start ----------------------------------------
+if (!isTouch) {
+  document.getElementById('helpTouch').style.display='none';
+  document.getElementById('helpDesk').style.display='block';
+}
+document.getElementById('playBtn').addEventListener('click',()=>{
+  const saved=loadGame();
+  if (saved) {
+    player.x=saved.x; player.y=saved.y; player.z=saved.z;
+    yaw=saved.yaw||0; pitch=saved.pitch||0;
+    // Chunk unter dem Spieler sofort laden
+    ensureData(Math.floor(player.x)>>4, Math.floor(player.z)>>4);
+    if (collide(player.x,player.y,player.z)) spawn();
+  } else {
+    spawn();
+  }
+  // Start-Bereich sofort erzeugen, damit man nicht ins Leere fällt
+  const pcx=Math.floor(player.x)>>4, pcz=Math.floor(player.z)>>4;
+  for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) ensureData(pcx+dx,pcz+dz);
+  document.getElementById('start').style.display='none';
+  started=true;
+  if (!isTouch) canvas.requestPointerLock();
+  blip(440,0.08);
+});
+setInterval(()=>{ if (started) saveGame(); }, 5000);
+document.addEventListener('visibilitychange',()=>{ if (document.hidden && started) saveGame(); });
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
