@@ -27,7 +27,7 @@
     background:rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; }
   .slot img { width:34px; height:34px; image-rendering:pixelated; pointer-events:none; }
   .slot.sel { border-color:#fff; background:rgba(255,255,255,.25); }
-  @media (max-width:430px){ .slot{ width:38px; height:38px; } .slot img{ width:30px; height:30px; } }
+  @media (max-width:430px){ #hotbar{ gap:3px; } .slot{ width:34px; height:34px; } .slot img{ width:27px; height:27px; } }
 
   .btn { display:flex; align-items:center; justify-content:center; border-radius:50%;
     background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
@@ -78,7 +78,8 @@
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
     👀 Rechte Hälfte: Umsehen (wischen)<br>
     👆 Tippen: Block abbauen / setzen (⛏️/🧱 umschalten)<br>
-    ⬆ Knopf: Springen &amp; Schwimmen
+    ⬆ Knopf: Springen &amp; Schwimmen<br>
+    💥 TNT hinstellen und antippen &rarr; BOOM!
   </p>
   <p id="helpDesk" style="display:none">
     <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
@@ -105,7 +106,7 @@ const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
 
-const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9;
+const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -118,8 +119,10 @@ const BLOCKS = {
   [WATER]: { name:'Wasser',  tiles:[9,9,9],  solid:false },
   [PLANK]: { name:'Bretter', tiles:[8,8,8],  solid:true  },
   [BRICK]: { name:'Ziegel',  tiles:[11,11,11], solid:true },
+  [TNT]:   { name:'TNT 💥 (hinstellen, dann antippen!)', tiles:[12,13,13], solid:true },
+  [TNT_LIT]:{ name:'TNT',    tiles:[10,10,10], solid:true },
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, TNT];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -292,6 +295,16 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(9,()=>vary(52,96,200,30));                                   // Wasser
   tile(10,()=> 'rgb(255,255,255)');                                 // Weiß (Umriss)
   tile(11,(x,y)=>{ const row=Math.floor(y/4), off=(row%2)*4; return (y%4===3)||((x+off)%8===7) ? vary(188,188,188,10) : vary(168,72,58,22); }); // Ziegel
+  const TNT_FONT = { T:['111','010','010','010','010'], N:['101','111','111','101','101'] };
+  tile(12,(x,y)=>{                                                  // TNT Seite
+    if (y>=5&&y<=11) {
+      if (y>=6&&y<=10) for (const [x0,ch] of [[2,'T'],[6,'N'],[10,'T']])
+        if (x>=x0 && x<x0+3 && TNT_FONT[ch][y-6][x-x0]==='1') return 'rgb(25,25,25)';
+      return vary(236,231,220,10);
+    }
+    return vary(206,52,38,26);
+  });
+  tile(13,(x,y)=> (x>=5&&x<=10&&y>=5&&y<=10) ? vary(70,60,55,12) : vary(206,52,38,26)); // TNT oben
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -597,6 +610,8 @@ function doBreak(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
   if (!hit || hit.y<1) return;
+  if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
+  if (hit.block===TNT_LIT) return;   // brennt schon!
   setBlock(hit.x,hit.y,hit.z,AIR);
   blip(160,0.09);
 }
@@ -620,6 +635,39 @@ function doPlace(dir) {
   blip(330,0.06);
 }
 
+// ------------------------------ TNT -----------------------------------------
+const fuses = [];
+let shake = 0;
+function igniteTNT(x,y,z,fuseTime) {
+  if (getBlock(x,y,z)!==TNT) return;
+  setBlock(x,y,z,TNT_LIT);            // wird weiß = Zündschnur brennt
+  fuses.push({x,y,z,t:fuseTime||1.5});
+  blip(740,0.1); blip(980,0.08);
+}
+function updateFuses(dt) {
+  for (let i=fuses.length-1;i>=0;i--) {
+    fuses[i].t -= dt;
+    if (fuses[i].t<=0) { const f=fuses.splice(i,1)[0]; explode(f.x,f.y,f.z); }
+  }
+}
+function explode(cx,cy,cz) {
+  const R=3;
+  for (let dx=-R;dx<=R;dx++) for (let dy=-R;dy<=R;dy++) for (let dz=-R;dz<=R;dz++) {
+    if (dx*dx+dy*dy+dz*dz > R*R+1) continue;
+    const x=cx+dx, y=cy+dy, z=cz+dz;
+    if (y<1 || y>=CH) continue;
+    const b=getBlock(x,y,z);
+    if (b===AIR || b===WATER) continue;
+    if (b===TNT) { igniteTNT(x,y,z, 0.15+Math.random()*0.35); continue; }  // Kettenreaktion!
+    setBlock(x,y,z,AIR);
+  }
+  boom();
+  shake = 0.45;
+  // Rückstoß nach oben, wenn man nah dran steht
+  const d=Math.max(0.5, Math.hypot(player.x-cx, player.y+0.9-cy, player.z-cz));
+  if (d<9) { player.vy += (1-d/9)*11; player.onGround=false; }
+}
+
 // ------------------------------ Sound ---------------------------------------
 let actx=null;
 function blip(freq,dur) {
@@ -631,6 +679,20 @@ function blip(freq,dur) {
     g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+dur);
     o.connect(g); g.connect(actx.destination);
     o.start(); o.stop(actx.currentTime+dur);
+  } catch(e) {}
+}
+function boom() {
+  try {
+    if (!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    const dur=0.7, n=Math.floor(actx.sampleRate*dur);
+    const buf=actx.createBuffer(1,n,actx.sampleRate);
+    const d=buf.getChannelData(0);
+    for (let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.2);
+    const src=actx.createBufferSource(); src.buffer=buf;
+    const flt=actx.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=380;
+    const g=actx.createGain(); g.gain.value=1.0;
+    src.connect(flt); flt.connect(g); g.connect(actx.destination);
+    src.start();
   } catch(e) {}
 }
 
@@ -823,8 +885,15 @@ function frame(now) {
 
   streamChunks();
   physics(dt);
+  updateFuses(dt);
 
   const e=eyePos();
+  if (shake>0) {
+    shake=Math.max(0,shake-dt);
+    e[0]+=(Math.random()-0.5)*shake*0.5;
+    e[1]+=(Math.random()-0.5)*shake*0.5;
+    e[2]+=(Math.random()-0.5)*shake*0.5;
+  }
   const eyeInWater = getBlock(Math.floor(e[0]),Math.floor(e[1]),Math.floor(e[2]))===WATER;
   waterFx.style.display = eyeInWater?'block':'none';
 
