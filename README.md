@@ -33,6 +33,7 @@ das Spiel braucht kein Internet.
 | Modus wechseln | ⛏️ / 🧱 Knopf (Abbauen ↔ Bauen) |
 | Springen & Schwimmen | ⬆ Knopf |
 | Block auswählen | Auf die Leiste unten tippen |
+| 💥 TNT zünden | TNT hinstellen und **antippen** – nach kurzer Zündschnur: BOOM! |
 
 **PC (Tastatur + Maus):**
 WASD laufen · Maus umsehen · Linksklick abbauen · Rechtsklick setzen ·
@@ -41,7 +42,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 ## 🌍 Was das Spiel kann
 
 - Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen und Bäume 🌳
-- 8 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter und Ziegel
+- 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
+- TNT mit Zündschnur, Explosionskrater, Kettenreaktion (TNT zündet TNT!),
+  Explosions-Sound und Kamera-Wackeln
 - Blöcke abbauen und bauen, was du willst
 - Schwimmen und Tauchen (mit Unterwasser-Sicht) 🌊
 - Deine Welt wird **automatisch gespeichert** – beim nächsten Öffnen geht's genau dort weiter
