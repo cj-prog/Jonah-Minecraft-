@@ -41,7 +41,8 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
-- Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen und Bäume 🌳
+- Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen, Bäume und Dörfer 🌳🏘️
+- Tiere: Schweine 🐷 und Kühe 🐮 laufen durch die Welt (und hüpfen bei Explosionen!)
 - 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
 - TNT mit Zündschnur, Explosionskrater, Kettenreaktion (TNT zündet TNT!),
   Explosions-Sound und Kamera-Wackeln
