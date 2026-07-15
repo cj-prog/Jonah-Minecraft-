@@ -43,6 +43,10 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 - Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen, Bäume und Dörfer 🌳🏘️
 - Tiere: Schweine 🐷 und Kühe 🐮 laufen durch die Welt (und hüpfen bei Explosionen!)
+- Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
+- Nachts kommen Zombies 🧟 und jagen dich! Dreimal antippen vertreibt sie.
+  Du hast 5 Herzen ❤️ – sind alle weg, geht's zurück zum Start
+- In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃
 - 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
 - TNT mit Zündschnur, Explosionskrater, Kettenreaktion (TNT zündet TNT!),
   Explosions-Sound und Kamera-Wackeln
