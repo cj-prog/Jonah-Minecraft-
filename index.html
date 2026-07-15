@@ -154,6 +154,33 @@ function isTree(x, z) {
   return hash2(x, z, 7777) < 0.007 && terrainHeight(x,z) > SEA+1;
 }
 
+// ------------------------------ Dörfer --------------------------------------
+const VCELL = 80;                       // Raster: pro 80x80-Feld höchstens 1 Dorf
+const HOUSE_SPOTS = [[0,5],[14,2],[-13,8],[6,-13],[-11,-10],[15,-9]];
+function villageAt(cellX, cellZ) {
+  if (hash2(cellX, cellZ, 4242) >= 0.42) return null;
+  return {
+    vx: cellX*VCELL + 20 + Math.floor(hash2(cellX,cellZ,4343)*40),
+    vz: cellZ*VCELL + 20 + Math.floor(hash2(cellX,cellZ,4444)*40),
+  };
+}
+function houseParams(v, i) {            // Haus Nr. i eines Dorfes (deterministisch)
+  const hx = v.vx + HOUSE_SPOTS[i][0] + Math.floor(hash2(v.vx,v.vz,i*3+1)*5)-2;
+  const hz = v.vz + HOUSE_SPOTS[i][1] + Math.floor(hash2(v.vx,v.vz,i*3+2)*5)-2;
+  const W = hash2(hx,hz,91)<0.5 ? 5 : 7;
+  const D = hash2(hx,hz,92)<0.5 ? 5 : 7;
+  const wall = hash2(hx,hz,93)<0.3 ? BRICK : PLANK;
+  // Nur auf halbwegs flachem Land bauen
+  const x0=hx-(W>>1), z0=hz-(D>>1);
+  let hmin=999, hmax=-999;
+  for (const [px,pz] of [[x0,z0],[x0+W-1,z0],[x0,z0+D-1],[x0+W-1,z0+D-1],[hx,hz]]) {
+    const h=terrainHeight(px,pz);
+    hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
+  }
+  if (hmax-hmin>3 || hmin<=SEA) return null;
+  return { x0, z0, W, D, wall, baseY:hmax };
+}
+
 // ------------------------------ Welt / Chunks ------------------------------
 const chunks = new Map();               // "cx,cz" -> chunk
 const edits = new Map();                // "cx,cz" -> Map(idx -> blockId)
@@ -177,18 +204,18 @@ function genChunkData(cx, cz) {
     }
     for (let y=h+1; y<=SEA; y++) data[bidx(lx,y,lz)] = WATER;
   }
+  const put = (wx,wy,wz,b,onlyAir) => {
+    const lx=wx-x0, lz=wz-z0;
+    if (lx<0||lx>=CS||lz<0||lz>=CS||wy<1||wy>=CH) return;
+    const i = bidx(lx,wy,lz);
+    if (onlyAir && data[i]!==AIR) return;
+    data[i]=b;
+  };
   // Bäume (mit 2 Blöcken Rand, damit Kronen über Chunk-Grenzen reichen)
   for (let tz=z0-2; tz<z0+CS+2; tz++) for (let tx=x0-2; tx<x0+CS+2; tx++) {
     if (!isTree(tx,tz)) continue;
     const h = terrainHeight(tx,tz);
     const th = 4 + Math.floor(hash2(tx,tz,881)*2);
-    const put = (wx,wy,wz,b,onlyAir) => {
-      const lx=wx-x0, lz=wz-z0;
-      if (lx<0||lx>=CS||lz<0||lz>=CS||wy<1||wy>=CH) return;
-      const i = bidx(lx,wy,lz);
-      if (onlyAir && data[i]!==AIR) return;
-      data[i]=b;
-    };
     for (let i=1;i<=th;i++) put(tx,h+i,tz,WOOD,false);
     for (let ly=h+th-2; ly<=h+th+1; ly++) {
       const r = ly >= h+th ? 1 : 2;
@@ -197,6 +224,53 @@ function genChunkData(cx, cz) {
         if (Math.abs(dx)===r && Math.abs(dz)===r && hash2(tx+dx,tz+dz,ly)<0.5) continue;
         put(tx+dx,ly,tz+dz,LEAF,true);
       }
+    }
+  }
+  // Dörfer: Häuser und Brunnen (überschreiben Gelände und Bäume)
+  const c0x=Math.floor((x0-32)/VCELL), c1x=Math.floor((x0+CS+32)/VCELL);
+  const c0z=Math.floor((z0-32)/VCELL), c1z=Math.floor((z0+CS+32)/VCELL);
+  for (let cvz=c0z; cvz<=c1z; cvz++) for (let cvx=c0x; cvx<=c1x; cvx++) {
+    const v = villageAt(cvx,cvz);
+    if (!v) continue;
+    // Brunnen in der Dorfmitte
+    const wh = terrainHeight(v.vx,v.vz);
+    if (wh>SEA) for (let dx=-1;dx<=1;dx++) for (let dz=-1;dz<=1;dz++) {
+      if (dx===0&&dz===0) { put(v.vx,wh,v.vz,WATER,false); put(v.vx,wh-1,v.vz,STONE,false); }
+      else put(v.vx+dx,wh+1,v.vz+dz,STONE,false);
+    }
+    // Häuser
+    for (let i=0;i<HOUSE_SPOTS.length;i++) {
+      const hp = houseParams(v,i);
+      if (!hp) continue;
+      const {x0:hx0, z0:hz0, W, D, wall, baseY} = hp;
+      const mx = W>>1;
+      for (let lx=0;lx<W;lx++) for (let lz=0;lz<D;lz++) {
+        const wx=hx0+lx, wz=hz0+lz;
+        // Fundament bis zum Boden auffüllen
+        const th=terrainHeight(wx,wz);
+        for (let y=th; y<baseY; y++) put(wx,y,wz,DIRT,false);
+        put(wx,baseY,wz,PLANK,false);                  // Fußboden
+        const edgeX = lx===0||lx===W-1, edgeZ = lz===0||lz===D-1;
+        for (let y=baseY+1;y<=baseY+3;y++) {
+          let b = AIR;                                 // innen: frei räumen
+          if (edgeX&&edgeZ) b=WOOD;                    // Ecken aus Holz
+          else if (edgeX||edgeZ) b=wall;               // Wände
+          if (lz===D-1 && lx===mx && y<=baseY+2) b=AIR;                 // Tür vorne
+          if (y===baseY+2 && b===wall) {                                // Fenster
+            if (edgeX && lz===(D>>1)) b=AIR;
+            if (lz===0 && lx===mx) b=AIR;
+          }
+          put(wx,y,wz,b,false);
+        }
+      }
+      // Dach: große Platte mit Überstand + kleinere Platte oben drauf
+      for (let lx=-1;lx<=W;lx++) for (let lz=-1;lz<=D;lz++)
+        put(hx0+lx,baseY+4,hz0+lz,WOOD,false);
+      for (let lx=1;lx<W-1;lx++) for (let lz=1;lz<D-1;lz++)
+        put(hx0+lx,baseY+5,hz0+lz,WOOD,false);
+      // Platz vor der Tür freimachen
+      put(hx0+mx,baseY+1,hz0+D,AIR,false);
+      put(hx0+mx,baseY+2,hz0+D,AIR,false);
     }
   }
   // gespeicherte Änderungen des Spielers anwenden
