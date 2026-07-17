@@ -80,7 +80,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 11 &middot; Dorfbewohner können sprechen 💬</p>
+    Version 12 &middot; mit Regen 🌧️ und Schnee ❄️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1018,6 +1018,90 @@ function drawAnimals() {
   gl.drawArrays(gl.TRIANGLES, 0, arr.length/6);
 }
 
+// ------------------------------ Wetter --------------------------------------
+let weather = 'clear', weatherT = 40 + Math.random()*40;
+const wparts = [];
+let rainNoise = null;
+
+function setWeather(w) {
+  weather = w;
+  wparts.length = 0;
+  if (w !== 'clear') {
+    const n = w==='rain' ? 260 : 200;
+    for (let i=0;i<n;i++) wparts.push({
+      x: player.x + Math.random()*24-12,
+      y: player.y + Math.random()*14,
+      z: player.z + Math.random()*24-12,
+    });
+  }
+  if (started) toast(w==='rain' ? '🌧️ Es fängt an zu regnen!' : w==='snow' ? '❄️ Es schneit! Wie schön!' : '☀️ Die Sonne kommt wieder raus!', 2500);
+  rainSound(w==='rain');
+}
+function rainSound(on) {
+  try {
+    if (!actx) return;
+    if (on && !rainNoise) {
+      const n = actx.sampleRate*2;
+      const buf = actx.createBuffer(1, n, actx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i=0;i<n;i++) d[i] = Math.random()*2-1;
+      const src = actx.createBufferSource(); src.buffer=buf; src.loop=true;
+      const flt = actx.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=900;
+      const g = actx.createGain(); g.gain.value=0.05;
+      src.connect(flt); flt.connect(g); g.connect(actx.destination);
+      src.start();
+      rainNoise = src;
+    } else if (!on && rainNoise) {
+      rainNoise.stop(); rainNoise = null;
+    }
+  } catch(e) {}
+}
+function updateWeather(dt, now) {
+  weatherT -= dt;
+  if (weatherT <= 0) {
+    if (weather === 'clear') {
+      const r = Math.random();
+      setWeather(r<0.5 ? 'clear' : r<0.8 ? 'rain' : 'snow');
+    } else setWeather(Math.random()<0.7 ? 'clear' : weather);
+    weatherT = 40 + Math.random()*50;
+  }
+  const fall = weather==='rain' ? 16 : 1.8;
+  for (let i=0;i<wparts.length;i++) {
+    const p = wparts[i];
+    p.y -= fall*dt;
+    if (weather==='snow') p.x += Math.sin(now*0.001 + i)*0.4*dt;
+    const solid = isSolid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));
+    if (solid || p.y < player.y-12) {
+      p.x = player.x + Math.random()*24-12;
+      p.y = player.y + 8 + Math.random()*8;
+      p.z = player.z + Math.random()*24-12;
+    }
+  }
+}
+const weatherBuf = gl.createBuffer();
+function drawWeather() {
+  if (!wparts.length) return;
+  const rain = weather==='rain';
+  const w = rain ? 0.018 : 0.05, h = rain ? 0.5 : 0.1;
+  const shade = rain ? 0.55 : 1.3;
+  const uv = tileUV(10, 0.5, 0.5);
+  const arr = [];
+  for (const p of wparts) {
+    // zwei gekreuzte kleine Flächen, damit man sie von allen Seiten sieht
+    arr.push(
+      p.x-w,p.y,p.z, uv[0],uv[1],shade,  p.x+w,p.y,p.z, uv[0],uv[1],shade,  p.x+w,p.y+h,p.z, uv[0],uv[1],shade,
+      p.x-w,p.y,p.z, uv[0],uv[1],shade,  p.x+w,p.y+h,p.z, uv[0],uv[1],shade,  p.x-w,p.y+h,p.z, uv[0],uv[1],shade,
+      p.x,p.y,p.z-w, uv[0],uv[1],shade,  p.x,p.y,p.z+w, uv[0],uv[1],shade,  p.x,p.y+h,p.z+w, uv[0],uv[1],shade,
+      p.x,p.y,p.z-w, uv[0],uv[1],shade,  p.x,p.y+h,p.z+w, uv[0],uv[1],shade,  p.x,p.y+h,p.z-w, uv[0],uv[1],shade
+    );
+  }
+  gl.uniform1f(loc.uAlpha, rain ? 0.4 : 0.9);
+  gl.bindBuffer(gl.ARRAY_BUFFER, weatherBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
+  setAttribs();
+  gl.drawArrays(gl.TRIANGLES, 0, arr.length/6);
+}
+
 // ------------------------------ Raycast ------------------------------------
 function raycast(ox,oy,oz,dx,dy,dz,maxDist) {
   let x=Math.floor(ox), y=Math.floor(oy), z=Math.floor(oz);
@@ -1472,12 +1556,17 @@ function frame(now) {
   physics(dt);
   updateFuses(dt);
   updateAnimals(dt);
+  updateWeather(dt, now);
 
-  // Tag-Nacht-Wechsel
+  // Tag-Nacht-Wechsel (bei Regen ist der Himmel grauer)
   dayTime = (dayTime + dt*DAY_SPEED) % 1;
-  const L = light01();
+  let L = light01();
   const lf = (L-0.34)/0.66;
-  const skyR = SKY[0]*lf + 0.015*(1-lf), skyG = SKY[1]*lf + 0.02*(1-lf), skyB = SKY[2]*lf + 0.07*(1-lf);
+  const wf = weather==='rain' ? 0.62 : weather==='snow' ? 0.88 : 1;
+  if (weather==='rain') L *= 0.88;
+  const skyR = (SKY[0]*lf + 0.015*(1-lf))*wf;
+  const skyG = (SKY[1]*lf + 0.02*(1-lf))*wf;
+  const skyB = (SKY[2]*lf + 0.07*(1-lf))*Math.min(1, wf*1.05);
   gl.clearColor(skyR, skyG, skyB, 1);
 
   const e=eyePos();
@@ -1544,6 +1633,9 @@ function frame(now) {
     setAttribs();
     gl.drawArrays(gl.TRIANGLES,0,ch.wcount);
   }
+  // Regen oder Schnee
+  drawWeather();
+
   gl.uniform1f(loc.uAlpha,1);
   gl.enable(gl.CULL_FACE);
   gl.depthMask(true);
