@@ -50,6 +50,8 @@ Leertaste springen · Tasten 1–8 Block wählen
   rotes Halsband, folgen dir überall hin und werden mitgespeichert.
   Nochmal antippen = „Sitz!" (das Tier wartet), noch einmal = „Komm mit!"
 - Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
+- Wetter! Manchmal regnet es (mit Regen-Rauschen und grauem Himmel) 🌧️
+  und manchmal schneit es in dicken Flocken ❄️ – drinnen bleibt es trocken
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - Mit den Bewohnern kann man sprechen 💬: antippen, und Hans, Emma oder Otto
   drehen sich zu dir um und erzählen etwas – manchmal sogar geheime Tipps!
