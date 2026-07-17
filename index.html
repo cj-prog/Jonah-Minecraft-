@@ -47,7 +47,8 @@
 
   #toast { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
     background:rgba(0,0,0,.55); color:#fff; padding:6px 14px; border-radius:8px; font-size:14px;
-    opacity:0; transition:opacity .25s; pointer-events:none; white-space:nowrap; }
+    opacity:0; transition:opacity .25s; pointer-events:none;
+    white-space:normal; text-align:center; max-width:min(82vw,440px); width:max-content; }
 
   #waterFx { inset:0; background:rgba(20,60,160,.35); display:none; pointer-events:none; }
 
@@ -79,7 +80,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 10 &middot; mit Haustieren 🐶🐱</p>
+    Version 11 &middot; Dorfbewohner können sprechen 💬</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -88,7 +89,8 @@
     ⬆ Knopf: Springen &amp; Schwimmen<br>
     💥 TNT hinstellen und antippen &rarr; BOOM!<br>
     🐴 Tippe ein Pferd an und reite los!<br>
-    🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!
+    🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!<br>
+    💬 Tippe einen Dorfbewohner an und hör, was er sagt!
   </p>
   <p id="helpDesk" style="display:none">
     <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
@@ -805,6 +807,24 @@ const ANIMAL_KIND = {
   villager: { speed:1.0, half:0.3,  height:1.8,  tile:20, face:21 },
 };
 const isPet = a => a.type==='dog' || a.type==='cat';
+
+const VILLAGER_NAMES = ['Hans','Emma','Otto','Frieda','Karl','Lina','Paul','Greta','Willi','Marta'];
+const VILLAGER_TALK = [
+  'Hallo! Schön, dich zu sehen!',
+  'Hmm hmm hmm!',
+  'Hast du schon unsere Schatztruhen gefunden? Sie stehen in den Häusern!',
+  'Was für ein schöner Tag zum Bauen!',
+  'Ich habe die größte Nase im ganzen Dorf. Da bin ich stolz drauf!',
+  'Pssst... nachts kann man in einem Bett schlafen, dann ist es sofort wieder Morgen!',
+  'Baust du mir ein neues Haus? Aus Ziegeln vielleicht?',
+  'Dein Hund ist aber süß!',
+  'Pferde sind schneller als ich. Ich bin lieber gemütlich.',
+  'Bitte kein TNT neben meinem Haus! Versprochen?',
+  'Ich wollte immer schon mal das Meer sehen...',
+  'Unser Brunnen hat das beste Wasser weit und breit!',
+  'Wenn du dich verlaufen hast: Bau dir einen hohen Turm und schau dich um!',
+  'Schweine können schwimmen. Wusstest du das?',
+];
 let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let animalSpawnT = 0;
 
@@ -1056,6 +1076,16 @@ function hitEntity(a, dir) {
     blip(440,0.08); blip(587,0.08);
     return;
   }
+  if (a.type==='villager') {            // mit Dorfbewohnern sprechen!
+    if (!a.name) a.name = VILLAGER_NAMES[Math.floor(Math.random()*VILLAGER_NAMES.length)];
+    const say = VILLAGER_TALK[Math.floor(Math.random()*VILLAGER_TALK.length)];
+    // Er dreht sich zu dir um und bleibt kurz stehen
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = false; a.t = 3.5;
+    toast('👃 '+a.name+': „'+say+'"', 3500);
+    blip(200,0.12); blip(160,0.1);
+    return;
+  }
   if (isPet(a)) {                       // Haustiere zähmen!
     if (!a.tame) {
       a.tame = true; a.sit = false;
@@ -1240,9 +1270,9 @@ function boom() {
 // ------------------------------ HUD -----------------------------------------
 const toastEl=document.getElementById('toast');
 let toastTimer=null;
-function toast(msg) {
+function toast(msg, ms) {
   toastEl.textContent=msg; toastEl.style.opacity=1;
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.style.opacity=0,1200);
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.style.opacity=0, ms||1200);
 }
 function tileImg(tile) {
   const c=document.createElement('canvas'); c.width=c.height=T;
