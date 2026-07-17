@@ -55,6 +55,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - Mit den Bewohnern kann man sprechen 💬: antippen, und Hans, Emma oder Otto
   drehen sich zu dir um und erzählen etwas – manchmal sogar geheime Tipps!
+- Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
+  du etwas – der nächste Bewohner versteht dich und antwortet passend.
+  Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
 - 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)

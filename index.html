@@ -39,6 +39,11 @@
   #rideBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
   #fsBtn   { right:calc(12px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
+  #chatBtn { right:calc(112px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #chatBox { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    display:none; gap:6px; background:rgba(0,0,0,.6); padding:8px; border-radius:10px; z-index:30; }
+  #chatInput { font-size:16px; padding:8px 10px; border-radius:6px; border:none; width:min(56vw,280px); }
+  #chatSend { font-size:16px; font-weight:bold; padding:8px 14px; border-radius:6px; border:none; background:#4caf50; color:#fff; }
   .btn:active { background:rgba(255,255,255,.35); }
 
   #joyBase { width:110px; height:110px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
@@ -71,6 +76,11 @@
 <div class="hud btn" id="modeBtn">⛏️</div>
 <div class="hud btn" id="rideBtn" style="display:none">🐴</div>
 <div class="hud btn" id="fsBtn">⛶</div>
+<div class="hud btn" id="chatBtn">💬</div>
+<div class="hud" id="chatBox">
+  <input id="chatInput" type="text" maxlength="60" placeholder="Sag etwas..." autocomplete="off">
+  <button id="chatSend">Sagen</button>
+</div>
 <div class="hud btn" id="resetBtn">🔄</div>
 <div class="hud" id="joyBase"></div>
 <div class="hud" id="joyKnob"></div>
@@ -80,7 +90,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 12 &middot; mit Regen 🌧️ und Schnee ❄️</p>
+    Version 13 &middot; du kannst selber sprechen 💬</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -90,7 +100,8 @@
     💥 TNT hinstellen und antippen &rarr; BOOM!<br>
     🐴 Tippe ein Pferd an und reite los!<br>
     🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!<br>
-    💬 Tippe einen Dorfbewohner an und hör, was er sagt!
+    💬 Tippe einen Dorfbewohner an und hör, was er sagt!<br>
+    🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!
   </p>
   <p id="helpDesk" style="display:none">
     <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
@@ -809,6 +820,26 @@ const ANIMAL_KIND = {
 const isPet = a => a.type==='dog' || a.type==='cat';
 
 const VILLAGER_NAMES = ['Hans','Emma','Otto','Frieda','Karl','Lina','Paul','Greta','Willi','Marta'];
+// Antworten, wenn DU etwas sagst (der Bewohner sucht passende Wörter)
+const REPLIES = [
+  [['hallo','hi','hey','moin'], ['Hallo! Schön, dich zu sehen!','Hallo du! Willkommen bei uns im Dorf!']],
+  [['wie geht'], ['Mir geht es prima, danke der Nachfrage!','Super! Heute ist ein schöner Tag.']],
+  [['name','heißt','heisst'], ['Ich wohne hier im Dorf – und du bist unser Held!']],
+  [['schatz','truhe','gold'], ['Die Schatztruhen stehen in unseren Häusern. Schau ruhig rein!']],
+  [['haus','bauen'], ['Bau doch ein Haus aus Ziegeln! Und vergiss die Fackeln nicht.']],
+  [['hund','katze','tier'], ['Tiere sind die besten Freunde! Tippe sie an, dann mögen sie dich.']],
+  [['tnt','bumm','explo'], ['Oh nein! Bitte kein TNT bei meinem Haus! 😱']],
+  [['regen','schnee','wetter'], ['Nach Regen kommt Sonnenschein, sag ich immer!']],
+  [['witz','lustig'], ['Warum können Geister so schlecht lügen? Weil man durch sie hindurchsieht! Hihi!']],
+  [['danke'], ['Gern geschehen! Dafür sind Nachbarn da.']],
+  [['tschüss','bye','ciao'], ['Bis bald! Und pass auf dich auf!']],
+  [['pferd','reiten'], ['Pferde sind toll! Halt dich gut fest beim Galopp!']],
+  [['dorf'], ['Unser Dorf ist das schönste weit und breit, oder?']],
+  [['nacht','dunkel','schlafen','bett'], ['Wenn es dunkel ist, leg dich ins Bett – dann ist es sofort Morgen!']],
+];
+const REPLIES_QUESTION = ['Gute Frage! Frag doch auch mal die anderen im Dorf.','Hmm, da muss ich lange nachdenken...'];
+const REPLIES_DEFAULT = ['Ach so!','Wirklich? Erzähl mal mehr!','Da hast du recht!','Hihi, mit dir wird es nie langweilig!','Hmm, interessant!'];
+
 const VILLAGER_TALK = [
   'Hallo! Schön, dich zu sehen!',
   'Hmm hmm hmm!',
@@ -1399,6 +1430,70 @@ function setMode(place) {
 modeBtn.addEventListener('touchstart',e=>{e.preventDefault();setMode(!placeMode);},{passive:false});
 modeBtn.addEventListener('mousedown',e=>{e.preventDefault();setMode(!placeMode);});
 
+// ---- Selber sprechen ----
+const chatBox=document.getElementById('chatBox');
+const chatInput=document.getElementById('chatInput');
+let chatOpen=false;
+function openChat() {
+  chatOpen=true; chatBox.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  setTimeout(()=>chatInput.focus(), 60);
+}
+function closeChat() { chatOpen=false; chatBox.style.display='none'; chatInput.blur(); }
+function submitChat() {
+  const msg=chatInput.value.trim();
+  chatInput.value='';
+  closeChat();
+  if (!msg) return;
+  toast('🙂 Du: „'+msg+'"', 2400);
+  blip(500,0.05);
+  setTimeout(()=>replyTo(msg), 1500);
+}
+function replyTo(msg) {
+  const low=msg.toLowerCase();
+  // nächster Dorfbewohner in der Nähe antwortet
+  let best=null, bestD=14;
+  for (const a of animals) {
+    const d=Math.hypot(a.x-player.x, a.z-player.z);
+    if (a.type==='villager' && d<bestD) { best=a; bestD=d; }
+  }
+  if (best) {
+    if (!best.name) best.name = VILLAGER_NAMES[Math.floor(Math.random()*VILLAGER_NAMES.length)];
+    best.yaw = Math.atan2(player.x-best.x, -(player.z-best.z));
+    best.walking=false; best.t=4;
+    let answer=null;
+    for (const [words,answers] of REPLIES) {
+      if (words.some(w=>low.includes(w))) { answer=answers[Math.floor(Math.random()*answers.length)]; break; }
+    }
+    if (!answer && low.includes('?')) answer=REPLIES_QUESTION[Math.floor(Math.random()*REPLIES_QUESTION.length)];
+    if (!answer) answer=REPLIES_DEFAULT[Math.floor(Math.random()*REPLIES_DEFAULT.length)];
+    toast('👃 '+best.name+': „'+answer+'"', 3500);
+    blip(200,0.12); blip(160,0.1);
+    return;
+  }
+  // kein Bewohner da? Dann antwortet dein Haustier!
+  let pet=null, petD=12;
+  for (const a of animals) {
+    const d=Math.hypot(a.x-player.x, a.z-player.z);
+    if (isPet(a) && a.tame && d<petD) { pet=a; petD=d; }
+  }
+  if (pet) {
+    if (pet.type==='dog') { toast('🐶 Wuff! Wuff!', 2000); blip(150,0.1); blip(130,0.1); }
+    else { toast('🐱 Miauuu!', 2000); blip(620,0.15); blip(520,0.12); }
+    pet.vy=4; pet.onGround=false;
+  } else {
+    toast('Niemand in der Nähe hat dich gehört...', 2000);
+  }
+}
+document.getElementById('chatBtn').addEventListener('touchstart',e=>{e.preventDefault(); chatOpen?closeChat():openChat();},{passive:false});
+document.getElementById('chatBtn').addEventListener('mousedown',e=>{e.preventDefault(); chatOpen?closeChat():openChat();});
+document.getElementById('chatSend').addEventListener('click',submitChat);
+chatInput.addEventListener('keydown',e=>{
+  e.stopPropagation();
+  if (e.key==='Enter') submitChat();
+  if (e.key==='Escape') closeChat();
+});
+
 const rideBtn=document.getElementById('rideBtn');
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();dismount();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();dismount();});
@@ -1482,6 +1577,8 @@ canvas.addEventListener('touchcancel',touchEnd,{passive:false});
 // ------------------------------ Eingabe: Tastatur/Maus ----------------------
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 addEventListener('keydown',e=>{
+  if (chatOpen) return;               // beim Tippen im Chat nicht loslaufen
+  if (e.code==='KeyT' && started) { e.preventDefault(); openChat(); return; }
   keys[e.code]=true;
   if (e.code.startsWith('Digit')) {
     const n=parseInt(e.code.slice(5),10);
