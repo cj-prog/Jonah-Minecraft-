@@ -46,6 +46,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Pferde 🐴 zum Reiten: antippen zum Aufsteigen, dann mit dem Joystick lospreschen –
   Pferde galoppieren schneller als du läufst und hüpfen Stufen automatisch hoch.
   Absteigen mit dem 🐴-Knopf
+- Haustiere! Hunde 🐶 und Katzen 🐱 zähmst du durch Antippen: Sie bekommen ein
+  rotes Halsband, folgen dir überall hin und werden mitgespeichert.
+  Nochmal antippen = „Sitz!" (das Tier wartet), noch einmal = „Komm mit!"
 - Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
