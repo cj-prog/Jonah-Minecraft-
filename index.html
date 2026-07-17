@@ -22,8 +22,11 @@
   #crosshair:after { left:0; top:9px; width:20px; height:2px; }
 
   #hotbar { left:50%; bottom:calc(8px + env(safe-area-inset-bottom)); transform:translateX(-50%);
-    display:flex; gap:4px; padding:4px; background:rgba(0,0,0,.35); border-radius:8px; }
-  .slot { width:44px; height:44px; border:2px solid rgba(255,255,255,.35); border-radius:6px;
+    display:flex; gap:4px; padding:4px; background:rgba(0,0,0,.35); border-radius:8px;
+    overflow-x:auto; touch-action:pan-x; max-width:min(94vw,720px);
+    -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  #hotbar::-webkit-scrollbar { display:none; }
+  .slot { flex:none; width:44px; height:44px; border:2px solid rgba(255,255,255,.35); border-radius:6px;
     background:rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; }
   .slot img { width:34px; height:34px; image-rendering:pixelated; pointer-events:none; }
   .slot.sel { border-color:#fff; background:rgba(255,255,255,.25); }
@@ -76,7 +79,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 7 &middot; mit Pferden zum Reiten 🐴</p>
+    Version 8 &middot; mit Möbeln 🛏️🪑 und Pferden 🐴</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -111,7 +114,8 @@ const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
 
-const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11;
+const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
+      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -126,8 +130,26 @@ const BLOCKS = {
   [BRICK]: { name:'Ziegel',  tiles:[11,11,11], solid:true },
   [TNT]:   { name:'TNT 💥 (hinstellen, dann antippen!)', tiles:[12,13,13], solid:true },
   [TNT_LIT]:{ name:'TNT',    tiles:[10,10,10], solid:true },
+  // Möbel: model = kleine Kisten [x0,y0,z0, x1,y1,z1, Textur, (Helligkeit)]
+  [TABLE]: { name:'Tisch', tiles:[8,8,8], solid:true, model:[
+    [0,0.75,0, 1,0.9,1, 8],
+    [0.08,0,0.08, 0.22,0.75,0.22, 5],[0.78,0,0.08, 0.92,0.75,0.22, 5],
+    [0.08,0,0.78, 0.22,0.75,0.92, 5],[0.78,0,0.78, 0.92,0.75,0.92, 5]] },
+  [CHAIR]: { name:'Stuhl', tiles:[8,8,8], solid:true, model:[
+    [0.15,0.4,0.15, 0.85,0.55,0.85, 8],
+    [0.18,0,0.18, 0.3,0.4,0.3, 5],[0.7,0,0.18, 0.82,0.4,0.3, 5],
+    [0.18,0,0.7, 0.3,0.4,0.82, 5],[0.7,0,0.7, 0.82,0.4,0.82, 5],
+    [0.15,0.55,0.7, 0.85,1.25,0.85, 8]] },
+  [BED]:   { name:'Bett (nachts antippen = schlafen!)', tiles:[25,25,25], solid:true, model:[
+    [0,0,0, 1,0.25,1, 5],
+    [0,0.25,0, 1,0.5,0.72, 25],
+    [0.08,0.25,0.72, 0.92,0.55,0.98, 26]] },
+  [TORCH]: { name:'Fackel', tiles:[27,27,27], solid:false, model:[
+    [0.45,0,0.45, 0.55,0.62,0.55, 5],
+    [0.4,0.62,0.4, 0.6,0.82,0.6, 27, 1.8]] },
+  [CHEST]: { name:'Truhe', tiles:[28,29,29], solid:true },
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, TNT];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, TNT, TABLE, CHAIR, BED, TORCH, CHEST];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -429,6 +451,18 @@ atlas.width = atlas.height = T*ATLAS_N;
     }
     return vary(139,90,54,20);
   });
+  tile(25,()=>vary(196,44,48,22));                                  // Bettdecke rot
+  tile(26,()=>vary(240,238,232,10));                                // Kissen weiß
+  tile(27,(x,y)=> y>8 ? vary(255,150,40,40) : vary(255,215,70,40)); // Fackel-Flamme
+  tile(28,(x,y)=>{                                                  // Truhe vorne
+    if (x<1||x>14||y<1||y>14||y===7) return vary(90,64,38,10);
+    if (x>=7&&x<=8&&y>=5&&y<=9) return 'rgb(60,60,65)';                        // Schloss
+    return vary(158,112,62,16);
+  });
+  tile(29,(x,y)=>{                                                  // Truhe Seite
+    if (x<1||x>14||y<1||y>14||y===7) return vary(90,64,38,10);
+    return vary(158,112,62,16);
+  });
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -527,12 +561,28 @@ function buildMesh(ch) {
     if (b===AIR) continue;
     const def = BLOCKS[b];
     const wx=x0+lx, wz=z0+lz;
+    if (def.model) {                    // Möbel: kleine Kisten statt voller Würfel
+      for (const bx of def.model) {
+        const sh = bx[7]||1;
+        for (let f=0;f<6;f++) {
+          const F=FACES[f];
+          for (let k=0;k<6;k++) {
+            const c=F.c[TRI[k]];
+            const uv=tileUV(bx[6], c[3], c[4]);
+            opq.push(wx+bx[0]+(bx[3]-bx[0])*c[0], y+bx[1]+(bx[4]-bx[1])*c[1], wz+bx[2]+(bx[5]-bx[2])*c[2],
+                     uv[0], uv[1], Math.min(1.6, F.s*sh));
+          }
+        }
+      }
+      continue;
+    }
     for (let f=0;f<6;f++) {
       const F=FACES[f];
       const nb = getBlock(wx+F.d[0], y+F.d[1], wz+F.d[2]);
+      const nbOpen = nb===AIR || nb===WATER || (nb && BLOCKS[nb].model);
       let visible;
-      if (b===WATER) visible = (nb===AIR);
-      else visible = (nb===AIR || nb===WATER);
+      if (b===WATER) visible = (nb===AIR || (nb && BLOCKS[nb].model));
+      else visible = nbOpen;
       if (!visible) continue;
       const tile = def.tiles[f===2?1:f===3?2:0];
       const arr = (b===WATER) ? wat : opq;
@@ -1000,6 +1050,11 @@ function doPlace(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
   if (!hit) return;
+  if (hit.block===BED) {                // im Bett schlafen!
+    if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen!'); blip(392,0.2); }
+    else toast('Du bist noch nicht müde 😄');
+    return;
+  }
   const px=hit.x+hit.face[0], py=hit.y+hit.face[1], pz=hit.z+hit.face[2];
   if (py<0||py>=CH) return;
   const cur=getBlock(px,py,pz);
@@ -1094,16 +1149,26 @@ function tileImg(tile) {
   c.getContext('2d').drawImage(atlas,(tile%ATLAS_N)*T,Math.floor(tile/ATLAS_N)*T,T,T,0,0,T,T);
   return c.toDataURL();
 }
+function iconURL(draw) {                // kleine Pixel-Bildchen für Möbel
+  const c=document.createElement('canvas'); c.width=c.height=16;
+  const g=c.getContext('2d'); draw(g); return c.toDataURL();
+}
+const HOLZ='#8a6a42', HOLZ_D='#5c4326';
+const ICONS = {
+  [TABLE]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(1,5,14,3); g.fillRect(2,8,3,7); g.fillRect(11,8,3,7); }),
+  [CHAIR]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(10,1,3,10); g.fillRect(3,8,10,3); g.fillRect(3,11,2,4); g.fillRect(11,11,2,4); }),
+  [BED]:   iconURL(g=>{ g.fillStyle=HOLZ_D; g.fillRect(1,9,14,4); g.fillStyle='#c23434'; g.fillRect(1,6,10,3); g.fillStyle='#eee'; g.fillRect(11,6,4,3); }),
+  [TORCH]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(7,7,2,8); g.fillStyle='#ffc832'; g.fillRect(5,2,6,5); g.fillStyle='#ff8020'; g.fillRect(7,4,2,2); }),
+  [CHEST]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,3,12,11); g.fillStyle=HOLZ_D; g.fillRect(2,7,12,2); g.fillStyle='#3c3c40'; g.fillRect(7,6,2,4); }),
+};
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
   const d=document.createElement('div');
   d.className='slot'+(i===0?' sel':'');
   const img=document.createElement('img');
-  img.src=tileImg(BLOCKS[b].tiles[b===GRASS?1:0]);
+  img.src=ICONS[b] || tileImg(BLOCKS[b].tiles[b===GRASS?1:0]);
   d.appendChild(img);
-  const pick=(ev)=>{ ev.preventDefault(); selectSlot(i); };
-  d.addEventListener('touchstart',pick,{passive:false});
-  d.addEventListener('mousedown',pick);
+  d.addEventListener('click',()=>selectSlot(i));  // click statt touchstart, damit man wischen kann
   hotbarEl.appendChild(d);
 });
 function selectSlot(i) {

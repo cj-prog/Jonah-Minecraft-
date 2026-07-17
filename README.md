@@ -49,6 +49,8 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
+- Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
+  (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
 - TNT mit Zündschnur, Explosionskrater, Kettenreaktion (TNT zündet TNT!),
   Explosions-Sound und Kamera-Wackeln
 - Blöcke abbauen und bauen, was du willst
