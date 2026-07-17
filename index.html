@@ -79,7 +79,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 8 &middot; mit Möbeln 🛏️🪑 und Pferden 🐴</p>
+    Version 9 &middot; Truhen kann man öffnen 💎</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -115,7 +115,7 @@ const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
 
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
-      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16;
+      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -147,7 +147,15 @@ const BLOCKS = {
   [TORCH]: { name:'Fackel', tiles:[27,27,27], solid:false, model:[
     [0.45,0,0.45, 0.55,0.62,0.55, 5],
     [0.4,0.62,0.4, 0.6,0.82,0.6, 27, 1.8]] },
-  [CHEST]: { name:'Truhe', tiles:[28,29,29], solid:true },
+  [CHEST]: { name:'Truhe (antippen = öffnen!)', tiles:[28,29,29], solid:true },
+  [CHEST_OPEN]: { name:'Truhe', tiles:[29,29,29], solid:true, model:[
+    [0.05,0,0.05, 0.95,0.5,0.15, 29],                   // Wände
+    [0.05,0,0.85, 0.95,0.5,0.95, 29],
+    [0.05,0,0.15, 0.15,0.5,0.85, 29],
+    [0.85,0,0.15, 0.95,0.5,0.85, 29],
+    [0.15,0,0.15, 0.85,0.62,0.85, 30, 1.4],             // Gold quillt über den Rand!
+    [0.32,0.62,0.32, 0.68,0.78,0.68, 30, 1.5],          // Gold-Häufchen obendrauf
+    [0.05,0.5,0.75, 0.95,1.05,0.95, 29]] },             // offener Deckel
 };
 const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, TNT, TABLE, CHAIR, BED, TORCH, CHEST];
 
@@ -298,6 +306,8 @@ function genChunkData(cx, cz) {
       // Platz vor der Tür freimachen
       put(hx0+mx,baseY+1,hz0+D,AIR,false);
       put(hx0+mx,baseY+2,hz0+D,AIR,false);
+      // In manchen Häusern steht eine Schatztruhe!
+      if (hash2(hx0,hz0,321)<0.6) put(hx0+1,baseY+1,hz0+1,CHEST,false);
     }
   }
   // gespeicherte Änderungen des Spielers anwenden
@@ -463,6 +473,7 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x<1||x>14||y<1||y>14||y===7) return vary(90,64,38,10);
     return vary(158,112,62,16);
   });
+  tile(30,()=> rnd()<0.15 ? 'rgb(255,255,240)' : vary(240,200,60,36)); // Gold mit Glitzer
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -1053,6 +1064,19 @@ function doPlace(dir) {
   if (hit.block===BED) {                // im Bett schlafen!
     if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen!'); blip(392,0.2); }
     else toast('Du bist noch nicht müde 😄');
+    return;
+  }
+  if (hit.block===CHEST) {              // Truhe öffnen: Schatz!
+    setBlock(hit.x,hit.y,hit.z,CHEST_OPEN);
+    const loot=['💎 einen Diamanten','🪙 drei Goldmünzen','🍎 einen leckeren Apfel','⚔️ ein Schwert',
+                '🥕 fünf Karotten','👑 eine Königskrone','🗺️ eine Schatzkarte','🧭 einen Kompass'];
+    toast('Du hast '+loot[Math.floor(Math.random()*loot.length)]+' gefunden!');
+    blip(392,0.08); blip(523,0.1); blip(659,0.12);
+    return;
+  }
+  if (hit.block===CHEST_OPEN) {         // wieder zuklappen
+    setBlock(hit.x,hit.y,hit.z,CHEST);
+    blip(262,0.1);
     return;
   }
   const px=hit.x+hit.face[0], py=hit.y+hit.face[1], pz=hit.z+hit.face[2];
