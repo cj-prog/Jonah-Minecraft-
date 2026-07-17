@@ -90,7 +90,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 13 &middot; du kannst selber sprechen 💬</p>
+    Version 14 &middot; setz dich auf Stühle! 🪑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -149,7 +149,7 @@ const BLOCKS = {
     [0,0.75,0, 1,0.9,1, 8],
     [0.08,0,0.08, 0.22,0.75,0.22, 5],[0.78,0,0.08, 0.92,0.75,0.22, 5],
     [0.08,0,0.78, 0.22,0.75,0.92, 5],[0.78,0,0.78, 0.92,0.75,0.92, 5]] },
-  [CHAIR]: { name:'Stuhl', tiles:[8,8,8], solid:true, model:[
+  [CHAIR]: { name:'Stuhl (antippen = hinsetzen!)', tiles:[8,8,8], solid:true, model:[
     [0.15,0.4,0.15, 0.85,0.55,0.85, 8],
     [0.18,0,0.18, 0.3,0.4,0.3, 5],[0.7,0,0.18, 0.82,0.4,0.3, 5],
     [0.18,0,0.7, 0.3,0.4,0.82, 5],[0.7,0,0.7, 0.82,0.4,0.82, 5],
@@ -747,6 +747,27 @@ function physics(dt) {
 
   if (riding) { ridePhysics(dt); return; }
 
+  if (sitting) {                        // auf dem Stuhl sitzen
+    const wantsUp = keys['KeyW']||keys['KeyA']||keys['KeyS']||keys['KeyD']||
+      keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight']||
+      keys['Space']||jumpHeld||Math.abs(joy.fwd)>0.2||Math.abs(joy.strafe)>0.2;
+    if (wantsUp || getBlock(sitting.x,sitting.y,sitting.z)!==CHAIR) {
+      // aufstehen: erst oben auf dem Stuhl, sonst daneben versuchen
+      const spots = [[0.5,0.6,0.5],[0.5,1.1,0.5],[0.5,0,1.5],[0.5,0,-0.5],[1.5,0,0.5],[-0.5,0,0.5]];
+      for (const s of spots) {
+        if (!collide(sitting.x+s[0], sitting.y+s[1], sitting.z+s[2])) {
+          player.x=sitting.x+s[0]; player.y=sitting.y+s[1]; player.z=sitting.z+s[2];
+          break;
+        }
+      }
+      sitting = null;
+    } else {
+      player.x=sitting.x+0.5; player.z=sitting.z+0.5; player.y=sitting.y-0.25;
+      player.vx=player.vy=player.vz=0;
+    }
+    return;
+  }
+
   const swim = inWaterAt(0.4) || inWaterAt(1.0);
 
   // Bewegungs-Eingabe
@@ -805,6 +826,7 @@ function spawn() {
   player.vx=player.vy=player.vz=0;
   yaw = 0.6; pitch = 0.1;
   if (riding) { riding=null; document.getElementById('rideBtn').style.display='none'; }
+  sitting = null;
 }
 
 // ------------------------------ Tiere ---------------------------------------
@@ -857,6 +879,7 @@ const VILLAGER_TALK = [
   'Schweine können schwimmen. Wusstest du das?',
 ];
 let riding = null;                      // das Pferd, auf dem wir gerade sitzen
+let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
 let animalSpawnT = 0;
 
 function spawnMob(type, x, z, extra) {
@@ -1185,6 +1208,7 @@ function rayEntity(o, d, maxT) {  // trifft der Strahl ein Tier/Wesen?
 function hitEntity(a, dir) {
   if (a.type==='horse') {               // Aufsteigen!
     if (riding) return;
+    sitting = null;
     riding = a; a.walking = false;
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf');
@@ -1285,6 +1309,14 @@ function doPlace(dir) {
   if (hit.block===BED) {                // im Bett schlafen!
     if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen!'); blip(392,0.2); }
     else toast('Du bist noch nicht müde 😄');
+    return;
+  }
+  if (hit.block===CHAIR && !riding) {   // hinsetzen!
+    sitting = { x:hit.x, y:hit.y, z:hit.z };
+    player.x=hit.x+0.5; player.z=hit.z+0.5; player.y=hit.y-0.25;
+    player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
+    toast('🪑 Ahh, gemütlich! Zum Aufstehen einfach bewegen.', 2500);
+    blip(330,0.08);
     return;
   }
   if (hit.block===CHEST) {              // Truhe öffnen: Schatz!

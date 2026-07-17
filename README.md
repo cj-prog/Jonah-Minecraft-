@@ -61,6 +61,8 @@ Leertaste springen · Tasten 1–8 Block wählen
 - 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
+- Auf Stühle kann man sich setzen 🪑: im Bau-Modus antippen, schon sitzt du –
+  zum Aufstehen einfach den Joystick bewegen
 - Truhen lassen sich öffnen und schließen – drin glitzert ein Schatz 💎
   In manchen Dorf-Häusern stehen versteckte Schatztruhen!
 - TNT mit Zündschnur, Explosionskrater, Kettenreaktion (TNT zündet TNT!),
