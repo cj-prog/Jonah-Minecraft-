@@ -79,6 +79,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   **Wasser** 🌊 und **TNT** 💥
 - Mit Wasser baust du eigene Seen, Pools und Wasserfälle – und im ⛏️-Modus
   saugst du es wie mit einem Eimer wieder auf 🪣
+- Schilder! 📜 Stell ein Schild auf und schreib deinen eigenen Text darauf
+  („Jonahs Haus", „Achtung TNT!" ...) – der Text steht lesbar in der Welt
+  und wird gespeichert. Antippen im Bau-Modus ändert den Text
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
 - Fliegen! 🕊️ Mit dem ✈️-Knopf (oder Taste F) hebst du ab:

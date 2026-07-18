@@ -95,7 +95,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 22 &middot; Freunde kommen mit ins Abenteuer 🎒</p>
+    Version 23 &middot; Schilder zum Selber-Beschriften 📜</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -135,7 +135,7 @@ const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
 
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
-      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17;
+      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -176,8 +176,11 @@ const BLOCKS = {
     [0.15,0,0.15, 0.85,0.62,0.85, 30, 1.4],             // Gold quillt über den Rand!
     [0.32,0.62,0.32, 0.68,0.78,0.68, 30, 1.5],          // Gold-Häufchen obendrauf
     [0.05,0.5,0.75, 0.95,1.05,0.95, 29]] },             // offener Deckel
+  [SIGN]: { name:'Schild (antippen = beschriften!)', tiles:[8,8,8], solid:false, model:[
+    [0.45,0,0.45, 0.55,0.55,0.55, 5],                   // Pfosten
+    [0.05,0.55,0.42, 0.95,1.0,0.58, 8]] },              // Brett
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -386,6 +389,7 @@ function saveGame() {
        a.home||'welt', a.hx||0, a.hz||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
+      signs: Object.fromEntries(signTexts),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
   } catch(e) {}
@@ -406,6 +410,7 @@ function loadGame() {
     if (Array.isArray(s.pets)) savedPets = s.pets;
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
+    if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     return s.player || null;
   } catch(e) { return null; }
 }
@@ -1335,6 +1340,78 @@ function drawAnimals() {
   gl.drawArrays(gl.TRIANGLES, 0, arr.length/6);
 }
 
+// ------------------------------ Schilder ------------------------------------
+const signTexts = new Map();            // "x,y,z" -> Text
+const signTexs = {};                    // "x,y,z" -> WebGL-Textur mit dem Text
+const signBuf = gl.createBuffer();
+
+function makeSignTexture(key, text) {
+  const c=document.createElement('canvas'); c.width=256; c.height=128;
+  const g=c.getContext('2d');
+  g.clearRect(0,0,256,128);
+  g.fillStyle='#33230f'; g.textAlign='center'; g.textBaseline='middle';
+  g.font='bold 30px sans-serif';
+  // Text auf bis zu 3 Zeilen umbrechen
+  const words=(text||'').split(/\s+/).filter(Boolean), lines=[];
+  let cur='';
+  for (const w of words) {
+    const t=cur?cur+' '+w:w;
+    if (g.measureText(t).width>236 && cur) { lines.push(cur); cur=w; }
+    else cur=t;
+    if (lines.length===3) break;
+  }
+  if (cur && lines.length<3) lines.push(cur);
+  const y0 = 64 - (lines.length-1)*17;
+  lines.forEach((l,i)=>g.fillText(l, 128, y0+i*34, 240));
+  const tx=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tx);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  signTexs[key]={tex:tx};
+}
+function setSignText(key, text) {
+  signTexts.set(key, text);
+  if (signTexs[key]) { gl.deleteTexture(signTexs[key].tex); delete signTexs[key]; }
+  scheduleSave();
+}
+function removeSign(x,y,z) {
+  const key=x+','+y+','+z;
+  if (signTexts.has(key)) {
+    signTexts.delete(key);
+    if (signTexs[key]) { gl.deleteTexture(signTexs[key].tex); delete signTexs[key]; }
+    scheduleSave();
+  }
+}
+function drawSignTexts() {
+  if (!signTexts.size) return;
+  gl.uniform1f(loc.uAlpha, 1);
+  for (const [key, txt] of signTexts) {
+    if (!txt) continue;
+    const [x,y,z] = key.split(',').map(Number);
+    if (Math.hypot(x-player.x, z-player.z) > 26) continue;
+    if (getBlock(x,y,z)!==SIGN) continue;
+    if (!signTexs[key]) makeSignTexture(key, txt);
+    gl.bindTexture(gl.TEXTURE_2D, signTexs[key].tex);
+    const x0=x+0.08, x1=x+0.92, yb=y+0.57, yt=y+0.98, zf=z+0.41, zb=z+0.59;
+    const s=1.0, a=[
+      // Vorderseite (zeigt nach -Z)
+      x1,yb,zf,0,1,s,  x0,yb,zf,1,1,s,  x0,yt,zf,1,0,s,
+      x1,yb,zf,0,1,s,  x0,yt,zf,1,0,s,  x1,yt,zf,0,0,s,
+      // Rückseite (zeigt nach +Z)
+      x0,yb,zb,0,1,s,  x1,yb,zb,1,1,s,  x1,yt,zb,1,0,s,
+      x0,yb,zb,0,1,s,  x1,yt,zb,1,0,s,  x0,yt,zb,0,0,s,
+    ];
+    gl.bindBuffer(gl.ARRAY_BUFFER, signBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW);
+    setAttribs();
+    gl.drawArrays(gl.TRIANGLES, 0, 12);
+  }
+  gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
+}
+
 // ------------------------------ Wetter --------------------------------------
 let weather = 'clear', weatherT = 40 + Math.random()*40;
 const wparts = [];
@@ -1609,6 +1686,7 @@ function doBreak(dir) {
   }
   if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
   if (hit.block===TNT_LIT) return;   // brennt schon!
+  if (hit.block===SIGN) removeSign(hit.x,hit.y,hit.z);
   setBlock(hit.x,hit.y,hit.z,AIR);
   blip(160,0.09);
 }
@@ -1619,6 +1697,10 @@ function doPlace(dir) {
   if (hit.block===BED) {                // im Bett schlafen!
     if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen!'); blip(392,0.2); }
     else toast('Du bist noch nicht müde 😄');
+    return;
+  }
+  if (hit.block===SIGN) {               // Schild neu beschriften
+    openSignEditor(hit.x+','+hit.y+','+hit.z);
     return;
   }
   if (hit.block===CHAIR && !riding) {   // hinsetzen!
@@ -1656,6 +1738,7 @@ function doPlace(dir) {
   }
   setBlock(px,py,pz,b);
   blip(330,0.06);
+  if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
 }
 
 // ------------------------------ TNT -----------------------------------------
@@ -1747,6 +1830,7 @@ const ICONS = {
   [BED]:   iconURL(g=>{ g.fillStyle=HOLZ_D; g.fillRect(1,9,14,4); g.fillStyle='#c23434'; g.fillRect(1,6,10,3); g.fillStyle='#eee'; g.fillRect(11,6,4,3); }),
   [TORCH]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(7,7,2,8); g.fillStyle='#ffc832'; g.fillRect(5,2,6,5); g.fillStyle='#ff8020'; g.fillRect(7,4,2,2); }),
   [CHEST]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,3,12,11); g.fillStyle=HOLZ_D; g.fillRect(2,7,12,2); g.fillStyle='#3c3c40'; g.fillRect(7,6,2,4); }),
+  [SIGN]:  iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,2,12,8); g.fillStyle=HOLZ_D; g.fillRect(7,10,2,5); g.fillStyle='#3b2a12'; g.fillRect(4,4,8,1); g.fillRect(4,7,6,1); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
@@ -1775,17 +1859,35 @@ modeBtn.addEventListener('mousedown',e=>{e.preventDefault();setMode(!placeMode);
 // ---- Selber sprechen ----
 const chatBox=document.getElementById('chatBox');
 const chatInput=document.getElementById('chatInput');
-let chatOpen=false;
+let chatOpen=false, signTarget=null;
 function openChat() {
   chatOpen=true; chatBox.style.display='flex';
   if (document.exitPointerLock) document.exitPointerLock();
   setTimeout(()=>chatInput.focus(), 60);
 }
-function closeChat() { chatOpen=false; chatBox.style.display='none'; chatInput.blur(); }
+function openSignEditor(key) {
+  signTarget = key;
+  chatInput.value = signTexts.get(key)||'';
+  chatInput.placeholder = 'Was soll auf dem Schild stehen?';
+  document.getElementById('chatSend').textContent = '✍️ OK';
+  openChat();
+}
+function closeChat() {
+  chatOpen=false; signTarget=null;
+  chatBox.style.display='none'; chatInput.blur();
+  chatInput.placeholder='Sag etwas...';
+  document.getElementById('chatSend').textContent='Sagen';
+}
 function submitChat() {
   const msg=chatInput.value.trim();
+  const target=signTarget;
   chatInput.value='';
   closeChat();
+  if (target) {                          // Schild beschriften
+    setSignText(target, msg);
+    if (msg) { toast('📜 Schild beschrieben!'); blip(500,0.06); }
+    return;
+  }
   if (!msg) return;
   toast('🙂 Du: „'+msg+'"', 2400);
   blip(500,0.05);
@@ -2072,11 +2174,12 @@ function frame(now) {
   const hit=raycast(e[0],e[1],e[2],f[0],f[1],f[2],REACH);
   if (hit) drawOutline(hit.x,hit.y,hit.z,mvp);
 
-  // Wasser (transparent, fern -> nah)
+  // Wasser (transparent, fern -> nah) und Schild-Texte
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.depthMask(false);
   gl.disable(gl.CULL_FACE);
+  drawSignTexts();
   gl.uniform1f(loc.uAlpha,0.62);
   for (let i=vis.length-1;i>=0;i--) {
     const ch=vis[i];
