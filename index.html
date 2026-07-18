@@ -95,7 +95,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 21 &middot; freunde dich mit den Bewohnern an ❤️</p>
+    Version 22 &middot; Freunde kommen mit ins Abenteuer 🎒</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -373,7 +373,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {};
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [];
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   try {
@@ -381,8 +381,11 @@ function saveGame() {
     for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
     const pets = animals.filter(a=>a.tame).map(a=>
       [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0]);
+    const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
+      [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
+       a.home||'welt', a.hx||0, a.hz||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      seed, edits:ed, dayTime, pets, friends:savedFriends,
+      seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
   } catch(e) {}
@@ -402,6 +405,7 @@ function loadGame() {
     if (typeof s.dayTime==='number') dayTime = s.dayTime;
     if (Array.isArray(s.pets)) savedPets = s.pets;
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
+    if (Array.isArray(s.companions)) savedCompanions = s.companions;
     return s.player || null;
   } catch(e) { return null; }
 }
@@ -1100,7 +1104,7 @@ function spawnTick() {
     const c = getChunk(v.vx>>4, v.vz>>4);
     if (!c || !c.data) continue;
     const key = v.vx+','+v.vz;
-    if (countType(a=>a.home===key) > 0) continue;
+    if (countType(a=>a.home===key && !a.follow) > 0) continue;
     for (let i=0;i<3;i++)
       spawnMob('villager',
         v.vx + Math.floor(Math.random()*14)-7, v.vz + Math.floor(Math.random()*14)-7,
@@ -1112,6 +1116,7 @@ function spawnTick() {
     // gespeicherte Freundschaften wiederherstellen
     const fr = savedFriends[key];
     if (fr) for (const [nm, isKid] of fr) {
+      if (animals.some(x => x.name===nm && x.home===key)) continue;  // ist gerade als Begleiter unterwegs
       const c = animals.find(x => x.home===key && (x.type==='kid')===(isKid===1) && !x.friend && !x.name);
       if (c) { c.name = nm; c.friend = 3; }
     }
@@ -1125,7 +1130,7 @@ function updateAnimals(dt) {
   for (let i=animals.length-1; i>=0; i--) {
     const a = animals[i];
     if (a===riding) continue;           // wird beim Reiten vom Spieler gesteuert
-    if (!a.tame && Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
+    if (!a.tame && !a.follow && Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.type==='bird') { updateBird(a, dt); continue; }   // Vögel fliegen frei
     if (a.type==='fish') { updateFish(a, dt); continue; }   // Fische schwimmen frei
     const ch = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
@@ -1151,7 +1156,21 @@ function updateAnimals(dt) {
     // Freunde freuen sich und kommen angelaufen, wenn sie dich sehen
     if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
       const dp = Math.hypot(player.x-a.x, player.z-a.z);
-      if (dp<10 && dp>2.2) {
+      if (a.follow) {                   // Abenteuer-Begleiter!
+        a.t = 9; a.spd = 0;
+        if (dp > 25) {                  // zu weit zurückgefallen? Herteleportieren
+          a.x = player.x + (Math.random()*2-1);
+          a.z = player.z + (Math.random()*2-1);
+          a.y = player.y + 1; a.vy = 0;
+        } else if (dp > 3) {
+          a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+          a.walking = true; a.spd = 3.4;
+        } else a.walking = false;
+        if (Math.random() < dt*0.012) { // erzählt unterwegs ab und zu etwas
+          const talk = a.type==='kid' ? FRIEND_TALK_KID : FRIEND_TALK;
+          toast('❤️ '+a.name+': „'+talk[Math.floor(Math.random()*talk.length)]+'"', 3000);
+        }
+      } else if (dp<10 && dp>2.2) {
         a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
         a.walking = true; a.t = Math.max(a.t, 0.4);
       } else if (dp<=2.2) { a.walking = false; a.t = Math.max(a.t, 0.6); }
@@ -1482,10 +1501,16 @@ function hitEntity(a, dir) {
       const talk = kid ? KID_TALK : VILLAGER_TALK;
       const say = talk[Math.floor(Math.random()*talk.length)];
       toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"  (❤ '+a.friend+'/3)', 3500);
-    } else {                                     // Freunde reden anders!
-      const talk = kid ? FRIEND_TALK_KID : FRIEND_TALK;
-      const say = talk[Math.floor(Math.random()*talk.length)];
-      toast('❤️ '+a.name+': „'+say+'"', 3500);
+    } else {                                     // Freunde kommen mit ins Abenteuer!
+      a.follow = !a.follow;
+      if (a.follow) {
+        toast('❤️ '+a.name+': „Au ja! Ich komme mit auf dein Abenteuer!"', 3200);
+        blip(523,0.08); blip(659,0.1);
+      } else {
+        toast('❤️ '+a.name+': „Gut, dann gehe ich wieder nach Hause. Bis bald!"', 3200);
+        blip(392,0.1);
+      }
+      scheduleSave();
     }
     if (kid) { blip(430,0.1); blip(520,0.09); }
     else { blip(200,0.12); blip(160,0.1); }
@@ -2098,6 +2123,12 @@ document.getElementById('playBtn').addEventListener('click',()=>{
       tame:true, sit:!!p[4], col: p[5] || (Math.random()<0.5?35:36),
       yaw:0, vy:0, kx:0, kz:0, hp:3,
       walking:false, t:0, ph:0, onGround:false });
+  }
+  // Abenteuer-Begleiter (Freunde, die mitgekommen sind)
+  for (const c of savedCompanions) {
+    animals.push({ type: c[0]===1?'kid':'villager', name:c[1], x:c[2], y:c[3], z:c[4],
+      home:c[5], hx:c[6], hz:c[7], friend:3, follow:true,
+      yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false });
   }
   // Ein paar Tiere gleich in der Nähe – und garantiert Pferd, Hund und Katze!
   for (let i=0; i<24 && animals.length<5; i++) trySpawnAnimal(6,18);

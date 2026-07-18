@@ -69,6 +69,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   Freunde: Ein Herz schwebt über dem Kopf, Freunde kommen angelaufen, wenn sie
   dich sehen, sagen besondere Sätze und machen dir kleine Geschenke.
   Deine Freundschaften werden gespeichert!
+- Abenteuer-Begleiter! 🎒 Tippe einen Freund an: „Au ja! Ich komme mit!" –
+  dann folgt er dir überallhin, auch weit weg vom Dorf, und erzählt unterwegs.
+  Nochmal antippen schickt ihn nach Hause. Begleiter werden mitgespeichert!
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
