@@ -72,6 +72,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Abenteuer-Begleiter! 🎒 Tippe einen Freund an: „Au ja! Ich komme mit!" –
   dann folgt er dir überallhin, auch weit weg vom Dorf, und erzählt unterwegs.
   Nochmal antippen schickt ihn nach Hause. Begleiter werden mitgespeichert!
+- Dorf-Kompass 🧭: Der Kompass-Knopf zeigt oben einen Pfeil, der immer zum
+  Dorf deiner Freunde zeigt (oder zum nächsten Dorf) – mit Entfernung.
+  So findest du von jedem Abenteuer nach Hause!
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
