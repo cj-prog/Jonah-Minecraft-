@@ -62,6 +62,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - Mit den Bewohnern kann man sprechen 💬: antippen, und Hans, Emma oder Otto
   drehen sich zu dir um und erzählen etwas – manchmal sogar geheime Tipps!
+- In jedem Dorf wohnen auch Kinder 🧒: Max, Mia, Leo und ihre Freunde haben
+  große Köpfe, blaue Sachen, flitzen herum, hüpfen und kichern –
+  und sie erzählen dir lustige Sachen, wenn du sie ansprichst
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")

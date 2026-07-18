@@ -95,7 +95,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 19 &middot; alle Tiere können deine Freunde werden ❤️</p>
+    Version 20 &middot; mit Kindern im Dorf 🧒</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -516,6 +516,7 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(37,()=>vary(255,182,40,16));                                 // Vogel-Schnabel
   tile(38,(x)=> (x%6===2||x%6===3) ? vary(242,240,234,8) : vary(236,118,30,18)); // Clownfisch
   tile(39,()=>vary(122,152,202,26));                                // Fisch silberblau
+  tile(40,(x)=> x%5===0 ? vary(60,90,140,10) : vary(82,116,172,16)); // Kinder-Kleidung blau
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -876,6 +877,7 @@ const ANIMAL_KIND = {
   bird:     { speed:4.0, half:0.18, height:0.35, tile:35, face:35 },
   fish:     { speed:1.6, half:0.16, height:0.25, tile:38, face:38 },
   villager: { speed:1.0, half:0.3,  height:1.8,  tile:20, face:21 },
+  kid:      { speed:1.9, half:0.22, height:1.25, tile:40, face:21 },
 };
 const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird';
 const TAME_MSG = {
@@ -890,6 +892,19 @@ const TAME_SOUND = {
 };
 
 const VILLAGER_NAMES = ['Hans','Emma','Otto','Frieda','Karl','Lina','Paul','Greta','Willi','Marta'];
+const KID_NAMES = ['Max','Mia','Leo','Lotta','Finn','Ella','Ben','Lena'];
+const KID_TALK = [
+  'Willst du mit mir spielen?',
+  'Ich kann ganz schnell rennen! Fang mich doch!',
+  'Hihi! Ich hab heute schon dreimal gehüpft!',
+  'Wenn ich groß bin, baue ich das höchste Haus der Welt!',
+  'Ich mag Schweine! Die machen Oink!',
+  'Psst! Ich hab einen Vogel gesehen. Er war ROT!',
+  'Mama sagt, ich darf nicht mit TNT spielen. Menno!',
+  'Kannst du wirklich fliegen? Das ist sooo cool!',
+  'Ich hab mich mal im Wald verlaufen. Aber nur ein kleines bisschen!',
+  'Weißt du, wo mein Ball ist? Ich hab gar keinen. Hihi!',
+];
 // Antworten, wenn DU etwas sagst (der Bewohner sucht passende Wörter)
 const REPLIES = [
   [['hallo','hi','hey','moin'], ['Hallo! Schön, dich zu sehen!','Hallo du! Willkommen bei uns im Dorf!']],
@@ -1074,6 +1089,10 @@ function spawnTick() {
       spawnMob('villager',
         v.vx + Math.floor(Math.random()*14)-7, v.vz + Math.floor(Math.random()*14)-7,
         { home:key, hx:v.vx, hz:v.vz });
+    for (let i=0;i<2;i++)                 // und zwei Kinder!
+      spawnMob('kid',
+        v.vx + Math.floor(Math.random()*12)-6, v.vz + Math.floor(Math.random()*12)-6,
+        { home:key, hx:v.vx, hz:v.vz });
   }
 }
 
@@ -1111,13 +1130,18 @@ function updateAnimals(dt) {
     a.t -= dt;
     if (a.t<=0) {
       a.walking = !a.walking;
-      a.t = 1 + Math.random()*3;
+      a.t = a.type==='kid' ? 0.7+Math.random()*1.5 : 1 + Math.random()*3;  // Kinder sind zappelig
       if (a.walking) {
         a.yaw = Math.random()*Math.PI*2;
-        // Dorfbewohner bleiben in der Nähe ihres Dorfes
-        if (a.type==='villager' && Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
+        // Dorfbewohner und Kinder bleiben in der Nähe ihres Dorfes
+        if ((a.type==='villager'||a.type==='kid') && Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
       }
+    }
+    if (a.type==='kid') {
+      if (a.walking && a.onGround && Math.random()<dt*0.5) a.vy=5.2;       // hüpft beim Spielen
+      if (Math.hypot(a.x-player.x,a.z-player.z)<10 && Math.random()<dt*0.04)
+        { blip(500,0.07); blip(640,0.07); }                                // Kichern
     }
     let vx=0, vz=0;
     const sp = a.spd || k.speed;
@@ -1231,6 +1255,12 @@ function drawAnimals() {
       pushBox(arr,a,  0.1,0.13, 0.28+sw*0.7, 0.09,0.26,0.09, k.tile);
       pushBox(arr,a, 0,0.48,0.55, 0.07,0.07,0.4, k.tile);          // langer Schwanz
       if (a.tame) pushBox(arr,a, 0,0.46,-0.3, 0.28,0.1,0.2, 25);   // rotes Halsband
+    } else if (a.type==='kid') {                                   // Dorf-Kind
+      pushBox(arr,a, 0,0.22, sw*0.3, 0.36,0.44,0.24, k.tile);      // Beine/Hose
+      pushBox(arr,a, 0,0.62,0, 0.4,0.4,0.24, k.tile);              // Körper
+      pushBox(arr,a, 0,0.68,-0.16, 0.44,0.14,0.14, k.tile);        // Arme
+      pushBox(arr,a, 0,1.02,0, 0.42,0.42,0.42, 22, k.face);        // großer Kopf
+      pushBox(arr,a, 0,0.95,-0.24, 0.08,0.14,0.09, 22);            // Stupsnase
     } else {                                                       // Dorfbewohner
       pushBox(arr,a, 0,0.35, sw*0.3, 0.5,0.7,0.3, k.tile);         // Robe unten
       pushBox(arr,a, 0,1.05,0, 0.54,0.7,0.3, k.tile);              // Körper
@@ -1390,14 +1420,17 @@ function hitEntity(a, dir) {
     blip(440,0.08); blip(587,0.08);
     return;
   }
-  if (a.type==='villager') {            // mit Dorfbewohnern sprechen!
-    if (!a.name) a.name = VILLAGER_NAMES[Math.floor(Math.random()*VILLAGER_NAMES.length)];
-    const say = VILLAGER_TALK[Math.floor(Math.random()*VILLAGER_TALK.length)];
-    // Er dreht sich zu dir um und bleibt kurz stehen
+  if (a.type==='villager' || a.type==='kid') {   // mit Bewohnern und Kindern sprechen!
+    const kid = a.type==='kid';
+    if (!a.name) a.name = (kid?KID_NAMES:VILLAGER_NAMES)[Math.floor(Math.random()*(kid?KID_NAMES:VILLAGER_NAMES).length)];
+    const talk = kid ? KID_TALK : VILLAGER_TALK;
+    const say = talk[Math.floor(Math.random()*talk.length)];
+    // Dreht sich zu dir um und bleibt kurz stehen
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3.5;
-    toast('👃 '+a.name+': „'+say+'"', 3500);
-    blip(200,0.12); blip(160,0.1);
+    toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"', 3500);
+    if (kid) { blip(430,0.1); blip(520,0.09); }
+    else { blip(200,0.12); blip(160,0.1); }
     return;
   }
   if (isPet(a)) {                       // Tiere zähmen!
@@ -1681,10 +1714,11 @@ function replyTo(msg) {
   let best=null, bestD=14;
   for (const a of animals) {
     const d=Math.hypot(a.x-player.x, a.z-player.z);
-    if (a.type==='villager' && d<bestD) { best=a; bestD=d; }
+    if ((a.type==='villager'||a.type==='kid') && d<bestD) { best=a; bestD=d; }
   }
   if (best) {
-    if (!best.name) best.name = VILLAGER_NAMES[Math.floor(Math.random()*VILLAGER_NAMES.length)];
+    const kid = best.type==='kid';
+    if (!best.name) best.name = (kid?KID_NAMES:VILLAGER_NAMES)[Math.floor(Math.random()*(kid?KID_NAMES:VILLAGER_NAMES).length)];
     best.yaw = Math.atan2(player.x-best.x, -(player.z-best.z));
     best.walking=false; best.t=4;
     let answer=null;
@@ -1693,8 +1727,9 @@ function replyTo(msg) {
     }
     if (!answer && low.includes('?')) answer=REPLIES_QUESTION[Math.floor(Math.random()*REPLIES_QUESTION.length)];
     if (!answer) answer=REPLIES_DEFAULT[Math.floor(Math.random()*REPLIES_DEFAULT.length)];
-    toast('👃 '+best.name+': „'+answer+'"', 3500);
-    blip(200,0.12); blip(160,0.1);
+    toast((kid?'🧒 ':'👃 ')+best.name+': „'+answer+'"', 3500);
+    if (kid) { blip(430,0.1); blip(520,0.09); }
+    else { blip(200,0.12); blip(160,0.1); }
     return;
   }
   // kein Bewohner da? Dann antwortet dein Haustier!
