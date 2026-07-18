@@ -50,9 +50,12 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Pferde 🐴 zum Reiten: antippen zum Aufsteigen, dann mit dem Joystick lospreschen –
   Pferde galoppieren schneller als du läufst und hüpfen Stufen automatisch hoch.
   Absteigen mit dem 🐴-Knopf
-- Haustiere! Hunde 🐶 und Katzen 🐱 zähmst du durch Antippen: Sie bekommen ein
-  rotes Halsband, folgen dir überall hin und werden mitgespeichert.
+- Haustiere! Fast alle Tiere kannst du zähmen: Hunde 🐶, Katzen 🐱,
+  Schweine 🐷, Kühe 🐮 und sogar Vögel 🐦 – einfach antippen!
+  Sie bekommen ein rotes Halsband, folgen dir überall hin und werden
+  mitgespeichert. Pferde werden beim ersten Reiten zu Freunden.
   Nochmal antippen = „Sitz!" (das Tier wartet), noch einmal = „Komm mit!"
+  Nur Fische bleiben lieber frei im Wasser 😉
 - Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
 - Wetter! Manchmal regnet es (mit Regen-Rauschen und grauem Himmel) 🌧️
   und manchmal schneit es in dicken Flocken ❄️ – drinnen bleibt es trocken
