@@ -43,6 +43,13 @@
   #fsBtn   { right:calc(12px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
   #chatBtn { right:calc(112px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #navBtn  { right:calc(162px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #navBtn.on { background:rgba(110,190,255,.55); }
+  #compass { left:50%; top:calc(12px + env(safe-area-inset-top)); transform:translateX(-50%);
+    display:none; flex-direction:column; align-items:center; pointer-events:none;
+    background:rgba(0,0,0,.4); color:#fff; padding:3px 12px; border-radius:12px; }
+  #compArrow { font-size:26px; line-height:1; }
+  #compText { font-size:12px; white-space:nowrap; }
   #chatBox { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
     display:none; gap:6px; background:rgba(0,0,0,.6); padding:8px; border-radius:10px; z-index:30; }
   #chatInput { font-size:16px; padding:8px 10px; border-radius:6px; border:none; width:min(56vw,280px); }
@@ -82,6 +89,11 @@
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
 <div class="hud btn" id="fsBtn">⛶</div>
 <div class="hud btn" id="chatBtn">💬</div>
+<div class="hud btn" id="navBtn">🧭</div>
+<div class="hud" id="compass">
+  <div id="compArrow">⬆</div>
+  <div id="compText"></div>
+</div>
 <div class="hud" id="chatBox">
   <input id="chatInput" type="text" maxlength="60" placeholder="Sag etwas..." autocomplete="off">
   <button id="chatSend">Sagen</button>
@@ -95,7 +107,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 23 &middot; Schilder zum Selber-Beschriften 📜</p>
+    Version 24 &middot; mit Dorf-Kompass 🧭</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1412,6 +1424,60 @@ function drawSignTexts() {
   gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
 }
 
+// ------------------------------ Dorf-Kompass --------------------------------
+let compassOn = false, compTarget = null, compScanT = 0;
+const compassEl = document.getElementById('compass');
+const compArrow = document.getElementById('compArrow');
+const compText = document.getElementById('compText');
+
+function findVillageTarget() {
+  let best = null, bestD = Infinity;
+  // Dörfer, in denen du Freunde hast, zuerst!
+  for (const key in savedFriends) {
+    if (!savedFriends[key] || !savedFriends[key].length) continue;
+    const p = key.split(',').map(Number);
+    if (p.length!==2 || isNaN(p[0]) || isNaN(p[1])) continue;
+    const d = Math.hypot(p[0]-player.x, p[1]-player.z);
+    if (d < bestD) { best = {vx:p[0], vz:p[1], friends:true}; bestD = d; }
+  }
+  if (best) return best;
+  // sonst: das nächste richtige Dorf (mit mindestens einem Haus)
+  const pcx = Math.floor(player.x/VCELL), pcz = Math.floor(player.z/VCELL);
+  for (let dz=-6; dz<=6; dz++) for (let dx=-6; dx<=6; dx++) {
+    const v = villageAt(pcx+dx, pcz+dz);
+    if (!v) continue;
+    const d = Math.hypot(v.vx-player.x, v.vz-player.z);
+    if (d >= bestD) continue;
+    let hasHouse = false;
+    for (let i=0; i<HOUSE_SPOTS.length && !hasHouse; i++) if (houseParams(v,i)) hasHouse = true;
+    if (hasHouse) { best = {vx:v.vx, vz:v.vz, friends:false}; bestD = d; }
+  }
+  return best;
+}
+function toggleCompass() {
+  compassOn = !compassOn;
+  if (compassOn) {
+    compTarget = findVillageTarget();
+    if (!compTarget) { toast('Hier ist weit und breit kein Dorf... 🤔'); compassOn = false; }
+    else toast(compTarget.friends ? '🧭 Der Pfeil zeigt zum Dorf deiner Freunde!' : '🧭 Der Pfeil zeigt zum nächsten Dorf!', 3000);
+  }
+  compassEl.style.display = compassOn ? 'flex' : 'none';
+  document.getElementById('navBtn').classList.toggle('on', compassOn);
+  blip(compassOn ? 660 : 330, 0.08);
+}
+function updateCompass(dt) {
+  if (!compassOn || !compTarget) return;
+  compScanT -= dt;
+  if (compScanT <= 0) { compScanT = 5; compTarget = findVillageTarget() || compTarget; }
+  const dx = compTarget.vx - player.x, dz = compTarget.vz - player.z;
+  const d = Math.hypot(dx, dz);
+  const ang = (Math.atan2(dx, -dz) - yaw) * 180 / Math.PI;
+  compArrow.style.transform = 'rotate(' + Math.round(ang) + 'deg)';
+  compText.textContent = d < 14 ? '🏘️ Da ist es! 🎉' : '🏘️ noch ' + Math.round(d) + ' Blöcke';
+}
+document.getElementById('navBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleCompass();},{passive:false});
+document.getElementById('navBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleCompass();});
+
 // ------------------------------ Wetter --------------------------------------
 let weather = 'clear', weatherT = 40 + Math.random()*40;
 const wparts = [];
@@ -2111,6 +2177,7 @@ function frame(now) {
   updateFuses(dt);
   updateAnimals(dt);
   updateWeather(dt, now);
+  updateCompass(dt);
 
   // Tag-Nacht-Wechsel (bei Regen ist der Himmel grauer)
   dayTime = (dayTime + dt*DAY_SPEED) % 1;
