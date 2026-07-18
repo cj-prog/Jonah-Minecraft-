@@ -43,6 +43,8 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 - Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen, Bäume und Dörfer 🌳🏘️
 - Tiere: Schweine 🐷 und Kühe 🐮 laufen durch die Welt (und hüpfen bei Explosionen!)
+- Blaue und rote Vögel 🐦 segeln mit flatternden Flügeln durch die Luft
+  und zwitschern – flieg doch mal mit ihnen um die Wette!
 - Pferde 🐴 zum Reiten: antippen zum Aufsteigen, dann mit dem Joystick lospreschen –
   Pferde galoppieren schneller als du läufst und hüpfen Stufen automatisch hoch.
   Absteigen mit dem 🐴-Knopf
