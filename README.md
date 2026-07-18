@@ -58,7 +58,10 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
-- 9 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel und **TNT** 💥
+- 10 Baublöcke: Gras, Erde, Stein, Sand, Holz, Laub, Bretter, Ziegel,
+  **Wasser** 🌊 und **TNT** 💥
+- Mit Wasser baust du eigene Seen, Pools und Wasserfälle – und im ⛏️-Modus
+  saugst du es wie mit einem Eimer wieder auf 🪣
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
 - Auf Stühle kann man sich setzen 🪑: im Bau-Modus antippen, schon sitzt du –
