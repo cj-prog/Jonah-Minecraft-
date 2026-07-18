@@ -37,6 +37,9 @@
   #jumpBtn { right:calc(18px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:64px; height:64px; font-size:30px; }
   #modeBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
   #rideBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
+  #flyBtn  { right:calc(28px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:24px; }
+  #flyBtn.on { background:rgba(110,190,255,.55); }
+  #downBtn { right:calc(94px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:56px; height:56px; font-size:26px; }
   #fsBtn   { right:calc(12px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
   #chatBtn { right:calc(112px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
@@ -75,6 +78,8 @@
 <div class="hud btn" id="jumpBtn">⬆</div>
 <div class="hud btn" id="modeBtn">⛏️</div>
 <div class="hud btn" id="rideBtn" style="display:none">🐴</div>
+<div class="hud btn" id="flyBtn">✈️</div>
+<div class="hud btn" id="downBtn" style="display:none">⬇</div>
 <div class="hud btn" id="fsBtn">⛶</div>
 <div class="hud btn" id="chatBtn">💬</div>
 <div class="hud" id="chatBox">
@@ -90,7 +95,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 15 &middot; bau dir Seen und Pools! 🌊</p>
+    Version 16 &middot; du kannst fliegen! 🕊️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -99,6 +104,7 @@
     ⬆ Knopf: Springen &amp; Schwimmen<br>
     💥 TNT hinstellen und antippen &rarr; BOOM!<br>
     🐴 Tippe ein Pferd an und reite los!<br>
+    ✈️ Knopf rechts: Fliegen an/aus (⬆ hoch, ⬇ runter)<br>
     🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!<br>
     💬 Tippe einen Dorfbewohner an und hör, was er sagt!<br>
     🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!
@@ -768,6 +774,31 @@ function physics(dt) {
     return;
   }
 
+  if (flying) {                         // Fliegen: keine Schwerkraft!
+    let mf=0, ms=0;
+    if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+    if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+    if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+    if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+    mf += joy.fwd; ms += joy.strafe;
+    const ml = Math.hypot(mf,ms);
+    if (ml>1) { mf/=ml; ms/=ml; }
+    const fs = 8;
+    const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+    const vx=(fx*mf+rx*ms)*fs, vz=(fz*mf+rz*ms)*fs;
+    let vv = 0;
+    if (jumpHeld||keys['Space']) vv += 6;
+    if (downHeld||keys['ShiftLeft']||keys['ShiftRight']) vv -= 6;
+    const nx=player.x+vx*dt;
+    if (!collide(nx,player.y,player.z)) player.x=nx;
+    const nz=player.z+vz*dt;
+    if (!collide(player.x,player.y,nz)) player.z=nz;
+    const ny=Math.min(CH+20, player.y+vv*dt);
+    if (!collide(player.x,ny,player.z)) player.y=ny;
+    player.vx=player.vy=player.vz=0;
+    return;
+  }
+
   const swim = inWaterAt(0.4) || inWaterAt(1.0);
 
   // Bewegungs-Eingabe
@@ -880,6 +911,19 @@ const VILLAGER_TALK = [
 ];
 let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
+let flying = false;                     // Flugmodus
+let downHeld = false;
+
+function toggleFly() {
+  if (riding) { toast('Steig erst vom Pferd ab! 🐴'); return; }
+  flying = !flying;
+  sitting = null;
+  player.vy = 0;
+  document.getElementById('downBtn').style.display = flying ? 'flex' : 'none';
+  document.getElementById('flyBtn').classList.toggle('on', flying);
+  toast(flying ? '🕊️ Du fliegst! ⬆ = hoch, ⬇ = runter' : 'Flugmodus aus – festhalten, es geht abwärts!', 2500);
+  blip(flying ? 700 : 300, 0.1);
+}
 let animalSpawnT = 0;
 
 function spawnMob(type, x, z, extra) {
@@ -1209,6 +1253,7 @@ function hitEntity(a, dir) {
   if (a.type==='horse') {               // Aufsteigen!
     if (riding) return;
     sitting = null;
+    if (flying) toggleFly();
     riding = a; a.walking = false;
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf');
@@ -1538,6 +1583,16 @@ const rideBtn=document.getElementById('rideBtn');
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();dismount();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();dismount();});
 
+const flyBtn=document.getElementById('flyBtn');
+flyBtn.addEventListener('touchstart',e=>{e.preventDefault();toggleFly();},{passive:false});
+flyBtn.addEventListener('mousedown',e=>{e.preventDefault();toggleFly();});
+const downBtn=document.getElementById('downBtn');
+downBtn.addEventListener('touchstart',e=>{e.preventDefault();downHeld=true;},{passive:false});
+downBtn.addEventListener('touchend',e=>{e.preventDefault();downHeld=false;},{passive:false});
+downBtn.addEventListener('touchcancel',()=>downHeld=false);
+downBtn.addEventListener('mousedown',()=>downHeld=true);
+downBtn.addEventListener('mouseup',()=>downHeld=false);
+
 const jumpBtn=document.getElementById('jumpBtn');
 jumpBtn.addEventListener('touchstart',e=>{e.preventDefault();jumpHeld=true;},{passive:false});
 jumpBtn.addEventListener('touchend',e=>{e.preventDefault();jumpHeld=false;},{passive:false});
@@ -1619,6 +1674,7 @@ const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 addEventListener('keydown',e=>{
   if (chatOpen) return;               // beim Tippen im Chat nicht loslaufen
   if (e.code==='KeyT' && started) { e.preventDefault(); openChat(); return; }
+  if (e.code==='KeyF' && started) { toggleFly(); return; }
   keys[e.code]=true;
   if (e.code.startsWith('Digit')) {
     const n=parseInt(e.code.slice(5),10);

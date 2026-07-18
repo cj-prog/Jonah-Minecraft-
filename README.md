@@ -64,6 +64,8 @@ Leertaste springen · Tasten 1–8 Block wählen
   saugst du es wie mit einem Eimer wieder auf 🪣
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
+- Fliegen! 🕊️ Mit dem ✈️-Knopf (oder Taste F) hebst du ab:
+  ⬆ steigt, ⬇ sinkt, der Joystick fliegt vorwärts – perfekt zum Erkunden und Bauen
 - Auf Stühle kann man sich setzen 🪑: im Bau-Modus antippen, schon sitzt du –
   zum Aufstehen einfach den Joystick bewegen
 - Truhen lassen sich öffnen und schließen – drin glitzert ein Schatz 💎
