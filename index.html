@@ -90,7 +90,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 14 &middot; setz dich auf Stühle! 🪑</p>
+    Version 15 &middot; bau dir Seen und Pools! 🌊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -139,7 +139,7 @@ const BLOCKS = {
   [SAND]:  { name:'Sand',    tiles:[4,4,4],  solid:true  },
   [WOOD]:  { name:'Holz',    tiles:[5,6,6],  solid:true  },
   [LEAF]:  { name:'Laub',    tiles:[7,7,7],  solid:true  },
-  [WATER]: { name:'Wasser',  tiles:[9,9,9],  solid:false },
+  [WATER]: { name:'Wasser (im ⛏️-Modus saugst du es wieder auf!)', tiles:[9,9,9], solid:false },
   [PLANK]: { name:'Bretter', tiles:[8,8,8],  solid:true  },
   [BRICK]: { name:'Ziegel',  tiles:[11,11,11], solid:true },
   [TNT]:   { name:'TNT 💥 (hinstellen, dann antippen!)', tiles:[12,13,13], solid:true },
@@ -171,7 +171,7 @@ const BLOCKS = {
     [0.32,0.62,0.32, 0.68,0.78,0.68, 30, 1.5],          // Gold-Häufchen obendrauf
     [0.05,0.5,0.75, 0.95,1.05,0.95, 29]] },             // offener Deckel
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, TNT, TABLE, CHAIR, BED, TORCH, CHEST];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1157,7 +1157,7 @@ function drawWeather() {
 }
 
 // ------------------------------ Raycast ------------------------------------
-function raycast(ox,oy,oz,dx,dy,dz,maxDist) {
+function raycast(ox,oy,oz,dx,dy,dz,maxDist,hitWater) {
   let x=Math.floor(ox), y=Math.floor(oy), z=Math.floor(oz);
   const stx=Math.sign(dx)||1, sty=Math.sign(dy)||1, stz=Math.sign(dz)||1;
   const tdx=Math.abs(1/(dx||1e-9)), tdy=Math.abs(1/(dy||1e-9)), tdz=Math.abs(1/(dz||1e-9));
@@ -1167,7 +1167,7 @@ function raycast(ox,oy,oz,dx,dy,dz,maxDist) {
   let face=[0,0,0], t=0;
   while (t<=maxDist) {
     const b=getBlock(x,y,z);
-    if (b!==AIR && b!==WATER) return {x,y,z,face,block:b,t};
+    if (b!==AIR && (hitWater || b!==WATER)) return {x,y,z,face,block:b,t};
     if (tx<ty && tx<tz) { x+=stx; t=tx; tx+=tdx; face=[-stx,0,0]; }
     else if (ty<tz)     { y+=sty; t=ty; ty+=tdy; face=[0,-sty,0]; }
     else                { z+=stz; t=tz; tz+=tdz; face=[0,0,-stz]; }
@@ -1293,10 +1293,18 @@ function ridePhysics(dt) {
 }
 function doBreak(dir) {
   const e=eyePos();
-  const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
+  // Ist Wasser ausgewählt, wirkt die Spitzhacke wie ein Eimer und saugt Wasser auf
+  const scoop = HOTBAR_ITEMS[selSlot]===WATER;
+  const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH,scoop);
   const eHit=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
   if (eHit) { hitEntity(eHit.a, dir); return; }
   if (!hit || hit.y<1) return;
+  if (hit.block===WATER) {
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    toast('🪣 Wasser aufgesaugt!');
+    blip(500,0.08); blip(400,0.06);
+    return;
+  }
   if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
   if (hit.block===TNT_LIT) return;   // brennt schon!
   setBlock(hit.x,hit.y,hit.z,AIR);
