@@ -45,6 +45,8 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Tiere: Schweine 🐷 und Kühe 🐮 laufen durch die Welt (und hüpfen bei Explosionen!)
 - Blaue und rote Vögel 🐦 segeln mit flatternden Flügeln durch die Luft
   und zwitschern – flieg doch mal mit ihnen um die Wette!
+- Im Meer schwimmen Fische 🐟: orange Clownfische mit weißen Streifen und
+  silberblaue – tauch ab und schau sie dir an!
 - Pferde 🐴 zum Reiten: antippen zum Aufsteigen, dann mit dem Joystick lospreschen –
   Pferde galoppieren schneller als du läufst und hüpfen Stufen automatisch hoch.
   Absteigen mit dem 🐴-Knopf
