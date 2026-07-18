@@ -95,7 +95,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 20 &middot; mit Kindern im Dorf 🧒</p>
+    Version 21 &middot; freunde dich mit den Bewohnern an ❤️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -373,7 +373,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [];
+let saveTimer = null, savedPets = [], savedFriends = {};
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   try {
@@ -382,7 +382,7 @@ function saveGame() {
     const pets = animals.filter(a=>a.tame).map(a=>
       [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      seed, edits:ed, dayTime, pets,
+      seed, edits:ed, dayTime, pets, friends:savedFriends,
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
   } catch(e) {}
@@ -401,6 +401,7 @@ function loadGame() {
     }
     if (typeof s.dayTime==='number') dayTime = s.dayTime;
     if (Array.isArray(s.pets)) savedPets = s.pets;
+    if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
     return s.player || null;
   } catch(e) { return null; }
 }
@@ -893,6 +894,21 @@ const TAME_SOUND = {
 
 const VILLAGER_NAMES = ['Hans','Emma','Otto','Frieda','Karl','Lina','Paul','Greta','Willi','Marta'];
 const KID_NAMES = ['Max','Mia','Leo','Lotta','Finn','Ella','Ben','Lena'];
+// Was Freunde sagen (nach 3 Gesprächen)
+const FRIEND_TALK = [
+  'Schön, dass du wieder da bist, mein Freund!',
+  'Hier, ich habe einen Apfel für dich aufgehoben! 🍎',
+  'Du bist der beste Held, den unser Dorf je hatte!',
+  'Für dich sind unsere Truhen immer offen!',
+  'Mit dir als Freund fühle ich mich richtig sicher.',
+];
+const FRIEND_TALK_KID = [
+  'Du bist mein allerbester Freund!',
+  'Hier, ich schenke dir meinen Glücksstein! ✨',
+  'Kommst du morgen wieder zum Spielen?',
+  'Ich erzähl allen, dass ich dich kenne! Hihi!',
+  'Huckepack! ... Ach nee, du bist zu groß. Hihi!',
+];
 const KID_TALK = [
   'Willst du mit mir spielen?',
   'Ich kann ganz schnell rennen! Fang mich doch!',
@@ -1093,6 +1109,12 @@ function spawnTick() {
       spawnMob('kid',
         v.vx + Math.floor(Math.random()*12)-6, v.vz + Math.floor(Math.random()*12)-6,
         { home:key, hx:v.vx, hz:v.vz });
+    // gespeicherte Freundschaften wiederherstellen
+    const fr = savedFriends[key];
+    if (fr) for (const [nm, isKid] of fr) {
+      const c = animals.find(x => x.home===key && (x.type==='kid')===(isKid===1) && !x.friend && !x.name);
+      if (c) { c.name = nm; c.friend = 3; }
+    }
   }
 }
 
@@ -1124,6 +1146,15 @@ function updateAnimals(dt) {
         a.yaw = Math.atan2(dx,-dz);
         a.walking = true; a.spd = 3.5;
       }
+    }
+
+    // Freunde freuen sich und kommen angelaufen, wenn sie dich sehen
+    if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
+      const dp = Math.hypot(player.x-a.x, player.z-a.z);
+      if (dp<10 && dp>2.2) {
+        a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+        a.walking = true; a.t = Math.max(a.t, 0.4);
+      } else if (dp<=2.2) { a.walking = false; a.t = Math.max(a.t, 0.6); }
     }
 
     // KI: abwechselnd stehen und in eine zufällige Richtung laufen
@@ -1166,6 +1197,14 @@ function updateAnimals(dt) {
     else { if (a.vy<0) a.onGround=true; a.vy=0; }
     if (a.y<-12) animals.splice(i,1);
   }
+}
+
+// Schwebendes Herz über dem Kopf von Freunden ❤️
+function drawHeart(arr, a, h) {
+  const bob = Math.sin(performance.now()*0.004 + a.x)*0.06;
+  pushBox(arr, a, -0.05, h+bob+0.07, 0, 0.1,0.1,0.06, 25, undefined);
+  pushBox(arr, a,  0.05, h+bob+0.07, 0, 0.1,0.1,0.06, 25, undefined);
+  pushBox(arr, a,  0,    h+bob,      0, 0.14,0.12,0.06, 25, undefined);
 }
 
 // Klötzchen-Modelle: Körper, Kopf und 4 Beine pro Tier
@@ -1261,12 +1300,14 @@ function drawAnimals() {
       pushBox(arr,a, 0,0.68,-0.16, 0.44,0.14,0.14, k.tile);        // Arme
       pushBox(arr,a, 0,1.02,0, 0.42,0.42,0.42, 22, k.face);        // großer Kopf
       pushBox(arr,a, 0,0.95,-0.24, 0.08,0.14,0.09, 22);            // Stupsnase
+      if (a.friend>=3) drawHeart(arr, a, 1.45);
     } else {                                                       // Dorfbewohner
       pushBox(arr,a, 0,0.35, sw*0.3, 0.5,0.7,0.3, k.tile);         // Robe unten
       pushBox(arr,a, 0,1.05,0, 0.54,0.7,0.3, k.tile);              // Körper
       pushBox(arr,a, 0,1.15,-0.24, 0.56,0.18,0.18, k.tile);        // verschränkte Arme
       pushBox(arr,a, 0,1.65,0, 0.5,0.5,0.5, 22, k.face);           // Kopf
       pushBox(arr,a, 0,1.56,-0.28, 0.1,0.2,0.12, 22);              // große Nase
+      if (a.friend>=3) drawHeart(arr, a, 2.15);
     }
   }
   gl.bindBuffer(gl.ARRAY_BUFFER, animalBuf);
@@ -1423,12 +1464,29 @@ function hitEntity(a, dir) {
   if (a.type==='villager' || a.type==='kid') {   // mit Bewohnern und Kindern sprechen!
     const kid = a.type==='kid';
     if (!a.name) a.name = (kid?KID_NAMES:VILLAGER_NAMES)[Math.floor(Math.random()*(kid?KID_NAMES:VILLAGER_NAMES).length)];
-    const talk = kid ? KID_TALK : VILLAGER_TALK;
-    const say = talk[Math.floor(Math.random()*talk.length)];
     // Dreht sich zu dir um und bleibt kurz stehen
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3.5;
-    toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"', 3500);
+    a.friend = a.friend||0;
+    if (a.friend < 3) {                          // jedes Gespräch macht euch vertrauter
+      a.friend++;
+      if (a.friend===3) {                        // Freundschaft geschlossen!
+        toast('❤️❤️❤️ '+a.name+' ist jetzt dein Freund!', 3500);
+        blip(523,0.1); blip(659,0.1); blip(784,0.15);
+        const hk = a.home || 'welt';
+        if (!savedFriends[hk]) savedFriends[hk]=[];
+        savedFriends[hk].push([a.name, kid?1:0]);
+        scheduleSave();
+        return;
+      }
+      const talk = kid ? KID_TALK : VILLAGER_TALK;
+      const say = talk[Math.floor(Math.random()*talk.length)];
+      toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"  (❤ '+a.friend+'/3)', 3500);
+    } else {                                     // Freunde reden anders!
+      const talk = kid ? FRIEND_TALK_KID : FRIEND_TALK;
+      const say = talk[Math.floor(Math.random()*talk.length)];
+      toast('❤️ '+a.name+': „'+say+'"', 3500);
+    }
     if (kid) { blip(430,0.1); blip(520,0.09); }
     else { blip(200,0.12); blip(160,0.1); }
     return;
