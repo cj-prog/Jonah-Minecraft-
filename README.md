@@ -65,6 +65,10 @@ Leertaste springen · Tasten 1–8 Block wählen
 - In jedem Dorf wohnen auch Kinder 🧒: Max, Mia, Leo und ihre Freunde haben
   große Köpfe, blaue Sachen, flitzen herum, hüpfen und kichern –
   und sie erzählen dir lustige Sachen, wenn du sie ansprichst
+- Freundschaft! ❤️ Sprich 3-mal mit einem Bewohner oder Kind, dann seid ihr
+  Freunde: Ein Herz schwebt über dem Kopf, Freunde kommen angelaufen, wenn sie
+  dich sehen, sagen besondere Sätze und machen dir kleine Geschenke.
+  Deine Freundschaften werden gespeichert!
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
