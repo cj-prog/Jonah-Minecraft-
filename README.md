@@ -86,6 +86,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   („Jonahs Haus", „Achtung TNT!" ...) – der Text steht lesbar in der Welt
   und wird gespeichert. Antippen im Bau-Modus ändert den Text
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
+- Schränke! 🗄️ Ein Schrank mit zwei Türen und 6 echten Fächern:
+  Antippen öffnet ihn, dann kannst du Blöcke hineinlegen und wieder
+  herausnehmen – der Inhalt wird gespeichert
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
 - Fliegen! 🕊️ Mit dem ✈️-Knopf (oder Taste F) hebst du ab:
   ⬆ steigt, ⬇ sinkt, der Joystick fliegt vorwärts – perfekt zum Erkunden und Bauen

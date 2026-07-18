@@ -54,6 +54,17 @@
     display:none; gap:6px; background:rgba(0,0,0,.6); padding:8px; border-radius:10px; z-index:30; }
   #chatInput { font-size:16px; padding:8px 10px; border-radius:6px; border:none; width:min(56vw,280px); }
   #chatSend { font-size:16px; font-weight:bold; padding:8px 14px; border-radius:6px; border:none; background:#4caf50; color:#fff; }
+  #cabBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:8px; background:rgba(45,32,20,.94); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; }
+  #cabBox h3 { font-size:18px; }
+  #cabBox p { font-size:12px; opacity:.85; max-width:230px; line-height:1.4; }
+  #cabSlots { display:grid; grid-template-columns:repeat(3,52px); gap:6px; }
+  .cabSlot { width:52px; height:52px; border:2px solid rgba(255,255,255,.4); border-radius:8px;
+    background:rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; }
+  .cabSlot img { width:38px; height:38px; image-rendering:pixelated; pointer-events:none; }
+  #cabClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   .btn:active { background:rgba(255,255,255,.35); }
 
   #joyBase { width:110px; height:110px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
@@ -98,6 +109,12 @@
   <input id="chatInput" type="text" maxlength="60" placeholder="Sag etwas..." autocomplete="off">
   <button id="chatSend">Sagen</button>
 </div>
+<div class="hud" id="cabBox">
+  <h3>🗄️ Schrank</h3>
+  <p>Leeres Fach antippen = deinen Block hineinlegen.<br>Volles Fach antippen = herausnehmen.</p>
+  <div id="cabSlots"></div>
+  <button id="cabClose">Fertig</button>
+</div>
 <div class="hud btn" id="resetBtn">🔄</div>
 <div class="hud" id="joyBase"></div>
 <div class="hud" id="joyKnob"></div>
@@ -107,7 +124,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 24 &middot; mit Dorf-Kompass 🧭</p>
+    Version 25 &middot; Schränke mit Fächern 🗄️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -147,7 +164,7 @@ const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
 
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
-      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18;
+      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -191,8 +208,14 @@ const BLOCKS = {
   [SIGN]: { name:'Schild (antippen = beschriften!)', tiles:[8,8,8], solid:false, model:[
     [0.45,0,0.45, 0.55,0.55,0.55, 5],                   // Pfosten
     [0.05,0.55,0.42, 0.95,1.0,0.58, 8]] },              // Brett
+  [CABINET]: { name:'Schrank (antippen = öffnen, 6 Fächer!)', tiles:[8,8,8], solid:true, model:[
+    [0.06,0,0.18, 0.94,0.98,0.94, 8],                   // Korpus
+    [0.08,0.04,0.13, 0.49,0.94,0.19, 41],               // linke Tür
+    [0.51,0.04,0.13, 0.92,0.94,0.19, 41],               // rechte Tür
+    [0.43,0.42,0.09, 0.47,0.58,0.14, 5],                // Griffe
+    [0.53,0.42,0.09, 0.57,0.58,0.14, 5]] },
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -402,6 +425,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
+      cabinets: Object.fromEntries(cabinets),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
   } catch(e) {}
@@ -423,6 +447,7 @@ function loadGame() {
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
+    if (s.cabinets) for (const k in s.cabinets) cabinets.set(k, s.cabinets[k]);
     return s.player || null;
   } catch(e) { return null; }
 }
@@ -539,6 +564,10 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(38,(x)=> (x%6===2||x%6===3) ? vary(242,240,234,8) : vary(236,118,30,18)); // Clownfisch
   tile(39,()=>vary(122,152,202,26));                                // Fisch silberblau
   tile(40,(x)=> x%5===0 ? vary(60,90,140,10) : vary(82,116,172,16)); // Kinder-Kleidung blau
+  tile(41,(x,y)=>{                                                  // Schrank-Tür
+    if (x<1||x>14||y<1||y>14) return vary(96,70,42,10);
+    return vary(176,140,90,16);
+  });
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -1424,6 +1453,60 @@ function drawSignTexts() {
   gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
 }
 
+// ------------------------------ Schränke ------------------------------------
+const cabinets = new Map();             // "x,y,z" -> Array mit 6 Fächern (Block-Ids, 0 = leer)
+let cabinetTarget = null;
+const cabBox = document.getElementById('cabBox');
+const cabSlotsEl = document.getElementById('cabSlots');
+
+function renderCabinet() {
+  const arr = cabinets.get(cabinetTarget) || [0,0,0,0,0,0];
+  cabSlotsEl.innerHTML = '';
+  arr.forEach((b, i) => {
+    const d = document.createElement('div');
+    d.className = 'cabSlot';
+    if (b) {
+      const img = document.createElement('img');
+      img.src = ICONS[b] || tileImg(BLOCKS[b].tiles[b===GRASS?1:0]);
+      d.appendChild(img);
+    }
+    d.addEventListener('click', () => cabinetSlotTap(i));
+    cabSlotsEl.appendChild(d);
+  });
+}
+function cabinetSlotTap(i) {
+  const arr = cabinets.get(cabinetTarget) || [0,0,0,0,0,0];
+  if (arr[i]) {                         // herausnehmen und gleich in die Hand
+    const b = arr[i];
+    arr[i] = 0;
+    const slot = HOTBAR_ITEMS.indexOf(b);
+    if (slot >= 0) selectSlot(slot);
+    toast('Du hast '+BLOCKS[b].name.split(' (')[0]+' herausgenommen! ✋');
+    blip(400,0.06);
+  } else {                              // aktuellen Block hineinlegen
+    const b = HOTBAR_ITEMS[selSlot];
+    arr[i] = b;
+    toast(BLOCKS[b].name.split(' (')[0]+' in den Schrank gelegt! 🗄️');
+    blip(300,0.06);
+  }
+  cabinets.set(cabinetTarget, arr);
+  scheduleSave();
+  renderCabinet();
+}
+function openCabinet(key) {
+  cabinetTarget = key;
+  renderCabinet();
+  cabBox.style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(500,0.06); blip(600,0.05);
+}
+function closeCabinet() { cabinetTarget = null; cabBox.style.display = 'none'; }
+document.getElementById('cabClose').addEventListener('click', closeCabinet);
+function removeCabinet(x,y,z) {
+  const key = x+','+y+','+z;
+  if (cabinets.has(key)) { cabinets.delete(key); scheduleSave(); }
+}
+
 // ------------------------------ Dorf-Kompass --------------------------------
 let compassOn = false, compTarget = null, compScanT = 0;
 const compassEl = document.getElementById('compass');
@@ -1753,6 +1836,7 @@ function doBreak(dir) {
   if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
   if (hit.block===TNT_LIT) return;   // brennt schon!
   if (hit.block===SIGN) removeSign(hit.x,hit.y,hit.z);
+  if (hit.block===CABINET) removeCabinet(hit.x,hit.y,hit.z);
   setBlock(hit.x,hit.y,hit.z,AIR);
   blip(160,0.09);
 }
@@ -1767,6 +1851,10 @@ function doPlace(dir) {
   }
   if (hit.block===SIGN) {               // Schild neu beschriften
     openSignEditor(hit.x+','+hit.y+','+hit.z);
+    return;
+  }
+  if (hit.block===CABINET) {            // Schrank öffnen
+    openCabinet(hit.x+','+hit.y+','+hit.z);
     return;
   }
   if (hit.block===CHAIR && !riding) {   // hinsetzen!
@@ -1805,6 +1893,7 @@ function doPlace(dir) {
   setBlock(px,py,pz,b);
   blip(330,0.06);
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
+  if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
 }
 
 // ------------------------------ TNT -----------------------------------------
@@ -1897,6 +1986,7 @@ const ICONS = {
   [TORCH]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(7,7,2,8); g.fillStyle='#ffc832'; g.fillRect(5,2,6,5); g.fillStyle='#ff8020'; g.fillRect(7,4,2,2); }),
   [CHEST]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,3,12,11); g.fillStyle=HOLZ_D; g.fillRect(2,7,12,2); g.fillStyle='#3c3c40'; g.fillRect(7,6,2,4); }),
   [SIGN]:  iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,2,12,8); g.fillStyle=HOLZ_D; g.fillRect(7,10,2,5); g.fillStyle='#3b2a12'; g.fillRect(4,4,8,1); g.fillRect(4,7,6,1); }),
+  [CABINET]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,1,12,14); g.fillStyle=HOLZ_D; g.fillRect(7,1,1,14); g.fillRect(2,1,12,1); g.fillStyle='#3b2a12'; g.fillRect(5,7,1,3); g.fillRect(10,7,1,3); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
