@@ -95,7 +95,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 18 &middot; mit Fischen im Meer 🐟</p>
+    Version 19 &middot; alle Tiere können deine Freunde werden ❤️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -380,7 +380,7 @@ function saveGame() {
     const ed = {};
     for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
     const pets = animals.filter(a=>a.tame).map(a=>
-      [a.type==='dog'?0:1, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0]);
+      [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, edits:ed, dayTime, pets,
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
@@ -877,7 +877,17 @@ const ANIMAL_KIND = {
   fish:     { speed:1.6, half:0.16, height:0.25, tile:38, face:38 },
   villager: { speed:1.0, half:0.3,  height:1.8,  tile:20, face:21 },
 };
-const isPet = a => a.type==='dog' || a.type==='cat';
+const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird';
+const TAME_MSG = {
+  dog: '🐶 Der Hund ist jetzt dein Freund! ❤️',
+  cat: '🐱 Die Katze ist jetzt dein Freund! ❤️',
+  pig: '🐷 Das Schwein ist jetzt dein Freund! ❤️',
+  cow: '🐮 Die Kuh ist jetzt dein Freund! ❤️',
+  bird:'🐦 Der Vogel fliegt jetzt mit dir mit! ❤️',
+};
+const TAME_SOUND = {
+  dog: [150,130], cat: [620,520], pig: [260,210], cow: [140,110], bird: [1600,1900],
+};
 
 const VILLAGER_NAMES = ['Hans','Emma','Otto','Frieda','Karl','Lina','Paul','Greta','Willi','Marta'];
 // Antworten, wenn DU etwas sagst (der Bewohner sucht passende Wörter)
@@ -969,17 +979,30 @@ function spawnBird(minD, maxD) {
 }
 function updateBird(a, dt) {
   a.t -= dt;
+  const follow = a.tame && !a.sit;
+  if (follow && Math.hypot(a.x-player.x, a.z-player.z) > 28) {   // hinterher!
+    a.x = player.x + (Math.random()*2-1);
+    a.z = player.z + (Math.random()*2-1);
+    a.y = player.y + 4;
+  }
   const dx=(a.tx||a.x)-a.x, dz=(a.tz||a.z)-a.z;
   const dd=Math.hypot(dx,dz);
   if (a.t<=0 || dd<1.5) {                    // neues Flugziel aussuchen
-    const ang=Math.random()*Math.PI*2, d=8+Math.random()*15;
-    a.tx=a.x+Math.cos(ang)*d; a.tz=a.z+Math.sin(ang)*d;
-    a.ty=terrainHeight(Math.floor(a.tx),Math.floor(a.tz)) + 7 + Math.random()*6;
-    a.t=5+Math.random()*4;
+    if (follow) {                            // zahme Vögel kreisen um dich
+      a.tx=player.x+Math.random()*8-4; a.tz=player.z+Math.random()*8-4;
+      a.ty=player.y+2+Math.random()*4;
+      a.t=2+Math.random()*2;
+    } else {
+      const ang=Math.random()*Math.PI*2, d=8+Math.random()*15;
+      a.tx=a.x+Math.cos(ang)*d; a.tz=a.z+Math.sin(ang)*d;
+      a.ty=terrainHeight(Math.floor(a.tx),Math.floor(a.tz)) + 7 + Math.random()*6;
+      a.t=5+Math.random()*4;
+    }
   } else {
-    a.x += dx/dd*4*dt; a.z += dz/dd*4*dt;
+    const sp = follow ? 5.5 : 4;
+    a.x += dx/dd*sp*dt; a.z += dz/dd*sp*dt;
     const dy=a.ty-a.y;
-    a.y += Math.max(-2, Math.min(2, dy))*dt;
+    a.y += Math.max(-2.5, Math.min(2.5, dy))*dt;
     a.yaw = Math.atan2(dx/dd, -dz/dd);
   }
   a.ph += dt*15;                             // Flügelschlag
@@ -1151,6 +1174,7 @@ function drawAnimals() {
       pushBox(arr,a,  0.18,0.17,-0.28-sw, 0.16,0.34,0.16, k.tile);
       pushBox(arr,a, -0.18,0.17, 0.32-sw, 0.16,0.34,0.16, k.tile);
       pushBox(arr,a,  0.18,0.17, 0.32+sw, 0.16,0.34,0.16, k.tile);
+      if (a.tame) pushBox(arr,a, 0,0.62,-0.4, 0.5,0.12,0.2, 25);   // rotes Halsband
     } else if (a.type==='horse') {
       pushBox(arr,a, -0.2,0.35,-0.5+sw*1.4, 0.16,0.7,0.16, k.tile);  // Beine
       pushBox(arr,a,  0.2,0.35,-0.5-sw*1.4, 0.16,0.7,0.16, k.tile);
@@ -1161,6 +1185,7 @@ function drawAnimals() {
       pushBox(arr,a, 0,1.8,-0.85, 0.3,0.32,0.55, k.tile, k.face);    // Kopf
       pushBox(arr,a, 0,1.1,0.85, 0.1,0.45,0.1, k.tile);              // Schweif
       pushBox(arr,a, 0,1.36,0.15, 0.42,0.12,0.45, 20);               // Sattel
+      if (a.tame) pushBox(arr,a, 0,1.28,-0.62, 0.32,0.12,0.34, 25);  // rotes Halsband
     } else if (a.type==='cow') {
       pushBox(arr,a, 0,0.8,0.05, 0.7,0.55,1.1, k.tile);
       pushBox(arr,a, 0,1.0,-0.75, 0.5,0.5,0.4, k.tile, k.face);
@@ -1168,6 +1193,7 @@ function drawAnimals() {
       pushBox(arr,a,  0.22,0.26,-0.35-sw, 0.18,0.52,0.18, k.tile);
       pushBox(arr,a, -0.22,0.26, 0.4-sw, 0.18,0.52,0.18, k.tile);
       pushBox(arr,a,  0.22,0.26, 0.4+sw, 0.18,0.52,0.18, k.tile);
+      if (a.tame) pushBox(arr,a, 0,0.94,-0.52, 0.56,0.14,0.22, 25); // rotes Halsband
     } else if (a.type==='bird') {
       const flap = Math.sin(a.ph)*0.1;
       pushBox(arr,a, 0,0.12,0, 0.14,0.13,0.26, a.col);             // Körper
@@ -1176,6 +1202,7 @@ function drawAnimals() {
       pushBox(arr,a, -0.15,0.2+flap,0.02, 0.17,0.03,0.18, a.col);  // Flügel
       pushBox(arr,a,  0.15,0.2+flap,0.02, 0.17,0.03,0.18, a.col);
       pushBox(arr,a, 0,0.15,0.18, 0.07,0.03,0.15, a.col);          // Schwanzfedern
+      if (a.tame) pushBox(arr,a, 0,0.17,-0.12, 0.15,0.04,0.06, 25); // Mini-Halsband
     } else if (a.type==='fish') {
       const wig = Math.sin(a.ph)*0.08;
       pushBox(arr,a, 0,0.1,0, 0.09,0.17,0.32, a.col);              // Körper
@@ -1357,8 +1384,9 @@ function hitEntity(a, dir) {
     sitting = null;
     if (flying) toggleFly();
     riding = a; a.walking = false;
+    if (!a.tame) { a.tame=true; a.sit=false; scheduleSave(); }
     document.getElementById('rideBtn').style.display='flex';
-    toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf');
+    toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
     return;
   }
@@ -1372,30 +1400,27 @@ function hitEntity(a, dir) {
     blip(200,0.12); blip(160,0.1);
     return;
   }
-  if (isPet(a)) {                       // Haustiere zähmen!
+  if (isPet(a)) {                       // Tiere zähmen!
     if (!a.tame) {
       a.tame = true; a.sit = false;
-      a.vy = 4.5; a.onGround = false;
-      toast(a.type==='dog' ? '🐶 Der Hund ist jetzt dein Freund! ❤️' : '🐱 Die Katze ist jetzt dein Freund! ❤️');
-      if (a.type==='dog') { blip(150,0.1); blip(130,0.12); }
-      else { blip(620,0.12); blip(520,0.1); }
+      if (a.type!=='bird') { a.vy = 4.5; a.onGround = false; }
+      toast(TAME_MSG[a.type]);
+      const s = TAME_SOUND[a.type];
+      blip(s[0],0.1); blip(s[1],0.12);
+    } else if (a.type==='bird') {
+      a.sit = !a.sit;
+      toast(a.sit ? '🐦 Flieg frei, kleiner Vogel!' : '🐦 Flieg mit mir!');
+      blip(1700,0.08);
     } else {
       a.sit = !a.sit;
       toast(a.sit ? 'Sitz! Dein Tier wartet hier. 🪑' : 'Komm mit! ❤️');
-      blip(a.type==='dog' ? 180 : 560, 0.08);
+      blip(TAME_SOUND[a.type][0], 0.08);
     }
     scheduleSave();
     return;
   }
-  if (a.type==='bird') {                // Vogel: piept und flattert davon
-    toast('🐦 Piep piep!', 1500);
-    blip(1600,0.08); blip(1900,0.07);
-    a.tx = a.x + (a.x-player.x)*4; a.tz = a.z + (a.z-player.z)*4;
-    a.ty = a.y + 5; a.t = 6;
-    return;
-  }
   if (a.type==='fish') {                // Fisch: blubbert und schwimmt weg
-    toast('🐟 Blub blub!', 1500);
+    toast('🐟 Blub blub! (Fische bleiben lieber frei im Wasser)', 2200);
     blip(300,0.08); blip(250,0.1);
     a.tx = a.x + (a.x-player.x)*3; a.tz = a.z + (a.z-player.z)*3;
     a.t = 5;
@@ -1974,9 +1999,12 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   started=true;
   // Gespeicherte Haustiere wieder zum Leben erwecken
   for (const p of savedPets) {
-    animals.push({ type: p[0]===0?'dog':'cat', x:p[1], y:p[2], z:p[3],
-      tame:true, sit:!!p[4], yaw:0, vy:0, kx:0, kz:0, hp:3,
-      walking:false, t:9, ph:0, onGround:false });
+    const type = p[0]===0 ? 'dog' : p[0]===1 ? 'cat' : p[0];   // alte Speicherstände: 0/1
+    if (!ANIMAL_KIND[type]) continue;
+    animals.push({ type, x:p[1], y:p[2], z:p[3],
+      tame:true, sit:!!p[4], col: p[5] || (Math.random()<0.5?35:36),
+      yaw:0, vy:0, kx:0, kz:0, hp:3,
+      walking:false, t:0, ph:0, onGround:false });
   }
   // Ein paar Tiere gleich in der Nähe – und garantiert Pferd, Hund und Katze!
   for (let i=0; i<24 && animals.length<5; i++) trySpawnAnimal(6,18);
