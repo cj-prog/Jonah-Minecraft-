@@ -62,6 +62,10 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
 - Wetter! Manchmal regnet es (mit Regen-Rauschen und grauem Himmel) 🌧️
   und manchmal schneit es in dicken Flocken ❄️ – drinnen bleibt es trocken
+- Schnee bleibt liegen! ⛄ Beim Schneien bedeckt eine weiße Schicht die
+  Landschaft. Sammle Schnee auf (antippen) – aus 3 ❄️ baust du einen
+  Schneemann mit Karottennase und Stock-Armen! Scheint wieder die Sonne,
+  taut der Schnee langsam weg (deine Schneemänner bleiben aber stehen!)
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - Mit den Bewohnern kann man sprechen 💬: antippen, und Hans, Emma oder Otto
   drehen sich zu dir um und erzählen etwas – manchmal sogar geheime Tipps!
