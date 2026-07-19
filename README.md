@@ -43,6 +43,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 - Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen, Bäume und Dörfer 🌳🏘️
 - Tiere: Schweine 🐷 und Kühe 🐮 laufen durch die Welt (und hüpfen bei Explosionen!)
+- Schafe! 🐑 Flauschige weiße Schafe geben Wolle: Antippen schert sie
+  (dann sind sie kurz rosa und nackig 😄), die Wolle wächst nach.
+  Mit Wolle 🧶 baust du weiche weiße Woll-Blöcke – Abbauen gibt sie zurück
 - Blaue und rote Vögel 🐦 segeln mit flatternden Flügeln durch die Luft
   und zwitschern – flieg doch mal mit ihnen um die Wette!
 - Im Meer schwimmen Fische 🐟: orange Clownfische mit weißen Streifen und
