@@ -133,7 +133,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 27 &middot; Tomaten und Äpfel 🍅🍎</p>
+    Version 28 &middot; alles wächst nach! 🌱</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -480,6 +480,7 @@ function saveGame() {
       signs: Object.fromEntries(signTexts),
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples,
+      regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
   } catch(e) {}
@@ -505,6 +506,7 @@ function loadGame() {
     if (typeof s.carrots==='number') carrots = s.carrots;
     if (typeof s.tomatoes==='number') tomatoes = s.tomatoes;
     if (typeof s.apples==='number') apples = s.apples;
+    if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
 }
@@ -1547,6 +1549,7 @@ for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a']]) {
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
 }
 const CROP_NEXT = { [CARROT0]:CARROT1, [CARROT1]:CARROT2, [TOMATO0]:TOMATO1, [TOMATO1]:TOMATO2 };
+const appleRegrow = [];                 // gepflückte Äpfel wachsen nach: [x,y,z,Restzeit]
 function growCrops() {
   for (const key of [...cropSet]) {
     const [x,y,z] = key.split(',').map(Number);
@@ -1559,6 +1562,15 @@ function growCrops() {
       setBlock(x,y,z,next);
       if (!CROP_NEXT[next]) cropSet.delete(key);   // ausgewachsen
     }
+  }
+  for (let i=appleRegrow.length-1; i>=0; i--) {
+    const r = appleRegrow[i];
+    r[3] -= 2.5;
+    if (r[3] > 0) continue;
+    const ch = getChunk(r[0]>>4, r[2]>>4);
+    if (!ch || !ch.data) { r[3] = 10; continue; }  // Chunk nicht geladen: später nochmal
+    if (getBlock(r[0],r[1],r[2])===LEAF) setBlock(r[0],r[1],r[2],APPLE_LEAF);
+    appleRegrow.splice(i,1);
   }
 }
 
@@ -1946,28 +1958,40 @@ function doBreak(dir) {
   if (hit.block===TNT_LIT) return;   // brennt schon!
   if (hit.block===CARROT2 || hit.block===TOMATO2) {   // Ernte-Zeit!
     const n = 2 + Math.floor(Math.random()*3);
-    if (hit.block===CARROT2) { carrots += n; toast('🥕 '+n+' Karotten geerntet! (Oben links antippen = essen)', 3000); }
-    else { tomatoes += n; toast('🍅 '+n+' Tomaten geerntet! (Oben links antippen = essen)', 3000); }
+    if (hit.block===CARROT2) { carrots += n; toast('🥕 '+n+' Karotten geerntet! Das Beet wächst nach. 🌱', 3000); }
+    else { tomatoes += n; toast('🍅 '+n+' Tomaten geerntet! Das Beet wächst nach. 🌱', 3000); }
     updateFoodHUD(); scheduleSave();
-    setBlock(hit.x,hit.y,hit.z,AIR);
+    // Das Beet bleibt und wächst von vorne nach!
+    setBlock(hit.x,hit.y,hit.z, hit.block===CARROT2 ? CARROT0 : TOMATO0);
+    cropSet.add(hit.x+','+hit.y+','+hit.z);
     blip(600,0.06); blip(700,0.06);
     return;
   }
   if (hit.block===CARROT0 || hit.block===CARROT1 || hit.block===TOMATO0 || hit.block===TOMATO1) {
-    toast('🌱 Noch nicht reif. Warte noch ein bisschen!', 2500);
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    cropSet.delete(hit.x+','+hit.y+','+hit.z);
+    toast('🌱 Beet ausgerissen! (Warte nächstes Mal, bis es reif ist)', 2500);
+    blip(200,0.07);
     return;
   }
   if (hit.block===APPLE_LEAF) {         // Äpfel vom Baum pflücken!
     const n = 1 + Math.floor(Math.random()*2);
     apples += n; updateFoodHUD(); scheduleSave();
     setBlock(hit.x,hit.y,hit.z,LEAF);
-    toast('🍎 '+n+(n===1?' Apfel':' Äpfel')+' gepflückt!', 2500);
+    appleRegrow.push([hit.x, hit.y, hit.z, 25 + Math.random()*35]);   // wächst nach!
+    toast('🍎 '+n+(n===1?' Apfel':' Äpfel')+' gepflückt! Da wachsen neue.', 2500);
     blip(650,0.06); blip(750,0.06);
     return;
   }
   if (hit.block===SIGN) removeSign(hit.x,hit.y,hit.z);
   if (hit.block===CABINET) removeCabinet(hit.x,hit.y,hit.z);
   setBlock(hit.x,hit.y,hit.z,AIR);
+  // Stand ein Beet auf dem Block? Dann verschwindet es mit (so wird man Beete los)
+  const ab = getBlock(hit.x, hit.y+1, hit.z);
+  if (CROP_NEXT[ab] || ab===CARROT2 || ab===TOMATO2) {
+    setBlock(hit.x, hit.y+1, hit.z, AIR);
+    cropSet.delete(hit.x+','+(hit.y+1)+','+hit.z);
+  }
   blip(160,0.09);
 }
 function doPlace(dir) {
