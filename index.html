@@ -128,12 +128,14 @@
   <div class="foodChip" id="foodC"></div>
   <div class="foodChip" id="foodT"></div>
   <div class="foodChip" id="foodA"></div>
+  <div class="foodChip" id="foodW"></div>
+  <div class="foodChip" id="foodB"></div>
 </div>
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 28 &middot; alles wächst nach! 🌱</p>
+    Version 29 &middot; back dir dein Brot! 🍞</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -174,7 +176,8 @@ const SAVE_KEY = 'jonahcraft_save_v1';
 
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
       TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19,
-      CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26;
+      CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
+      WHEAT0=27, WHEAT1=28, WHEAT2=29;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -248,8 +251,23 @@ const BLOCKS = {
     [0.16,0.22,0.24, 0.28,0.36,0.36, 44],[0.62,0.18,0.24, 0.74,0.3,0.36, 44],   // rote Tomaten!
     [0.34,0.28,0.58, 0.46,0.42,0.7, 44],[0.56,0.1,0.62, 0.68,0.22,0.74, 44]] },
   [APPLE_LEAF]: { name:'Apfel-Blätter', tiles:[43,43,43], solid:true },
+  // Weizen-Beet in 3 Wachstums-Stufen (3 Weizen = 1 Brot!)
+  [WHEAT0]: { name:'Weizen-Beet (3 Weizen = 1 Brot!)', tiles:[7,7,7], solid:false, model:[
+    [0.2,0,0.2, 0.24,0.18,0.24, 7],[0.45,0,0.3, 0.49,0.16,0.34, 7],
+    [0.7,0,0.25, 0.74,0.17,0.29, 7],[0.3,0,0.6, 0.34,0.15,0.64, 7],
+    [0.55,0,0.68, 0.59,0.18,0.72, 7],[0.78,0,0.62, 0.82,0.16,0.66, 7]] },
+  [WHEAT1]: { name:'Weizen (wächst noch)', tiles:[7,7,7], solid:false, model:[
+    [0.2,0,0.2, 0.24,0.45,0.24, 7],[0.45,0,0.3, 0.49,0.4,0.34, 7],
+    [0.7,0,0.25, 0.74,0.42,0.29, 7],[0.3,0,0.6, 0.34,0.38,0.64, 7],
+    [0.55,0,0.68, 0.59,0.44,0.72, 7],[0.78,0,0.62, 0.82,0.4,0.66, 7]] },
+  [WHEAT2]: { name:'Weizen (reif!)', tiles:[45,45,45], solid:false, model:[
+    [0.2,0,0.2, 0.24,0.75,0.24, 45],[0.45,0,0.3, 0.49,0.7,0.34, 45],
+    [0.7,0,0.25, 0.74,0.72,0.29, 45],[0.3,0,0.6, 0.34,0.68,0.64, 45],
+    [0.55,0,0.68, 0.59,0.74,0.72, 45],[0.78,0,0.62, 0.82,0.7,0.66, 45],
+    [0.17,0.6,0.17, 0.27,0.78,0.27, 45],[0.42,0.55,0.27, 0.52,0.73,0.37, 45],   // dicke Ähren
+    [0.67,0.57,0.22, 0.77,0.75,0.32, 45],[0.52,0.59,0.65, 0.62,0.77,0.75, 45]] },
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -375,6 +393,9 @@ function genChunkData(cx, cz) {
       const txx=v.vx+3+gx, tzz=v.vz+5+gz;
       const th2=terrainHeight(txx,tzz);
       if (th2>SEA && Math.abs(th2-wh)<=1) put(txx,th2+1,tzz,TOMATO2,true);
+      const wxx=v.vx-4-gx, wzz=v.vz+2+gz;
+      const wh2=terrainHeight(wxx,wzz);
+      if (wh2>SEA && Math.abs(wh2-wh)<=1) put(wxx,wh2+1,wzz,WHEAT2,true);
     }
     // Häuser
     for (let i=0;i<HOUSE_SPOTS.length;i++) {
@@ -428,7 +449,7 @@ function ensureData(cx,cz) {
     // wachsende Beete in diesem Chunk weiterwachsen lassen
     for (let i=0;i<ch.data.length;i++) {
       const b=ch.data[i];
-      if (b===CARROT0 || b===CARROT1 || b===TOMATO0 || b===TOMATO1)
+      if (b===CARROT0 || b===CARROT1 || b===TOMATO0 || b===TOMATO1 || b===WHEAT0 || b===WHEAT1)
         cropSet.add((cx*CS+(i&15))+','+(i>>8)+','+(cz*CS+((i>>4)&15)));
     }
   }
@@ -479,7 +500,7 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples,
+      carrots, tomatoes, apples, wheat, bread,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -506,6 +527,8 @@ function loadGame() {
     if (typeof s.carrots==='number') carrots = s.carrots;
     if (typeof s.tomatoes==='number') tomatoes = s.tomatoes;
     if (typeof s.apples==='number') apples = s.apples;
+    if (typeof s.wheat==='number') wheat = s.wheat;
+    if (typeof s.bread==='number') bread = s.bread;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -634,6 +657,7 @@ atlas.width = atlas.height = T*ATLAS_N;
     return rnd()<0.12 ? vary(38,80,24,16) : vary(58,120,38,36);
   });
   tile(44,()=>vary(218,52,44,20));                                  // Tomaten-Rot
+  tile(45,()=>vary(224,188,84,26));                                 // Weizen-Gold
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -1521,13 +1545,14 @@ function drawSignTexts() {
 
 // ------------------------------ Essen ---------------------------------------
 const cropSet = new Set();              // wachsende Beete ("x,y,z")
-let carrots = 0, tomatoes = 0, apples = 0;
+let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0;
 let boostT = 0, jumpT = 0, cropT = 0;
 
 function updateFoodHUD() {
   const set=(id,emoji,n)=>{ const el=document.getElementById(id);
     el.textContent=emoji+' '+n; el.style.display = n>0 ? 'flex':'none'; };
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
+  set('foodW','🌾',wheat); set('foodB','🍞',bread);
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -1539,16 +1564,30 @@ function eatFood(kind) {
   } else if (kind==='a' && apples>0) {
     apples--; boostT = Math.max(boostT,8); jumpT = Math.max(jumpT,8);
     toast('Mmmh! 🍎 Apfel-Power – schnell UND hoch!', 2500);
+  } else if (kind==='w') {              // aus 3 Weizen wird 1 Brot gebacken
+    if (wheat>=3) {
+      wheat -= 3; bread++;
+      toast('🍞 Du hast ein Brot gebacken! (aus 3 🌾)', 2800);
+      blip(440,0.08); blip(550,0.1);
+      updateFoodHUD(); scheduleSave();
+    } else {
+      toast('Du brauchst 3 Weizen für ein Brot. Du hast erst '+wheat+'! 🌾', 2500);
+    }
+    return;
+  } else if (kind==='b' && bread>0) {
+    bread--; boostT = 20; jumpT = 20;
+    toast('Mmmh! 🍞 Brot-Power – schnell UND hoch für 20 Sekunden!', 2800);
   } else return;
   updateFoodHUD(); scheduleSave();
   blip(500,0.05); blip(420,0.05); blip(540,0.05);
 }
-for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a']]) {
+for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b']]) {
   const el=document.getElementById(id);
   el.addEventListener('click', ()=>eatFood(kind));
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
 }
-const CROP_NEXT = { [CARROT0]:CARROT1, [CARROT1]:CARROT2, [TOMATO0]:TOMATO1, [TOMATO1]:TOMATO2 };
+const CROP_NEXT = { [CARROT0]:CARROT1, [CARROT1]:CARROT2, [TOMATO0]:TOMATO1, [TOMATO1]:TOMATO2,
+                    [WHEAT0]:WHEAT1, [WHEAT1]:WHEAT2 };
 const appleRegrow = [];                 // gepflückte Äpfel wachsen nach: [x,y,z,Restzeit]
 function growCrops() {
   for (const key of [...cropSet]) {
@@ -1956,18 +1995,20 @@ function doBreak(dir) {
   }
   if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
   if (hit.block===TNT_LIT) return;   // brennt schon!
-  if (hit.block===CARROT2 || hit.block===TOMATO2) {   // Ernte-Zeit!
+  if (hit.block===CARROT2 || hit.block===TOMATO2 || hit.block===WHEAT2) {   // Ernte-Zeit!
     const n = 2 + Math.floor(Math.random()*3);
     if (hit.block===CARROT2) { carrots += n; toast('🥕 '+n+' Karotten geerntet! Das Beet wächst nach. 🌱', 3000); }
-    else { tomatoes += n; toast('🍅 '+n+' Tomaten geerntet! Das Beet wächst nach. 🌱', 3000); }
+    else if (hit.block===TOMATO2) { tomatoes += n; toast('🍅 '+n+' Tomaten geerntet! Das Beet wächst nach. 🌱', 3000); }
+    else { wheat += n; toast('🌾 '+n+' Weizen geerntet! (3 🌾 antippen = Brot backen)', 3000); }
     updateFoodHUD(); scheduleSave();
     // Das Beet bleibt und wächst von vorne nach!
-    setBlock(hit.x,hit.y,hit.z, hit.block===CARROT2 ? CARROT0 : TOMATO0);
+    setBlock(hit.x,hit.y,hit.z, hit.block===CARROT2 ? CARROT0 : hit.block===TOMATO2 ? TOMATO0 : WHEAT0);
     cropSet.add(hit.x+','+hit.y+','+hit.z);
     blip(600,0.06); blip(700,0.06);
     return;
   }
-  if (hit.block===CARROT0 || hit.block===CARROT1 || hit.block===TOMATO0 || hit.block===TOMATO1) {
+  if (hit.block===CARROT0 || hit.block===CARROT1 || hit.block===TOMATO0 || hit.block===TOMATO1
+      || hit.block===WHEAT0 || hit.block===WHEAT1) {
     setBlock(hit.x,hit.y,hit.z,AIR);
     cropSet.delete(hit.x+','+hit.y+','+hit.z);
     toast('🌱 Beet ausgerissen! (Warte nächstes Mal, bis es reif ist)', 2500);
@@ -2044,7 +2085,7 @@ function doPlace(dir) {
     const oz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
     if (ox&&oy&&oz) return;
   }
-  if (b===CARROT0 || b===TOMATO0) {     // Gemüse braucht guten Boden
+  if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {   // Gemüse braucht guten Boden
     const below = getBlock(px, py-1, pz);
     if (below!==GRASS && below!==DIRT) {
       toast('🌱 Das wächst nur auf Gras oder Erde!', 2500);
@@ -2055,7 +2096,7 @@ function doPlace(dir) {
   blip(330,0.06);
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
-  if (b===CARROT0 || b===TOMATO0) {
+  if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {
     cropSet.add(px+','+py+','+pz);
     toast('🌱 Gepflanzt! Schau zu, wie es wächst...', 2500);
   }
@@ -2156,6 +2197,8 @@ const ICONS = {
     g.fillStyle='#e8781e'; g.fillRect(5,5,6,3); g.fillRect(6,8,4,3); g.fillRect(7,11,2,3); }),
   [TOMATO0]: iconURL(g=>{ g.fillStyle='#3f8f2e'; g.fillRect(7,2,2,3); g.fillRect(5,3,2,2); g.fillRect(9,3,2,2);
     g.fillStyle='#da3428'; g.fillRect(4,5,8,8); g.fillRect(3,7,10,4); }),
+  [WHEAT0]: iconURL(g=>{ g.fillStyle='#e0bc54'; g.fillRect(3,6,2,9); g.fillRect(7,5,2,10); g.fillRect(11,6,2,9);
+    g.fillRect(2,2,4,5); g.fillRect(6,1,4,5); g.fillRect(10,2,4,5); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
