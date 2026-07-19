@@ -135,7 +135,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 29 &middot; back dir dein Brot! 🍞</p>
+    Version 30 &middot; Türen und Fenster! 🚪🪟</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -177,7 +177,8 @@ const SAVE_KEY = 'jonahcraft_save_v1';
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
       TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19,
       CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
-      WHEAT0=27, WHEAT1=28, WHEAT2=29;
+      WHEAT0=27, WHEAT1=28, WHEAT2=29,
+      DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -266,8 +267,20 @@ const BLOCKS = {
     [0.55,0,0.68, 0.59,0.74,0.72, 45],[0.78,0,0.62, 0.82,0.7,0.66, 45],
     [0.17,0.6,0.17, 0.27,0.78,0.27, 45],[0.42,0.55,0.27, 0.52,0.73,0.37, 45],   // dicke Ähren
     [0.67,0.57,0.22, 0.77,0.75,0.32, 45],[0.52,0.59,0.65, 0.62,0.77,0.75, 45]] },
+  // Tür (2 Blöcke hoch, geht auf und zu!)
+  [DOOR]: { name:'Tür (antippen = auf/zu!)', tiles:[46,46,46], solid:true, model:[
+    [0,0,0.02, 1,1,0.16, 46],
+    [0.76,0.42,0.16, 0.88,0.54,0.22, 5]] },             // Klinke
+  [DOOR_TOP]: { name:'Tür', tiles:[47,47,47], solid:true, model:[
+    [0,0,0.02, 1,1,0.16, 47]] },
+  [DOOR_OPEN]: { name:'Tür (offen)', tiles:[46,46,46], solid:false, model:[
+    [0,0,0, 0.16,1,1, 46]] },                           // zur Seite geschwungen
+  [DOOR_TOP_OPEN]: { name:'Tür (offen)', tiles:[47,47,47], solid:false, model:[
+    [0,0,0, 0.16,1,1, 47]] },
+  [GLASS]: { name:'Glas-Fenster', tiles:[48,48,48], solid:true },
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
+const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -658,6 +671,24 @@ atlas.width = atlas.height = T*ATLAS_N;
   });
   tile(44,()=>vary(218,52,44,20));                                  // Tomaten-Rot
   tile(45,()=>vary(224,188,84,26));                                 // Weizen-Gold
+  tile(46,(x,y)=>{                                                  // Tür unten
+    if (x<1||x>14) return vary(110,82,48,10);
+    if ((x>=3&&x<=6||x>=9&&x<=12)&&y>=2&&y<=13&&(x===3||x===6||x===9||x===12||y===2||y===13))
+      return vary(110,82,48,10);                                    // Türfüllungen
+    return vary(172,136,86,14);
+  });
+  tile(47,(x,y)=>{                                                  // Tür oben mit Fensterchen
+    if (x<1||x>14||y<1) return vary(110,82,48,10);
+    if (x>=5&&x<=10&&y>=5&&y<=10) {
+      if (x===7||x===8||y===7||y===8) return vary(110,82,48,10);    // Fensterkreuz
+      return vary(205,228,240,10);                                  // Glas
+    }
+    return vary(172,136,86,14);
+  });
+  tile(48,(x,y)=>{                                                  // Glas
+    if (x<1||x>14||y<1||y>14) return 'rgb(240,248,252)';            // heller Rand
+    return (x+y)%9===0 ? vary(228,242,250,6) : vary(198,224,238,10);
+  });
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -774,13 +805,14 @@ function buildMesh(ch) {
     for (let f=0;f<6;f++) {
       const F=FACES[f];
       const nb = getBlock(wx+F.d[0], y+F.d[1], wz+F.d[2]);
-      const nbOpen = nb===AIR || nb===WATER || (nb && BLOCKS[nb].model);
+      const nbModel = nb && BLOCKS[nb].model;
       let visible;
-      if (b===WATER) visible = (nb===AIR || (nb && BLOCKS[nb].model));
-      else visible = nbOpen;
+      if (b===WATER) visible = (nb===AIR || nbModel);
+      else if (b===GLASS) visible = (nb===AIR || nb===WATER || nbModel);
+      else visible = (nb===AIR || nb===WATER || nb===GLASS || nbModel);
       if (!visible) continue;
       const tile = def.tiles[f===2?1:f===3?2:0];
-      const arr = (b===WATER) ? wat : opq;
+      const arr = (b===WATER || b===GLASS) ? wat : opq;   // Glas ist durchsichtig
       for (let k=0;k<6;k++) {
         const c = F.c[TRI[k]];
         const uv = tileUV(tile, c[3], c[4]);
@@ -2024,6 +2056,13 @@ function doBreak(dir) {
     blip(650,0.06); blip(750,0.06);
     return;
   }
+  if (DOOR_PARTS.includes(hit.block)) { // Tür: beide Hälften entfernen
+    const by = (hit.block===DOOR_TOP||hit.block===DOOR_TOP_OPEN) ? hit.y-1 : hit.y;
+    setBlock(hit.x,by,hit.z,AIR);
+    setBlock(hit.x,by+1,hit.z,AIR);
+    blip(160,0.09);
+    return;
+  }
   if (hit.block===SIGN) removeSign(hit.x,hit.y,hit.z);
   if (hit.block===CABINET) removeCabinet(hit.x,hit.y,hit.z);
   setBlock(hit.x,hit.y,hit.z,AIR);
@@ -2050,6 +2089,22 @@ function doPlace(dir) {
   }
   if (hit.block===CABINET) {            // Schrank öffnen
     openCabinet(hit.x+','+hit.y+','+hit.z);
+    return;
+  }
+  if (DOOR_PARTS.includes(hit.block)) { // Tür auf/zu!
+    const isTop = hit.block===DOOR_TOP || hit.block===DOOR_TOP_OPEN;
+    const by = isTop ? hit.y-1 : hit.y;
+    const open = hit.block===DOOR_OPEN || hit.block===DOOR_TOP_OPEN;
+    if (open) {                         // beim Schließen: steht wer in der Tür?
+      const inDoor = Math.abs(hit.x+0.5-player.x)<0.5+P_HALF &&
+                     Math.abs(hit.z+0.5-player.z)<0.5+P_HALF &&
+                     player.y < by+2 && player.y+P_HEIGHT > by;
+      if (inDoor) { toast('Du stehst in der Tür! 😄 Geh erst einen Schritt weiter.', 2500); return; }
+    }
+    setBlock(hit.x, by,   hit.z, open ? DOOR : DOOR_OPEN);
+    setBlock(hit.x, by+1, hit.z, open ? DOOR_TOP : DOOR_TOP_OPEN);
+    toast(open ? '🚪 Tür zu!' : '🚪 Tür auf!', 1500);
+    blip(open?220:320, 0.08);
     return;
   }
   if (hit.block===CHAIR && !riding) {   // hinsetzen!
@@ -2091,6 +2146,18 @@ function doPlace(dir) {
       toast('🌱 Das wächst nur auf Gras oder Erde!', 2500);
       return;
     }
+  }
+  if (b===DOOR) {                       // die Tür ist 2 Blöcke hoch
+    const above = getBlock(px, py+1, pz);
+    if (py+1>=CH || (above!==AIR && above!==WATER)) {
+      toast('🚪 Die Tür braucht 2 Blöcke Platz nach oben!', 2500);
+      return;
+    }
+    setBlock(px,py,pz,DOOR);
+    setBlock(px,py+1,pz,DOOR_TOP);
+    toast('🚪 Tür eingebaut! Antippen macht sie auf und zu.', 2500);
+    blip(330,0.06);
+    return;
   }
   setBlock(px,py,pz,b);
   blip(330,0.06);
@@ -2199,6 +2266,11 @@ const ICONS = {
     g.fillStyle='#da3428'; g.fillRect(4,5,8,8); g.fillRect(3,7,10,4); }),
   [WHEAT0]: iconURL(g=>{ g.fillStyle='#e0bc54'; g.fillRect(3,6,2,9); g.fillRect(7,5,2,10); g.fillRect(11,6,2,9);
     g.fillRect(2,2,4,5); g.fillRect(6,1,4,5); g.fillRect(10,2,4,5); }),
+  [DOOR]: iconURL(g=>{ g.fillStyle='#ac8856'; g.fillRect(3,1,10,14); g.fillStyle='#6e5230';
+    g.fillRect(5,3,2,4); g.fillRect(9,3,2,4); g.fillRect(5,9,2,4); g.fillRect(9,9,2,4);
+    g.fillStyle='#3b2a12'; g.fillRect(11,7,2,2); }),
+  [GLASS]: iconURL(g=>{ g.fillStyle='#f0f8fc'; g.fillRect(1,1,14,14); g.fillStyle='#c6e0ee';
+    g.fillRect(3,3,10,10); g.fillStyle='#e4f2fa'; g.fillRect(4,4,3,3); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
