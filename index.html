@@ -131,12 +131,13 @@
   <div class="foodChip" id="foodW"></div>
   <div class="foodChip" id="foodB"></div>
   <div class="foodChip" id="foodWo"></div>
+  <div class="foodChip" id="foodS"></div>
 </div>
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 32 &middot; Schafe geben Wolle! 🐑🧶</p>
+    Version 33 &middot; Schnee bleibt liegen – bau Schneemänner! ⛄</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -179,7 +180,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19,
       CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
       WHEAT0=27, WHEAT1=28, WHEAT2=29,
-      DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36;
+      DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
+      SNOW=37, SNOWMAN=38;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -281,9 +283,22 @@ const BLOCKS = {
   [GLASS]: { name:'Glas-Fenster', tiles:[48,48,48], solid:true },
   [FENCE]: { name:'Zaun (verbindet sich von selbst!)', tiles:[5,5,5], solid:true, fence:true },
   [WOOL]: { name:'Wolle (schere Schafe, um welche zu bekommen!)', tiles:[49,49,49], solid:true },
+  [SNOW]: { name:'Schnee (antippen = aufsammeln!)', tiles:[52,52,52], solid:false, model:[
+    [0,0,0, 1,0.12,1, 52]] },
+  [SNOWMAN]: { name:'Schneemann (kostet 3 Schnee!)', tiles:[52,52,52], solid:true, model:[
+    [0.15,0,0.15, 0.85,0.7,0.85, 52],                   // dicke Kugel
+    [0.22,0.65,0.22, 0.78,1.22,0.78, 52],               // Bauch
+    [0.3,1.18,0.3, 0.7,1.58,0.7, 52],                   // Kopf
+    [0.45,1.33,0.16, 0.55,1.41,0.3, 42],                // Karottennase!
+    [0.37,1.44,0.26, 0.44,1.51,0.32, 5],                // Augen
+    [0.56,1.44,0.26, 0.63,1.51,0.32, 5],
+    [0.46,0.85,0.19, 0.54,0.93,0.24, 5],                // Knöpfe
+    [0.46,1.0,0.19, 0.54,1.08,0.24, 5],
+    [0.78,0.95,0.45, 1.15,1.03,0.55, 5],                // Stock-Arme
+    [-0.15,0.95,0.45, 0.22,1.03,0.55, 5]] },
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, FENCE, WOOL, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -467,6 +482,8 @@ function ensureData(cx,cz) {
       const b=ch.data[i];
       if (b===CARROT0 || b===CARROT1 || b===TOMATO0 || b===TOMATO1 || b===WHEAT0 || b===WHEAT1)
         cropSet.add((cx*CS+(i&15))+','+(i>>8)+','+(cz*CS+((i>>4)&15)));
+      else if (b===SNOW)
+        snowSet.add((cx*CS+(i&15))+','+(i>>8)+','+(cz*CS+((i>>4)&15)));
     }
   }
   return ch;
@@ -516,7 +533,7 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -546,6 +563,7 @@ function loadGame() {
     if (typeof s.wheat==='number') wheat = s.wheat;
     if (typeof s.bread==='number') bread = s.bread;
     if (typeof s.wool==='number') wool = s.wool;
+    if (typeof s.snowCnt==='number') snowCnt = s.snowCnt;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -700,6 +718,7 @@ atlas.width = atlas.height = T*ATLAS_N;
     return vary(240,236,230,10);
   });
   tile(51,()=>vary(224,188,172,14));                                // geschorenes Schaf (rosa)
+  tile(52,()=> rnd()<0.1 ? 'rgb(255,255,255)' : vary(240,246,252,8)); // Schnee glitzernd
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -1640,6 +1659,7 @@ function updateFoodHUD() {
     el.textContent=emoji+' '+n; el.style.display = n>0 ? 'flex':'none'; };
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
+  set('foodS','❄️',snowCnt);
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -1667,11 +1687,14 @@ function eatFood(kind) {
   } else if (kind==='wo') {
     toast('🧶 Wolle isst man nicht! 😄 Wähle den Woll-Block in der Leiste und bau damit!', 3000);
     return;
+  } else if (kind==='s') {
+    toast('❄️ Brrr, zu kalt zum Essen! Wähle den Schneemann ⛄ in der Leiste (kostet 3 ❄️)!', 3000);
+    return;
   } else return;
   updateFoodHUD(); scheduleSave();
   blip(500,0.05); blip(420,0.05); blip(540,0.05);
 }
-for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo']]) {
+for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s']]) {
   const el=document.getElementById(id);
   el.addEventListener('click', ()=>eatFood(kind));
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
@@ -1692,6 +1715,7 @@ function growCrops() {
       if (!CROP_NEXT[next]) cropSet.delete(key);   // ausgewachsen
     }
   }
+  if (weather!=='snow' && snowSet.size) meltSnow();
   for (let i=appleRegrow.length-1; i>=0; i--) {
     const r = appleRegrow[i];
     r[3] -= 2.5;
@@ -1814,7 +1838,40 @@ document.getElementById('navBtn').addEventListener('mousedown',e=>{e.preventDefa
 // ------------------------------ Wetter --------------------------------------
 let weather = 'clear', weatherT = 40 + Math.random()*40;
 const wparts = [];
-let rainNoise = null;
+let rainNoise = null, snowFallT = 0;
+const snowSet = new Set();              // liegender Schnee ("x,y,z")
+let snowCnt = 0;
+
+function trySnowPlace() {
+  if (snowSet.size > 400) return;
+  const x = Math.floor(player.x + Math.random()*36-18);
+  const z = Math.floor(player.z + Math.random()*36-18);
+  const ch = getChunk(x>>4, z>>4);
+  if (!ch || !ch.data) return;
+  for (let y=CH-1; y>0; y--) {
+    const b = getBlock(x,y,z);
+    if (b===AIR) continue;
+    const def = BLOCKS[b];
+    if (b===SNOW || b===WATER || !def.solid || def.model || def.fence) return;
+    if (y+1 < CH && getBlock(x,y+1,z)===AIR) {
+      setBlock(x, y+1, z, SNOW);
+      snowSet.add(x+','+(y+1)+','+z);
+    }
+    return;
+  }
+}
+function meltSnow() {                   // wenn es nicht schneit, taut der Schnee
+  let n = 0;
+  for (const key of snowSet) {
+    const [x,y,z] = key.split(',').map(Number);
+    const ch = getChunk(x>>4, z>>4);
+    if (ch && ch.data) {
+      if (getBlock(x,y,z)===SNOW) setBlock(x,y,z,AIR);
+      snowSet.delete(key);
+    }
+    if (++n >= 4) break;
+  }
+}
 
 function setWeather(w) {
   weather = w;
@@ -1850,6 +1907,10 @@ function rainSound(on) {
   } catch(e) {}
 }
 function updateWeather(dt, now) {
+  if (weather==='snow') {               // Schnee bleibt liegen!
+    snowFallT += dt;
+    if (snowFallT > 1) { snowFallT = 0; for (let i=0;i<4;i++) trySnowPlace(); }
+  }
   weatherT -= dt;
   if (weatherT <= 0) {
     if (weather === 'clear') {
@@ -2119,6 +2180,21 @@ function doBreak(dir) {
     blip(200,0.07);
     return;
   }
+  if (hit.block===SNOW) {               // Schnee aufsammeln!
+    snowCnt++; updateFoodHUD(); scheduleSave();
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    snowSet.delete(hit.x+','+hit.y+','+hit.z);
+    toast('❄️ Schnee aufgesammelt! (3 ❄️ = 1 Schneemann ⛄)', 2500);
+    blip(700,0.05);
+    return;
+  }
+  if (hit.block===SNOWMAN) {            // Schneemann abbauen: Schnee zurück
+    snowCnt += 3; updateFoodHUD(); scheduleSave();
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    toast('⛄ Schneemann abgebaut – 3 Schnee zurück!', 2000);
+    blip(300,0.08);
+    return;
+  }
   if (hit.block===APPLE_LEAF) {         // Äpfel vom Baum pflücken!
     const n = 1 + Math.floor(Math.random()*2);
     apples += n; updateFoodHUD(); scheduleSave();
@@ -2219,6 +2295,13 @@ function doPlace(dir) {
       toast('🌱 Das wächst nur auf Gras oder Erde!', 2500);
       return;
     }
+  }
+  if (b===SNOWMAN) {                    // Schneemann kostet 3 Schnee
+    if (snowCnt < 3) {
+      toast('⛄ Du brauchst 3 Schnee! Sammle Schnee, wenn es schneit. (Du hast '+snowCnt+')', 3000);
+      return;
+    }
+    snowCnt -= 3; updateFoodHUD(); scheduleSave();
   }
   if (b===WOOL) {                       // Wolle bauen kostet Wolle vom Schaf!
     if (wool <= 0) {
@@ -2353,6 +2436,8 @@ const ICONS = {
     g.fillRect(3,3,10,10); g.fillStyle='#e4f2fa'; g.fillRect(4,4,3,3); }),
   [FENCE]: iconURL(g=>{ g.fillStyle='#6e5230'; g.fillRect(3,2,2,13); g.fillRect(11,2,2,13);
     g.fillStyle='#8a6a42'; g.fillRect(1,4,14,2); g.fillRect(1,9,14,2); }),
+  [SNOWMAN]: iconURL(g=>{ g.fillStyle='#f4f8fc'; g.fillRect(5,1,6,4); g.fillRect(4,5,8,4); g.fillRect(3,9,10,6);
+    g.fillStyle='#e8781e'; g.fillRect(7,3,3,1); g.fillStyle='#3b2a12'; g.fillRect(6,2,1,1); g.fillRect(9,2,1,1); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
