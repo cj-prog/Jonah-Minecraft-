@@ -92,6 +92,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   Essen gibt Kräfte: 🥕 = superschnell, 🍅 = Riesensprung, 🍎 = beides!
   Oben links auf dein Essen tippen, um es zu futtern.
   In den Dörfern gibt es fertige Gemüsegärten zum Ernten
+- Alles wächst nach! 🌱 Geerntete Beete fangen von vorne an zu wachsen,
+  gepflückte Äpfel hängen nach einer Weile wieder am Baum.
+  (Ein Beet loswerden? Im ⛏️-Modus antippen, solange es noch nicht reif ist)
 - Schränke! 🗄️ Ein Schrank mit zwei Türen und 6 echten Fächern:
   Antippen öffnet ihn, dann kannst du Blöcke hineinlegen und wieder
   herausnehmen – der Inhalt wird gespeichert
