@@ -90,6 +90,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   schau zu, wie sie in 3 Stufen wachsen. An manchen Bäumen hängen rote Äpfel –
   einfach die Apfel-Blätter antippen und pflücken!
   Essen gibt Kräfte: 🥕 = superschnell, 🍅 = Riesensprung, 🍎 = beides!
+- Brot backen! 🍞 Pflanze Weizen 🌾 (wird golden, wenn er reif ist),
+  ernte ihn und tippe auf deinen Weizen-Vorrat: Aus 3 Weizen wird 1 Brot.
+  Brot ist das beste Essen: schnell UND hoch für ganze 20 Sekunden!
   Oben links auf dein Essen tippen, um es zu futtern.
   In den Dörfern gibt es fertige Gemüsegärten zum Ernten
 - Alles wächst nach! 🌱 Geerntete Beete fangen von vorne an zu wachsen,
