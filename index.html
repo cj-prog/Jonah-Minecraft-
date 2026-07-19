@@ -77,6 +77,9 @@
     white-space:normal; text-align:center; max-width:min(82vw,440px); width:max-content; }
 
   #waterFx { inset:0; background:rgba(20,60,160,.35); display:none; pointer-events:none; }
+  #carrots { left:calc(12px + env(safe-area-inset-left)); top:calc(12px + env(safe-area-inset-top));
+    display:none; align-items:center; background:rgba(0,0,0,.4); color:#fff;
+    padding:6px 12px; border-radius:12px; font-size:17px; font-weight:bold; }
 
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
@@ -120,11 +123,12 @@
 <div class="hud" id="joyKnob"></div>
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
+<div class="hud" id="carrots"></div>
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 25 &middot; Schränke mit Fächern 🗄️</p>
+    Version 26 &middot; Karotten pflanzen und essen 🥕</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -164,7 +168,8 @@ const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
 
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
-      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19;
+      TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19,
+      CARROT0=20, CARROT1=21, CARROT2=22;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -214,8 +219,20 @@ const BLOCKS = {
     [0.51,0.04,0.13, 0.92,0.94,0.19, 41],               // rechte Tür
     [0.43,0.42,0.09, 0.47,0.58,0.14, 5],                // Griffe
     [0.53,0.42,0.09, 0.57,0.58,0.14, 5]] },
+  // Karotten-Beet in 3 Wachstums-Stufen
+  [CARROT0]: { name:'Karotten-Beet (pflanzen und warten!)', tiles:[7,7,7], solid:false, model:[
+    [0.22,0,0.22, 0.28,0.14,0.28, 7],[0.68,0,0.32, 0.74,0.12,0.38, 7],
+    [0.4,0,0.62, 0.46,0.15,0.68, 7],[0.62,0,0.72, 0.68,0.11,0.78, 7]] },
+  [CARROT1]: { name:'Karotten (wachsen noch)', tiles:[7,7,7], solid:false, model:[
+    [0.18,0,0.18, 0.3,0.35,0.3, 7],[0.64,0,0.28, 0.76,0.32,0.4, 7],
+    [0.36,0,0.58, 0.48,0.38,0.7, 7],[0.6,0,0.68, 0.72,0.3,0.8, 7]] },
+  [CARROT2]: { name:'Karotten (reif!)', tiles:[7,7,7], solid:false, model:[
+    [0.16,0.1,0.16, 0.32,0.5,0.32, 7],[0.62,0.1,0.26, 0.78,0.46,0.42, 7],
+    [0.34,0.1,0.56, 0.5,0.52,0.72, 7],[0.58,0.1,0.66, 0.74,0.44,0.82, 7],
+    [0.18,0,0.18, 0.3,0.14,0.3, 42],[0.64,0,0.28, 0.76,0.14,0.4, 42],   // orange Karotten!
+    [0.36,0,0.58, 0.48,0.14,0.7, 42],[0.6,0,0.68, 0.72,0.14,0.8, 42]] },
 };
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -331,6 +348,12 @@ function genChunkData(cx, cz) {
       if (dx===0&&dz===0) { put(v.vx,wh,v.vz,WATER,false); put(v.vx,wh-1,v.vz,STONE,false); }
       else put(v.vx+dx,wh+1,v.vz+dz,STONE,false);
     }
+    // kleiner Karottengarten neben dem Brunnen
+    if (wh>SEA) for (let gx=0;gx<3;gx++) for (let gz=0;gz<2;gz++) {
+      const cxx=v.vx+3+gx, czz=v.vz+2+gz;
+      const gh=terrainHeight(cxx,czz);
+      if (gh>SEA && Math.abs(gh-wh)<=1) put(cxx,gh+1,czz,CARROT2,true);
+    }
     // Häuser
     for (let i=0;i<HOUSE_SPOTS.length;i++) {
       const hp = houseParams(v,i);
@@ -378,7 +401,15 @@ function getChunk(cx,cz){ return chunks.get(ckey(cx,cz)); }
 function ensureData(cx,cz) {
   let ch = getChunk(cx,cz);
   if (!ch) { ch = {cx,cz,data:null,dirty:true,vbo:null,vcount:0,vboW:null,wcount:0}; chunks.set(ckey(cx,cz),ch); }
-  if (!ch.data) ch.data = genChunkData(cx,cz);
+  if (!ch.data) {
+    ch.data = genChunkData(cx,cz);
+    // wachsende Beete in diesem Chunk weiterwachsen lassen
+    for (let i=0;i<ch.data.length;i++) {
+      const b=ch.data[i];
+      if (b===CARROT0 || b===CARROT1)
+        cropSet.add((cx*CS+(i&15))+','+(i>>8)+','+(cz*CS+((i>>4)&15)));
+    }
+  }
   return ch;
 }
 function getBlock(wx,wy,wz) {
@@ -426,6 +457,7 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       cabinets: Object.fromEntries(cabinets),
+      carrots,
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
   } catch(e) {}
@@ -448,6 +480,7 @@ function loadGame() {
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.cabinets) for (const k in s.cabinets) cabinets.set(k, s.cabinets[k]);
+    if (typeof s.carrots==='number') carrots = s.carrots;
     return s.player || null;
   } catch(e) { return null; }
 }
@@ -568,6 +601,7 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x<1||x>14||y<1||y>14) return vary(96,70,42,10);
     return vary(176,140,90,16);
   });
+  tile(42,()=>vary(233,112,28,22));                                 // Karotten-Orange
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -867,7 +901,7 @@ function physics(dt) {
   mf += joy.fwd; ms += joy.strafe;
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
-  const speed = swim ? 3.0 : WALK_SPEED;
+  const speed = swim ? 3.0 : (boostT > 0 ? 6.6 : WALK_SPEED);   // Karotten-Power!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   player.vx = (fx*mf + rx*ms) * speed + player.kx;
   player.vz = (fz*mf + rz*ms) * speed + player.kz;
@@ -1453,6 +1487,36 @@ function drawSignTexts() {
   gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
 }
 
+// ------------------------------ Karotten ------------------------------------
+const cropSet = new Set();              // wachsende Beete ("x,y,z")
+let carrots = 0, boostT = 0, cropT = 0;
+const carrotsEl = document.getElementById('carrots');
+
+function updateCarrotHUD() {
+  carrotsEl.textContent = '🥕 ' + carrots;
+  carrotsEl.style.display = carrots > 0 ? 'flex' : 'none';
+}
+function eatCarrot() {
+  if (carrots <= 0) return;
+  carrots--; boostT = 12;
+  updateCarrotHUD(); scheduleSave();
+  toast('Mmmh! 🥕 Karotten-Power – du bist superschnell!', 2500);
+  blip(500,0.05); blip(420,0.05); blip(540,0.05);
+}
+carrotsEl.addEventListener('click', eatCarrot);
+carrotsEl.addEventListener('touchstart', e=>{ e.preventDefault(); eatCarrot(); }, {passive:false});
+function growCrops() {
+  for (const key of [...cropSet]) {
+    const [x,y,z] = key.split(',').map(Number);
+    const ch = getChunk(x>>4, z>>4);
+    if (!ch || !ch.data) continue;
+    const b = getBlock(x,y,z);
+    if (b===CARROT0) { if (Math.random()<0.35) setBlock(x,y,z,CARROT1); }
+    else if (b===CARROT1) { if (Math.random()<0.35) { setBlock(x,y,z,CARROT2); cropSet.delete(key); } }
+    else cropSet.delete(key);
+  }
+}
+
 // ------------------------------ Schränke ------------------------------------
 const cabinets = new Map();             // "x,y,z" -> Array mit 6 Fächern (Block-Ids, 0 = leer)
 let cabinetTarget = null;
@@ -1835,6 +1899,18 @@ function doBreak(dir) {
   }
   if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
   if (hit.block===TNT_LIT) return;   // brennt schon!
+  if (hit.block===CARROT2) {            // Ernte-Zeit!
+    const n = 2 + Math.floor(Math.random()*3);
+    carrots += n; updateCarrotHUD(); scheduleSave();
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    toast('🥕 '+n+' Karotten geerntet! (Oben links antippen = essen)', 3000);
+    blip(600,0.06); blip(700,0.06);
+    return;
+  }
+  if (hit.block===CARROT0 || hit.block===CARROT1) {
+    toast('🌱 Die Karotten sind noch nicht reif. Warte noch ein bisschen!', 2500);
+    return;
+  }
   if (hit.block===SIGN) removeSign(hit.x,hit.y,hit.z);
   if (hit.block===CABINET) removeCabinet(hit.x,hit.y,hit.z);
   setBlock(hit.x,hit.y,hit.z,AIR);
@@ -1890,10 +1966,21 @@ function doPlace(dir) {
     const oz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
     if (ox&&oy&&oz) return;
   }
+  if (b===CARROT0) {                    // Karotten brauchen guten Boden
+    const below = getBlock(px, py-1, pz);
+    if (below!==GRASS && below!==DIRT) {
+      toast('🥕 Karotten wachsen nur auf Gras oder Erde!', 2500);
+      return;
+    }
+  }
   setBlock(px,py,pz,b);
   blip(330,0.06);
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
+  if (b===CARROT0) {
+    cropSet.add(px+','+py+','+pz);
+    toast('🌱 Gepflanzt! Schau zu, wie die Karotten wachsen...', 2500);
+  }
 }
 
 // ------------------------------ TNT -----------------------------------------
@@ -1987,6 +2074,8 @@ const ICONS = {
   [CHEST]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,3,12,11); g.fillStyle=HOLZ_D; g.fillRect(2,7,12,2); g.fillStyle='#3c3c40'; g.fillRect(7,6,2,4); }),
   [SIGN]:  iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,2,12,8); g.fillStyle=HOLZ_D; g.fillRect(7,10,2,5); g.fillStyle='#3b2a12'; g.fillRect(4,4,8,1); g.fillRect(4,7,6,1); }),
   [CABINET]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(2,1,12,14); g.fillStyle=HOLZ_D; g.fillRect(7,1,1,14); g.fillRect(2,1,12,1); g.fillStyle='#3b2a12'; g.fillRect(5,7,1,3); g.fillRect(10,7,1,3); }),
+  [CARROT0]: iconURL(g=>{ g.fillStyle='#3f8f2e'; g.fillRect(6,1,2,4); g.fillRect(9,2,2,3); g.fillRect(4,2,2,3);
+    g.fillStyle='#e8781e'; g.fillRect(5,5,6,3); g.fillRect(6,8,4,3); g.fillRect(7,11,2,3); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
@@ -2268,6 +2357,9 @@ function frame(now) {
   updateAnimals(dt);
   updateWeather(dt, now);
   updateCompass(dt);
+  if (boostT > 0) boostT -= dt;
+  cropT += dt;
+  if (cropT > 2.5) { cropT = 0; growCrops(); }
 
   // Tag-Nacht-Wechsel (bei Regen ist der Himmel grauer)
   dayTime = (dayTime + dt*DAY_SPEED) % 1;
@@ -2375,6 +2467,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) ensureData(pcx+dx,pcz+dz);
   document.getElementById('start').style.display='none';
   started=true;
+  updateCarrotHUD();
   // Gespeicherte Haustiere wieder zum Leben erwecken
   for (const p of savedPets) {
     const type = p[0]===0 ? 'dog' : p[0]===1 ? 'cat' : p[0];   // alte Speicherstände: 0/1

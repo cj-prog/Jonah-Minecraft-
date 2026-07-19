@@ -86,6 +86,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   („Jonahs Haus", „Achtung TNT!" ...) – der Text steht lesbar in der Welt
   und wird gespeichert. Antippen im Bau-Modus ändert den Text
 - Möbel zum Einrichten: Tisch, Stuhl, Bett, Fackel und Truhe 🛏️🪑
+- Essen! 🥕 Pflanze Karotten-Beete auf Gras oder Erde und schau zu, wie sie
+  in 3 Stufen wachsen. Reife Karotten ernten, oben links antippen und essen:
+  Karotten-Power macht dich für 12 Sekunden superschnell!
+  In den Dörfern gibt es fertige Karottengärten zum Ernten
 - Schränke! 🗄️ Ein Schrank mit zwei Türen und 6 echten Fächern:
   Antippen öffnet ihn, dann kannst du Blöcke hineinlegen und wieder
   herausnehmen – der Inhalt wird gespeichert
