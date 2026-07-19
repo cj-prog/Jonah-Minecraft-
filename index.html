@@ -135,7 +135,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 30 &middot; Türen und Fenster! 🚪🪟</p>
+    Version 31 &middot; Zäune für deine Tiere 🚧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -178,7 +178,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19,
       CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
       WHEAT0=27, WHEAT1=28, WHEAT2=29,
-      DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34;
+      DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -278,9 +278,10 @@ const BLOCKS = {
   [DOOR_TOP_OPEN]: { name:'Tür (offen)', tiles:[47,47,47], solid:false, model:[
     [0,0,0, 0.16,1,1, 47]] },
   [GLASS]: { name:'Glas-Fenster', tiles:[48,48,48], solid:true },
+  [FENCE]: { name:'Zaun (verbindet sich von selbst!)', tiles:[5,5,5], solid:true, fence:true },
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, FENCE, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -787,6 +788,29 @@ function buildMesh(ch) {
     if (b===AIR) continue;
     const def = BLOCKS[b];
     const wx=x0+lx, wz=z0+lz;
+    if (def.fence) {                    // Zaun: Pfosten + Latten zu den Nachbarn
+      const boxes = [[0.4,0,0.4, 0.6,1,0.6]];
+      const conn = (dx,dz) => {
+        const nb = getBlock(wx+dx, y, wz+dz);
+        return nb===FENCE || (nb && BLOCKS[nb].solid && !BLOCKS[nb].model && !BLOCKS[nb].fence);
+      };
+      if (conn(1,0))  boxes.push([0.6,0.62,0.44, 1,0.78,0.56],[0.6,0.2,0.44, 1,0.36,0.56]);
+      if (conn(-1,0)) boxes.push([0,0.62,0.44, 0.4,0.78,0.56],[0,0.2,0.44, 0.4,0.36,0.56]);
+      if (conn(0,1))  boxes.push([0.44,0.62,0.6, 0.56,0.78,1],[0.44,0.2,0.6, 0.56,0.36,1]);
+      if (conn(0,-1)) boxes.push([0.44,0.62,0, 0.56,0.78,0.4],[0.44,0.2,0, 0.56,0.36,0.4]);
+      for (const bx of boxes) {
+        for (let f=0;f<6;f++) {
+          const F=FACES[f];
+          for (let k=0;k<6;k++) {
+            const c=F.c[TRI[k]];
+            const uv=tileUV(5, c[3], c[4]);
+            opq.push(wx+bx[0]+(bx[3]-bx[0])*c[0], y+bx[1]+(bx[4]-bx[1])*c[1], wz+bx[2]+(bx[5]-bx[2])*c[2],
+                     uv[0], uv[1], F.s);
+          }
+        }
+      }
+      continue;
+    }
     if (def.model) {                    // Möbel: kleine Kisten statt voller Würfel
       for (const bx of def.model) {
         const sh = bx[7]||1;
@@ -805,7 +829,7 @@ function buildMesh(ch) {
     for (let f=0;f<6;f++) {
       const F=FACES[f];
       const nb = getBlock(wx+F.d[0], y+F.d[1], wz+F.d[2]);
-      const nbModel = nb && BLOCKS[nb].model;
+      const nbModel = nb && (BLOCKS[nb].model || BLOCKS[nb].fence);
       let visible;
       if (b===WATER) visible = (nb===AIR || nbModel);
       else if (b===GLASS) visible = (nb===AIR || nb===WATER || nbModel);
@@ -1377,7 +1401,11 @@ function updateAnimals(dt) {
     if (!collideBox(nx,a.y,a.z,k.half,k.height)) a.x=nx; else blocked=true;
     const nz=a.z+vz*dt;
     if (!collideBox(a.x,a.y,nz,k.half,k.height)) a.z=nz; else blocked=true;
-    if (blocked && a.onGround) a.vy = 8;             // hüpft eine Stufe hoch
+    if (blocked && a.onGround) {
+      const fx=Math.floor(a.x+Math.sin(a.yaw)), fz=Math.floor(a.z-Math.cos(a.yaw));
+      // Über Zäune kommen Tiere nicht drüber - so bleiben sie im Gehege!
+      if (getBlock(fx, Math.floor(a.y), fz)!==FENCE) a.vy = 8;
+    }
     const ny=a.y+a.vy*dt;
     a.onGround=false;
     if (!collideBox(a.x,ny,a.z,k.half,k.height)) a.y=ny;
@@ -2271,6 +2299,8 @@ const ICONS = {
     g.fillStyle='#3b2a12'; g.fillRect(11,7,2,2); }),
   [GLASS]: iconURL(g=>{ g.fillStyle='#f0f8fc'; g.fillRect(1,1,14,14); g.fillStyle='#c6e0ee';
     g.fillRect(3,3,10,10); g.fillStyle='#e4f2fa'; g.fillRect(4,4,3,3); }),
+  [FENCE]: iconURL(g=>{ g.fillStyle='#6e5230'; g.fillRect(3,2,2,13); g.fillRect(11,2,2,13);
+    g.fillStyle='#8a6a42'; g.fillRect(1,4,14,2); g.fillRect(1,9,14,2); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{

@@ -85,6 +85,9 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Türen und Fenster! 🚪🪟 Die Tür ist 2 Blöcke hoch, hat eine Klinke und ein
   Fensterchen – antippen öffnet und schließt sie wirklich.
   Glas-Fenster sind durchsichtig: Bau sie in deine Hauswand und schau raus!
+- Zäune! 🚧 Zaun-Blöcke verbinden sich automatisch mit ihren Nachbarn zu
+  langen Zäunen. Tiere können nicht drüberspringen – bau ihnen ein Gehege!
+  (Du selbst kommst mit einem Sprung drüber – oder nimm eine Tür als Tor)
 - Schilder! 📜 Stell ein Schild auf und schreib deinen eigenen Text darauf
   („Jonahs Haus", „Achtung TNT!" ...) – der Text steht lesbar in der Welt
   und wird gespeichert. Antippen im Bau-Modus ändert den Text
