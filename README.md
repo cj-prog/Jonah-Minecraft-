@@ -143,6 +143,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Antippen öffnet ihn, dann kannst du Blöcke hineinlegen und wieder
   herausnehmen – der Inhalt wird gespeichert
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
+- Autos! 🚗 Bunte Autos (rot, blau, orange) mit Scheiben, Reifen und
+  Scheinwerfern fahren durch die Landschaft, weichen Seen aus und hupen.
+  Tippe eins an und fahr selbst: superschnell über Stock und Stein,
+  Stufen hüpft das Auto von allein hoch. 🅿️-Knopf = parken
 - Dein Privatjet! ✈️ In der Nähe vom Start parkt dein eigener weißer Jet
   mit rotem Streifen – und im Cockpit sitzt Pilot Paul 👨‍✈️.
   Antippen = einsteigen, ⬆/⬇ = hoch und runter, Joystick = düsen (superschnell!),
