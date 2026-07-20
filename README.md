@@ -22,6 +22,22 @@ Tipp: Über das ⛶-Symbol im Spiel in den Vollbildmodus wechseln, oder die Seit
 Alternativ kann man `index.html` auch einfach herunterladen und direkt im Browser öffnen –
 das Spiel braucht kein Internet.
 
+## 👥 Zusammen spielen
+
+Zu zweit in EINER Welt – so geht's:
+1. Beide öffnen das Spiel und tippen auf den 👥-Knopf oben
+2. Spieler 1 wählt „🏠 Ich lade ein" und bekommt einen langen Zauber-Code
+3. Den Code an Spieler 2 schicken (am besten hilft ein Erwachsener, z. B. per
+   WhatsApp – der Code ist lang, einfach kopieren und einfügen)
+4. Spieler 2 wählt „🎈 Ich spiele mit", fügt den Code ein und bekommt einen
+   Antwort-Code – den schickt er zurück
+5. Spieler 1 fügt den Antwort-Code ein und drückt „Verbinden" – fertig! 🎉
+
+Dann seht ihr euch gegenseitig als Figur, baut in derselben Welt und könnt
+über den 💬-Chat miteinander schreiben. Der Gast spielt in der Welt des
+Gastgebers (gespeichert wird sie nur beim Gastgeber).
+Beide brauchen Internet; am einfachsten klappt es im selben WLAN.
+
 ## 🎮 Steuerung
 
 **Handy (Touch):**
