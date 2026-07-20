@@ -143,6 +143,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Antippen öffnet ihn, dann kannst du Blöcke hineinlegen und wieder
   herausnehmen – der Inhalt wird gespeichert
   (im Bau-Modus aufs Bett tippen = schlafen und die Nacht überspringen!)
+- Dein Privatjet! ✈️ In der Nähe vom Start parkt dein eigener weißer Jet
+  mit rotem Streifen – und im Cockpit sitzt Pilot Paul 👨‍✈️.
+  Antippen = einsteigen, ⬆/⬇ = hoch und runter, Joystick = düsen (superschnell!),
+  🛬-Knopf = landen. Paul erzählt unterwegs lustige Sachen, und der Jet
+  bleibt genau da geparkt, wo du gelandet bist (wird gespeichert!)
 - Fliegen! 🕊️ Mit dem ✈️-Knopf (oder Taste F) hebst du ab:
   ⬆ steigt, ⬇ sinkt, der Joystick fliegt vorwärts – perfekt zum Erkunden und Bauen
 - Auf Stühle kann man sich setzen 🪑: im Bau-Modus antippen, schon sitzt du –

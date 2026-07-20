@@ -170,7 +170,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 39 &middot; der Kompass zeigt zu DEINEM Schild 📜</p>
+    Version 40 &middot; dein Privatjet mit Pilot Paul! ✈️👨‍✈️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -684,7 +684,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [];
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -693,6 +693,8 @@ function saveGame() {
     for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
     const pets = animals.filter(a=>a.tame).map(a=>
       [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0]);
+    const jetA = animals.find(a=>a.type==='jet');
+    const jetSave = jetA ? [Math.round(jetA.x*10)/10, Math.round(jetA.y*10)/10, Math.round(jetA.z*10)/10] : null;
     const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
@@ -700,6 +702,7 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       ziel: customTarget,
+      jet: jetSave,
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
@@ -725,6 +728,7 @@ function loadGame() {
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.ziel && typeof s.ziel.x==='number') customTarget = s.ziel;
+    if (Array.isArray(s.jet)) savedJet = s.jet;
     if (s.cabinets) for (const k in s.cabinets) cabinets.set(k, s.cabinets[k]);
     if (typeof s.carrots==='number') carrots = s.carrots;
     if (typeof s.tomatoes==='number') tomatoes = s.tomatoes;
@@ -1159,6 +1163,7 @@ function physics(dt) {
   const ch = getChunk(Math.floor(player.x)>>4, Math.floor(player.z)>>4);
   if (!ch || !ch.data) return;   // warten bis der Boden geladen ist
 
+  if (jetRiding) { jetPhysics(dt); return; }
   if (riding) { ridePhysics(dt); return; }
 
   if (sitting) {                        // auf dem Stuhl sitzen
@@ -1276,6 +1281,7 @@ const ANIMAL_KIND = {
   horse:    { speed:1.2, half:0.45, height:1.6,  tile:23, face:24 },
   sheep:    { speed:1.0, half:0.4,  height:1.2,  tile:49, face:50 },
   slime:    { speed:1.4, half:0.35, height:0.7,  tile:53, face:54 },
+  jet:      { speed:0,   half:1.4,  height:1.3,  tile:49, face:49 },
   dog:      { speed:1.3, half:0.28, height:0.7,  tile:31, face:32 },
   cat:      { speed:1.5, half:0.2,  height:0.5,  tile:33, face:34 },
   bird:     { speed:4.0, half:0.18, height:0.35, tile:35, face:35 },
@@ -1368,6 +1374,7 @@ let downHeld = false;
 
 function toggleFly() {
   if (riding) { toast('Steig erst vom Pferd ab! 🐴'); return; }
+  if (jetRiding) { toast('Du fliegst doch schon mit deinem Jet! ✈️'); return; }
   flying = !flying;
   sitting = null;
   player.vy = 0;
@@ -1567,6 +1574,14 @@ function updateAnimals(dt) {
   for (let i=animals.length-1; i>=0; i--) {
     const a = animals[i];
     if (a===riding) continue;           // wird beim Reiten vom Spieler gesteuert
+    if (a.type==='jet') {               // geparkter Jet: sinkt sanft auf den Boden
+      if (a!==jetRiding) {
+        a.vy = Math.max(a.vy-25*dt, -20);
+        const ny=a.y+a.vy*dt;
+        if (!collideBox(a.x,ny,a.z,1.1,1.2)) a.y=ny; else a.vy=0;
+      }
+      continue;
+    }
     if (!a.tame && !a.follow && Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.type==='bird') { updateBird(a, dt); continue; }   // Vögel fliegen frei
     if (a.type==='fish') { updateFish(a, dt); continue; }   // Fische schwimmen frei
@@ -1738,6 +1753,19 @@ function drawAnimals() {
       pushBox(arr,a, 0,1.1,0.85, 0.1,0.45,0.1, k.tile);              // Schweif
       pushBox(arr,a, 0,1.36,0.15, 0.42,0.12,0.45, 20);               // Sattel
       if (a.tame) pushBox(arr,a, 0,1.28,-0.62, 0.32,0.12,0.34, 25);  // rotes Halsband
+    } else if (a.type==='jet') {
+      pushBox(arr,a, 0,0.7,-0.4, 0.8,0.7,3.0, 49);                 // Rumpf (weiß)
+      pushBox(arr,a, 0,0.7,-2.15, 0.55,0.5,0.6, 49);               // Nase
+      pushBox(arr,a, 0,0.95,-0.4, 0.84,0.14,3.02, 25);             // roter Streifen
+      pushBox(arr,a, 0,1.18,-1.45, 0.5,0.35,0.5, 48);              // Cockpit-Glas
+      pushBox(arr,a, 0,1.42,-1.45, 0.3,0.3,0.3, 22, 21);           // Pilot Paul!
+      pushBox(arr,a, 0,1.6,-1.45, 0.36,0.1,0.36, 40);              // Pilotenmütze
+      pushBox(arr,a, -1.6,0.78,-0.2, 1.9,0.12,0.9, 49);            // Flügel
+      pushBox(arr,a,  1.6,0.78,-0.2, 1.9,0.12,0.9, 49);
+      pushBox(arr,a, 0,1.45,1.0, 0.12,0.95,0.6, 25);               // rote Heckflosse
+      pushBox(arr,a, 0,1.0,1.05, 1.5,0.1,0.5, 49);                 // Höhenleitwerk
+      pushBox(arr,a, -0.85,0.42,-0.3, 0.3,0.3,0.75, 3);            // Triebwerke
+      pushBox(arr,a,  0.85,0.42,-0.3, 0.3,0.3,0.75, 3);
     } else if (a.type==='slime') {
       const sq = 1 + Math.sin(a.ph*1.5)*0.1;
       pushBox(arr,a, 0,0.35*sq,0, 0.7,0.7*sq,0.7, k.tile, k.face);
@@ -2410,6 +2438,93 @@ function rayEntity(o, d, maxT) {  // trifft der Strahl ein Tier/Wesen?
   }
   return best;
 }
+// ------------------------------ Privatjet -----------------------------------
+let jetRiding = null, jetTalkT = 0, jetNoise = null;
+const PILOT_TALK = [
+  'Schöner Flug heute, oder?',
+  'Festhalten, wir drehen eine Runde!',
+  'Schau mal nach unten – alles deine Welt!',
+  'Ich fliege seit 20 Jahren. Du bist mein bester Fluggast!',
+  'Saft und Kekse gibt es leider erst nach der Landung. Hihi!',
+  'Mit ⬆ und ⬇ sagst du mir, wie hoch wir fliegen sollen!',
+  'Wolken! Ich liebe Wolken!',
+];
+function jetSound(on) {
+  try {
+    if (!actx) return;
+    if (on && !jetNoise) {
+      const o=actx.createOscillator(); o.type='sawtooth'; o.frequency.value=72;
+      const flt=actx.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=260;
+      const g=actx.createGain(); g.gain.value=0.045;
+      o.connect(flt); flt.connect(g); g.connect(actx.destination);
+      o.start(); jetNoise=o;
+    } else if (!on && jetNoise) { jetNoise.stop(); jetNoise=null; }
+  } catch(e) {}
+}
+function enterJet(a) {
+  if (riding) dismount();
+  if (flying) toggleFly();
+  sitting = null;
+  jetRiding = a;
+  document.getElementById('downBtn').style.display='flex';
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='flex'; rb.textContent='🛬';
+  toast('👨‍✈️ Pilot Paul: „Willkommen an Bord, Jonah! ⬆ hoch, ⬇ runter – und los!"', 4000);
+  blip(523,0.1); blip(659,0.1);
+  jetSound(true);
+  jetTalkT = 8;
+}
+function exitJet() {
+  const a = jetRiding;
+  jetRiding = null;
+  jetSound(false);
+  document.getElementById('downBtn').style.display = flying ? 'flex' : 'none';
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='none'; rb.textContent='🐴';
+  if (a) {
+    if (!collide(a.x+2.2, a.y, a.z)) { player.x=a.x+2.2; player.z=a.z; }
+    player.y = a.y; player.vx=player.vy=player.vz=0;
+  }
+  toast('👨‍✈️ Paul: „Danke fürs Mitfliegen! Ich warte hier auf dich."', 3500);
+  blip(392,0.1);
+  scheduleSave();
+}
+function jetPhysics(dt) {
+  const a = jetRiding;
+  let mf=0, ms=0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf,ms);
+  if (ml>1) { mf/=ml; ms/=ml; }
+  const speed = 14;                     // Düsen-Tempo!
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+  const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
+  let vv = 0;
+  if (jumpHeld||keys['Space']) vv += 7;
+  if (downHeld||keys['ShiftLeft']||keys['ShiftRight']) vv -= 7;
+  // Steckt der Jet fest (z.B. an einer Bodenwelle), darf er sich freiwackeln
+  const stuck = collideBox(a.x,a.y,a.z,1.1,1.2);
+  const nx=a.x+vx*dt;
+  if (stuck || !collideBox(nx,a.y,a.z,1.1,1.2)) a.x=nx;
+  const nz=a.z+vz*dt;
+  if (stuck || !collideBox(a.x,a.y,nz,1.1,1.2)) a.z=nz;
+  const ny=Math.min(CH+30, a.y+vv*dt);
+  if (stuck || !collideBox(a.x,ny,a.z,1.1,1.2)) a.y=ny;
+  a.yaw = yaw;
+  a.ph += dt*(ml>0.05 ? 20 : 4);
+  player.x=a.x; player.z=a.z; player.y=a.y+0.5;
+  player.vx=player.vy=player.vz=0;
+  // Pilot Paul erzählt unterwegs
+  jetTalkT -= dt;
+  if (jetTalkT <= 0) {
+    jetTalkT = 11 + Math.random()*8;
+    toast('👨‍✈️ Paul: „'+PILOT_TALK[Math.floor(Math.random()*PILOT_TALK.length)]+'"', 3200);
+  }
+}
+
 function tryRelease(dir) {              // langes Drücken: freilassen / Freundschaft beenden
   const e=eyePos();
   const bHit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
@@ -2443,8 +2558,13 @@ function releaseEntity(a) {
   }
 }
 function hitEntity(a, dir) {
+  if (a.type==='jet') {                 // Einsteigen in den Privatjet!
+    if (jetRiding) return;
+    enterJet(a);
+    return;
+  }
   if (a.type==='horse') {               // Aufsteigen!
-    if (riding) return;
+    if (riding || jetRiding) return;
     sitting = null;
     if (flying) toggleFly();
     riding = a; a.walking = false;
@@ -3021,8 +3141,9 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-rideBtn.addEventListener('touchstart',e=>{e.preventDefault();dismount();},{passive:false});
-rideBtn.addEventListener('mousedown',e=>{e.preventDefault();dismount();});
+const rideOff = ()=>{ if (jetRiding) exitJet(); else dismount(); };
+rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
+rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
 const flyBtn=document.getElementById('flyBtn');
 flyBtn.addEventListener('touchstart',e=>{e.preventDefault();toggleFly();},{passive:false});
@@ -3326,6 +3447,22 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     animals.push({ type: c[0]===1?'kid':'villager', name:c[1], x:c[2], y:c[3], z:c[4],
       home:c[5], hx:c[6], hz:c[7], friend:3, follow:true,
       yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false });
+  }
+  // Dein Privatjet! Entweder da, wo du ihn geparkt hast, oder neu am Start
+  if (savedJet) {
+    animals.push({type:'jet', x:savedJet[0], y:savedJet[1], z:savedJet[2],
+      yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
+  } else {
+    let jx=Math.floor(player.x)+6, jz=Math.floor(player.z);
+    for (let r=4;r<30;r+=2) {
+      let ok=true;
+      const x=Math.floor(player.x)+r, z=Math.floor(player.z);
+      for (let dx=-2;dx<=2 && ok;dx++) for (let dz=-2;dz<=2 && ok;dz++)
+        if (terrainHeight(x+dx,z+dz)<=SEA || Math.abs(terrainHeight(x+dx,z+dz)-terrainHeight(x,z))>1) ok=false;
+      if (ok) { jx=x; jz=z; break; }
+    }
+    animals.push({type:'jet', x:jx+0.5, y:terrainHeight(jx,jz)+2.5, z:jz+0.5,
+      yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
   }
   // Ein paar Tiere gleich in der Nähe – und garantiert Pferd, Hund und Katze!
   for (let i=0; i<24 && animals.length<5; i++) trySpawnAnimal(6,18);
