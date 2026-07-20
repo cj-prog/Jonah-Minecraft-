@@ -75,6 +75,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   mitgespeichert. Pferde werden beim ersten Reiten zu Freunden.
   Nochmal antippen = „Sitz!" (das Tier wartet), noch einmal = „Komm mit!"
   Nur Fische bleiben lieber frei im Wasser 😉
+- Freilassen: Halte lange auf ein gezähmtes Tier gedrückt (am PC:
+  Shift+Klick), dann kannst du es wieder in die Freiheit entlassen 🕊️
+  Genauso kannst du eine Freundschaft mit einem Bewohner beenden 💔 –
+  und jederzeit neu schließen
 - Tag und Nacht: ein voller Tag dauert 5 Minuten 🌙
 - Wetter! Manchmal regnet es (mit Regen-Rauschen und grauem Himmel) 🌧️
   und manchmal schneit es in dicken Flocken ❄️ – drinnen bleibt es trocken
