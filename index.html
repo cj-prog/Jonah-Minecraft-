@@ -168,7 +168,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 37 &middot; Spielstand sichern und laden 💾</p>
+    Version 38 &middot; finde Jonahs unterirdische Festung! 🏰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -390,6 +390,22 @@ function cavePath(c) {                  // Tunnel-Kugeln vom Eingang zur Schatzk
   return pts;
 }
 
+// ------------------------------ Jonahs Festung -------------------------------
+let _fort = null, _fortSeed = null;
+function fortressPos() {                // eine geheime Festung pro Welt
+  if (_fort && _fortSeed===seed) return _fort;
+  const ang = hash2(7,7,4711)*Math.PI*2;
+  const d = 150 + hash2(8,8,4712)*80;
+  let fx = Math.round(Math.cos(ang)*d), fz = Math.round(Math.sin(ang)*d);
+  for (let i=0;i<300;i++) {             // auf festes Land schieben
+    if (terrainHeight(fx,fz)>SEA+2 && terrainHeight(fx,fz-26)>SEA+2) break;
+    fx += 5;
+  }
+  _fort = { fx, fz, gz: fz-26 };        // gz = Tor an der Oberfläche
+  _fortSeed = seed;
+  return _fort;
+}
+
 // ------------------------------ Dörfer --------------------------------------
 const VCELL = 80;                       // Raster: pro 80x80-Feld höchstens 1 Dorf
 const HOUSE_SPOTS = [[0,5],[14,2],[-13,8],[6,-13],[-11,-10],[15,-9]];
@@ -553,6 +569,61 @@ function genChunkData(cx, cz) {
       put(hx0+mx,baseY+2,hz0+D,AIR,false);
       // In manchen Häusern steht eine Schatztruhe!
       if (hash2(hx0,hz0,321)<0.6) put(hx0+1,baseY+1,hz0+1,CHEST,false);
+    }
+  }
+  // Jonahs unterirdische Festung bauen
+  {
+    const ft = fortressPos();
+    const bx0=ft.fx-10, bx1=ft.fx+10, bz0=ft.gz-6, bz1=ft.fz+8;
+    if (!(bx1<x0 || bx0>x0+CS-1 || bz1<z0 || bz0>z0+CS-1)) {
+      const h0 = terrainHeight(ft.fx, ft.gz);
+      // 1) Torhaus aus Ziegeln an der Oberfläche
+      for (let tx=ft.fx-2;tx<=ft.fx+2;tx++) for (let tz=ft.gz-4;tz<=ft.gz;tz++) {
+        for (let ty=h0+1;ty<=h0+4;ty++) {
+          const edge = tx===ft.fx-2||tx===ft.fx+2||tz===ft.gz-4||tz===ft.gz;
+          put(tx,ty,tz, edge?BRICK:AIR, false);
+        }
+        put(tx,h0+5,tz,BRICK,false);                     // Dach
+        put(tx,h0,tz,STONE,false);                       // fester Boden
+      }
+      for (let ty=h0+1;ty<=h0+2;ty++) { put(ft.fx,ty,ft.gz-4,AIR,false); put(ft.fx,ty,ft.gz-5,AIR,false); } // Eingang frei
+      put(ft.fx-2,h0+1,ft.gz-6,TORCH,true);
+      put(ft.fx+2,h0+1,ft.gz-6,TORCH,true);
+      put(ft.fx-1,h0+1,ft.gz-6,SIGN,true);
+      const skey=(ft.fx-1)+','+(h0+1)+','+(ft.gz-6);
+      if (!signTexts.has(skey)) signTexts.set(skey,'Jonahs Festung');
+      // 2) Tunnel-Rampe hinunter zum Thronsaal
+      const L=19;
+      for (let i=0;i<=L;i++) {
+        const tz=ft.gz+i;
+        const fy=Math.round((h0) - (h0-8)*(i/L));
+        for (let tx=ft.fx-1;tx<=ft.fx+1;tx++) {
+          for (let ty=fy;ty<=fy+3;ty++) put(tx,ty,tz,AIR,false);
+          put(tx,fy-1,tz,STONE,false);                   // Stufen-Boden
+        }
+        if (i%5===2) put(ft.fx-1,fy+1,tz,TORCH,true);
+      }
+      // 3) Thronsaal: großer Ziegel-Raum
+      for (let tx=ft.fx-8;tx<=ft.fx+8;tx++) for (let ty=7;ty<=14;ty++) for (let tz=ft.fz-6;tz<=ft.fz+6;tz++) {
+        const edge = tx===ft.fx-8||tx===ft.fx+8||ty===7||ty===14||tz===ft.fz-6||tz===ft.fz+6;
+        put(tx,ty,tz, edge?BRICK:AIR, false);
+      }
+      for (let tx=ft.fx-1;tx<=ft.fx+1;tx++) for (let ty=8;ty<=10;ty++) put(tx,ty,ft.fz-6,AIR,false);  // Tunnel-Tür
+      // Fackeln an den Wänden
+      for (const [tx,tz] of [[ft.fx-7,ft.fz-5],[ft.fx+7,ft.fz-5],[ft.fx-7,ft.fz+5],[ft.fx+7,ft.fz+5],[ft.fx,ft.fz+5]])
+        put(tx,8,tz,TORCH,false);
+      // Schatztruhen
+      put(ft.fx-7,8,ft.fz,CHEST,false);
+      put(ft.fx-6,8,ft.fz+4,CHEST,false);
+      put(ft.fx+6,8,ft.fz-4,CHEST,false);
+      // Thron: Podest aus Brettern mit Stuhl
+      for (let tx=ft.fx+4;tx<=ft.fx+7;tx++) for (let tz=ft.fz-1;tz<=ft.fz+1;tz++) put(tx,8,tz,PLANK,false);
+      put(ft.fx+6,9,ft.fz,CHAIR,false);
+      put(ft.fx+6,9,ft.fz-1,TORCH,false);
+      put(ft.fx+6,9,ft.fz+1,TORCH,false);
+      put(ft.fx+4,9,ft.fz,SIGN,false);
+      const tkey=(ft.fx+4)+',9,'+ft.fz;
+      if (!signTexts.has(tkey)) signTexts.set(tkey,'König Jonahs Thron');
     }
   }
   // gespeicherte Änderungen des Spielers anwenden
@@ -1420,6 +1491,20 @@ function spawnTick() {
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
   if (countType(a=>a.type==='bird') < 5) spawnBird(14,40);
   if (countType(a=>a.type==='fish') < 6) spawnFish(10,45);
+  // Wach-Monster im Thronsaal der Festung
+  if (countType(a=>a.type==='slime') < 2) {
+    const ft = fortressPos();
+    const fd = Math.hypot(ft.fx-player.x, ft.fz-player.z);
+    if (fd < 40 && player.y < terrainHeight(Math.floor(player.x),Math.floor(player.z)) - 2) {
+      const ch = getChunk(ft.fx>>4, ft.fz>>4);
+      if (ch && ch.data) {
+        const sx=ft.fx-3+Math.floor(Math.random()*5), sz=ft.fz-3+Math.floor(Math.random()*5);
+        if (!collideBox(sx+0.5,8,sz+0.5,0.35,0.8))
+          animals.push({type:'slime', x:sx+0.5, y:8, z:sz+0.5, hx:ft.fx, hz:ft.fz,
+            yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:1, ph:0, onGround:false});
+      }
+    }
+  }
   // Höhlenmonster erscheinen unten in der Schatzkammer
   if (countType(a=>a.type==='slime') < 2) {
     const ccx=Math.floor(player.x/CAVE_CELL), ccz=Math.floor(player.z/CAVE_CELL);
@@ -2111,13 +2196,21 @@ function findVillageTarget() {
   }
   return best;
 }
+let compassMode = 0;                    // 0=aus, 1=Dorf, 2=Jonahs Festung
 function toggleCompass() {
-  compassOn = !compassOn;
-  if (compassOn) {
+  compassMode = (compassMode + 1) % 3;
+  compassOn = compassMode > 0;
+  if (compassMode === 1) {
     compTarget = findVillageTarget();
-    if (!compTarget) { toast('Hier ist weit und breit kein Dorf... 🤔'); compassOn = false; }
+    if (!compTarget) { compassMode = 2; }   // kein Dorf? Dann gleich zur Festung
     else toast(compTarget.friends ? '🧭 Der Pfeil zeigt zum Dorf deiner Freunde!' : '🧭 Der Pfeil zeigt zum nächsten Dorf!', 3000);
   }
+  if (compassMode === 2) {
+    const ft = fortressPos();
+    compTarget = { vx: ft.fx, vz: ft.gz, fort: true };
+    toast('🏰 Der Pfeil zeigt zu Jonahs unterirdischer Festung!', 3000);
+  }
+  compassOn = compassMode > 0;
   compassEl.style.display = compassOn ? 'flex' : 'none';
   document.getElementById('navBtn').classList.toggle('on', compassOn);
   blip(compassOn ? 660 : 330, 0.08);
@@ -2125,12 +2218,13 @@ function toggleCompass() {
 function updateCompass(dt) {
   if (!compassOn || !compTarget) return;
   compScanT -= dt;
-  if (compScanT <= 0) { compScanT = 5; compTarget = findVillageTarget() || compTarget; }
+  if (compScanT <= 0 && compassMode === 1) { compScanT = 5; compTarget = findVillageTarget() || compTarget; }
   const dx = compTarget.vx - player.x, dz = compTarget.vz - player.z;
   const d = Math.hypot(dx, dz);
   const ang = (Math.atan2(dx, -dz) - yaw) * 180 / Math.PI;
   compArrow.style.transform = 'rotate(' + Math.round(ang) + 'deg)';
-  compText.textContent = d < 14 ? '🏘️ Da ist es! 🎉' : '🏘️ noch ' + Math.round(d) + ' Blöcke';
+  const icon = compTarget.fort ? '🏰' : '🏘️';
+  compText.textContent = d < 14 ? icon+' Da ist es! 🎉' : icon+' noch ' + Math.round(d) + ' Blöcke';
 }
 document.getElementById('navBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleCompass();},{passive:false});
 document.getElementById('navBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleCompass();});

@@ -102,6 +102,10 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Dorf-Kompass 🧭: Der Kompass-Knopf zeigt oben einen Pfeil, der immer zum
   Dorf deiner Freunde zeigt (oder zum nächsten Dorf) – mit Entfernung.
   So findest du von jedem Abenteuer nach Hause!
+- Jonahs unterirdische Festung! 🏰 Jede Welt hat EINE geheime Festung:
+  Ein Ziegel-Torhaus mit Schild führt über eine Fackel-Treppe tief hinab
+  in den Thronsaal – mit Königsthron, Schatztruhen und Wach-Monstern.
+  Tippe den Kompass ZWEIMAL, dann zeigt der Pfeil den Weg zur Festung!
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
