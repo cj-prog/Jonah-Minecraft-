@@ -106,6 +106,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Ein Ziegel-Torhaus mit Schild führt über eine Fackel-Treppe tief hinab
   in den Thronsaal – mit Königsthron, Schatztruhen und Wach-Monstern.
   Tippe den Kompass ZWEIMAL, dann zeigt der Pfeil den Weg zur Festung!
+- Eigene Kompass-Ziele! 📜 Tippe eines DEINER Schilder an und drücke
+  „🧭 Merken" – ab dann kann der Kompass zu diesem Schild zeigen
+  (dritter Kompass-Modus). Perfekt für deine eigene Festung, dein Haus
+  oder deinen Lieblingsort. Das Ziel wird gespeichert!
 - Du kannst auch selber sprechen! 🗨️ Mit dem 💬-Knopf (oder Taste T) schreibst
   du etwas – der nächste Bewohner versteht dich und antwortet passend.
   Ist kein Bewohner da, antwortet dein Hund („Wuff!") oder deine Katze („Miau!")
