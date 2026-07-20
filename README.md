@@ -150,6 +150,12 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Blöcke abbauen und bauen, was du willst
 - Schwimmen und Tauchen (mit Unterwasser-Sicht) 🌊
 - Deine Welt wird **automatisch gespeichert** – beim nächsten Öffnen geht's genau dort weiter
+- Spielstand-Sicherung 💾: Auf dem Startbildschirm gibt es
+  „📤 Spielstand sichern" (lädt eine Datei herunter – gut aufheben!) und
+  „📥 Spielstand laden" (Datei auswählen, fertig). So kann nichts verloren
+  gehen und du kannst deine Welt sogar auf ein anderes Gerät mitnehmen!
+  Wichtig zu wissen: Der automatische Spielstand liegt im Browser des Geräts.
+  Er geht verloren, wenn man die Browserdaten löscht – also ab und zu sichern!
 - 🔄-Knopf: neue Welt erzeugen
 
 Viel Spaß beim Bauen! 🧱

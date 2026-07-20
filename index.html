@@ -101,6 +101,9 @@
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
     padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
   #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
+  #saveRow { display:flex; gap:10px; }
+  #saveRow button, #saveRow label { font-size:13px; color:#fff; background:rgba(0,0,0,.3);
+    border:1px solid rgba(255,255,255,.5); border-radius:8px; padding:7px 12px; cursor:pointer; }
   #err { color:#b00; background:#fff; padding:8px 14px; border-radius:8px; display:none; }
 </style>
 </head>
@@ -165,7 +168,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 36 &middot; entdecke die Monster-Höhlen! 🕳️💎</p>
+    Version 37 &middot; Spielstand sichern und laden 💾</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -185,6 +188,10 @@
     Rechtsklick setzen · Leertaste springen · Tasten 1–8 Block wählen
   </p>
   <button id="playBtn">▶ Spielen</button>
+  <div id="saveRow">
+    <button id="expBtn">📤 Spielstand sichern</button>
+    <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
+  </div>
   <div id="err"></div>
 </div>
 
@@ -3207,6 +3214,38 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   if (!isTouch) canvas.requestPointerLock();
   blip(440,0.08);
 });
+// ---- Spielstand sichern und laden (als Datei) ----
+document.getElementById('expBtn').addEventListener('click',()=>{
+  if (started) saveGame();
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) { alert('Es gibt noch keinen Spielstand. Spiel erst eine Runde!'); return; }
+  const blob = new Blob([raw], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date();
+  a.download = 'jonahcraft-spielstand-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.txt';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+});
+document.getElementById('impFile').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try {
+      const s = JSON.parse(r.result);
+      if (typeof s.seed !== 'number') throw new Error('kein Spielstand');
+      if (!confirm('Diesen Spielstand laden? Der aktuelle wird dabei ersetzt!')) return;
+      localStorage.setItem(SAVE_KEY, r.result);
+      alert('✅ Spielstand geladen! Das Spiel startet jetzt neu.');
+      location.reload();
+    } catch(err) {
+      alert('Das ist leider keine JonahCraft-Spielstand-Datei. 🤔');
+    }
+  };
+  r.readAsText(f);
+});
+
 setInterval(()=>{ if (started) saveGame(); }, 5000);
 document.addEventListener('visibilitychange',()=>{ if (document.hidden && started) saveGame(); });
 
