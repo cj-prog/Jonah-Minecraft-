@@ -44,6 +44,18 @@
   #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
   #chatBtn { right:calc(112px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #navBtn  { right:calc(162px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #mpBtn   { right:calc(212px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #mpBtn.on { background:rgba(110,255,140,.45); }
+  #mpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:8px; background:rgba(30,40,60,.95); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:45; text-align:center; max-width:min(92vw,360px); }
+  #mpBox h3 { font-size:18px; }
+  #mpBox p { font-size:12px; opacity:.9; line-height:1.45; }
+  #mpBox button { font-size:14px; font-weight:bold; padding:8px 14px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; margin:2px; }
+  #mpBox button.grau { background:#666; }
+  #mpBox textarea { width:min(78vw,300px); height:64px; border-radius:8px; border:none; font-size:10px;
+    padding:6px; font-family:monospace; }
   #navBtn.on { background:rgba(110,190,255,.55); }
   #compass { left:50%; top:calc(12px + env(safe-area-inset-top)); transform:translateX(-50%);
     display:none; flex-direction:column; align-items:center; pointer-events:none;
@@ -105,6 +117,21 @@
 <div class="hud btn" id="fsBtn">⛶</div>
 <div class="hud btn" id="chatBtn">💬</div>
 <div class="hud btn" id="navBtn">🧭</div>
+<div class="hud btn" id="mpBtn">👥</div>
+<div class="hud" id="mpBox">
+  <h3>👥 Zusammen spielen</h3>
+  <p id="mpInfo">Spielt zu zweit in EINER Welt! Ihr schickt euch Zauber-Codes –
+    am besten hilft ein Erwachsener und schickt sie per Nachricht. 📱</p>
+  <div id="mpChoice">
+    <button id="mpHostBtn">🏠 Ich lade ein</button>
+    <button id="mpJoinBtn">🎈 Ich spiele mit</button>
+  </div>
+  <textarea id="mpOut" readonly style="display:none"></textarea>
+  <button id="mpCopy" style="display:none">📋 Code kopieren</button>
+  <textarea id="mpIn" placeholder="Code vom Freund hier einfügen" style="display:none"></textarea>
+  <button id="mpGo" style="display:none">Weiter</button>
+  <button id="mpClose" class="grau">Schließen</button>
+</div>
 <div class="hud" id="compass">
   <div id="compArrow">⬆</div>
   <div id="compText"></div>
@@ -137,7 +164,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 33 &middot; Schnee bleibt liegen – bau Schneemänner! ⛄</p>
+    Version 34 &middot; spiel mit deinen Freunden zusammen! 👥</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -515,12 +542,16 @@ function setBlock(wx,wy,wz,v) {
   if (lx===0) mark(cx-1,cz); if (lx===15) mark(cx+1,cz);
   if (lz===0) mark(cx,cz-1); if (lz===15) mark(cx,cz+1);
   scheduleSave();
+  // beim Zusammen-Spielen: dem Freund den neuen Block schicken
+  if (typeof mpChan!=='undefined' && mpChan && mpChan.readyState==='open' && !applyingRemote)
+    mpSend({t:'set', x:wx, y:wy, z:wz, b:v});
 }
 
 // ------------------------------ Speichern ----------------------------------
 let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [];
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
+  if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
   try {
     const ed = {};
     for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
@@ -1474,8 +1505,16 @@ function pushBox(arr, a, ox,oy,oz, sx,sy,sz, tileAll, tileFront) {
 }
 const animalBuf = gl.createBuffer();
 function drawAnimals() {
-  if (!animals.length) return;
+  if (!animals.length && !friendP) return;
   const arr=[];
+  if (friendP) {                        // dein Mitspieler!
+    const a={x:friendP.x, y:friendP.y, z:friendP.z, yaw:friendP.yaw||0, ph:0};
+    pushBox(arr,a, 0,0.4,0, 0.46,0.8,0.26, 40);          // blaue Hose
+    pushBox(arr,a, 0,1.1,0, 0.5,0.6,0.28, 25);           // rotes Shirt
+    pushBox(arr,a, -0.33,1.08,0, 0.14,0.55,0.2, 25);     // Arme
+    pushBox(arr,a,  0.33,1.08,0, 0.14,0.55,0.2, 25);
+    pushBox(arr,a, 0,1.63,0, 0.44,0.44,0.44, 22, 21);    // Kopf
+  }
   for (const a of animals) {
     const k=ANIMAL_KIND[a.type];
     const sw=a.walking ? Math.sin(a.ph)*0.14 : 0;
@@ -1780,6 +1819,149 @@ function removeCabinet(x,y,z) {
   const key = x+','+y+','+z;
   if (cabinets.has(key)) { cabinets.delete(key); scheduleSave(); }
 }
+
+// ------------------------------ Zusammen spielen (WebRTC) --------------------
+let mpPc=null, mpChan=null, mpRole=null, mpGuest=false, friendP=null;
+let applyingRemote=false, mpPosT=0;
+const mpBox=document.getElementById('mpBox'), mpOut=document.getElementById('mpOut'),
+      mpIn=document.getElementById('mpIn'), mpGo=document.getElementById('mpGo'),
+      mpCopy=document.getElementById('mpCopy'), mpInfo=document.getElementById('mpInfo'),
+      mpChoice=document.getElementById('mpChoice');
+
+function iceDone(pc) {
+  return new Promise(res=>{
+    if (pc.iceGatheringState==='complete') return res();
+    const to=setTimeout(res,3500);
+    pc.addEventListener('icegatheringstatechange',()=>{
+      if (pc.iceGatheringState==='complete') { clearTimeout(to); res(); }
+    });
+  });
+}
+function newPc() {
+  const pc = new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  pc.onconnectionstatechange = ()=>{
+    if (pc.connectionState==='failed' || pc.connectionState==='disconnected') mpDisconnected();
+  };
+  return pc;
+}
+function wireChan() {
+  mpChan.onopen = ()=>{
+    document.getElementById('mpBtn').classList.add('on');
+    mpBox.style.display='none';
+    toast('🎉 Verbunden! Ihr spielt jetzt zusammen!', 3500);
+    blip(523,0.1); blip(659,0.1); blip(784,0.15);
+    if (mpRole==='host') {
+      const ed={};
+      for (const [k,m] of edits) { const a=[]; for (const [i,v] of m) a.push(i,v); ed[k]=a; }
+      mpSend({t:'hello', seed, edits:ed});
+    }
+  };
+  mpChan.onclose = mpDisconnected;
+  mpChan.onmessage = e=>{
+    let m; try{ m=JSON.parse(e.data); }catch(err){ return; }
+    if (m.t==='hello') {                // Gast übernimmt die Welt des Gastgebers
+      mpGuest = true;
+      seed = m.seed;
+      edits.clear();
+      for (const k in (m.edits||{})) {
+        const a=m.edits[k], mm=new Map();
+        for (let i=0;i<a.length;i+=2) mm.set(a[i],a[i+1]);
+        edits.set(k,mm);
+      }
+      for (const ch of [...chunks.values()]) freeChunk(ch);
+      cropSet.clear(); snowSet.clear();
+      animals.length=0; riding=null; sitting=null;
+      spawn();
+      const pcx=Math.floor(player.x)>>4, pcz=Math.floor(player.z)>>4;
+      for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) ensureData(pcx+dx,pcz+dz);
+      toast('🌍 Du bist jetzt in der Welt deines Freundes! (Hier wird nichts gespeichert)', 4000);
+    } else if (m.t==='pos') {
+      friendP = m;
+    } else if (m.t==='set') {
+      applyingRemote = true;
+      ensureData(m.x>>4, m.z>>4);
+      setBlock(m.x, m.y, m.z, m.b);
+      applyingRemote = false;
+    } else if (m.t==='chat') {
+      toast('🎮 Freund: „'+String(m.msg).slice(0,60)+'"', 3500);
+      blip(600,0.06);
+    }
+  };
+}
+function mpSend(obj) {
+  if (mpChan && mpChan.readyState==='open') { try{ mpChan.send(JSON.stringify(obj)); }catch(e){} }
+}
+function mpDisconnected() {
+  if (!mpChan && !mpPc) return;
+  mpChan=null; mpPc=null; friendP=null; mpGuest=false; mpRole=null;
+  document.getElementById('mpBtn').classList.remove('on');
+  toast('Die Verbindung ist weg. 😢 Ihr könnt euch neu verbinden!', 3500);
+}
+async function mpHostStart() {
+  try {
+    mpRole='host';
+    mpPc = newPc();
+    mpChan = mpPc.createDataChannel('jonahcraft');
+    wireChan();
+    await mpPc.setLocalDescription(await mpPc.createOffer());
+    await iceDone(mpPc);
+    mpChoice.style.display='none';
+    mpOut.value = btoa(JSON.stringify(mpPc.localDescription));
+    mpOut.style.display='block'; mpCopy.style.display='inline-block';
+    mpIn.style.display='block'; mpIn.placeholder='Antwort-Code vom Freund hier einfügen';
+    mpGo.style.display='inline-block'; mpGo.textContent='✅ Verbinden';
+    mpInfo.textContent='1) Schick deinem Freund diesen Code. 2) Er schickt dir einen Antwort-Code zurück. 3) Füge ihn unten ein und drücke Verbinden!';
+  } catch(e) { toast('Ups, das hat nicht geklappt. Versuch es nochmal!', 3000); }
+}
+async function mpGoClick() {
+  try {
+    const code = mpIn.value.trim();
+    if (!code) { toast('Erst den Code einfügen!', 2000); return; }
+    if (mpRole==='host') {
+      await mpPc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(code))));
+      mpInfo.textContent='Verbinde... einen Moment!';
+    } else {
+      mpRole='guest';
+      mpPc = newPc();
+      mpPc.ondatachannel = e=>{ mpChan=e.channel; wireChan(); };
+      await mpPc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(code))));
+      await mpPc.setLocalDescription(await mpPc.createAnswer());
+      await iceDone(mpPc);
+      mpOut.value = btoa(JSON.stringify(mpPc.localDescription));
+      mpOut.style.display='block'; mpCopy.style.display='inline-block';
+      mpIn.style.display='none'; mpGo.style.display='none';
+      mpInfo.textContent='Fast geschafft! Schick diesen Antwort-Code an deinen Freund zurück. Sobald er ihn eingibt, seid ihr verbunden!';
+    }
+  } catch(e) { toast('Der Code hat nicht geklappt. Nochmal kopieren und probieren!', 3000); }
+}
+function mpOpen() {
+  mpBox.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  if (!mpRole) {
+    mpChoice.style.display='block';
+    mpOut.style.display='none'; mpCopy.style.display='none';
+    mpIn.style.display='none'; mpGo.style.display='none';
+    mpIn.value=''; mpOut.value='';
+    mpInfo.textContent='Spielt zu zweit in EINER Welt! Ihr schickt euch Zauber-Codes – am besten hilft ein Erwachsener und schickt sie per Nachricht. 📱';
+  }
+}
+document.getElementById('mpBtn').addEventListener('touchstart',e=>{e.preventDefault();mpOpen();},{passive:false});
+document.getElementById('mpBtn').addEventListener('mousedown',e=>{e.preventDefault();mpOpen();});
+document.getElementById('mpClose').addEventListener('click',()=>mpBox.style.display='none');
+document.getElementById('mpHostBtn').addEventListener('click',mpHostStart);
+document.getElementById('mpJoinBtn').addEventListener('click',()=>{
+  mpRole='guest';
+  mpChoice.style.display='none';
+  mpIn.style.display='block'; mpIn.placeholder='Einladungs-Code vom Freund hier einfügen';
+  mpGo.style.display='inline-block'; mpGo.textContent='Weiter';
+  mpInfo.textContent='Füge den Einladungs-Code deines Freundes ein und drücke Weiter!';
+});
+mpGo.addEventListener('click',mpGoClick);
+mpCopy.addEventListener('click',()=>{
+  mpOut.select();
+  try { navigator.clipboard.writeText(mpOut.value); } catch(e) { document.execCommand('copy'); }
+  toast('📋 Code kopiert! Jetzt an den Freund schicken.', 2500);
+});
 
 // ------------------------------ Dorf-Kompass --------------------------------
 let compassOn = false, compTarget = null, compScanT = 0;
@@ -2498,6 +2680,7 @@ function submitChat() {
   if (!msg) return;
   toast('🙂 Du: „'+msg+'"', 2400);
   blip(500,0.05);
+  mpSend({t:'chat', msg});              // der Mitspieler liest mit!
   setTimeout(()=>replyTo(msg), 1500);
 }
 function replyTo(msg) {
@@ -2721,6 +2904,11 @@ function frame(now) {
   updateCompass(dt);
   if (boostT > 0) boostT -= dt;
   if (jumpT > 0) jumpT -= dt;
+  mpPosT += dt;
+  if (mpPosT > 0.12 && mpChan && mpChan.readyState==='open') {
+    mpPosT = 0;
+    mpSend({t:'pos', x:player.x, y:player.y, z:player.z, yaw});
+  }
   cropT += dt;
   if (cropT > 2.5) { cropT = 0; growCrops(); }
 
