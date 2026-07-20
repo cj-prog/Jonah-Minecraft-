@@ -159,12 +159,13 @@
   <div class="foodChip" id="foodB"></div>
   <div class="foodChip" id="foodWo"></div>
   <div class="foodChip" id="foodS"></div>
+  <div class="foodChip" id="foodG"></div>
 </div>
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 35 &middot; Tiere freilassen mit langem Drücken 🕊️</p>
+    Version 36 &middot; entdecke die Monster-Höhlen! 🕳️💎</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -358,6 +359,30 @@ function isTree(x, z) {
   return hash2(x, z, 7777) < 0.007 && terrainHeight(x,z) > SEA+1;
 }
 
+// ------------------------------ Monster-Höhlen ------------------------------
+const CAVE_CELL = 96;                   // pro 96x96-Feld höchstens 1 Höhle
+function caveAt(cellX, cellZ) {
+  if (hash2(cellX, cellZ, 31337) >= 0.5) return null;
+  const ex = cellX*CAVE_CELL + 16 + Math.floor(hash2(cellX,cellZ,31338)*64);
+  const ez = cellZ*CAVE_CELL + 16 + Math.floor(hash2(cellX,cellZ,31339)*64);
+  if (terrainHeight(ex,ez) <= SEA+2) return null;
+  return { ex, ez, dir: hash2(cellX,cellZ,31340)*Math.PI*2 };
+}
+function cavePath(c) {                  // Tunnel-Kugeln vom Eingang zur Schatzkammer
+  const h = terrainHeight(c.ex, c.ez);
+  const pts = [];
+  for (let i=0; i<=11; i++) {
+    const t = i/11;
+    pts.push([
+      c.ex + Math.cos(c.dir)*i*2.3,
+      (h-1) - t*(h-1-11),
+      c.ez + Math.sin(c.dir)*i*2.3,
+      i>=10 ? 5 : 2.3,
+    ]);
+  }
+  return pts;
+}
+
 // ------------------------------ Dörfer --------------------------------------
 const VCELL = 80;                       // Raster: pro 80x80-Feld höchstens 1 Dorf
 const HOUSE_SPOTS = [[0,5],[14,2],[-13,8],[6,-13],[-11,-10],[15,-9]];
@@ -415,6 +440,36 @@ function genChunkData(cx, cz) {
     if (onlyAir && data[i]!==AIR) return;
     data[i]=b;
   };
+  // Monster-Höhlen graben: Tunnel + Schatzkammer
+  const hc0x=Math.floor((x0-45)/CAVE_CELL), hc1x=Math.floor((x0+CS+45)/CAVE_CELL);
+  const hc0z=Math.floor((z0-45)/CAVE_CELL), hc1z=Math.floor((z0+CS+45)/CAVE_CELL);
+  for (let hvz=hc0z; hvz<=hc1z; hvz++) for (let hvx=hc0x; hvx<=hc1x; hvx++) {
+    const cave = caveAt(hvx,hvz);
+    if (!cave) continue;
+    const pts = cavePath(cave);
+    for (const [sx,sy,sz,r] of pts) {
+      if (sx+r<x0 || sx-r>x0+CS || sz+r<z0 || sz-r>z0+CS) continue;
+      const xi0=Math.max(x0,Math.floor(sx-r)), xi1=Math.min(x0+CS-1,Math.ceil(sx+r));
+      const yi0=Math.max(2,Math.floor(sy-r)), yi1=Math.min(CH-1,Math.ceil(sy+r));
+      const zi0=Math.max(z0,Math.floor(sz-r)), zi1=Math.min(z0+CS-1,Math.ceil(sz+r));
+      for (let cy=yi0;cy<=yi1;cy++) for (let cz2=zi0;cz2<=zi1;cz2++) for (let cx2=xi0;cx2<=xi1;cx2++) {
+        const ddx=cx2+0.5-sx, ddy=cy+0.5-sy, ddz=cz2+0.5-sz;
+        if (ddx*ddx+ddy*ddy+ddz*ddz > r*r) continue;
+        const i = bidx(cx2-x0, cy, cz2-z0);
+        if (data[i]!==WATER) data[i]=AIR;
+      }
+    }
+    // Schatzkammer einrichten: Truhen und Fackeln
+    const rm = pts[11];
+    const rx=Math.round(rm[0]), ry=Math.round(rm[1]), rz=Math.round(rm[2]);
+    put(rx, ry-4, rz, CHEST, false);
+    put(rx+2, ry-4, rz+1, CHEST, false);
+    put(rx-2, ry-4, rz-1, TORCH, false);
+    put(rx+1, ry-4, rz-2, TORCH, false);
+    put(rx-1, ry-4, rz+2, TORCH, false);
+    // Fackel am Eingang, damit man die Höhle findet
+    put(cave.ex+1, terrainHeight(cave.ex+1,cave.ez)+1, cave.ez, TORCH, true);
+  }
   // Bäume (mit 2 Blöcken Rand, damit Kronen über Chunk-Grenzen reichen)
   for (let tz=z0-2; tz<z0+CS+2; tz++) for (let tx=x0-2; tx<x0+CS+2; tx++) {
     if (!isTree(tx,tz)) continue;
@@ -565,7 +620,7 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool, snowCnt,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -596,6 +651,7 @@ function loadGame() {
     if (typeof s.bread==='number') bread = s.bread;
     if (typeof s.wool==='number') wool = s.wool;
     if (typeof s.snowCnt==='number') snowCnt = s.snowCnt;
+    if (typeof s.gems==='number') gems = s.gems;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -751,6 +807,12 @@ atlas.width = atlas.height = T*ATLAS_N;
   });
   tile(51,()=>vary(224,188,172,14));                                // geschorenes Schaf (rosa)
   tile(52,()=> rnd()<0.1 ? 'rgb(255,255,255)' : vary(240,246,252,8)); // Schnee glitzernd
+  tile(53,()=> rnd()<0.15 ? vary(52,150,62,14) : vary(92,204,96,24)); // Schleim grün
+  tile(54,(x,y)=>{                                                  // Schleim Gesicht
+    if ((x>=3&&x<=5||x>=10&&x<=12)&&y>=4&&y<=7) return 'rgb(20,40,20)';        // große Augen
+    if (x>=6&&x<=9&&y>=10&&y<=12) return 'rgb(30,70,35)';                      // Mund
+    return rnd()<0.15 ? vary(52,150,62,14) : vary(92,204,96,24);
+  });
 })();
 
 // ------------------------------ WebGL --------------------------------------
@@ -1131,6 +1193,7 @@ const ANIMAL_KIND = {
   cow:      { speed:1.0, half:0.38, height:1.35, tile:15, face:17 },
   horse:    { speed:1.2, half:0.45, height:1.6,  tile:23, face:24 },
   sheep:    { speed:1.0, half:0.4,  height:1.2,  tile:49, face:50 },
+  slime:    { speed:1.4, half:0.35, height:0.7,  tile:53, face:54 },
   dog:      { speed:1.3, half:0.28, height:0.7,  tile:31, face:32 },
   cat:      { speed:1.5, half:0.2,  height:0.5,  tile:33, face:34 },
   bird:     { speed:4.0, half:0.18, height:0.35, tile:35, face:35 },
@@ -1214,6 +1277,7 @@ const VILLAGER_TALK = [
   'Unser Brunnen hat das beste Wasser weit und breit!',
   'Wenn du dich verlaufen hast: Bau dir einen hohen Turm und schau dich um!',
   'Schweine können schwimmen. Wusstest du das?',
+  'Psst... es gibt geheime Höhlen mit Monstern und Schätzen! Such nach Löchern mit einer Fackel davor.',
 ];
 let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
@@ -1349,6 +1413,29 @@ function spawnTick() {
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
   if (countType(a=>a.type==='bird') < 5) spawnBird(14,40);
   if (countType(a=>a.type==='fish') < 6) spawnFish(10,45);
+  // Höhlenmonster erscheinen unten in der Schatzkammer
+  if (countType(a=>a.type==='slime') < 2) {
+    const ccx=Math.floor(player.x/CAVE_CELL), ccz=Math.floor(player.z/CAVE_CELL);
+    outer:
+    for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) {
+      const cv = caveAt(ccx+dx, ccz+dz);
+      if (!cv) continue;
+      const rm = cavePath(cv)[11];
+      const d = Math.hypot(rm[0]-player.x, rm[2]-player.z);
+      const deep = player.y < terrainHeight(Math.floor(player.x),Math.floor(player.z)) - 3;
+      if (d<40 && (deep || d<14)) {
+        const ch = getChunk(Math.round(rm[0])>>4, Math.round(rm[2])>>4);
+        if (!ch || !ch.data) continue;
+        const sx=Math.round(rm[0])+Math.floor(Math.random()*5)-2;
+        const sz=Math.round(rm[2])+Math.floor(Math.random()*5)-2;
+        const sy=Math.round(rm[1])-3;
+        if (!collideBox(sx+0.5,sy,sz+0.5,0.35,0.8))
+          animals.push({type:'slime', x:sx+0.5, y:sy, z:sz+0.5, hx:rm[0], hz:rm[2],
+            yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:1, ph:0, onGround:false});
+        break outer;
+      }
+    }
+  }
   // Dorfbewohner: jedes Dorf in der Nähe bekommt seine Bewohner
   const pcx=Math.floor(player.x/VCELL), pcz=Math.floor(player.z/VCELL);
   for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) {
@@ -1441,6 +1528,23 @@ function updateAnimals(dt) {
         if ((a.type==='villager'||a.type==='kid') && Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
       }
+    }
+    if (a.type==='slime') {             // Höhlenmonster: hüpft und schubst
+      const dx=player.x-a.x, dz=player.z-a.z, dp=Math.hypot(dx,dz);
+      if (dp<9) {
+        a.yaw=Math.atan2(dx,-dz); a.walking=true; a.t=0.5;
+        if (dp<1.2 && Math.abs(player.y-a.y)<1.5) {
+          const d=Math.max(0.3,dp);
+          player.kx += dx/d*7; player.kz += dz/d*7;
+          player.vy += 3; player.onGround=false;
+          toast('Wusch! Das Höhlenmonster hat dich geschubst! 😵', 2000);
+          blip(120,0.15);
+        }
+      } else if (Math.hypot((a.hx||a.x)-a.x,(a.hz||a.z)-a.z)>16) {
+        a.yaw=Math.atan2(a.hx-a.x,-(a.hz-a.z)); a.walking=true; a.t=0.6;
+      }
+      if (a.walking && a.onGround && Math.random()<dt*1.2) a.vy=4.5;   // hüpft!
+      if (dp<12 && Math.random()<dt*0.08) blip(85+Math.random()*40,0.2);  // Blubbern
     }
     if (a.type==='sheep' && a.sheared) {         // Wolle wächst nach
       a.woolT -= dt;
@@ -1538,6 +1642,9 @@ function drawAnimals() {
       pushBox(arr,a, 0,1.1,0.85, 0.1,0.45,0.1, k.tile);              // Schweif
       pushBox(arr,a, 0,1.36,0.15, 0.42,0.12,0.45, 20);               // Sattel
       if (a.tame) pushBox(arr,a, 0,1.28,-0.62, 0.32,0.12,0.34, 25);  // rotes Halsband
+    } else if (a.type==='slime') {
+      const sq = 1 + Math.sin(a.ph*1.5)*0.1;
+      pushBox(arr,a, 0,0.35*sq,0, 0.7,0.7*sq,0.7, k.tile, k.face);
     } else if (a.type==='sheep') {
       if (!a.sheared) {
         pushBox(arr,a, 0,0.68,0.05, 0.7,0.55,0.95, 49);            // dicke Wolle
@@ -1691,7 +1798,7 @@ function drawSignTexts() {
 
 // ------------------------------ Essen ---------------------------------------
 const cropSet = new Set();              // wachsende Beete ("x,y,z")
-let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0;
+let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0;
 let boostT = 0, jumpT = 0, cropT = 0;
 
 function updateFoodHUD() {
@@ -1699,7 +1806,7 @@ function updateFoodHUD() {
     el.textContent=emoji+' '+n; el.style.display = n>0 ? 'flex':'none'; };
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
-  set('foodS','❄️',snowCnt);
+  set('foodS','❄️',snowCnt); set('foodG','💎',gems);
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -1730,11 +1837,14 @@ function eatFood(kind) {
   } else if (kind==='s') {
     toast('❄️ Brrr, zu kalt zum Essen! Wähle den Schneemann ⛄ in der Leiste (kostet 3 ❄️)!', 3000);
     return;
+  } else if (kind==='g') {
+    toast('💎 Deine Schatz-Sammlung: '+gems+' Diamanten! Hol dir mehr von den Höhlenmonstern!', 3000);
+    return;
   } else return;
   updateFoodHUD(); scheduleSave();
   blip(500,0.05); blip(420,0.05); blip(540,0.05);
 }
-for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s']]) {
+for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g']]) {
   const el=document.getElementById(id);
   el.addEventListener('click', ()=>eatFood(kind));
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
@@ -2285,6 +2395,21 @@ function hitEntity(a, dir) {
       blip(TAME_SOUND[a.type][0], 0.08);
     }
     scheduleSave();
+    return;
+  }
+  if (a.type==='slime') {               // Höhlenmonster bekämpfen!
+    a.hp--;
+    a.kx += dir[0]*6; a.kz += dir[2]*6; a.vy=4; a.onGround=false;
+    blip(150,0.08);
+    if (a.hp<=0) {
+      animals.splice(animals.indexOf(a),1);
+      const n=1+Math.floor(Math.random()*2);
+      gems += n; updateFoodHUD(); scheduleSave();
+      toast('💎 Monster besiegt! Es lässt '+n+' Diamant'+(n>1?'en':'')+' fallen!', 3200);
+      blip(700,0.1); blip(900,0.12);
+    } else {
+      toast('Getroffen! Noch '+a.hp+'x tippen! 👊', 1400);
+    }
     return;
   }
   if (a.type==='sheep') {               // Schaf scheren!

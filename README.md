@@ -139,6 +139,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   ⬆ steigt, ⬇ sinkt, der Joystick fliegt vorwärts – perfekt zum Erkunden und Bauen
 - Auf Stühle kann man sich setzen 🪑: im Bau-Modus antippen, schon sitzt du –
   zum Aufstehen einfach den Joystick bewegen
+- Monster-Höhlen! 🕳️ Versteckte Löcher (mit Fackel davor) führen durch einen
+  Tunnel tief hinab in eine Schatzkammer mit Truhen und Fackeln. Dort hüpfen
+  grüne Höhlenmonster herum: Sie schubsen dich (aua-frei!), und wenn du sie
+  3x antippst, lassen sie Diamanten 💎 fallen – deine Schatz-Sammlung!
 - Truhen lassen sich öffnen und schließen – drin glitzert ein Schatz 💎
   In manchen Dorf-Häusern stehen versteckte Schatztruhen!
 - TNT mit Zündschnur, Explosionskrater, Kettenreaktion (TNT zündet TNT!),
