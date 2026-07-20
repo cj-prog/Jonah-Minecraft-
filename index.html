@@ -164,7 +164,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 34 &middot; spiel mit deinen Freunden zusammen! 👥</p>
+    Version 35 &middot; Tiere freilassen mit langem Drücken 🕊️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -175,6 +175,7 @@
     🐴 Tippe ein Pferd an und reite los!<br>
     ✈️ Knopf rechts: Fliegen an/aus (⬆ hoch, ⬇ runter)<br>
     🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!<br>
+    🕊️ Lange auf ein Tier drücken = wieder freilassen<br>
     💬 Tippe einen Dorfbewohner an und hör, was er sagt!<br>
     🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!
   </p>
@@ -2187,6 +2188,38 @@ function rayEntity(o, d, maxT) {  // trifft der Strahl ein Tier/Wesen?
   }
   return best;
 }
+function tryRelease(dir) {              // langes Drücken: freilassen / Freundschaft beenden
+  const e=eyePos();
+  const bHit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
+  const eHit=rayEntity(e, dir, bHit ? bHit.t+0.5 : REACH);
+  if (!eHit) return;
+  releaseEntity(eHit.a);
+}
+function releaseEntity(a) {
+  if (a===riding) { toast('Steig erst vom Pferd ab! 🐴', 2000); return; }
+  if ((isPet(a)||a.type==='horse') && a.tame) {
+    const name = a.type==='dog'?'den Hund':a.type==='cat'?'die Katze':a.type==='pig'?'das Schwein'
+               : a.type==='cow'?'die Kuh':a.type==='bird'?'den Vogel':'das Pferd';
+    if (!confirm('Willst du '+name+' wirklich freilassen?')) return;
+    a.tame=false; a.sit=false; a.spd=0;
+    toast('🕊️ Jetzt ist es wieder frei und wild! (Du kannst es jederzeit neu zähmen)', 3000);
+    blip(400,0.1); blip(320,0.12);
+    scheduleSave();
+    return;
+  }
+  if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
+    if (!confirm('Willst du die Freundschaft mit '+(a.name||'diesem Bewohner')+' wirklich beenden?')) return;
+    a.friend=0; a.follow=false;
+    const hk=a.home||'welt';
+    if (savedFriends[hk]) {
+      savedFriends[hk]=savedFriends[hk].filter(f=>f[0]!==a.name);
+      if (!savedFriends[hk].length) delete savedFriends[hk];
+    }
+    toast('💔 Ihr seid keine Freunde mehr. (Sprich 3x mit ihm, dann seid ihr es wieder!)', 3500);
+    blip(300,0.15); blip(240,0.15);
+    scheduleSave();
+  }
+}
 function hitEntity(a, dir) {
   if (a.type==='horse') {               // Aufsteigen!
     if (riding) return;
@@ -2812,6 +2845,8 @@ function touchEnd(e){
       if (dt<350 && look.moved<14) {           // kurzes Tippen = Aktion
         const dir=screenRay(t.clientX,t.clientY);
         if (placeMode) doPlace(dir); else doBreak(dir);
+      } else if (dt>=600 && look.moved<14) {   // langes Drücken = freilassen
+        tryRelease(screenRay(t.clientX,t.clientY));
       }
       look.id=null;
     }
@@ -2839,6 +2874,7 @@ canvas.addEventListener('mousedown',e=>{
   if (!isTouch && document.pointerLockElement!==canvas) { canvas.requestPointerLock(); return; }
   if (document.pointerLockElement===canvas) {
     const dir=forwardVec();
+    if (e.button===0 && e.shiftKey) { tryRelease(dir); return; }   // Shift+Klick = freilassen
     if (e.button===0) doBreak(dir);
     if (e.button===2) doPlace(dir);
   }
