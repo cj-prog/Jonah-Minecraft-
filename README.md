@@ -125,6 +125,11 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Türen und Fenster! 🚪🪟 Die Tür ist 2 Blöcke hoch, hat eine Klinke und ein
   Fensterchen – antippen öffnet und schließt sie wirklich.
   Glas-Fenster sind durchsichtig: Bau sie in deine Hauswand und schau raus!
+- Garagentore! 🎚️ Bau aus Garagentor-Blöcken ein Tor in JEDER Größe –
+  3 hoch, 10 hoch, so breit du willst. Alle verbundenen Blöcke sind EIN Tor:
+  Einmal antippen (mit einem anderen Block in der Hand) und das ganze Tor
+  rollt auf – nochmal antippen und es ist wieder zu. Perfekt für die
+  Jet-Garage oder das Autohaus!
 - Zäune! 🚧 Zaun-Blöcke verbinden sich automatisch mit ihren Nachbarn zu
   langen Zäunen. Tiere können nicht drüberspringen – bau ihnen ein Gehege!
   (Du selbst kommst mit einem Sprung drüber – oder nimm eine Tür als Tor)
