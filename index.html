@@ -170,7 +170,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 43 &middot; riesige Garagentore! 🎚️</p>
+    Version 44 &middot; Paul bringt dir den Jet nach! ✈️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1647,11 +1647,34 @@ function updateAnimals(dt) {
   for (let i=animals.length-1; i>=0; i--) {
     const a = animals[i];
     if (a===riding || a===carRiding) continue;   // wird gerade vom Spieler gesteuert
-    if (a.type==='jet') {               // geparkter Jet: sinkt sanft auf den Boden
+    if (a.type==='jet') {               // Paul passt auf, dass der Jet in der Nähe bleibt!
       if (a!==jetRiding) {
+        const dp = Math.hypot(a.x-player.x, a.z-player.z);
+        if (dp > 48 && !a.ferry) {
+          a.ferry = true;               // Paul fliegt den Jet nach
+          toast('👨‍✈️ Paul (über Funk): „Ich bringe dir den Jet nach!"', 3000);
+        }
+        if (a.ferry) {
+          if (dp < 12) {
+            a.ferry = false;
+            toast('👨‍✈️ Paul: „Da bin ich! Dein Jet parkt gleich hier."', 3500);
+            blip(523,0.1); blip(659,0.1);
+          } else {
+            const dir = Math.atan2(player.x-a.x, -(player.z-a.z));
+            a.yaw = dir;
+            a.x += Math.sin(dir)*12*dt;
+            a.z += -Math.cos(dir)*12*dt;
+            const th = terrainHeight(Math.floor(a.x), Math.floor(a.z));
+            const targetY = Math.max(th, SEA) + 14;   // Reiseflughöhe
+            a.y += Math.max(-6, Math.min(6, targetY - a.y)) * dt;
+            a.vy = 0;
+            continue;
+          }
+        }
+        // geparkt: sanft zu Boden sinken (über Wasser schwebt er)
         a.vy = Math.max(a.vy-25*dt, -20);
         const ny=a.y+a.vy*dt;
-        if (!collideBox(a.x,ny,a.z,1.1,1.2)) a.y=ny; else a.vy=0;
+        if (!collideBox(a.x,ny,a.z,1.1,1.2) && ny > SEA+0.8) a.y=ny; else a.vy=0;
       }
       continue;
     }
