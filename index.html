@@ -170,7 +170,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 41 &middot; Autos fahren durch die Welt! 🚗</p>
+    Version 42 &middot; Hochhäuser in den Dörfern! 🏢</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -571,6 +571,57 @@ function genChunkData(cx, cz) {
       put(hx0+mx,baseY+2,hz0+D,AIR,false);
       // In manchen Häusern steht eine Schatztruhe!
       if (hash2(hx0,hz0,321)<0.6) put(hx0+1,baseY+1,hz0+1,CHEST,false);
+    }
+    // Hochhaus! Etwa jedes zweite Dorf hat einen Wohnturm
+    if (hash2(v.vx,v.vz,606)<0.5) {
+      const tx0=v.vx+8, tz0=v.vz+8;
+      let tmin=999, tmax=-999;
+      for (const [px2,pz2] of [[tx0,tz0],[tx0+6,tz0],[tx0,tz0+6],[tx0+6,tz0+6],[tx0+3,tz0+3]]) {
+        const h2=terrainHeight(px2,pz2);
+        tmin=Math.min(tmin,h2); tmax=Math.max(tmax,h2);
+      }
+      if (tmax-tmin<=3 && tmin>SEA) {
+        const by=tmax;
+        const F=4+Math.floor(hash2(v.vx,v.vz,607)*2);   // 4-5 Stockwerke
+        for (let x=0;x<7;x++) for (let z=0;z<7;z++) {
+          const wx=tx0+x, wz=tz0+z;
+          // Fundament + Erdgeschoss-Boden
+          const th3=terrainHeight(wx,wz);
+          for (let y=th3;y<by;y++) put(wx,y,wz,DIRT,false);
+          put(wx,by,wz,BRICK,false);
+          for (let f=0;f<F;f++) {
+            const fy=by+f*4;
+            if (f>0 && !(z===1 && x>=1&&x<=3)) put(wx,fy,wz,PLANK,false);  // Etagenboden mit Treppenloch
+            for (let y=fy+1;y<=fy+3;y++) {
+              const edge = x===0||x===6||z===0||z===6;
+              let b = edge ? BRICK : AIR;
+              if (edge && y===fy+2) {                    // Fensterbänder
+                if ((z===0||z===6) && x>=2&&x<=4) b=GLASS;
+                if ((x===0||x===6) && z>=2&&z<=4) b=GLASS;
+              }
+              put(wx,y,wz,b,false);
+            }
+          }
+          // Dach-Terrasse mit Zaun
+          const ry=by+F*4;
+          if (!(z===1 && x>=1&&x<=3)) put(wx,ry,wz,PLANK,false);
+          if (x===0||x===6||z===0||z===6) put(wx,ry+1,wz,FENCE,false);
+        }
+        // Treppen in jedem Stockwerk (hüpf dich hoch bis aufs Dach!)
+        for (let f=0;f<F;f++) {
+          const fy=by+f*4;
+          put(tx0+1,fy+1,tz0+1,PLANK,false);
+          put(tx0+2,fy+2,tz0+1,PLANK,false);
+          put(tx0+3,fy+3,tz0+1,PLANK,false);
+          put(tx0+5,fy+1,tz0+5,BED,false);               // ein Bett pro Etage
+          put(tx0+1,fy+1,tz0+5,TORCH,false);
+        }
+        // Eingangstür unten
+        put(tx0+3,by+1,tz0+6,DOOR,false);
+        put(tx0+3,by+2,tz0+6,DOOR_TOP,false);
+        put(tx0+2,by+1,tz0+7,TORCH,true);
+        put(tx0+4,by+1,tz0+7,TORCH,true);
+      }
     }
   }
   // Jonahs unterirdische Festung bauen
@@ -1565,6 +1616,14 @@ function spawnTick() {
       spawnMob('kid',
         v.vx + Math.floor(Math.random()*12)-6, v.vz + Math.floor(Math.random()*12)-6,
         { home:key, hx:v.vx, hz:v.vz });
+    if (hash2(v.vx,v.vz,606)<0.5) {       // Hochhaus-Dorf: da wohnen mehr Leute!
+      for (let i=0;i<3;i++)
+        spawnMob('villager', v.vx+9+Math.floor(Math.random()*7), v.vz+9+Math.floor(Math.random()*7),
+          { home:key, hx:v.vx, hz:v.vz });
+      for (let i=0;i<2;i++)
+        spawnMob('kid', v.vx+8+Math.floor(Math.random()*8), v.vz+8+Math.floor(Math.random()*8),
+          { home:key, hx:v.vx, hz:v.vz });
+    }
     // gespeicherte Freundschaften wiederherstellen
     const fr = savedFriends[key];
     if (fr) for (const [nm, isKid] of fr) {

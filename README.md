@@ -89,6 +89,11 @@ Leertaste springen · Tasten 1–8 Block wählen
 - In den Dörfern wohnen Dorfbewohner mit großen Nasen 👃 (und keine Zombies weit und breit!)
 - Mit den Bewohnern kann man sprechen 💬: antippen, und Hans, Emma oder Otto
   drehen sich zu dir um und erzählen etwas – manchmal sogar geheime Tipps!
+- Hochhäuser! 🏢 Etwa jedes zweite Dorf hat einen großen Wohnturm mit
+  4-5 Stockwerken: Glasfenster-Reihen, echte Eingangstür, in jeder Etage
+  ein Bett und eine Fackel, innen Treppen zum Hochhüpfen – und ganz oben
+  eine Dach-Terrasse mit Zaun und toller Aussicht!
+  In Hochhaus-Dörfern wohnen extra viele Bewohner und Kinder
 - In jedem Dorf wohnen auch Kinder 🧒: Max, Mia, Leo und ihre Freunde haben
   große Köpfe, blaue Sachen, flitzen herum, hüpfen und kichern –
   und sie erzählen dir lustige Sachen, wenn du sie ansprichst
