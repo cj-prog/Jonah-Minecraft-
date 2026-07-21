@@ -162,6 +162,8 @@ Leertaste springen · Tasten 1–8 Block wählen
   Antippen = einsteigen, ⬆/⬇ = hoch und runter, Joystick = düsen (superschnell!),
   🛬-Knopf = landen. Paul erzählt unterwegs lustige Sachen, und der Jet
   bleibt genau da geparkt, wo du gelandet bist (wird gespeichert!)
+  Und keine Sorge: Läufst du zu weit weg, fliegt Paul dir den Jet
+  automatisch hinterher und landet in deiner Nähe – schau in den Himmel!
 - Fliegen! 🕊️ Mit dem ✈️-Knopf (oder Taste F) hebst du ab:
   ⬆ steigt, ⬇ sinkt, der Joystick fliegt vorwärts – perfekt zum Erkunden und Bauen
 - Auf Stühle kann man sich setzen 🪑: im Bau-Modus antippen, schon sitzt du –
