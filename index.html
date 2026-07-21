@@ -170,7 +170,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 42 &middot; Hochhäuser in den Dörfern! 🏢</p>
+    Version 43 &middot; riesige Garagentore! 🎚️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -219,7 +219,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
       WHEAT0=27, WHEAT1=28, WHEAT2=29,
       DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
-      SNOW=37, SNOWMAN=38;
+      SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -334,9 +334,14 @@ const BLOCKS = {
     [0.46,1.0,0.19, 0.54,1.08,0.24, 5],
     [0.78,0.95,0.45, 1.15,1.03,0.55, 5],                // Stock-Arme
     [-0.15,0.95,0.45, 0.22,1.03,0.55, 5]] },
+  // Garagentor: alle verbundenen Blöcke öffnen und schließen zusammen!
+  [GATE]: { name:'Garagentor (bau es riesig – antippen = auf/zu!)', tiles:[56,56,56], solid:true, model:[
+    [0,0,0.38, 1,1,0.62, 56]] },
+  [GATE_OPEN]: { name:'Garagentor (offen)', tiles:[56,56,56], solid:false, model:[
+    [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -946,6 +951,7 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(52,()=> rnd()<0.1 ? 'rgb(255,255,255)' : vary(240,246,252,8)); // Schnee glitzernd
   tile(53,()=> rnd()<0.15 ? vary(52,150,62,14) : vary(92,204,96,24)); // Schleim grün
   tile(55,()=>vary(38,38,42,10));                                   // Auto-Reifen schwarz
+  tile(56,(x,y)=> y%4===3 ? vary(96,100,106,10) : vary(152,158,166,14)); // Garagentor-Lamellen
   tile(54,(x,y)=>{                                                  // Schleim Gesicht
     if ((x>=3&&x<=5||x>=10&&x<=12)&&y>=4&&y<=7) return 'rgb(20,40,20)';        // große Augen
     if (x>=6&&x<=9&&y>=10&&y<=12) return 'rgb(30,70,35)';                      // Mund
@@ -2951,6 +2957,35 @@ function doBreak(dir) {
   }
   blip(160,0.09);
 }
+function toggleGate(x, y, z) {          // alle verbundenen Tor-Blöcke zusammen schalten
+  const opening = getBlock(x,y,z) === GATE;
+  const seen = new Set();
+  const queue = [[x,y,z]];
+  const cells = [];
+  while (queue.length && cells.length < 300) {
+    const c = queue.pop();
+    const key = c[0]+','+c[1]+','+c[2];
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const b = getBlock(c[0],c[1],c[2]);
+    if (b!==GATE && b!==GATE_OPEN) continue;
+    cells.push(c);
+    queue.push([c[0]+1,c[1],c[2]],[c[0]-1,c[1],c[2]],[c[0],c[1]+1,c[2]],
+               [c[0],c[1]-1,c[2]],[c[0],c[1],c[2]+1],[c[0],c[1],c[2]-1]);
+  }
+  if (!opening) {                       // beim Schließen: steht wer im Tor?
+    for (const c of cells) {
+      if (Math.abs(c[0]+0.5-player.x)<0.5+P_HALF && Math.abs(c[2]+0.5-player.z)<0.5+P_HALF &&
+          player.y < c[1]+1 && player.y+P_HEIGHT > c[1]) {
+        toast('Du stehst im Tor! 😄 Geh erst einen Schritt weiter.', 2500);
+        return;
+      }
+    }
+  }
+  for (const c of cells) setBlock(c[0],c[1],c[2], opening ? GATE_OPEN : GATE);
+  toast(opening ? '🎚️ Rrrrr... Tor auf! ('+cells.length+' Blöcke)' : '🎚️ Rrrrr... Tor zu!', 2000);
+  blip(160,0.1); blip(200,0.1); blip(240,0.12);
+}
 function doPlace(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
@@ -2966,6 +3001,10 @@ function doPlace(dir) {
   }
   if (hit.block===CABINET) {            // Schrank öffnen
     openCabinet(hit.x+','+hit.y+','+hit.z);
+    return;
+  }
+  if ((hit.block===GATE || hit.block===GATE_OPEN) && HOTBAR_ITEMS[selSlot]!==GATE) {
+    toggleGate(hit.x, hit.y, hit.z);    // das ganze Garagentor auf/zu!
     return;
   }
   if (DOOR_PARTS.includes(hit.block)) { // Tür auf/zu!
@@ -3054,6 +3093,7 @@ function doPlace(dir) {
   blip(330,0.06);
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
+  if (b===GATE) toast('🎚️ Bau das Tor so groß du willst! Zum Öffnen: anderen Block wählen und Tor antippen.', 3500);
   if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {
     cropSet.add(px+','+py+','+pz);
     toast('🌱 Gepflanzt! Schau zu, wie es wächst...', 2500);
@@ -3166,6 +3206,8 @@ const ICONS = {
     g.fillStyle='#8a6a42'; g.fillRect(1,4,14,2); g.fillRect(1,9,14,2); }),
   [SNOWMAN]: iconURL(g=>{ g.fillStyle='#f4f8fc'; g.fillRect(5,1,6,4); g.fillRect(4,5,8,4); g.fillRect(3,9,10,6);
     g.fillStyle='#e8781e'; g.fillRect(7,3,3,1); g.fillStyle='#3b2a12'; g.fillRect(6,2,1,1); g.fillRect(9,2,1,1); }),
+  [GATE]: iconURL(g=>{ g.fillStyle='#98a0a8'; g.fillRect(1,1,14,14); g.fillStyle='#5c626a';
+    g.fillRect(1,4,14,1); g.fillRect(1,8,14,1); g.fillRect(1,12,14,1); }),
 };
 const hotbarEl=document.getElementById('hotbar');
 HOTBAR_ITEMS.forEach((b,i)=>{
