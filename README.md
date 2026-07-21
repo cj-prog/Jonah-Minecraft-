@@ -171,6 +171,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Auch in Schatztruhen stecken manchmal Euro-Scheine – und die Schätze
   aus den Truhen (Diamanten, Äpfel, Karotten) landen jetzt wirklich in
   deinem Beutel!
+- Badezimmer! 🚽 Toilette und Waschbecken aus glänzendem Porzellan in
+  der Block-Leiste. Toilette antippen = hinsetzen (mit Spülgeräusch:
+  Rauschhh! 🌀), Waschbecken antippen = Hände waschen (platsch,
+  platsch! 🧼). Manche Dorf-Häuser haben jetzt sogar ein eigenes
+  kleines Bad!
 - Dein Hubschrauber! 🚁 Roter Heli mit drehendem Rotor, Glas-Kanzel,
   Heckausleger und Kufen. Er kann auf der Stelle schweben und senkrecht
   starten – perfekt zum Landen auf Hochhaus-Dächern! Macht chop-chop-chop,

@@ -197,7 +197,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 48 &middot; Geld verdienen: Euro! 💶</p>
+    Version 49 &middot; Toilette und Waschbecken! 🚽</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -246,7 +246,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
       WHEAT0=27, WHEAT1=28, WHEAT2=29,
       DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
-      SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40;
+      SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -296,6 +296,18 @@ const BLOCKS = {
     [0.51,0.04,0.13, 0.92,0.94,0.19, 41],               // rechte Tür
     [0.43,0.42,0.09, 0.47,0.58,0.14, 5],                // Griffe
     [0.53,0.42,0.09, 0.57,0.58,0.14, 5]] },
+  [TOILET]: { name:'Toilette 🚽 (antippen = hinsetzen!)', tiles:[58,58,58], solid:true, model:[
+    [0.25,0,0.2, 0.75,0.25,0.8, 58],                    // Fuß
+    [0.18,0.25,0.12, 0.82,0.55,0.85, 58],               // Schüssel
+    [0.3,0.45,0.24, 0.7,0.57,0.72, 9],                  // Wasser blitzt oben raus
+    [0.2,0.55,0.8, 0.8,1.1,0.98, 58],                   // Spülkasten
+    [0.42,1.1,0.85, 0.58,1.16,0.94, 3]] },              // silberner Spülknopf
+  [SINK]: { name:'Waschbecken (antippen = Hände waschen!)', tiles:[58,58,58], solid:true, model:[
+    [0.38,0,0.3, 0.62,0.55,0.7, 58],                    // Säule
+    [0.15,0.55,0.12, 0.85,0.8,0.88, 58],                // Becken
+    [0.25,0.72,0.22, 0.75,0.81,0.78, 9],                // Wasser
+    [0.46,0.8,0.78, 0.54,1.06,0.9, 3],                  // Wasserhahn
+    [0.46,0.98,0.55, 0.54,1.06,0.82, 3]] },
   // Karotten-Beet in 3 Wachstums-Stufen
   [CARROT0]: { name:'Karotten-Beet (pflanzen und warten!)', tiles:[7,7,7], solid:false, model:[
     [0.22,0,0.22, 0.28,0.14,0.28, 7],[0.68,0,0.32, 0.74,0.12,0.38, 7],
@@ -368,7 +380,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -603,6 +615,11 @@ function genChunkData(cx, cz) {
       put(hx0+mx,baseY+2,hz0+D,AIR,false);
       // In manchen Häusern steht eine Schatztruhe!
       if (hash2(hx0,hz0,321)<0.6) put(hx0+1,baseY+1,hz0+1,CHEST,false);
+      // ... und manche haben ein kleines Badezimmer!
+      if (hash2(hx0,hz0,323)<0.4) {
+        put(hx0+W-2,baseY+1,hz0+1,TOILET,false);
+        put(hx0+W-2,baseY+1,hz0+2,SINK,false);
+      }
     }
     // Marktstand: der Dorfladen! Theke, gestreiftes Dach und ein Schild
     if (wh>SEA) {
@@ -1009,6 +1026,7 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(55,()=>vary(38,38,42,10));                                   // Auto-Reifen schwarz
   tile(56,(x,y)=> y%4===3 ? vary(96,100,106,10) : vary(152,158,166,14)); // Garagentor-Lamellen
   tile(57,(x)=> x%4<2 ? vary(46,140,70,14) : vary(240,240,235,10)); // Händler-Schürze grün-weiß gestreift
+  tile(58,(x,y)=> (x===0||y===0) ? vary(198,208,216,8) : vary(243,247,250,5)); // Porzellan glänzend weiß
   tile(54,(x,y)=>{                                                  // Schleim Gesicht
     if ((x>=3&&x<=5||x>=10&&x<=12)&&y>=4&&y<=7) return 'rgb(20,40,20)';        // große Augen
     if (x>=6&&x<=9&&y>=10&&y<=12) return 'rgb(30,70,35)';                      // Mund
@@ -3422,12 +3440,22 @@ function doPlace(dir) {
     blip(open?220:320, 0.08);
     return;
   }
-  if (hit.block===CHAIR && !riding) {   // hinsetzen!
+  if ((hit.block===CHAIR || hit.block===TOILET) && !riding) {   // hinsetzen!
     sitting = { x:hit.x, y:hit.y, z:hit.z };
     player.x=hit.x+0.5; player.z=hit.z+0.5; player.y=hit.y-0.25;
     player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
-    toast('🪑 Ahh, gemütlich! Zum Aufstehen einfach bewegen.', 2500);
-    blip(330,0.08);
+    if (hit.block===TOILET) {
+      toast('🚽 Plumps! Und danach: Spülung – Rauschhh! 🌀', 2800);
+      blip(600,0.08); blip(400,0.12); blip(250,0.2); blip(180,0.25);
+    } else {
+      toast('🪑 Ahh, gemütlich! Zum Aufstehen einfach bewegen.', 2500);
+      blip(330,0.08);
+    }
+    return;
+  }
+  if (hit.block===SINK) {               // Hände waschen!
+    toast('🧼 Platsch, platsch – Hände gewaschen! Blitzeblank! ✨', 2500);
+    blip(900,0.05); blip(1100,0.05); blip(1000,0.06); blip(1200,0.05);
     return;
   }
   if (hit.block===CHEST) {              // Truhe öffnen: Schatz!
@@ -3499,6 +3527,8 @@ function doPlace(dir) {
   blip(330,0.06);
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
+  if (b===TOILET) toast('🚽 Toilette aufgestellt! Antippen zum Hinsetzen.');
+  if (b===SINK) toast('🧼 Waschbecken aufgestellt! Antippen zum Händewaschen.');
   if (b===GATE) toast('🎚️ Bau das Tor so groß du willst! Zum Öffnen: anderen Block wählen und Tor antippen.', 3500);
   if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {
     cropSet.add(px+','+py+','+pz);
@@ -3590,6 +3620,10 @@ function iconURL(draw) {                // kleine Pixel-Bildchen für Möbel
 }
 const HOLZ='#8a6a42', HOLZ_D='#5c4326';
 const ICONS = {
+  [TOILET]: iconURL(g=>{ g.fillStyle='#f2f6fa'; g.fillRect(4,1,8,6); g.fillRect(2,7,12,4); g.fillRect(5,11,6,4);
+    g.fillStyle='#9fb6c6'; g.fillRect(4,1,8,1); g.fillStyle='#4a90d9'; g.fillRect(5,8,6,2); }),
+  [SINK]: iconURL(g=>{ g.fillStyle='#f2f6fa'; g.fillRect(2,7,12,4); g.fillRect(6,11,4,4);
+    g.fillStyle='#8a9aa6'; g.fillRect(7,1,2,4); g.fillRect(7,4,4,1); g.fillStyle='#4a90d9'; g.fillRect(5,8,6,2); }),
   [TABLE]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(1,5,14,3); g.fillRect(2,8,3,7); g.fillRect(11,8,3,7); }),
   [CHAIR]: iconURL(g=>{ g.fillStyle=HOLZ; g.fillRect(10,1,3,10); g.fillRect(3,8,10,3); g.fillRect(3,11,2,4); g.fillRect(11,11,2,4); }),
   [BED]:   iconURL(g=>{ g.fillStyle=HOLZ_D; g.fillRect(1,9,14,4); g.fillStyle='#c23434'; g.fillRect(1,6,10,3); g.fillStyle='#eee'; g.fillRect(11,6,4,3); }),
