@@ -78,6 +78,17 @@
   .cabSlot img { width:38px; height:38px; image-rendering:pixelated; pointer-events:none; }
   #cabClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  #shopBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(18,42,66,.95); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; }
+  #shopBox h3 { font-size:18px; }
+  #shopBox p { font-size:12px; opacity:.85; max-width:250px; line-height:1.4; }
+  #shopGems { font-size:16px; font-weight:bold; }
+  .shopRow { font-size:15px; font-weight:bold; background:rgba(255,255,255,.14);
+    border:2px solid rgba(255,255,255,.35); border-radius:10px; padding:8px 14px; min-width:232px; }
+  .shopRow:active { background:rgba(255,255,255,.35); }
+  #shopClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   .btn:active { background:rgba(255,255,255,.35); }
 
   #joyBase { width:110px; height:110px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
@@ -165,12 +176,26 @@
   <div class="foodChip" id="foodWo"></div>
   <div class="foodChip" id="foodS"></div>
   <div class="foodChip" id="foodG"></div>
+  <div class="foodChip" id="foodK"></div>
+</div>
+
+<div class="hud" id="shopBox">
+  <h3>🏪 Laden</h3>
+  <div id="shopGems">💎 0</div>
+  <div class="shopRow" data-buy="cake">🍰 Kuchen kaufen &mdash; 2 💎</div>
+  <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 💎</div>
+  <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 💎</div>
+  <p>Verkaufen &mdash; so verdienst du Diamanten:</p>
+  <div class="shopRow" data-sell="c">5 🥕 verkaufen &rarr; 1 💎</div>
+  <div class="shopRow" data-sell="w">5 🌾 verkaufen &rarr; 1 💎</div>
+  <div class="shopRow" data-sell="wo">3 🧶 verkaufen &rarr; 2 💎</div>
+  <button id="shopClose">Fertig</button>
 </div>
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 46 &middot; Boote am Ufer! ⛵</p>
+    Version 47 &middot; Läden im Dorf! 🏪</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -577,6 +602,29 @@ function genChunkData(cx, cz) {
       // In manchen Häusern steht eine Schatztruhe!
       if (hash2(hx0,hz0,321)<0.6) put(hx0+1,baseY+1,hz0+1,CHEST,false);
     }
+    // Marktstand: der Dorfladen! Theke, gestreiftes Dach und ein Schild
+    if (wh>SEA) {
+      const sx0=v.vx-2, sz0=v.vz-9;
+      const sh=terrainHeight(v.vx, sz0+2);
+      if (sh>SEA && Math.abs(sh-wh)<=2) {
+        for (let lx=0;lx<5;lx++) for (let lz=0;lz<4;lz++) {
+          const wx=sx0+lx, wz=sz0+lz;
+          const th4=terrainHeight(wx,wz);
+          for (let y=th4;y<sh;y++) put(wx,y,wz,DIRT,false);
+          put(wx,sh,wz,PLANK,false);                             // Boden
+          for (let y=sh+1;y<=sh+3;y++) put(wx,y,wz,AIR,false);   // innen frei
+          put(wx,sh+4,wz,(lx+lz)%2?WOOL:BRICK,false);            // rot-weißes Dach
+        }
+        for (const [ex,ez] of [[0,0],[4,0],[0,3],[4,3]])         // Eckpfosten
+          for (let y=sh+1;y<=sh+3;y++) put(sx0+ex,y,sz0+ez,WOOD,false);
+        for (let lx=1;lx<4;lx++) put(sx0+lx,sh+1,sz0+3,TABLE,false);  // Verkaufstheke
+        put(sx0+1,sh+1,sz0+1,CHEST,false);                       // Warenlager
+        put(sx0+3,sh+1,sz0+1,CABINET,false);
+        put(sx0+2,sh+5,sz0+3,SIGN,true);
+        const lkey=(sx0+2)+','+(sh+5)+','+(sz0+3);
+        if (!signTexts.has(lkey)) signTexts.set(lkey,'🏪 Laden');
+      }
+    }
     // Hochhaus! Etwa jedes zweite Dorf hat einen Wohnturm
     if (hash2(v.vx,v.vz,606)<0.5) {
       const tx0=v.vx+8, tz0=v.vz+8;
@@ -763,7 +811,7 @@ function saveGame() {
       jet: jetSave,
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -798,6 +846,7 @@ function loadGame() {
     if (typeof s.wool==='number') wool = s.wool;
     if (typeof s.snowCnt==='number') snowCnt = s.snowCnt;
     if (typeof s.gems==='number') gems = s.gems;
+    if (typeof s.cakes==='number') cakes = s.cakes;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -956,6 +1005,7 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(53,()=> rnd()<0.15 ? vary(52,150,62,14) : vary(92,204,96,24)); // Schleim grün
   tile(55,()=>vary(38,38,42,10));                                   // Auto-Reifen schwarz
   tile(56,(x,y)=> y%4===3 ? vary(96,100,106,10) : vary(152,158,166,14)); // Garagentor-Lamellen
+  tile(57,(x)=> x%4<2 ? vary(46,140,70,14) : vary(240,240,235,10)); // Händler-Schürze grün-weiß gestreift
   tile(54,(x,y)=>{                                                  // Schleim Gesicht
     if ((x>=3&&x<=5||x>=10&&x<=12)&&y>=4&&y<=7) return 'rgb(20,40,20)';        // große Augen
     if (x>=6&&x<=9&&y>=10&&y<=12) return 'rgb(30,70,35)';                      // Mund
@@ -1300,9 +1350,9 @@ function physics(dt) {
     if (jumpHeld || keys['Space']) player.vy = Math.min(player.vy+30*dt, 3.5);
     player.vy = Math.max(player.vy, -3.5);
   } else {
-    player.vy -= GRAVITY*dt;
+    player.vy -= (balloonT>0 ? GRAVITY*0.22 : GRAVITY)*dt;   // 🎈 Ballon: fast schwerelos
     if ((jumpHeld || keys['Space']) && player.onGround) { player.vy = jumpT>0 ? 12 : JUMP_V; player.onGround=false; }
-    player.vy = Math.max(player.vy, -50);
+    player.vy = Math.max(player.vy, balloonT>0 ? -2.2 : -50);
   }
 
   // Achsenweise bewegen und kollidieren
@@ -1356,6 +1406,7 @@ const ANIMAL_KIND = {
   fish:     { speed:1.6, half:0.16, height:0.25, tile:38, face:38 },
   villager: { speed:1.0, half:0.3,  height:1.8,  tile:20, face:21 },
   kid:      { speed:1.9, half:0.22, height:1.25, tile:40, face:21 },
+  trader:   { speed:0.8, half:0.3,  height:1.8,  tile:57, face:21 },
 };
 const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird';
 const TAME_MSG = {
@@ -1640,6 +1691,13 @@ function spawnTick() {
         spawnMob('kid', v.vx+8+Math.floor(Math.random()*8), v.vz+8+Math.floor(Math.random()*8),
           { home:key, hx:v.vx, hz:v.vz });
     }
+    // und der Händler steht in seinem Marktstand!
+    {
+      const sh=terrainHeight(v.vx, v.vz-7);
+      if (sh>SEA) animals.push({type:'trader', x:v.vx+0.5, y:sh+1.1, z:v.vz-6.5,
+        yaw:Math.PI, vy:0, kx:0, kz:0, hp:3, walking:false, t:2, ph:0, onGround:false,
+        home:key, hx:v.vx+0.5, hz:v.vz-6.5});
+    }
     // gespeicherte Freundschaften wiederherstellen
     const fr = savedFriends[key];
     if (fr) for (const [nm, isKid] of fr) {
@@ -1776,6 +1834,9 @@ function updateAnimals(dt) {
         // Dorfbewohner und Kinder bleiben in der Nähe ihres Dorfes
         if ((a.type==='villager'||a.type==='kid') && Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
+        // der Händler bleibt hinter seiner Theke stehen
+        if (a.type==='trader' && Math.hypot(a.hx-a.x, a.hz-a.z) > 1.2)
+          a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z));
       }
     }
     if (a.type==='slime') {             // Höhlenmonster: hüpft und schubst
@@ -1867,7 +1928,7 @@ function pushBox(arr, a, ox,oy,oz, sx,sy,sz, tileAll, tileFront) {
 }
 const animalBuf = gl.createBuffer();
 function drawAnimals() {
-  if (!animals.length && !friendP) return;
+  if (!animals.length && !friendP && !fireworks.length) return;
   const arr=[];
   if (friendP) {                        // dein Mitspieler!
     const a={x:friendP.x, y:friendP.y, z:friendP.z, yaw:friendP.yaw||0, ph:0};
@@ -2021,6 +2082,10 @@ function drawAnimals() {
       pushBox(arr,a, 0,1.15,-0.24, 0.56,0.18,0.18, k.tile);        // verschränkte Arme
       pushBox(arr,a, 0,1.65,0, 0.5,0.5,0.5, 22, k.face);           // Kopf
       pushBox(arr,a, 0,1.56,-0.28, 0.1,0.2,0.12, 22);              // große Nase
+      if (a.type==='trader') {                                     // rote Verkäufer-Mütze
+        pushBox(arr,a, 0,1.94,0, 0.6,0.08,0.6, 25);
+        pushBox(arr,a, 0,2.04,0, 0.36,0.18,0.36, 25);
+      }
       if (a.friend>=3) drawHeart(arr, a, 2.15);
     }
   }
@@ -2028,6 +2093,19 @@ function drawAnimals() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
   setAttribs();
   gl.drawArrays(gl.TRIANGLES, 0, arr.length/6);
+  // Feuerwerk: Raketen und Funken leuchten selbst – auch nachts hell!
+  if (fireworks.length) {
+    const fwArr = [];
+    for (const f of fireworks) {
+      const fa = {x:f.x, y:f.y, z:f.z, yaw:0};
+      if (f.rocket) pushBox(fwArr,fa, 0,0,0, 0.09,0.55,0.09, 52);
+      else pushBox(fwArr,fa, 0,0,0, 0.14,0.14,0.14, f.tile);
+    }
+    gl.uniform1f(loc.uLight, 1);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fwArr), gl.DYNAMIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, fwArr.length/6);
+    gl.uniform1f(loc.uLight, curLight);
+  }
 }
 
 // ------------------------------ Schilder ------------------------------------
@@ -2104,15 +2182,15 @@ function drawSignTexts() {
 
 // ------------------------------ Essen ---------------------------------------
 const cropSet = new Set();              // wachsende Beete ("x,y,z")
-let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0;
-let boostT = 0, jumpT = 0, cropT = 0;
+let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0, cakes = 0;
+let boostT = 0, jumpT = 0, cropT = 0, balloonT = 0;
 
 function updateFoodHUD() {
   const set=(id,emoji,n)=>{ const el=document.getElementById(id);
     el.textContent=emoji+' '+n; el.style.display = n>0 ? 'flex':'none'; };
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
-  set('foodS','❄️',snowCnt); set('foodG','💎',gems);
+  set('foodS','❄️',snowCnt); set('foodG','💎',gems); set('foodK','🍰',cakes);
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -2137,6 +2215,9 @@ function eatFood(kind) {
   } else if (kind==='b' && bread>0) {
     bread--; boostT = 20; jumpT = 20;
     toast('Mmmh! 🍞 Brot-Power – schnell UND hoch für 20 Sekunden!', 2800);
+  } else if (kind==='k' && cakes>0) {
+    cakes--; boostT = 30; jumpT = 30;
+    toast('Mmmh! 🍰 Kuchen-Power – superschnell UND riesige Sprünge für 30 Sekunden!', 3000);
   } else if (kind==='wo') {
     toast('🧶 Wolle isst man nicht! 😄 Wähle den Woll-Block in der Leiste und bau damit!', 3000);
     return;
@@ -2150,7 +2231,7 @@ function eatFood(kind) {
   updateFoodHUD(); scheduleSave();
   blip(500,0.05); blip(420,0.05); blip(540,0.05);
 }
-for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g']]) {
+for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g'],['foodK','k']]) {
   const el=document.getElementById(id);
   el.addEventListener('click', ()=>eatFood(kind));
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
@@ -2235,6 +2316,82 @@ document.getElementById('cabClose').addEventListener('click', closeCabinet);
 function removeCabinet(x,y,z) {
   const key = x+','+y+','+z;
   if (cabinets.has(key)) { cabinets.delete(key); scheduleSave(); }
+}
+
+// ------------------------------ Läden 🏪 ------------------------------------
+const shopBox = document.getElementById('shopBox');
+function openShop(a) {
+  a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));   // dreht sich zu dir um
+  a.walking = false; a.t = 8;
+  updateShopUI();
+  shopBox.style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(523,0.08); blip(659,0.1);
+}
+function updateShopUI() {
+  document.getElementById('shopGems').textContent = 'Du hast: 💎 ' + gems;
+}
+function shopBuy(what) {
+  const cost = what==='cake' ? 2 : what==='balloon' ? 3 : 1;
+  if (gems < cost) {
+    toast('Zu wenig Diamanten! 💎 Besiege Höhlenmonster oder verkaufe Gemüse!', 3200);
+    blip(180,0.15);
+    return;
+  }
+  gems -= cost;
+  if (what==='cake') { cakes++; toast('🍰 Ein Kuchen! Tippe ihn unten in der Leiste an zum Essen!', 3000); }
+  if (what==='balloon') { balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800); }
+  if (what==='fw') { launchFirework(); toast('🎆 Feuerwerk! Schau in den Himmel!', 3000); }
+  blip(659,0.08); blip(784,0.1);
+  updateShopUI(); updateFoodHUD(); scheduleSave();
+}
+function shopSell(what) {
+  if (what==='c') { if (carrots<5) { toast('Du brauchst 5 Karotten! 🥕 Du hast erst '+carrots+'.', 2500); return; } carrots-=5; gems+=1; }
+  if (what==='w') { if (wheat<5)   { toast('Du brauchst 5 Weizen! 🌾 Du hast erst '+wheat+'.', 2500);   return; } wheat-=5;   gems+=1; }
+  if (what==='wo'){ if (wool<3)    { toast('Du brauchst 3 Wolle! 🧶 Du hast erst '+wool+'.', 2500);     return; } wool-=3;    gems+=2; }
+  toast('Verkauft! 💎 „Danke!", sagt der Händler.', 2500);
+  blip(784,0.08); blip(1047,0.1);
+  updateShopUI(); updateFoodHUD(); scheduleSave();
+}
+for (const el of document.querySelectorAll('.shopRow')) {
+  const h = () => { if (el.dataset.buy) shopBuy(el.dataset.buy); else shopSell(el.dataset.sell); };
+  el.addEventListener('click', h);
+  el.addEventListener('touchstart', e => { e.preventDefault(); h(); }, {passive:false});
+}
+document.getElementById('shopClose').addEventListener('click', () => { shopBox.style.display='none'; });
+
+// Feuerwerk: Rakete steigt auf und zerplatzt in bunte Funken
+const fireworks = [];
+let curLight = 1;
+function launchFirework() {
+  const fx2 = player.x + Math.sin(yaw)*8 + (Math.random()*4-2);
+  const fz2 = player.z - Math.cos(yaw)*8 + (Math.random()*4-2);
+  fireworks.push({rocket:true, x:fx2, y:player.y, z:fz2, t:1.5+Math.random()*0.4});
+  blip(220,0.15);
+}
+function updateFireworks(dt) {
+  for (let i=fireworks.length-1; i>=0; i--) {
+    const f = fireworks[i];
+    f.t -= dt;
+    if (f.rocket) {
+      f.y += 15*dt;
+      if (f.t<=0) {                     // BOOM! Funkenregen in allen Farben
+        const cols = [25,9,0,4,52,53];  // rot, blau, grün, gelb, weiß, hellgrün
+        for (let s=0; s<26; s++) {
+          const th=Math.random()*Math.PI*2, ph=Math.acos(Math.random()*2-1), sp=4+Math.random()*3.5;
+          fireworks.push({x:f.x, y:f.y, z:f.z,
+            vx:Math.sin(ph)*Math.cos(th)*sp, vy:Math.cos(ph)*sp, vz:Math.sin(ph)*Math.sin(th)*sp,
+            tile:cols[s%cols.length], t:1.1+Math.random()*0.6});
+        }
+        blip(700,0.2); blip(900,0.25); blip(500,0.3);
+        fireworks.splice(i,1);
+      }
+    } else {
+      f.x += f.vx*dt; f.y += f.vy*dt; f.z += f.vz*dt;
+      f.vy -= 4*dt;
+      if (f.t<=0) fireworks.splice(i,1);
+    }
+  }
 }
 
 // ------------------------------ Zusammen spielen (WebRTC) --------------------
@@ -2963,6 +3120,10 @@ function hitEntity(a, dir) {
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
+    return;
+  }
+  if (a.type==='trader') {              // beim Händler einkaufen!
+    openShop(a);
     return;
   }
   if (a.type==='villager' || a.type==='kid') {   // mit Bewohnern und Kindern sprechen!
@@ -3745,6 +3906,8 @@ function frame(now) {
   updateCompass(dt);
   if (boostT > 0) boostT -= dt;
   if (jumpT > 0) jumpT -= dt;
+  if (balloonT > 0) { balloonT -= dt; if (balloonT <= 0) toast('🎈 Dein Luftballon ist weggeflogen!', 2500); }
+  updateFireworks(dt);
   mpPosT += dt;
   if (mpPosT > 0.12 && mpChan && mpChan.readyState==='open') {
     mpPosT = 0;
@@ -3790,6 +3953,7 @@ function frame(now) {
   }
   gl.uniform1f(loc.uAlpha,1);
   gl.uniform1f(loc.uLight, L);
+  curLight = L;
 
   // sichtbare Chunks sortiert (nah -> fern)
   const pcx=Math.floor(player.x)>>4, pcz=Math.floor(player.z)>>4;

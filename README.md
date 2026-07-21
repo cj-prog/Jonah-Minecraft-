@@ -161,6 +161,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   Antippen = einsteigen, mit dem Joystick übers Wasser fahren (mit
   Platscher-Geräuschen!), ⚓ = aussteigen – wenn Land in der Nähe ist,
   legst du automatisch dort an
+- Läden! 🏪 Jedes Dorf hat einen Marktstand mit rot-weißem Dach und
+  einem Händler mit Mütze und Schürze. Tippe ihn an und kaufe mit
+  Diamanten 💎 ein: 🍰 Kuchen (2 💎, 30 Sek. Superkraft), 🎈 Luftballon
+  (3 💎, 30 Sek. sanft schweben) oder 🎆 Feuerwerk (1 💎, bunter
+  Funkenregen am Himmel!). Diamanten verdienst du bei Höhlenmonstern –
+  oder verkaufe dem Händler 5 🥕, 5 🌾 oder 3 🧶
 - Dein Hubschrauber! 🚁 Roter Heli mit drehendem Rotor, Glas-Kanzel,
   Heckausleger und Kufen. Er kann auf der Stelle schweben und senkrecht
   starten – perfekt zum Landen auf Hochhaus-Dächern! Macht chop-chop-chop,
