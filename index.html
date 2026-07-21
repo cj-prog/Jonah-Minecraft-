@@ -170,7 +170,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 44 &middot; Paul bringt dir den Jet nach! ✈️</p>
+    Version 45 &middot; dein eigener Hubschrauber! 🚁</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -740,7 +740,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null;
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null, savedHeli = null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -751,6 +751,8 @@ function saveGame() {
       [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0]);
     const jetA = animals.find(a=>a.type==='jet');
     const jetSave = jetA ? [Math.round(jetA.x*10)/10, Math.round(jetA.y*10)/10, Math.round(jetA.z*10)/10] : null;
+    const heliA = animals.find(a=>a.type==='heli');
+    const heliSave = heliA ? [Math.round(heliA.x*10)/10, Math.round(heliA.y*10)/10, Math.round(heliA.z*10)/10] : null;
     const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
@@ -759,6 +761,7 @@ function saveGame() {
       signs: Object.fromEntries(signTexts),
       ziel: customTarget,
       jet: jetSave,
+      heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
@@ -785,6 +788,7 @@ function loadGame() {
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.ziel && typeof s.ziel.x==='number') customTarget = s.ziel;
     if (Array.isArray(s.jet)) savedJet = s.jet;
+    if (Array.isArray(s.heli)) savedHeli = s.heli;
     if (s.cabinets) for (const k in s.cabinets) cabinets.set(k, s.cabinets[k]);
     if (typeof s.carrots==='number') carrots = s.carrots;
     if (typeof s.tomatoes==='number') tomatoes = s.tomatoes;
@@ -1222,6 +1226,7 @@ function physics(dt) {
   if (!ch || !ch.data) return;   // warten bis der Boden geladen ist
 
   if (jetRiding) { jetPhysics(dt); return; }
+  if (heliRiding) { heliPhysics(dt); return; }
   if (carRiding) { carPhysics(dt); return; }
   if (riding) { ridePhysics(dt); return; }
 
@@ -1342,6 +1347,7 @@ const ANIMAL_KIND = {
   slime:    { speed:1.4, half:0.35, height:0.7,  tile:53, face:54 },
   jet:      { speed:0,   half:1.4,  height:1.3,  tile:49, face:49 },
   car:      { speed:3.2, half:0.6,  height:1.0,  tile:25, face:25 },
+  heli:     { speed:0,   half:0.9,  height:1.6,  tile:25, face:25 },
   dog:      { speed:1.3, half:0.28, height:0.7,  tile:31, face:32 },
   cat:      { speed:1.5, half:0.2,  height:0.5,  tile:33, face:34 },
   bird:     { speed:4.0, half:0.18, height:0.35, tile:35, face:35 },
@@ -1435,6 +1441,7 @@ let downHeld = false;
 function toggleFly() {
   if (riding) { toast('Steig erst vom Pferd ab! 🐴'); return; }
   if (jetRiding) { toast('Du fliegst doch schon mit deinem Jet! ✈️'); return; }
+  if (heliRiding) { toast('Du fliegst doch schon mit deinem Hubschrauber! 🚁'); return; }
   flying = !flying;
   sitting = null;
   player.vy = 0;
@@ -1647,6 +1654,34 @@ function updateAnimals(dt) {
   for (let i=animals.length-1; i>=0; i--) {
     const a = animals[i];
     if (a===riding || a===carRiding) continue;   // wird gerade vom Spieler gesteuert
+    if (a.type==='heli') {              // der Hubschrauber bleibt auch in der Nähe
+      if (a!==heliRiding) {
+        const dp = Math.hypot(a.x-player.x, a.z-player.z);
+        if (dp > 48 && !a.ferry) { a.ferry = true; toast('🚁 Dein Hubschrauber kommt nachgeflogen!', 2500); }
+        if (a.ferry) {
+          if (dp < 12) {
+            a.ferry = false;
+            toast('🚁 Dein Hubschrauber ist da und landet!', 2500);
+            blip(80,0.12); blip(90,0.12);
+          } else {
+            const dir = Math.atan2(player.x-a.x, -(player.z-a.z));
+            a.yaw = dir;
+            a.rot = (a.rot||0) + dt*18;
+            a.x += Math.sin(dir)*10*dt;
+            a.z += -Math.cos(dir)*10*dt;
+            const th2 = terrainHeight(Math.floor(a.x), Math.floor(a.z));
+            const ty2 = Math.max(th2, SEA) + 12;
+            a.y += Math.max(-6, Math.min(6, ty2 - a.y)) * dt;
+            a.vy = 0;
+            continue;
+          }
+        }
+        a.vy = Math.max(a.vy-25*dt, -20);
+        const nyh=a.y+a.vy*dt;
+        if (!collideBox(a.x,nyh,a.z,0.85,1.5) && nyh > SEA+0.8) a.y=nyh; else a.vy=0;
+      }
+      continue;
+    }
     if (a.type==='jet') {               // Paul passt auf, dass der Jet in der Nähe bleibt!
       if (a!==jetRiding) {
         const dp = Math.hypot(a.x-player.x, a.z-player.z);
@@ -1871,6 +1906,20 @@ function drawAnimals() {
       pushBox(arr,a,  0.52,0.24, 0.6, 0.14,0.42,0.42, 55);
       pushBox(arr,a, -0.3,0.5,-0.98, 0.2,0.14,0.08, 37);           // Scheinwerfer
       pushBox(arr,a,  0.3,0.5,-0.98, 0.2,0.14,0.08, 37);
+    } else if (a.type==='heli') {
+      pushBox(arr,a, -0.45,0.1,0.1, 0.12,0.1,1.7, 3);              // Kufen
+      pushBox(arr,a,  0.45,0.1,0.1, 0.12,0.1,1.7, 3);
+      pushBox(arr,a, 0,0.8,-0.3, 0.9,0.85,1.25, 25);               // Kabine (rot)
+      pushBox(arr,a, 0,0.9,-0.95, 0.75,0.55,0.14, 48);             // Glas-Front
+      pushBox(arr,a, -0.46,0.9,-0.3, 0.1,0.5,0.9, 48);             // Seitenfenster
+      pushBox(arr,a,  0.46,0.9,-0.3, 0.1,0.5,0.9, 48);
+      pushBox(arr,a, 0,0.9,1.0, 0.26,0.26,1.7, 25);                // Heckausleger
+      pushBox(arr,a, 0.16,1.0,1.8, 0.06,0.75,0.14, 3);             // Heckrotor
+      pushBox(arr,a, 0,1.3,-0.25, 0.14,0.25,0.14, 3);              // Rotormast
+      // drehender Hauptrotor!
+      const rotEnt = { x: a.x+0.25*Math.sin(a.yaw), y: a.y, z: a.z-0.25*Math.cos(a.yaw), yaw: a.rot||0 };
+      pushBox(arr,rotEnt, 0,1.45,0, 2.9,0.06,0.24, 49);
+      pushBox(arr,rotEnt, 0,1.45,0, 0.24,0.06,2.9, 49);
     } else if (a.type==='jet') {
       pushBox(arr,a, 0,0.7,-0.4, 0.8,0.7,3.0, 49);                 // Rumpf (weiß)
       pushBox(arr,a, 0,0.7,-2.15, 0.55,0.5,0.6, 49);               // Nase
@@ -2618,6 +2667,64 @@ function carPhysics(dt) {
   if (a.y<-12) { exitCar(); spawn(); }
 }
 
+// ------------------------------ Hubschrauber ---------------------------------
+let heliRiding = null;
+function enterHeli(a) {
+  if (riding) dismount();
+  if (flying) toggleFly();
+  sitting = null;
+  heliRiding = a;
+  document.getElementById('downBtn').style.display='flex';
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='flex'; rb.textContent='🛬';
+  toast('🚁 Rotoren an! ⬆ = steigen, ⬇ = sinken – du kannst auf der Stelle schweben!', 3500);
+  blip(80,0.15); blip(90,0.15);
+}
+function exitHeli() {
+  const a = heliRiding;
+  heliRiding = null;
+  document.getElementById('downBtn').style.display = flying ? 'flex' : 'none';
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='none'; rb.textContent='🐴';
+  if (a) {
+    if (!collide(a.x+1.8, a.y, a.z)) { player.x=a.x+1.8; player.z=a.z; }
+    player.y = a.y; player.vx=player.vy=player.vz=0;
+  }
+  toast('🚁 Gelandet! Der Hubschrauber wartet hier.', 2500);
+  blip(300,0.1);
+  scheduleSave();
+}
+function heliPhysics(dt) {
+  const a = heliRiding;
+  let mf=0, ms=0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf,ms);
+  if (ml>1) { mf/=ml; ms/=ml; }
+  const speed = 10;
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+  const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
+  let vv = 0;
+  if (jumpHeld||keys['Space']) vv += 6;
+  if (downHeld||keys['ShiftLeft']||keys['ShiftRight']) vv -= 6;
+  const stuck = collideBox(a.x,a.y,a.z,0.85,1.5);
+  const nx=a.x+vx*dt;
+  if (stuck || !collideBox(nx,a.y,a.z,0.85,1.5)) a.x=nx;
+  const nz=a.z+vz*dt;
+  if (stuck || !collideBox(a.x,a.y,nz,0.85,1.5)) a.z=nz;
+  const ny=Math.min(CH+30, a.y+vv*dt);
+  if (stuck || !collideBox(a.x,ny,a.z,0.85,1.5)) a.y=ny;
+  a.yaw = yaw;
+  a.rot = (a.rot||0) + dt*18;           // Rotor dreht schnell!
+  a.chopT = (a.chopT||0) - dt;
+  if (a.chopT<=0) { a.chopT=0.13; blip(66,0.05); }   // chop-chop-chop
+  player.x=a.x; player.z=a.z; player.y=a.y+0.4;
+  player.vx=player.vy=player.vz=0;
+}
+
 // ------------------------------ Privatjet -----------------------------------
 let jetRiding = null, jetTalkT = 0, jetNoise = null;
 const PILOT_TALK = [
@@ -2739,13 +2846,18 @@ function releaseEntity(a) {
 }
 function hitEntity(a, dir) {
   if (a.type==='jet') {                 // Einsteigen in den Privatjet!
-    if (jetRiding || carRiding) return;
+    if (jetRiding || carRiding || heliRiding) return;
     enterJet(a);
     return;
   }
   if (a.type==='car') {                 // Einsteigen ins Auto!
-    if (jetRiding || carRiding) return;
+    if (jetRiding || carRiding || heliRiding) return;
     enterCar(a);
+    return;
+  }
+  if (a.type==='heli') {                // Einsteigen in den Hubschrauber!
+    if (jetRiding || carRiding || heliRiding) return;
+    enterHeli(a);
     return;
   }
   if (a.type==='horse') {               // Aufsteigen!
@@ -3362,7 +3474,7 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-const rideOff = ()=>{ if (jetRiding) exitJet(); else if (carRiding) exitCar(); else dismount(); };
+const rideOff = ()=>{ if (jetRiding) exitJet(); else if (heliRiding) exitHeli(); else if (carRiding) exitCar(); else dismount(); };
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
@@ -3684,6 +3796,22 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     }
     animals.push({type:'jet', x:jx+0.5, y:terrainHeight(jx,jz)+2.5, z:jz+0.5,
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
+  }
+  // Dein Hubschrauber!
+  if (savedHeli) {
+    animals.push({type:'heli', x:savedHeli[0], y:savedHeli[1], z:savedHeli[2],
+      yaw:0, rot:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
+  } else {
+    let hx2=Math.floor(player.x)-6, hz2=Math.floor(player.z);
+    for (let r=4;r<30;r+=2) {
+      let ok=true;
+      const x=Math.floor(player.x)-r, z=Math.floor(player.z);
+      for (let dx=-2;dx<=2 && ok;dx++) for (let dz=-2;dz<=2 && ok;dz++)
+        if (terrainHeight(x+dx,z+dz)<=SEA || Math.abs(terrainHeight(x+dx,z+dz)-terrainHeight(x,z))>1) ok=false;
+      if (ok) { hx2=x; hz2=z; break; }
+    }
+    animals.push({type:'heli', x:hx2+0.5, y:terrainHeight(hx2,hz2)+2.5, z:hz2+0.5,
+      yaw:0, rot:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
   }
   // Ein paar Tiere gleich in der Nähe – und garantiert Pferd, Hund und Katze!
   for (let i=0; i<24 && animals.length<5; i++) trySpawnAnimal(6,18);

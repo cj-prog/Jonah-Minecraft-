@@ -157,6 +157,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Scheinwerfern fahren durch die Landschaft, weichen Seen aus und hupen.
   Tippe eins an und fahr selbst: superschnell über Stock und Stein,
   Stufen hüpft das Auto von allein hoch. 🅿️-Knopf = parken
+- Dein Hubschrauber! 🚁 Roter Heli mit drehendem Rotor, Glas-Kanzel,
+  Heckausleger und Kufen. Er kann auf der Stelle schweben und senkrecht
+  starten – perfekt zum Landen auf Hochhaus-Dächern! Macht chop-chop-chop,
+  kommt dir wie der Jet automatisch nachgeflogen und wird gespeichert
 - Dein Privatjet! ✈️ In der Nähe vom Start parkt dein eigener weißer Jet
   mit rotem Streifen – und im Cockpit sitzt Pilot Paul 👨‍✈️.
   Antippen = einsteigen, ⬆/⬇ = hoch und runter, Joystick = düsen (superschnell!),
