@@ -177,25 +177,27 @@
   <div class="foodChip" id="foodS"></div>
   <div class="foodChip" id="foodG"></div>
   <div class="foodChip" id="foodK"></div>
+  <div class="foodChip" id="foodM"></div>
 </div>
 
 <div class="hud" id="shopBox">
   <h3>🏪 Laden</h3>
-  <div id="shopGems">💎 0</div>
-  <div class="shopRow" data-buy="cake">🍰 Kuchen kaufen &mdash; 2 💎</div>
-  <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 💎</div>
-  <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 💎</div>
-  <p>Verkaufen &mdash; so verdienst du Diamanten:</p>
-  <div class="shopRow" data-sell="c">5 🥕 verkaufen &rarr; 1 💎</div>
-  <div class="shopRow" data-sell="w">5 🌾 verkaufen &rarr; 1 💎</div>
-  <div class="shopRow" data-sell="wo">3 🧶 verkaufen &rarr; 2 💎</div>
+  <div id="shopGems">💶 0</div>
+  <div class="shopRow" data-buy="cake">🍰 Kuchen kaufen &mdash; 2 €</div>
+  <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 €</div>
+  <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 €</div>
+  <p>Verkaufen &mdash; so verdienst du Geld:</p>
+  <div class="shopRow" data-sell="c">5 🥕 verkaufen &rarr; 2 €</div>
+  <div class="shopRow" data-sell="w">5 🌾 verkaufen &rarr; 2 €</div>
+  <div class="shopRow" data-sell="wo">3 🧶 verkaufen &rarr; 4 €</div>
+  <div class="shopRow" data-sell="g">1 💎 verkaufen &rarr; 3 €</div>
   <button id="shopClose">Fertig</button>
 </div>
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 47 &middot; Läden im Dorf! 🏪</p>
+    Version 48 &middot; Geld verdienen: Euro! 💶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -811,7 +813,7 @@ function saveGame() {
       jet: jetSave,
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -847,6 +849,7 @@ function loadGame() {
     if (typeof s.snowCnt==='number') snowCnt = s.snowCnt;
     if (typeof s.gems==='number') gems = s.gems;
     if (typeof s.cakes==='number') cakes = s.cakes;
+    if (typeof s.money==='number') money = s.money;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -2183,6 +2186,7 @@ function drawSignTexts() {
 // ------------------------------ Essen ---------------------------------------
 const cropSet = new Set();              // wachsende Beete ("x,y,z")
 let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0, cakes = 0;
+let money = 5;                          // dein Geldbeutel: 5 Euro Startgeld! 💶
 let boostT = 0, jumpT = 0, cropT = 0, balloonT = 0;
 
 function updateFoodHUD() {
@@ -2191,6 +2195,7 @@ function updateFoodHUD() {
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
   set('foodS','❄️',snowCnt); set('foodG','💎',gems); set('foodK','🍰',cakes);
+  set('foodM','💶',money);
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -2225,13 +2230,16 @@ function eatFood(kind) {
     toast('❄️ Brrr, zu kalt zum Essen! Wähle den Schneemann ⛄ in der Leiste (kostet 3 ❄️)!', 3000);
     return;
   } else if (kind==='g') {
-    toast('💎 Deine Schatz-Sammlung: '+gems+' Diamanten! Hol dir mehr von den Höhlenmonstern!', 3000);
+    toast('💎 Deine Schatz-Sammlung: '+gems+' Diamanten! Der Händler im Laden tauscht sie in Euro um!', 3200);
+    return;
+  } else if (kind==='m') {
+    toast('💶 Dein Geldbeutel: '+money+' Euro! Verdiene mehr beim Händler im Laden. 🏪', 3000);
     return;
   } else return;
   updateFoodHUD(); scheduleSave();
   blip(500,0.05); blip(420,0.05); blip(540,0.05);
 }
-for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g'],['foodK','k']]) {
+for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g'],['foodK','k'],['foodM','m']]) {
   const el=document.getElementById(id);
   el.addEventListener('click', ()=>eatFood(kind));
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
@@ -2329,16 +2337,16 @@ function openShop(a) {
   blip(523,0.08); blip(659,0.1);
 }
 function updateShopUI() {
-  document.getElementById('shopGems').textContent = 'Du hast: 💎 ' + gems;
+  document.getElementById('shopGems').textContent = 'Du hast: 💶 ' + money + ' Euro · 💎 ' + gems;
 }
 function shopBuy(what) {
   const cost = what==='cake' ? 2 : what==='balloon' ? 3 : 1;
-  if (gems < cost) {
-    toast('Zu wenig Diamanten! 💎 Besiege Höhlenmonster oder verkaufe Gemüse!', 3200);
+  if (money < cost) {
+    toast('Zu wenig Geld! 💶 Verkaufe dem Händler Gemüse, Wolle oder Diamanten!', 3200);
     blip(180,0.15);
     return;
   }
-  gems -= cost;
+  money -= cost;
   if (what==='cake') { cakes++; toast('🍰 Ein Kuchen! Tippe ihn unten in der Leiste an zum Essen!', 3000); }
   if (what==='balloon') { balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800); }
   if (what==='fw') { launchFirework(); toast('🎆 Feuerwerk! Schau in den Himmel!', 3000); }
@@ -2346,10 +2354,11 @@ function shopBuy(what) {
   updateShopUI(); updateFoodHUD(); scheduleSave();
 }
 function shopSell(what) {
-  if (what==='c') { if (carrots<5) { toast('Du brauchst 5 Karotten! 🥕 Du hast erst '+carrots+'.', 2500); return; } carrots-=5; gems+=1; }
-  if (what==='w') { if (wheat<5)   { toast('Du brauchst 5 Weizen! 🌾 Du hast erst '+wheat+'.', 2500);   return; } wheat-=5;   gems+=1; }
-  if (what==='wo'){ if (wool<3)    { toast('Du brauchst 3 Wolle! 🧶 Du hast erst '+wool+'.', 2500);     return; } wool-=3;    gems+=2; }
-  toast('Verkauft! 💎 „Danke!", sagt der Händler.', 2500);
+  if (what==='c') { if (carrots<5) { toast('Du brauchst 5 Karotten! 🥕 Du hast erst '+carrots+'.', 2500); return; } carrots-=5; money+=2; }
+  if (what==='w') { if (wheat<5)   { toast('Du brauchst 5 Weizen! 🌾 Du hast erst '+wheat+'.', 2500);   return; } wheat-=5;   money+=2; }
+  if (what==='wo'){ if (wool<3)    { toast('Du brauchst 3 Wolle! 🧶 Du hast erst '+wool+'.', 2500);     return; } wool-=3;    money+=4; }
+  if (what==='g') { if (gems<1)    { toast('Du hast keinen Diamanten! 💎 Besiege Höhlenmonster!', 2500); return; } gems-=1;   money+=3; }
+  toast('Verkauft! 💶 „Danke!", sagt der Händler. Kling, Kasse!', 2500);
   blip(784,0.08); blip(1047,0.1);
   updateShopUI(); updateFoodHUD(); scheduleSave();
 }
@@ -3423,9 +3432,16 @@ function doPlace(dir) {
   }
   if (hit.block===CHEST) {              // Truhe öffnen: Schatz!
     setBlock(hit.x,hit.y,hit.z,CHEST_OPEN);
-    const loot=['💎 einen Diamanten','🪙 drei Goldmünzen','🍎 einen leckeren Apfel','⚔️ ein Schwert',
-                '🥕 fünf Karotten','👑 eine Königskrone','🗺️ eine Schatzkarte','🧭 einen Kompass'];
-    toast('Du hast '+loot[Math.floor(Math.random()*loot.length)]+' gefunden!');
+    const loot=['💎 einen Diamanten','💶 drei Euro','🍎 einen leckeren Apfel','⚔️ ein Schwert',
+                '🥕 fünf Karotten','👑 eine Königskrone','🗺️ eine Schatzkarte','💶 zwei Euro'];
+    const li=Math.floor(Math.random()*loot.length);
+    toast('Du hast '+loot[li]+' gefunden!');
+    if (li===0) gems+=1;                // die Schätze landen wirklich im Beutel!
+    if (li===1) money+=3;
+    if (li===2) apples+=1;
+    if (li===4) carrots+=5;
+    if (li===7) money+=2;
+    updateFoodHUD(); scheduleSave();
     blip(392,0.08); blip(523,0.1); blip(659,0.12);
     return;
   }
