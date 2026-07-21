@@ -157,6 +157,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Scheinwerfern fahren durch die Landschaft, weichen Seen aus und hupen.
   Tippe eins an und fahr selbst: superschnell über Stock und Stein,
   Stufen hüpft das Auto von allein hoch. 🅿️-Knopf = parken
+- Boote! ⛵ Am Ufer liegen Holzboote und schaukeln in den Wellen.
+  Antippen = einsteigen, mit dem Joystick übers Wasser fahren (mit
+  Platscher-Geräuschen!), ⚓ = aussteigen – wenn Land in der Nähe ist,
+  legst du automatisch dort an
 - Dein Hubschrauber! 🚁 Roter Heli mit drehendem Rotor, Glas-Kanzel,
   Heckausleger und Kufen. Er kann auf der Stelle schweben und senkrecht
   starten – perfekt zum Landen auf Hochhaus-Dächern! Macht chop-chop-chop,
