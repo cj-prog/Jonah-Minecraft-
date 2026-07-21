@@ -163,10 +163,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   legst du automatisch dort an
 - Läden! 🏪 Jedes Dorf hat einen Marktstand mit rot-weißem Dach und
   einem Händler mit Mütze und Schürze. Tippe ihn an und kaufe mit
-  Diamanten 💎 ein: 🍰 Kuchen (2 💎, 30 Sek. Superkraft), 🎈 Luftballon
-  (3 💎, 30 Sek. sanft schweben) oder 🎆 Feuerwerk (1 💎, bunter
-  Funkenregen am Himmel!). Diamanten verdienst du bei Höhlenmonstern –
-  oder verkaufe dem Händler 5 🥕, 5 🌾 oder 3 🧶
+  echtem Geld 💶 ein: 🍰 Kuchen (2 €, 30 Sek. Superkraft), 🎈 Luftballon
+  (3 €, 30 Sek. sanft schweben) oder 🎆 Feuerwerk (1 €, bunter
+  Funkenregen am Himmel!)
+- Geld verdienen! 💶 Du startest mit 5 Euro. Mehr bekommst du beim
+  Händler: 5 🥕 oder 5 🌾 verkaufen = 2 €, 3 🧶 = 4 €, 1 💎 = 3 €.
+  Auch in Schatztruhen stecken manchmal Euro-Scheine – und die Schätze
+  aus den Truhen (Diamanten, Äpfel, Karotten) landen jetzt wirklich in
+  deinem Beutel!
 - Dein Hubschrauber! 🚁 Roter Heli mit drehendem Rotor, Glas-Kanzel,
   Heckausleger und Kufen. Er kann auf der Stelle schweben und senkrecht
   starten – perfekt zum Landen auf Hochhaus-Dächern! Macht chop-chop-chop,
