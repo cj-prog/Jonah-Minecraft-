@@ -197,7 +197,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 49 &middot; Toilette und Waschbecken! 🚽</p>
+    Version 50 &middot; Der Händler kann spazieren gehen! 🚶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1715,9 +1715,22 @@ function spawnTick() {
     // und der Händler steht in seinem Marktstand!
     {
       const sh=terrainHeight(v.vx, v.vz-7);
-      if (sh>SEA) animals.push({type:'trader', x:v.vx+0.5, y:sh+1.1, z:v.vz-6.5,
-        yaw:Math.PI, vy:0, kx:0, kz:0, hp:3, walking:false, t:2, ph:0, onGround:false,
-        home:key, hx:v.vx+0.5, hz:v.vz-6.5});
+      if (sh>SEA) {
+        const sch = getChunk(v.vx>>4, (v.vz-6)>>4);
+        const stallThere = (!sch || !sch.data) ? true :
+          (getBlock(v.vx-1,sh+1,v.vz-6)===TABLE || getBlock(v.vx,sh+1,v.vz-6)===TABLE ||
+           getBlock(v.vx+1,sh+1,v.vz-6)===TABLE);
+        if (stallThere) {
+          animals.push({type:'trader', x:v.vx+0.5, y:sh+1.1, z:v.vz-6.5,
+            yaw:Math.PI, vy:0, kx:0, kz:0, hp:3, walking:false, t:2, ph:0, onGround:false,
+            home:key, hx:v.vx+0.5, hz:v.vz-6.5, sy:sh+1});
+        } else {
+          // Marktstand abgebaut? Dann läuft der Händler mit Bauchladen durchs Dorf!
+          for (let tr=0; tr<6; tr++)
+            if (spawnMob('trader', v.vx + Math.floor(Math.random()*10)-5,
+                v.vz + Math.floor(Math.random()*10)-5, { home:key, hx:v.vx, hz:v.vz, roam:true })) break;
+        }
+      }
     }
     // gespeicherte Freundschaften wiederherstellen
     const fr = savedFriends[key];
@@ -1855,9 +1868,27 @@ function updateAnimals(dt) {
         // Dorfbewohner und Kinder bleiben in der Nähe ihres Dorfes
         if ((a.type==='villager'||a.type==='kid') && Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
-        // der Händler bleibt hinter seiner Theke stehen
-        if (a.type==='trader' && Math.hypot(a.hx-a.x, a.hz-a.z) > 1.2)
-          a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z));
+        // der Händler bleibt an seiner Theke – aber wenn sie abgebaut wurde,
+        // schnappt er sich seinen Bauchladen und läuft frei durchs Dorf!
+        if (a.type==='trader') {
+          if (!a.roam && a.sy !== undefined) {
+            const tcx=Math.floor(a.hx), tcz=Math.floor(a.hz)+1;
+            const sch=getChunk(tcx>>4, tcz>>4);
+            if (sch && sch.data &&
+                getBlock(tcx-1,a.sy,tcz)!==TABLE && getBlock(tcx,a.sy,tcz)!==TABLE &&
+                getBlock(tcx+1,a.sy,tcz)!==TABLE) {
+              a.roam = true;
+              if (Math.hypot(a.x-player.x, a.z-player.z) < 24)
+                toast('🏪 Der Händler schnappt sich seinen Bauchladen und geht spazieren!', 3200);
+            }
+          }
+          if (a.roam) {
+            if (Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
+              a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
+          } else if (Math.hypot(a.hx-a.x, a.hz-a.z) > 1.2) {
+            a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z));
+          }
+        }
       }
     }
     if (a.type==='slime') {             // Höhlenmonster: hüpft und schubst
