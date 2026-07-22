@@ -179,6 +179,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   dein Mal-Studio: 12x12 Pixel, 12 Farben, malen mit dem Finger.
   „Fertig" hängt dein Kunstwerk an die Wand – es wird gespeichert!
   „Alles weg" + „Fertig" bringt das alte Motiv zurück
+- Fitnessstudio! 💪 Drei Sportgeräte in der Leiste: Hantel antippen =
+  Krafttraining (20 Sek. Muskel-Power: schnell + hohe Sprünge),
+  Laufband antippen = Lauftraining (20 Sek. superschnell), und das
+  Trampolin: draufspringen macht Boing! – je öfter du hüpfst, desto
+  höher fliegst du 🤸
 - Badezimmer! 🚽 Toilette und Waschbecken aus glänzendem Porzellan in
   der Block-Leiste. Toilette antippen = hinsetzen (mit Spülgeräusch:
   Rauschhh! 🌀), Waschbecken antippen = Hände waschen (platsch,
