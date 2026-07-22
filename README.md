@@ -239,10 +239,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   Wichtig zu wissen: Der automatische Spielstand liegt im Browser des Geräts.
   Er geht verloren, wenn man die Browserdaten löscht – also ab und zu sichern!
 - Automatische Versions-Sicherung 🛟: Startest du zum ersten Mal eine
-  neue Version, wird dein Spielstand vorher automatisch gesichert
-  (du siehst dann eine Meldung). Sollte mal etwas schiefgehen, gibt es
-  auf dem Startbildschirm „🛟 Sicherung zurückholen". Außerdem wird
-  beim Spielen alle 30 Sekunden automatisch gespeichert.
+  neue Version, wird dein Spielstand vorher automatisch gesichert UND
+  als Datei in den Download-Ordner heruntergeladen (z. B.
+  „jonahcraft-sicherung-v57-2026-7-22.txt" – gut aufheben!). Sollte
+  mal etwas schiefgehen: Startbildschirm-Knopf „🛟 Sicherung
+  zurückholen" oder die Datei über „📥 Spielstand laden" einspielen.
+  Außerdem wird beim Spielen alle 30 Sekunden automatisch gespeichert.
 - 🔄-Knopf: neue Welt erzeugen
 
 Viel Spaß beim Bauen! 🧱
