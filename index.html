@@ -198,6 +198,7 @@
   <div class="shopRow" data-buy="cake">🍰 Kuchen kaufen &mdash; 2 €</div>
   <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 €</div>
   <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 €</div>
+  <div class="shopRow" data-buy="ball">⚽ Fußball &mdash; 2 €</div>
   <p>Verkaufen &mdash; so verdienst du Geld:</p>
   <div class="shopRow" data-sell="c">5 🥕 verkaufen &rarr; 2 €</div>
   <div class="shopRow" data-sell="w">5 🌾 verkaufen &rarr; 2 €</div>
@@ -219,7 +220,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 53 &middot; Fitnessstudio: Hanteln, Laufband, Trampolin! 💪</p>
+    Version 54 &middot; Fußballplätze mit Ball! ⚽</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -514,6 +515,20 @@ function villageAt(cellX, cellZ) {
     vz: cellZ*VCELL + 20 + Math.floor(hash2(cellX,cellZ,4444)*40),
   };
 }
+// Fußballplätze: auf flachem Rasen, mit weißen Linien und zwei Toren
+const FCELL = 96;
+function fieldAt(cellX, cellZ) {
+  if (hash2(cellX,cellZ,9100) < 0.5) return null;
+  const fx = cellX*FCELL + 24 + Math.floor(hash2(cellX,cellZ,9101)*48);
+  const fz = cellZ*FCELL + 24 + Math.floor(hash2(cellX,cellZ,9102)*48);
+  let hmin=999, hmax=-999;
+  for (const [dx,dz] of [[-8,-5],[8,-5],[-8,5],[8,5],[0,0]]) {
+    const h=terrainHeight(fx+dx,fz+dz);
+    hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
+  }
+  if (hmax-hmin>1 || hmin<=SEA) return null;    // nur auf flachem, trockenem Boden
+  return { fx, fz, y:hmax };
+}
 function houseParams(v, i) {            // Haus Nr. i eines Dorfes (deterministisch)
   const hx = v.vx + HOUSE_SPOTS[i][0] + Math.floor(hash2(v.vx,v.vz,i*3+1)*5)-2;
   const hz = v.vz + HOUSE_SPOTS[i][1] + Math.floor(hash2(v.vx,v.vz,i*3+2)*5)-2;
@@ -605,6 +620,28 @@ function genChunkData(cx, cz) {
         // an manchen Blättern wachsen Äpfel!
         const leafB = hash2(tx+dx+ly, tz+dz, 991)<0.1 ? APPLE_LEAF : LEAF;
         put(tx+dx,ly,tz+dz,leafB,true);
+      }
+    }
+  }
+  // Fußballplätze: weiße Linien im Rasen, Mittellinie und zwei Tore
+  {
+    const f0x=Math.floor((x0-16)/FCELL), f1x=Math.floor((x0+CS+16)/FCELL);
+    const f0z=Math.floor((z0-16)/FCELL), f1z=Math.floor((z0+CS+16)/FCELL);
+    for (let fcz=f0z; fcz<=f1z; fcz++) for (let fcx=f0x; fcx<=f1x; fcx++) {
+      const f=fieldAt(fcx,fcz);
+      if (!f) continue;
+      for (let dx=-8;dx<=8;dx++) for (let dz=-5;dz<=5;dz++) {
+        const wx=f.fx+dx, wz=f.fz+dz;
+        const th=terrainHeight(wx,wz);
+        if (th<=SEA) continue;
+        for (let y=th+1;y<=th+9;y++) put(wx,y,wz,AIR,false);       // Bäume wegräumen
+        if (Math.abs(dx)===8 || Math.abs(dz)===5 || dx===0)
+          put(wx,th+1,wz,SNOW,false);                              // weiße Linien
+      }
+      for (const sx of [-8,8]) {                                   // die beiden Tore
+        const gx=f.fx+sx, gy=terrainHeight(gx,f.fz);
+        for (const gz of [-2,2]) { put(gx,gy+1,f.fz+gz,WOOL,false); put(gx,gy+2,f.fz+gz,WOOL,false); }
+        for (let gz=-2;gz<=2;gz++) put(gx,gy+3,f.fz+gz,WOOL,false);
       }
     }
   }
@@ -859,7 +896,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null, savedHeli = null;
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null, savedHeli = null, savedBalls = [];
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -879,6 +916,8 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
+      balls: animals.filter(a=>a.type==='ball' && a.own).map(a=>
+        [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10]),
       ziel: customTarget,
       jet: jetSave,
       heli: heliSave,
@@ -907,6 +946,7 @@ function loadGame() {
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.paints) for (const k in s.paints) paintings.set(k, s.paints[k]);
+    if (Array.isArray(s.balls)) savedBalls = s.balls;
     if (s.ziel && typeof s.ziel.x==='number') customTarget = s.ziel;
     if (Array.isArray(s.jet)) savedJet = s.jet;
     if (Array.isArray(s.heli)) savedHeli = s.heli;
@@ -1522,6 +1562,7 @@ const ANIMAL_KIND = {
   villager: { speed:1.0, half:0.3,  height:1.8,  tile:20, face:21 },
   kid:      { speed:1.9, half:0.22, height:1.25, tile:40, face:21 },
   trader:   { speed:0.8, half:0.3,  height:1.8,  tile:57, face:21 },
+  ball:     { speed:0,   half:0.22, height:0.44, tile:10, face:10 },
 };
 const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird';
 const TAME_MSG = {
@@ -1780,6 +1821,20 @@ function spawnTick() {
       }
     }
   }
+  // Fußballplatz in der Nähe? Dann liegt ein Ball auf dem Anstoßpunkt! ⚽
+  {
+    const fcx=Math.floor(player.x/FCELL), fcz=Math.floor(player.z/FCELL);
+    for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) {
+      const f=fieldAt(fcx+dx, fcz+dz);
+      if (!f) continue;
+      if (Math.hypot(f.fx-player.x, f.fz-player.z) > 45) continue;
+      if (animals.some(a=>a.type==='ball' && Math.hypot(a.x-(f.fx+0.5), a.z-(f.fz+0.5))<25)) continue;
+      const fch=getChunk(f.fx>>4, f.fz>>4);
+      if (!fch || !fch.data) continue;
+      animals.push({type:'ball', x:f.fx+0.5, y:f.y+2, z:f.fz+0.5, vx:0, vy:0, vz:0,
+        fx:f.fx, fz:f.fz, fy:f.y, yaw:0, kx:0, kz:0, walking:false, t:9, ph:0, onGround:false});
+    }
+  }
   // Dorfbewohner: jedes Dorf in der Nähe bekommt seine Bewohner
   const pcx=Math.floor(player.x/VCELL), pcz=Math.floor(player.z/VCELL);
   for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) {
@@ -1843,6 +1898,41 @@ function updateAnimals(dt) {
   for (let i=animals.length-1; i>=0; i--) {
     const a = animals[i];
     if (a===riding || a===carRiding) continue;   // wird gerade vom Spieler gesteuert
+    if (a.type==='ball') {              // der Fußball: rollt, hüpft, fliegt! ⚽
+      const dx=a.x-player.x, dz=a.z-player.z, dp=Math.hypot(dx,dz);
+      if (dp<0.85 && Math.abs(player.y-a.y)<1.7) {       // Reinlaufen = Kick!
+        const sp=Math.hypot(player.vx,player.vz);
+        if (sp>0.5) {
+          a.vx = player.vx*1.7; a.vz = player.vz*1.7; a.vy = 3.5+sp*0.3;
+          blip(300,0.06);
+        }
+      }
+      a.vy -= 22*dt;
+      const nx=a.x+a.vx*dt, nz=a.z+a.vz*dt, nyb=a.y+a.vy*dt;
+      if (!collideBox(nx,a.y,a.z,0.2,0.4)) a.x=nx; else { a.vx*=-0.5; if (Math.abs(a.vx)>1) blip(220,0.04); }
+      if (!collideBox(a.x,a.y,nz,0.2,0.4)) a.z=nz; else { a.vz*=-0.5; if (Math.abs(a.vz)>1) blip(220,0.04); }
+      if (!collideBox(a.x,nyb,a.z,0.2,0.4)) a.y=nyb;
+      else if (a.vy<0) { if (a.vy<-3) blip(160,0.05); a.vy = -a.vy*0.55; if (a.vy<1.2) a.vy=0; }
+      else a.vy=0;
+      const fr=Math.max(0, 1-1.1*dt);
+      a.vx*=fr; a.vz*=fr;
+      a.ph += Math.hypot(a.vx,a.vz)*dt*3;                // rollt optisch
+      // TOOOR? Hinter der Torlinie zwischen den Pfosten!
+      if (a.fx!==undefined && !(a.goalT>0)) {
+        const rx=a.x-(a.fx+0.5), rz=a.z-(a.fz+0.5);
+        if (Math.abs(rx)>8 && Math.abs(rx)<10.5 && Math.abs(rz)<2 && a.y<a.fy+4) {
+          a.goalT = 6;
+          toast('⚽ TOOOR! 🎉🎉🎉', 3500);
+          blip(523,0.15); blip(659,0.15); blip(784,0.2); blip(1047,0.3);
+          fireworks.push({rocket:true, x:a.x, y:a.y+3, z:a.z, t:0.25});
+          a.x=a.fx+0.5; a.z=a.fz+0.5; a.y=a.fy+2;        // zurück zum Anstoßpunkt
+          a.vx=a.vz=0; a.vy=0;
+        }
+      }
+      if (a.goalT>0) a.goalT-=dt;
+      if (a.y<-8) { a.y=terrainHeight(Math.floor(a.x),Math.floor(a.z))+2; a.vy=0; }
+      continue;
+    }
     if (a.type==='heli') {              // der Hubschrauber bleibt auch in der Nähe
       if (a!==heliRiding) {
         const dp = Math.hypot(a.x-player.x, a.z-player.z);
@@ -2187,6 +2277,11 @@ function drawAnimals() {
       pushBox(arr,a,  0.15,0.2+flap,0.02, 0.17,0.03,0.18, a.col);
       pushBox(arr,a, 0,0.15,0.18, 0.07,0.03,0.15, a.col);          // Schwanzfedern
       if (a.tame) pushBox(arr,a, 0,0.17,-0.12, 0.15,0.04,0.06, 25); // Mini-Halsband
+    } else if (a.type==='ball') {                                  // der Fußball ⚽
+      const r = a.ph||0;
+      pushBox(arr,a, 0,0.21,0, 0.4,0.42,0.4, 10);                  // weißer Ball
+      pushBox(arr,a, 0,0.21+Math.sin(r)*0.06,0, 0.44,0.14,0.14, 55);  // schwarze Flecken
+      pushBox(arr,a, 0,0.21,Math.cos(r)*0.06, 0.14,0.44,0.14, 55);
     } else if (a.type==='fish') {
       const wig = Math.sin(a.ph)*0.08;
       pushBox(arr,a, 0,0.1,0, 0.09,0.17,0.32, a.col);              // Körper
@@ -2621,7 +2716,7 @@ function updateShopUI() {
   document.getElementById('shopGems').textContent = 'Du hast: 💶 ' + money + ' Euro · 💎 ' + gems;
 }
 function shopBuy(what) {
-  const cost = what==='cake' ? 2 : what==='balloon' ? 3 : 1;
+  const cost = what==='cake' ? 2 : what==='balloon' ? 3 : what==='ball' ? 2 : 1;
   if (money < cost) {
     toast('Zu wenig Geld! 💶 Verkaufe dem Händler Gemüse, Wolle oder Diamanten!', 3200);
     blip(180,0.15);
@@ -2631,6 +2726,12 @@ function shopBuy(what) {
   if (what==='cake') { cakes++; toast('🍰 Ein Kuchen! Tippe ihn unten in der Leiste an zum Essen!', 3000); }
   if (what==='balloon') { balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800); }
   if (what==='fw') { launchFirework(); toast('🎆 Feuerwerk! Schau in den Himmel!', 3000); }
+  if (what==='ball') {
+    animals.push({type:'ball', own:true, x:player.x+Math.sin(yaw)*2.5, y:player.y+1.5,
+      z:player.z-Math.cos(yaw)*2.5, vx:0, vy:0, vz:0,
+      yaw:0, kx:0, kz:0, walking:false, t:9, ph:0, onGround:false});
+    toast('⚽ Dein eigener Fußball! Lauf rein oder tippe ihn an zum Schießen!', 3500);
+  }
   blip(659,0.08); blip(784,0.1);
   updateShopUI(); updateFoodHUD(); scheduleSave();
 }
@@ -3414,6 +3515,13 @@ function hitEntity(a, dir) {
   }
   if (a.type==='trader') {              // beim Händler einkaufen!
     openShop(a);
+    return;
+  }
+  if (a.type==='ball') {                // Antippen = kräftiger Schuss!
+    const d=Math.hypot(a.x-player.x, a.z-player.z)||1;
+    a.vx=(a.x-player.x)/d*13; a.vz=(a.z-player.z)/d*13; a.vy=6.5;
+    toast('⚽ Schuss!', 1200);
+    blip(350,0.08); blip(280,0.06);
     return;
   }
   if (a.type==='villager' || a.type==='kid') {   // mit Bewohnern und Kindern sprechen!
@@ -4385,6 +4493,11 @@ document.getElementById('playBtn').addEventListener('click',()=>{
       tame:true, sit:!!p[4], col: p[5] || (Math.random()<0.5?35:36),
       yaw:0, vy:0, kx:0, kz:0, hp:3,
       walking:false, t:0, ph:0, onGround:false });
+  }
+  // Deine gekauften Fußbälle liegen noch da, wo du sie gelassen hast
+  for (const p of savedBalls) {
+    animals.push({type:'ball', own:true, x:p[0], y:p[1]+0.5, z:p[2], vx:0, vy:0, vz:0,
+      yaw:0, kx:0, kz:0, walking:false, t:9, ph:0, onGround:false});
   }
   // Abenteuer-Begleiter (Freunde, die mitgekommen sind)
   for (const c of savedCompanions) {

@@ -179,6 +179,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   dein Mal-Studio: 12x12 Pixel, 12 Farben, malen mit dem Finger.
   „Fertig" hängt dein Kunstwerk an die Wand – es wird gespeichert!
   „Alles weg" + „Fertig" bringt das alte Motiv zurück
+- Fußball! ⚽ In der Landschaft gibt es Fußballplätze mit weißen
+  Linien und zwei Toren. Am Anstoßpunkt liegt ein Ball: Lauf rein zum
+  Kicken oder tippe ihn an für einen kräftigen Schuss! Der Ball rollt,
+  hüpft und prallt ab. Triffst du ins Tor, gibt es TOOOR-Jubel mit
+  Feuerwerk! 🎉 Im Laden kannst du dir für 2 € einen eigenen Ball
+  kaufen und überall mitnehmen (wird gespeichert)
 - Fitnessstudio! 💪 Drei Sportgeräte in der Leiste: Hantel antippen =
   Krafttraining (20 Sek. Muskel-Power: schnell + hohe Sprünge),
   Laufband antippen = Lauftraining (20 Sek. superschnell), und das
