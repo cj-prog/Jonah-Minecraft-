@@ -89,6 +89,18 @@
   .shopRow:active { background:rgba(255,255,255,.35); }
   #shopClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  #paintBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:8px; background:rgba(35,30,50,.96); padding:12px 16px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; }
+  #paintBox h3 { font-size:18px; }
+  #paintCanvas { border:3px solid #8a6a3c; border-radius:6px; background:#fff; touch-action:none; }
+  #paintPal { display:grid; grid-template-columns:repeat(6,34px); gap:5px; }
+  .palBtn { width:34px; height:34px; border-radius:8px; border:2px solid rgba(255,255,255,.35); }
+  .palBtn.sel { border:3px solid #fff; transform:scale(1.12); }
+  #paintClear, #paintDone { font-size:15px; font-weight:bold; padding:7px 16px; border-radius:8px;
+    border:none; color:#fff; }
+  #paintClear { background:#b3402e; }
+  #paintDone { background:#4caf50; }
   .btn:active { background:rgba(255,255,255,.35); }
 
   #joyBase { width:110px; height:110px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
@@ -194,10 +206,20 @@
   <button id="shopClose">Fertig</button>
 </div>
 
+<div class="hud" id="paintBox">
+  <h3>🎨 Bild malen</h3>
+  <canvas id="paintCanvas" width="240" height="240"></canvas>
+  <div id="paintPal"></div>
+  <div style="display:flex; gap:8px;">
+    <button id="paintClear">🗑️ Alles weg</button>
+    <button id="paintDone">✔ Fertig</button>
+  </div>
+</div>
+
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 51 &middot; Bilder für die Wand! 🖼️</p>
+    Version 52 &middot; Male deine eigenen Bilder! 🎨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -840,6 +862,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
+      paints: Object.fromEntries(paintings),
       ziel: customTarget,
       jet: jetSave,
       heli: heliSave,
@@ -867,6 +890,7 @@ function loadGame() {
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
+    if (s.paints) for (const k in s.paints) paintings.set(k, s.paints[k]);
     if (s.ziel && typeof s.ziel.x==='number') customTarget = s.ziel;
     if (Array.isArray(s.jet)) savedJet = s.jet;
     if (Array.isArray(s.heli)) savedHeli = s.heli;
@@ -2276,6 +2300,144 @@ function drawSignTexts() {
   gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
 }
 
+// ------------------------------ Bilder selber malen 🎨 ----------------------
+const paintings = new Map();            // "x,y,z" -> 144 Zeichen (12x12 Farb-Nummern)
+const paintTexs = {};                   // "x,y,z" -> WebGL-Textur
+const PAINT_COLS = ['#ffffff','#222222','#d63c3c','#f08a24','#f5d93c','#5cc24e',
+                    '#2e8b57','#58b6e8','#2d5bd8','#9a5cd8','#f08ab4','#8a5a32'];
+const PN = 12, PCELL = 20;              // 12x12 Pixel, je 20px groß im Editor
+let paintKey = null, paintData = null, paintCol = 2;
+const paintBox = document.getElementById('paintBox');
+const pCan = document.getElementById('paintCanvas'), pCtx = pCan.getContext('2d');
+
+function renderPaint() {
+  for (let y=0;y<PN;y++) for (let x=0;x<PN;x++) {
+    pCtx.fillStyle = PAINT_COLS[parseInt(paintData[y*PN+x],16)||0];
+    pCtx.fillRect(x*PCELL, y*PCELL, PCELL, PCELL);
+  }
+  pCtx.strokeStyle = 'rgba(0,0,0,0.12)';
+  for (let i=1;i<PN;i++) {
+    pCtx.beginPath(); pCtx.moveTo(i*PCELL,0); pCtx.lineTo(i*PCELL,PN*PCELL); pCtx.stroke();
+    pCtx.beginPath(); pCtx.moveTo(0,i*PCELL); pCtx.lineTo(PN*PCELL,i*PCELL); pCtx.stroke();
+  }
+}
+function paintAt(clientX, clientY) {
+  const r = pCan.getBoundingClientRect();
+  const x = Math.floor((clientX-r.left) / r.width * PN);
+  const y = Math.floor((clientY-r.top) / r.height * PN);
+  if (x<0||x>=PN||y<0||y>=PN) return;
+  paintData[y*PN+x] = paintCol.toString(16);
+  renderPaint();
+}
+pCan.addEventListener('mousedown', e=>{ e.preventDefault(); paintAt(e.clientX,e.clientY);
+  const mv=ev=>paintAt(ev.clientX,ev.clientY);
+  const up=()=>{ window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); };
+  window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up); });
+pCan.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; paintAt(t.clientX,t.clientY); }, {passive:false});
+pCan.addEventListener('touchmove',  e=>{ e.preventDefault(); const t=e.touches[0]; paintAt(t.clientX,t.clientY); }, {passive:false});
+
+const paintPal = document.getElementById('paintPal');
+PAINT_COLS.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.className='palBtn'+(i===paintCol?' sel':'');
+  b.style.background=c;
+  const pick=()=>{ paintCol=i;
+    document.querySelectorAll('.palBtn').forEach((x,k)=>x.classList.toggle('sel',k===i)); };
+  b.addEventListener('click', pick);
+  b.addEventListener('touchstart', e=>{ e.preventDefault(); pick(); }, {passive:false});
+  paintPal.appendChild(b);
+});
+
+function openPainter(key) {
+  paintKey = key;
+  paintData = (paintings.get(key) || '0'.repeat(PN*PN)).split('');
+  renderPaint();
+  paintBox.style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(600,0.06); blip(760,0.06);
+}
+function closePainter(save) {
+  if (save && paintKey) {
+    const s = paintData.join('');
+    if (/^0+$/.test(s)) {               // alles weiß? Dann wieder das normale Motiv
+      paintings.delete(paintKey);
+      toast('🖼️ Alles weggewischt – das alte Motiv ist wieder da!', 2500);
+    } else {
+      paintings.set(paintKey, s);
+      toast('🎨 Dein Kunstwerk hängt an der Wand! Toll gemalt!', 3000);
+      blip(523,0.08); blip(659,0.08); blip(784,0.1);
+    }
+    if (paintTexs[paintKey]) { gl.deleteTexture(paintTexs[paintKey]); delete paintTexs[paintKey]; }
+    scheduleSave();
+  }
+  paintKey = null;
+  paintBox.style.display = 'none';
+}
+document.getElementById('paintDone').addEventListener('click', ()=>closePainter(true));
+document.getElementById('paintClear').addEventListener('click', ()=>{ paintData.fill('0'); renderPaint(); });
+
+function makePaintTexture(key) {
+  const data = paintings.get(key);
+  const c=document.createElement('canvas'); c.width=PN; c.height=PN;
+  const g=c.getContext('2d');
+  for (let y=0;y<PN;y++) for (let x=0;x<PN;x++) {
+    g.fillStyle = PAINT_COLS[parseInt(data[y*PN+x],16)||0];
+    g.fillRect(x,y,1,1);
+  }
+  const tx=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tx);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  paintTexs[key]=tx;
+}
+function removePainting(x,y,z) {
+  const key=x+','+y+','+z;
+  if (paintings.has(key)) {
+    paintings.delete(key);
+    if (paintTexs[key]) { gl.deleteTexture(paintTexs[key]); delete paintTexs[key]; }
+    scheduleSave();
+  }
+}
+function drawPaintings() {
+  if (!paintings.size) return;
+  gl.uniform1f(loc.uAlpha, 1);
+  for (const [key] of paintings) {
+    const [x,y,z] = key.split(',').map(Number);
+    if (Math.hypot(x-player.x, z-player.z) > 30) continue;
+    const b = getBlock(x,y,z);
+    if (b<PIC || b>PIC_W) continue;
+    if (!paintTexs[key]) makePaintTexture(key);
+    gl.bindTexture(gl.TEXTURE_2D, paintTexs[key]);
+    const yb=y+0.16, yt=y+0.84, s=1.0;
+    let a;
+    if (b===PIC) {          // zeigt nach +Z: rechts vom Betrachter ist +X
+      const zp=z+0.115, x0=x+0.12, x1=x+0.88;
+      a=[x0,yb,zp,0,1,s, x1,yb,zp,1,1,s, x1,yt,zp,1,0,s,
+         x0,yb,zp,0,1,s, x1,yt,zp,1,0,s, x0,yt,zp,0,0,s];
+    } else if (b===PIC_N) { // zeigt nach -Z
+      const zp=z+0.885, x0=x+0.12, x1=x+0.88;
+      a=[x1,yb,zp,0,1,s, x0,yb,zp,1,1,s, x0,yt,zp,1,0,s,
+         x1,yb,zp,0,1,s, x0,yt,zp,1,0,s, x1,yt,zp,0,0,s];
+    } else if (b===PIC_E) { // zeigt nach +X
+      const xp=x+0.115, z0=z+0.12, z1=z+0.88;
+      a=[xp,yb,z1,0,1,s, xp,yb,z0,1,1,s, xp,yt,z0,1,0,s,
+         xp,yb,z1,0,1,s, xp,yt,z0,1,0,s, xp,yt,z1,0,0,s];
+    } else {                // PIC_W, zeigt nach -X
+      const xp=x+0.885, z0=z+0.12, z1=z+0.88;
+      a=[xp,yb,z0,0,1,s, xp,yb,z1,1,1,s, xp,yt,z1,1,0,s,
+         xp,yb,z0,0,1,s, xp,yt,z1,1,0,s, xp,yt,z0,0,0,s];
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, signBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW);
+    setAttribs();
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+  gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
+}
+
 // ------------------------------ Essen ---------------------------------------
 const cropSet = new Set();              // wachsende Beete ("x,y,z")
 let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0, cakes = 0;
@@ -3439,6 +3601,7 @@ function doBreak(dir) {
   }
   if (hit.block===SIGN) removeSign(hit.x,hit.y,hit.z);
   if (hit.block===CABINET) removeCabinet(hit.x,hit.y,hit.z);
+  if (hit.block>=PIC && hit.block<=PIC_W) removePainting(hit.x,hit.y,hit.z);
   if (hit.block===WOOL) { wool++; updateFoodHUD(); scheduleSave(); }  // Wolle zurück!
   setBlock(hit.x,hit.y,hit.z,AIR);
   // Stand ein Beet auf dem Block? Dann verschwindet es mit (so wird man Beete los)
@@ -3493,6 +3656,10 @@ function doPlace(dir) {
   }
   if (hit.block===CABINET) {            // Schrank öffnen
     openCabinet(hit.x+','+hit.y+','+hit.z);
+    return;
+  }
+  if (hit.block>=PIC && hit.block<=PIC_W) {   // Bild antippen = selber malen!
+    openPainter(hit.x+','+hit.y+','+hit.z);
     return;
   }
   if ((hit.block===GATE || hit.block===GATE_OPEN) && HOTBAR_ITEMS[selSlot]!==GATE) {
@@ -4123,6 +4290,7 @@ function frame(now) {
   gl.depthMask(false);
   gl.disable(gl.CULL_FACE);
   drawSignTexts();
+  drawPaintings();
   gl.uniform1f(loc.uAlpha,0.62);
   for (let i=vis.length-1;i>=0;i--) {
     const ch=vis[i];

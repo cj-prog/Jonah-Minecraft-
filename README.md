@@ -175,6 +175,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Bild-Block seitlich auf eine Wand. Es gibt 4 Motive (Sonne über der
   Wiese, rote Blume, Herz und Regenbogen) – jeder Platz an der Wand
   zeigt ein anderes!
+- Selber malen! 🎨 Tippe ein aufgehängtes Bild an, dann öffnet sich
+  dein Mal-Studio: 12x12 Pixel, 12 Farben, malen mit dem Finger.
+  „Fertig" hängt dein Kunstwerk an die Wand – es wird gespeichert!
+  „Alles weg" + „Fertig" bringt das alte Motiv zurück
 - Badezimmer! 🚽 Toilette und Waschbecken aus glänzendem Porzellan in
   der Block-Leiste. Toilette antippen = hinsetzen (mit Spülgeräusch:
   Rauschhh! 🌀), Waschbecken antippen = Hände waschen (platsch,
