@@ -179,6 +179,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   dein Mal-Studio: 12x12 Pixel, 12 Farben, malen mit dem Finger.
   „Fertig" hängt dein Kunstwerk an die Wand – es wird gespeichert!
   „Alles weg" + „Fertig" bringt das alte Motiv zurück
+- Landkarte! 🗺️ Der Karten-Knopf oben zeigt dir die Welt von oben:
+  Wasser, Strand und Wiesen, dazu alle Dörfer 🏠, Fußballplätze ⚽,
+  Höhlen 🕳️, die geheime Festung 🏰 und dein gemerktes Ziel 📍.
+  Der rote Pfeil in der Mitte bist du (er zeigt in deine
+  Blickrichtung). Tippe irgendwo auf die Karte – dann führt dich
+  der Kompass-Pfeil genau dorthin!
 - Sprungtürme! 🏊 Bau dir ein Schwimmbad und stell einen Sprungturm
   ans Becken: Turm-Block setzen, nochmal drauftippen = ein Stück
   höher (so hoch du willst!). Oben ist automatisch eine weiße
