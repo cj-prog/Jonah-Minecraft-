@@ -238,7 +238,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 57 &middot; Automatische Sicherung! 🛟</p>
+    Version 58 &middot; Sicherung als Datei-Download! 🛟</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -282,7 +282,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 57;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 58;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -4633,7 +4633,20 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   updateFoodHUD();
   saveGame();                           // beim Start sofort speichern
   if (newVersionBackup) {
-    toast('🛟 Neue Version! Dein alter Spielstand wurde automatisch gesichert.', 4500);
+    // ... und als richtige Datei herunterladen – die ist sicher, egal was passiert!
+    try {
+      const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
+      if (bk && bk.save) {
+        const blob = new Blob([bk.save], {type:'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const d = new Date();
+        a.download = 'jonahcraft-sicherung-v'+(bk.v||'x')+'-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.txt';
+        a.click();
+        setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+      }
+    } catch(e) {}
+    toast('🛟 Neue Version! Dein Spielstand wurde gesichert UND als Datei heruntergeladen.', 5000);
     newVersionBackup = false;
   }
   // Gespeicherte Haustiere wieder zum Leben erwecken
