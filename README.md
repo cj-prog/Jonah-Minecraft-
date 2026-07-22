@@ -179,6 +179,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   dein Mal-Studio: 12x12 Pixel, 12 Farben, malen mit dem Finger.
   „Fertig" hängt dein Kunstwerk an die Wand – es wird gespeichert!
   „Alles weg" + „Fertig" bringt das alte Motiv zurück
+- Sprungtürme! 🏊 Bau dir ein Schwimmbad und stell einen Sprungturm
+  ans Becken: Turm-Block setzen, nochmal drauftippen = ein Stück
+  höher (so hoch du willst!). Oben ist automatisch eine weiße
+  Plattform mit blauer Kante. Anderen Block wählen und den Turm
+  antippen = raufklettern. Dann nach vorn gehen und... 💦 PLATSCH!
 - Fußball! ⚽ In der Landschaft gibt es Fußballplätze mit weißen
   Linien und zwei Toren. Am Anstoßpunkt liegt ein Ball: Lauf rein zum
   Kicken oder tippe ihn an für einen kräftigen Schuss! Der Ball rollt,

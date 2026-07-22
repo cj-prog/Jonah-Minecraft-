@@ -220,7 +220,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 54 &middot; Fußballplätze mit Ball! ⚽</p>
+    Version 55 &middot; Sprungtürme fürs Schwimmbad! 🏊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -270,7 +270,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       WHEAT0=27, WHEAT1=28, WHEAT2=29,
       DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
       SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
-      PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49;
+      PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -349,6 +349,11 @@ const BLOCKS = {
     [0.12,0.16,0.14, 0.88,0.23,0.86, 55],               // schwarzes Laufband
     [0.36,0.23,0.82, 0.64,0.92,0.93, 56],               // Säule
     [0.39,0.66,0.79, 0.61,0.86,0.83, 9]] },             // blauer Bildschirm
+  [SPRUNGTURM]: { name:'Sprungturm 🏊 (stapeln = höher! antippen = raufklettern)', tiles:[3,3,3], solid:true, model:[
+    [0.4,0,0.4, 0.6,1,0.6, 3],                          // Mast
+    [0.28,0.14,0.42, 0.72,0.22,0.58, 3],                // Leiter-Sprossen
+    [0.28,0.47,0.42, 0.72,0.55,0.58, 3],
+    [0.28,0.8,0.42, 0.72,0.88,0.58, 3]] },
   [TRAMPOLIN]: { name:'Trampolin 🤸 (draufspringen = Boing!)', tiles:[63,63,63], solid:true, model:[
     [0.05,0,0.05, 0.18,0.85,0.18, 3],                   // Beine
     [0.82,0,0.05, 0.95,0.85,0.18, 3],
@@ -433,7 +438,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1276,7 +1281,11 @@ function buildMesh(ch) {
       continue;
     }
     if (def.model) {                    // Möbel: kleine Kisten statt voller Würfel
-      for (const bx of def.model) {
+      let boxes = def.model;
+      if (b===SPRUNGTURM && getBlock(wx,y+1,wz)!==SPRUNGTURM)  // oben: Plattform mit blauer Kante!
+        boxes = boxes.concat([[-0.22,0.84,-0.22, 1.22,0.94,1.22, 9],
+                              [-0.16,0.94,-0.16, 1.16,1.05,1.16, 10]]);
+      for (const bx of boxes) {
         const sh = bx[7]||1;
         let tl = bx[6];
         if (tl===59 && b>=PIC && b<=PIC_W)   // jedes Bild zeigt ein anderes Motiv!
@@ -1474,6 +1483,11 @@ function physics(dt) {
   }
 
   const swim = inWaterAt(0.4) || inWaterAt(1.0);
+  if (swim && !wasSwim && player.vy < -7) {   // vom Sprungturm eingetaucht!
+    toast('💦 PLATSCH! Was für ein Sprung!', 2500);
+    blip(500,0.08); blip(300,0.12); blip(200,0.18);
+  }
+  wasSwim = swim;
 
   // Bewegungs-Eingabe
   let mf = 0, ms = 0;
@@ -1645,6 +1659,7 @@ const VILLAGER_TALK = [
 let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
 let flying = false;                     // Flugmodus
+let wasSwim = false;                    // für den Platsch beim Eintauchen
 let downHeld = false;
 
 function toggleFly() {
@@ -3834,6 +3849,24 @@ function doPlace(dir) {
     blip(900,0.05); blip(1100,0.05); blip(1000,0.06); blip(1200,0.05);
     return;
   }
+  if (hit.block===SPRUNGTURM) {         // Sprungturm: höher bauen oder raufklettern!
+    let ty=hit.y, by=hit.y;
+    while (getBlock(hit.x,ty+1,hit.z)===SPRUNGTURM) ty++;
+    while (getBlock(hit.x,by-1,hit.z)===SPRUNGTURM) by--;
+    if (HOTBAR_ITEMS[selSlot]===SPRUNGTURM) {           // noch ein Stück obendrauf!
+      if (ty+1<CH) {
+        setBlock(hit.x,ty+1,hit.z,SPRUNGTURM);
+        toast('🪜 Der Sprungturm wächst! Höhe: '+(ty+2-by)+' Blöcke', 2200);
+        blip(400+((ty-by)*40)%400,0.07);
+      }
+    } else {                                            // raufklettern und springen!
+      player.x=hit.x+0.5; player.z=hit.z+0.5; player.y=ty+1.05;
+      player.vx=player.vy=player.vz=0;
+      toast('🪜 Hochgeklettert! Geh nach vorn und spring ins Wasser! 💦', 3000);
+      blip(400,0.05); blip(520,0.05); blip(640,0.06);
+    }
+    return;
+  }
   if (hit.block===HANTEL) {             // Krafttraining!
     toast('💪 Uff, schwer! Du stemmst die Hantel: 1... 2... 3! Muskel-Power für 20 Sekunden!', 3200);
     boostT = Math.max(boostT, 20); jumpT = Math.max(jumpT, 20);
@@ -3931,6 +3964,7 @@ function doPlace(dir) {
   if (b===HANTEL) toast('💪 Hantel! Antippen zum Krafttraining.');
   if (b===LAUFBAND) toast('🏃 Laufband! Antippen zum Lauftraining.');
   if (b===TRAMPOLIN) toast('🤸 Trampolin! Spring drauf – je öfter, desto höher!');
+  if (b===SPRUNGTURM) toast('🏊 Sprungturm! Nochmal drauftippen = höher bauen. Anderen Block wählen + antippen = raufklettern!', 4000);
   if (b===GATE) toast('🎚️ Bau das Tor so groß du willst! Zum Öffnen: anderen Block wählen und Tor antippen.', 3500);
   if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {
     cropSet.add(px+','+py+','+pz);
@@ -4024,6 +4058,9 @@ const HOLZ='#8a6a42', HOLZ_D='#5c4326';
 const ICONS = {
   [HANTEL]: iconURL(g=>{ g.fillStyle='#8a8f96'; g.fillRect(3,7,10,2); g.fillStyle='#26262a';
     g.fillRect(1,4,3,8); g.fillRect(12,4,3,8); }),
+  [SPRUNGTURM]: iconURL(g=>{ g.fillStyle='#8a8f96'; g.fillRect(7,3,2,12);
+    g.fillRect(5,5,6,1); g.fillRect(5,8,6,1); g.fillRect(5,11,6,1);
+    g.fillStyle='#f2f6fa'; g.fillRect(2,2,12,2); g.fillStyle='#4a90d9'; g.fillRect(2,1,12,1); }),
   [LAUFBAND]: iconURL(g=>{ g.fillStyle='#9aa0a8'; g.fillRect(1,10,14,4); g.fillStyle='#26262a';
     g.fillRect(2,9,12,2); g.fillStyle='#9aa0a8'; g.fillRect(11,2,2,8); g.fillStyle='#4a90d9'; g.fillRect(9,2,4,3); }),
   [TRAMPOLIN]: iconURL(g=>{ g.fillStyle='#2850b4'; g.fillRect(1,6,14,3); g.fillStyle='#5a5e64';
