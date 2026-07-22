@@ -46,6 +46,16 @@
   #navBtn  { right:calc(162px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #mpBtn   { right:calc(212px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #mpBtn.on { background:rgba(110,255,140,.45); }
+  #mapBtn  { right:calc(262px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #mapBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(28,38,30,.96); padding:12px 16px; border-radius:14px;
+    color:#fff; z-index:45; text-align:center; }
+  #mapBox h3 { font-size:17px; }
+  #mapBox p { font-size:12px; opacity:.9; max-width:320px; }
+  #mapCanvas { border:3px solid #8a6a3c; border-radius:8px; width:min(66vw,320px); height:min(66vw,320px); touch-action:none; }
+  #mapLegend { font-size:12px; }
+  #mapClose { font-size:15px; font-weight:bold; padding:6px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   #mpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:8px; background:rgba(30,40,60,.95); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:45; text-align:center; max-width:min(92vw,360px); }
@@ -145,6 +155,14 @@
 <div class="hud btn" id="chatBtn">💬</div>
 <div class="hud btn" id="navBtn">🧭</div>
 <div class="hud btn" id="mpBtn">👥</div>
+<div class="hud btn" id="mapBtn">🗺️</div>
+<div class="hud" id="mapBox">
+  <h3>🗺️ Deine Landkarte</h3>
+  <canvas id="mapCanvas" width="320" height="320"></canvas>
+  <div id="mapLegend">🔺 Du &middot; 🏠 Dorf &middot; 🏰 Festung &middot; ⚽ Fußball &middot; 🕳️ Höhle &middot; 📍 Ziel</div>
+  <p>Tippe irgendwo auf die Karte &ndash; dann zeigt dir der Kompass-Pfeil den Weg dorthin!</p>
+  <button id="mapClose">Fertig</button>
+</div>
 <div class="hud" id="mpBox">
   <h3>👥 Zusammen spielen</h3>
   <p id="mpInfo">Spielt zu zweit in EINER Welt! Ihr schickt euch Zauber-Codes –
@@ -220,7 +238,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 55 &middot; Sprungtürme fürs Schwimmbad! 🏊</p>
+    Version 56 &middot; Landkarte! 🗺️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -3012,6 +3030,82 @@ function updateCompass(dt) {
 }
 document.getElementById('navBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleCompass();},{passive:false});
 document.getElementById('navBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleCompass();});
+
+// ------------------------------ Landkarte 🗺️ --------------------------------
+const mapBox = document.getElementById('mapBox');
+const mapCan = document.getElementById('mapCanvas'), mapCtx = mapCan.getContext('2d');
+const MAP_R = 80;                       // die Karte zeigt 80 Blöcke in jede Richtung
+
+function drawMap() {
+  const W = mapCan.width, R = MAP_R, sc = W/(R*2);
+  const px = Math.floor(player.x), pz = Math.floor(player.z);
+  for (let bz=-R; bz<R; bz++) for (let bx=-R; bx<R; bx++) {
+    const h = terrainHeight(px+bx, pz+bz);
+    let col;
+    if (h<=SEA-4) col='#1d4fa8';                        // tiefes Wasser
+    else if (h<=SEA) col='#2f6fd0';                     // Wasser
+    else if (h<=SEA+1) col='#ddca92';                   // Strand
+    else {                                              // Wiese, je höher desto dunkler
+      const g = Math.min(1,(h-SEA)/14);
+      col = 'rgb('+Math.round(92-34*g)+','+Math.round(170-62*g)+','+Math.round(72-28*g)+')';
+    }
+    mapCtx.fillStyle=col;
+    mapCtx.fillRect((bx+R)*sc, (bz+R)*sc, sc+1, sc+1);
+  }
+  const mark=(wx,wz,emoji)=>{
+    const mx=(wx-px+R)*sc, my=(wz-pz+R)*sc;
+    if (mx<9||mx>W-9||my<9||my>W-9) return;
+    mapCtx.font='15px sans-serif'; mapCtx.textAlign='center'; mapCtx.textBaseline='middle';
+    mapCtx.fillText(emoji, mx, my);
+  };
+  for (let cz=Math.floor((pz-R)/VCELL); cz<=Math.floor((pz+R)/VCELL); cz++)       // Dörfer
+    for (let cx=Math.floor((px-R)/VCELL); cx<=Math.floor((px+R)/VCELL); cx++) {
+      const v=villageAt(cx,cz); if (v) mark(v.vx,v.vz,'🏠');
+    }
+  for (let cz=Math.floor((pz-R)/FCELL); cz<=Math.floor((pz+R)/FCELL); cz++)       // Fußballplätze
+    for (let cx=Math.floor((px-R)/FCELL); cx<=Math.floor((px+R)/FCELL); cx++) {
+      const f=fieldAt(cx,cz); if (f) mark(f.fx,f.fz,'⚽');
+    }
+  for (let cz=Math.floor((pz-R)/CAVE_CELL); cz<=Math.floor((pz+R)/CAVE_CELL); cz++)  // Höhlen
+    for (let cx=Math.floor((px-R)/CAVE_CELL); cx<=Math.floor((px+R)/CAVE_CELL); cx++) {
+      const c=caveAt(cx,cz); if (c) mark(c.ex,c.ez,'🕳️');
+    }
+  const ft=fortressPos(); mark(ft.fx, ft.gz, '🏰');                               // Festung
+  if (customTarget) mark(customTarget.x, customTarget.z, '📍');                   // dein Ziel
+  // Du selbst: roter Pfeil in der Mitte, zeigt in deine Blickrichtung
+  mapCtx.save();
+  mapCtx.translate(W/2, W/2); mapCtx.rotate(yaw);
+  mapCtx.fillStyle='#e63030'; mapCtx.strokeStyle='#fff'; mapCtx.lineWidth=1.5;
+  mapCtx.beginPath();
+  mapCtx.moveTo(0,-10); mapCtx.lineTo(7,8); mapCtx.lineTo(0,4); mapCtx.lineTo(-7,8);
+  mapCtx.closePath(); mapCtx.fill(); mapCtx.stroke();
+  mapCtx.restore();
+}
+function openMap() {
+  drawMap();
+  mapBox.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(520,0.06); blip(660,0.06);
+}
+function mapTap(clientX, clientY) {
+  const r=mapCan.getBoundingClientRect(), W=mapCan.width, sc=W/(MAP_R*2);
+  const wx = Math.round(player.x + ((clientX-r.left)/r.width*W)/sc - MAP_R);
+  const wz = Math.round(player.z + ((clientY-r.top)/r.height*W)/sc - MAP_R);
+  customTarget = { x:wx, z:wz, label:'Karten-Ziel' };
+  compassMode = 3; compassOn = true;
+  compTarget = { vx:wx, vz:wz, own:true, label:'Karten-Ziel' };
+  compassEl.style.display = 'flex';
+  document.getElementById('navBtn').classList.add('on');
+  scheduleSave();
+  drawMap();
+  toast('📍 Ziel gesetzt! Der Kompass-Pfeil oben zeigt dir den Weg.', 3200);
+  blip(600,0.06); blip(780,0.08);
+}
+mapCan.addEventListener('click', e=>mapTap(e.clientX, e.clientY));
+mapCan.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches[0]; mapTap(t.clientX, t.clientY); }, {passive:false});
+document.getElementById('mapClose').addEventListener('click', ()=>{ mapBox.style.display='none'; });
+document.getElementById('mapBtn').addEventListener('touchstart',e=>{e.preventDefault();openMap();},{passive:false});
+document.getElementById('mapBtn').addEventListener('mousedown',e=>{e.preventDefault();openMap();});
 
 // ------------------------------ Wetter --------------------------------------
 let weather = 'clear', weatherT = 40 + Math.random()*40;
