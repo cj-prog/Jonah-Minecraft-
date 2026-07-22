@@ -238,7 +238,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 56 &middot; Landkarte! 🗺️</p>
+    Version 57 &middot; Automatische Sicherung! 🛟</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -259,6 +259,7 @@
   </p>
   <button id="playBtn">▶ Spielen</button>
   <div id="saveRow">
+    <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
     <button id="expBtn">📤 Spielstand sichern</button>
     <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
   </div>
@@ -281,6 +282,20 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
+const GAME_VERSION = 57;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+let newVersionBackup = false;
+try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
+  const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
+  if (lastV !== GAME_VERSION) {
+    const cur = localStorage.getItem(SAVE_KEY);
+    if (cur) {
+      localStorage.setItem('jonahcraft_save_backup',
+        JSON.stringify({ v: lastV, when: new Date().toLocaleString('de-DE'), save: cur }));
+      newVersionBackup = true;
+    }
+    localStorage.setItem('jonahcraft_lastversion', GAME_VERSION);
+  }
+} catch(e) {}
 
 const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8, BRICK=9, TNT=10, TNT_LIT=11,
       TABLE=12, CHAIR=13, BED=14, TORCH=15, CHEST=16, CHEST_OPEN=17, SIGN=18, CABINET=19,
@@ -4616,6 +4631,11 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   document.getElementById('start').style.display='none';
   started=true;
   updateFoodHUD();
+  saveGame();                           // beim Start sofort speichern
+  if (newVersionBackup) {
+    toast('🛟 Neue Version! Dein alter Spielstand wurde automatisch gesichert.', 4500);
+    newVersionBackup = false;
+  }
   // Gespeicherte Haustiere wieder zum Leben erwecken
   for (const p of savedPets) {
     const type = p[0]===0 ? 'dog' : p[0]===1 ? 'cat' : p[0];   // alte Speicherstände: 0/1
@@ -4681,6 +4701,23 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   blip(440,0.08);
 });
 // ---- Spielstand sichern und laden (als Datei) ----
+// Sicherung von der letzten Version zurückholen
+const restoreBtn = document.getElementById('restoreBtn');
+try {
+  const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
+  if (bk && bk.save) restoreBtn.style.display = 'inline-block';
+} catch(e) {}
+restoreBtn.addEventListener('click', ()=>{
+  try {
+    const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
+    if (!bk || !bk.save) return;
+    if (!confirm('Gesicherten Spielstand (von Version '+(bk.v||'?')+', '+(bk.when||'')+') zurückholen?\nDein jetziger Stand wird dadurch ersetzt.')) return;
+    localStorage.setItem(SAVE_KEY, bk.save);
+    location.reload();
+  } catch(e) {}
+});
+// Sicherheitsnetz: alle 30 Sekunden automatisch speichern
+setInterval(()=>{ if (started) saveGame(); }, 30000);
 document.getElementById('expBtn').addEventListener('click',()=>{
   if (started) saveGame();
   const raw = localStorage.getItem(SAVE_KEY);

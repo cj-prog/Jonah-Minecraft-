@@ -238,6 +238,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   gehen und du kannst deine Welt sogar auf ein anderes Gerät mitnehmen!
   Wichtig zu wissen: Der automatische Spielstand liegt im Browser des Geräts.
   Er geht verloren, wenn man die Browserdaten löscht – also ab und zu sichern!
+- Automatische Versions-Sicherung 🛟: Startest du zum ersten Mal eine
+  neue Version, wird dein Spielstand vorher automatisch gesichert
+  (du siehst dann eine Meldung). Sollte mal etwas schiefgehen, gibt es
+  auf dem Startbildschirm „🛟 Sicherung zurückholen". Außerdem wird
+  beim Spielen alle 30 Sekunden automatisch gespeichert.
 - 🔄-Knopf: neue Welt erzeugen
 
 Viel Spaß beim Bauen! 🧱
