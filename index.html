@@ -197,7 +197,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 50 &middot; Der Händler kann spazieren gehen! 🚶</p>
+    Version 51 &middot; Bilder für die Wand! 🖼️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -246,7 +246,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       CARROT0=20, CARROT1=21, CARROT2=22, TOMATO0=23, TOMATO1=24, TOMATO2=25, APPLE_LEAF=26,
       WHEAT0=27, WHEAT1=28, WHEAT2=29,
       DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
-      SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42;
+      SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
+      PIC=43, PIC_N=44, PIC_E=45, PIC_W=46;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -302,6 +303,19 @@ const BLOCKS = {
     [0.3,0.45,0.24, 0.7,0.57,0.72, 9],                  // Wasser blitzt oben raus
     [0.2,0.55,0.8, 0.8,1.1,0.98, 58],                   // Spülkasten
     [0.42,1.1,0.85, 0.58,1.16,0.94, 3]] },              // silberner Spülknopf
+  // Bilder: hängen flach an der Wand, in 4 Richtungen (Motiv je nach Platz)
+  [PIC]: { name:'Bild 🖼️ (seitlich an eine Wand tippen!)', tiles:[59,59,59], solid:false, model:[
+    [0.05,0.08,0, 0.95,0.92,0.06, 5],
+    [0.12,0.16,0.06, 0.88,0.84,0.11, 59]] },
+  [PIC_N]: { name:'Bild 🖼️', tiles:[59,59,59], solid:false, model:[
+    [0.05,0.08,0.94, 0.95,0.92,1, 5],
+    [0.12,0.16,0.89, 0.88,0.84,0.94, 59]] },
+  [PIC_E]: { name:'Bild 🖼️', tiles:[59,59,59], solid:false, model:[
+    [0,0.08,0.05, 0.06,0.92,0.95, 5],
+    [0.06,0.16,0.12, 0.11,0.84,0.88, 59]] },
+  [PIC_W]: { name:'Bild 🖼️', tiles:[59,59,59], solid:false, model:[
+    [0.94,0.08,0.05, 1,0.92,0.95, 5],
+    [0.89,0.16,0.12, 0.94,0.84,0.88, 59]] },
   [SINK]: { name:'Waschbecken (antippen = Hände waschen!)', tiles:[58,58,58], solid:true, model:[
     [0.38,0,0.3, 0.62,0.55,0.7, 58],                    // Säule
     [0.15,0.55,0.12, 0.85,0.8,0.88, 58],                // Becken
@@ -380,7 +394,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1027,6 +1041,33 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(56,(x,y)=> y%4===3 ? vary(96,100,106,10) : vary(152,158,166,14)); // Garagentor-Lamellen
   tile(57,(x)=> x%4<2 ? vary(46,140,70,14) : vary(240,240,235,10)); // Händler-Schürze grün-weiß gestreift
   tile(58,(x,y)=> (x===0||y===0) ? vary(198,208,216,8) : vary(243,247,250,5)); // Porzellan glänzend weiß
+  tile(59,(x,y)=>{                                                  // Bild: Sonne über der Wiese
+    if (y>=11) return vary(84,160,60,20);
+    if (Math.hypot(x-8,y-7)<3) return 'rgb(255,220,80)';
+    return vary(120,180,235,16);
+  });
+  tile(60,(x,y)=>{                                                  // Bild: rote Blume
+    if (x>=7&&x<=8&&y>=8&&y<=14) return 'rgb(60,140,50)';
+    const d=Math.hypot(x-8,y-5);
+    if (d<1.6) return 'rgb(250,210,60)';
+    if (d<3.6) return 'rgb(225,60,60)';
+    return vary(235,240,245,8);
+  });
+  tile(61,(x,y)=>{                                                  // Bild: Herz
+    const herz = Math.hypot(x-5.5,y-6)<2.8 || Math.hypot(x-10.5,y-6)<2.8 ||
+                 (y>=6 && y<=12 && Math.abs(x-8)<=12-y);
+    return herz ? 'rgb(220,50,70)' : vary(245,240,235,8);
+  });
+  tile(62,(x,y)=>{                                                  // Bild: Regenbogen
+    const r=Math.hypot(x-8,(y-15)*1.1);
+    if (r>13.5) return vary(130,190,240,12);
+    if (r>12) return 'rgb(230,70,60)';
+    if (r>10.5) return 'rgb(245,180,60)';
+    if (r>9) return 'rgb(250,240,90)';
+    if (r>7.5) return 'rgb(90,200,90)';
+    if (r>6) return 'rgb(90,140,235)';
+    return vary(130,190,240,12);
+  });
   tile(54,(x,y)=>{                                                  // Schleim Gesicht
     if ((x>=3&&x<=5||x>=10&&x<=12)&&y>=4&&y<=7) return 'rgb(20,40,20)';        // große Augen
     if (x>=6&&x<=9&&y>=10&&y<=12) return 'rgb(30,70,35)';                      // Mund
@@ -1156,11 +1197,14 @@ function buildMesh(ch) {
     if (def.model) {                    // Möbel: kleine Kisten statt voller Würfel
       for (const bx of def.model) {
         const sh = bx[7]||1;
+        let tl = bx[6];
+        if (tl===59 && b>=PIC && b<=PIC_W)   // jedes Bild zeigt ein anderes Motiv!
+          tl = 59 + Math.floor(hash2(wx+y*7, wz-y*5, 787)*4);
         for (let f=0;f<6;f++) {
           const F=FACES[f];
           for (let k=0;k<6;k++) {
             const c=F.c[TRI[k]];
-            const uv=tileUV(bx[6], c[3], c[4]);
+            const uv=tileUV(tl, c[3], c[4]);
             opq.push(wx+bx[0]+(bx[3]-bx[0])*c[0], y+bx[1]+(bx[4]-bx[1])*c[1], wz+bx[2]+(bx[5]-bx[2])*c[2],
                      uv[0], uv[1], Math.min(1.6, F.s*sh));
           }
@@ -3521,6 +3565,17 @@ function doPlace(dir) {
     const oz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
     if (ox&&oy&&oz) return;
   }
+  if (b===PIC) {                        // Bilder hängen an Wänden!
+    if (hit.face[1]!==0) {
+      toast('🖼️ Bilder hängt man an die Wand! Tippe seitlich auf eine Wand.', 2800);
+      return;
+    }
+    const pb = hit.face[0]===1 ? PIC_E : hit.face[0]===-1 ? PIC_W : hit.face[2]===1 ? PIC : PIC_N;
+    setBlock(px,py,pz,pb);
+    toast('🖼️ Bild aufgehängt! Jeder Platz zeigt ein anderes Motiv.');
+    blip(500,0.06); blip(700,0.08);
+    return;
+  }
   if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {   // Gemüse braucht guten Boden
     const below = getBlock(px, py-1, pz);
     if (below!==GRASS && below!==DIRT) {
@@ -3651,6 +3706,8 @@ function iconURL(draw) {                // kleine Pixel-Bildchen für Möbel
 }
 const HOLZ='#8a6a42', HOLZ_D='#5c4326';
 const ICONS = {
+  [PIC]: iconURL(g=>{ g.fillStyle='#8a6a3c'; g.fillRect(1,2,14,12); g.fillStyle='#a8d8f0'; g.fillRect(3,4,10,8);
+    g.fillStyle='#ffd23c'; g.fillRect(9,5,3,3); g.fillStyle='#4ea34e'; g.fillRect(3,9,10,3); }),
   [TOILET]: iconURL(g=>{ g.fillStyle='#f2f6fa'; g.fillRect(4,1,8,6); g.fillRect(2,7,12,4); g.fillRect(5,11,6,4);
     g.fillStyle='#9fb6c6'; g.fillRect(4,1,8,1); g.fillStyle='#4a90d9'; g.fillRect(5,8,6,2); }),
   [SINK]: iconURL(g=>{ g.fillStyle='#f2f6fa'; g.fillRect(2,7,12,4); g.fillRect(6,11,4,4);

@@ -171,6 +171,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Auch in Schatztruhen stecken manchmal Euro-Scheine – und die Schätze
   aus den Truhen (Diamanten, Äpfel, Karotten) landen jetzt wirklich in
   deinem Beutel!
+- Bilder! 🖼️ Häng Gemälde mit Holzrahmen an deine Wände: Tippe mit dem
+  Bild-Block seitlich auf eine Wand. Es gibt 4 Motive (Sonne über der
+  Wiese, rote Blume, Herz und Regenbogen) – jeder Platz an der Wand
+  zeigt ein anderes!
 - Badezimmer! 🚽 Toilette und Waschbecken aus glänzendem Porzellan in
   der Block-Leiste. Toilette antippen = hinsetzen (mit Spülgeräusch:
   Rauschhh! 🌀), Waschbecken antippen = Hände waschen (platsch,
