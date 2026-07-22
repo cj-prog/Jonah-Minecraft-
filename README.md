@@ -179,12 +179,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   dein Mal-Studio: 12x12 Pixel, 12 Farben, malen mit dem Finger.
   „Fertig" hängt dein Kunstwerk an die Wand – es wird gespeichert!
   „Alles weg" + „Fertig" bringt das alte Motiv zurück
-- Landkarte! 🗺️ Der Karten-Knopf oben zeigt dir die Welt von oben:
-  Wasser, Strand und Wiesen, dazu alle Dörfer 🏠, Fußballplätze ⚽,
-  Höhlen 🕳️, die geheime Festung 🏰 und dein gemerktes Ziel 📍.
-  Der rote Pfeil in der Mitte bist du (er zeigt in deine
-  Blickrichtung). Tippe irgendwo auf die Karte – dann führt dich
-  der Kompass-Pfeil genau dorthin!
+- Landkarte! 🗺️ Unten links läuft immer eine kleine Mini-Karte mit:
+  Du bist der rote Pfeil in der Mitte, die Karte wandert live mit,
+  wenn du läufst, und der Pfeil dreht sich mit deiner Blickrichtung.
+  Der Karten-Knopf oben öffnet die große Karte mit allen Dörfern 🏠,
+  Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
+  Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
+  auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
 - Sprungtürme! 🏊 Bau dir ein Schwimmbad und stell einen Sprungturm
   ans Becken: Turm-Block setzen, nochmal drauftippen = ein Stück
   höher (so hoch du willst!). Oben ist automatisch eine weiße

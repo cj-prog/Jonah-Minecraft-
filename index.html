@@ -47,6 +47,9 @@
   #mpBtn   { right:calc(212px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #mpBtn.on { background:rgba(110,255,140,.45); }
   #mapBtn  { right:calc(262px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #miniMap { left:calc(10px + env(safe-area-inset-left)); bottom:calc(66px + env(safe-area-inset-bottom));
+    width:130px; height:130px; border:2px solid rgba(255,255,255,.55); border-radius:14px;
+    pointer-events:none; z-index:14; opacity:.94; display:none; }
   #mapBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,38,30,.96); padding:12px 16px; border-radius:14px;
     color:#fff; z-index:45; text-align:center; }
@@ -156,6 +159,7 @@
 <div class="hud btn" id="navBtn">🧭</div>
 <div class="hud btn" id="mpBtn">👥</div>
 <div class="hud btn" id="mapBtn">🗺️</div>
+<canvas class="hud" id="miniMap" width="130" height="130"></canvas>
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine Landkarte</h3>
   <canvas id="mapCanvas" width="320" height="320"></canvas>
@@ -238,7 +242,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 58 &middot; Sicherung als Datei-Download! 🛟</p>
+    Version 59 &middot; Mini-Karte unten links! 🗺️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -282,7 +286,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 58;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 59;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3049,70 +3053,83 @@ document.getElementById('navBtn').addEventListener('mousedown',e=>{e.preventDefa
 // ------------------------------ Landkarte 🗺️ --------------------------------
 const mapBox = document.getElementById('mapBox');
 const mapCan = document.getElementById('mapCanvas'), mapCtx = mapCan.getContext('2d');
-const MAP_R = 80;                       // die Karte zeigt 80 Blöcke in jede Richtung
+const MAP_R = 80;                       // die große Karte zeigt 80 Blöcke in jede Richtung
+let mapCx = 0, mapCz = 0;               // Mittelpunkt der großen Karte (beim Öffnen gemerkt)
+const mapTerr = document.createElement('canvas');
+mapTerr.width = mapTerr.height = 320;
+const mapTerrCtx = mapTerr.getContext('2d');
 
-function drawMap() {
-  const W = mapCan.width, R = MAP_R, sc = W/(R*2);
-  const px = Math.floor(player.x), pz = Math.floor(player.z);
+function terrColor(h) {                 // Geländefarbe von oben
+  if (h<=SEA-4) return '#1d4fa8';                      // tiefes Wasser
+  if (h<=SEA) return '#2f6fd0';                        // Wasser
+  if (h<=SEA+1) return '#ddca92';                      // Strand
+  const g = Math.min(1,(h-SEA)/14);                    // Wiese, je höher desto dunkler
+  return 'rgb('+Math.round(92-34*g)+','+Math.round(170-62*g)+','+Math.round(72-28*g)+')';
+}
+function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
+  const marks=[];
+  const scan=(CELL,fn)=>{ const out=[];
+    for (let cz=Math.floor((cz0-r)/CELL); cz<=Math.floor((cz0+r)/CELL); cz++)
+      for (let cx=Math.floor((cx0-r)/CELL); cx<=Math.floor((cx0+r)/CELL); cx++) {
+        const o=fn(cx,cz); if (o) out.push(o);
+      }
+    return out; };
+  for (const v of scan(VCELL,villageAt)) marks.push({x:v.vx, z:v.vz, e:'🏠'});
+  for (const f of scan(FCELL,fieldAt)) marks.push({x:f.fx, z:f.fz, e:'⚽'});
+  for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
+  const ft=fortressPos(); marks.push({x:ft.fx, z:ft.gz, e:'🏰'});
+  return marks;
+}
+function drawArrow(g, x, y, size) {     // roter Spieler-Pfeil in Blickrichtung
+  g.save();
+  g.translate(x, y); g.rotate(yaw);
+  g.fillStyle='#e63030'; g.strokeStyle='#fff'; g.lineWidth=1.5;
+  g.beginPath();
+  g.moveTo(0,-size); g.lineTo(size*0.7,size*0.8); g.lineTo(0,size*0.4); g.lineTo(-size*0.7,size*0.8);
+  g.closePath(); g.fill(); g.stroke();
+  g.restore();
+}
+let mapMarks = [];
+function renderMapTerrain() {           // Gelände einmal beim Öffnen malen
+  mapCx = Math.floor(player.x); mapCz = Math.floor(player.z);
+  const W = mapTerr.width, R = MAP_R, sc = W/(R*2);
   for (let bz=-R; bz<R; bz++) for (let bx=-R; bx<R; bx++) {
-    const h = terrainHeight(px+bx, pz+bz);
-    let col;
-    if (h<=SEA-4) col='#1d4fa8';                        // tiefes Wasser
-    else if (h<=SEA) col='#2f6fd0';                     // Wasser
-    else if (h<=SEA+1) col='#ddca92';                   // Strand
-    else {                                              // Wiese, je höher desto dunkler
-      const g = Math.min(1,(h-SEA)/14);
-      col = 'rgb('+Math.round(92-34*g)+','+Math.round(170-62*g)+','+Math.round(72-28*g)+')';
-    }
-    mapCtx.fillStyle=col;
-    mapCtx.fillRect((bx+R)*sc, (bz+R)*sc, sc+1, sc+1);
+    mapTerrCtx.fillStyle = terrColor(terrainHeight(mapCx+bx, mapCz+bz));
+    mapTerrCtx.fillRect((bx+R)*sc, (bz+R)*sc, sc+1, sc+1);
   }
-  const mark=(wx,wz,emoji)=>{
-    const mx=(wx-px+R)*sc, my=(wz-pz+R)*sc;
-    if (mx<9||mx>W-9||my<9||my>W-9) return;
-    mapCtx.font='15px sans-serif'; mapCtx.textAlign='center'; mapCtx.textBaseline='middle';
-    mapCtx.fillText(emoji, mx, my);
-  };
-  for (let cz=Math.floor((pz-R)/VCELL); cz<=Math.floor((pz+R)/VCELL); cz++)       // Dörfer
-    for (let cx=Math.floor((px-R)/VCELL); cx<=Math.floor((px+R)/VCELL); cx++) {
-      const v=villageAt(cx,cz); if (v) mark(v.vx,v.vz,'🏠');
-    }
-  for (let cz=Math.floor((pz-R)/FCELL); cz<=Math.floor((pz+R)/FCELL); cz++)       // Fußballplätze
-    for (let cx=Math.floor((px-R)/FCELL); cx<=Math.floor((px+R)/FCELL); cx++) {
-      const f=fieldAt(cx,cz); if (f) mark(f.fx,f.fz,'⚽');
-    }
-  for (let cz=Math.floor((pz-R)/CAVE_CELL); cz<=Math.floor((pz+R)/CAVE_CELL); cz++)  // Höhlen
-    for (let cx=Math.floor((px-R)/CAVE_CELL); cx<=Math.floor((px+R)/CAVE_CELL); cx++) {
-      const c=caveAt(cx,cz); if (c) mark(c.ex,c.ez,'🕳️');
-    }
-  const ft=fortressPos(); mark(ft.fx, ft.gz, '🏰');                               // Festung
-  if (customTarget) mark(customTarget.x, customTarget.z, '📍');                   // dein Ziel
-  // Du selbst: roter Pfeil in der Mitte, zeigt in deine Blickrichtung
-  mapCtx.save();
-  mapCtx.translate(W/2, W/2); mapCtx.rotate(yaw);
-  mapCtx.fillStyle='#e63030'; mapCtx.strokeStyle='#fff'; mapCtx.lineWidth=1.5;
-  mapCtx.beginPath();
-  mapCtx.moveTo(0,-10); mapCtx.lineTo(7,8); mapCtx.lineTo(0,4); mapCtx.lineTo(-7,8);
-  mapCtx.closePath(); mapCtx.fill(); mapCtx.stroke();
-  mapCtx.restore();
+  mapMarks = collectMarks(mapCx, mapCz, MAP_R);
+}
+function drawMapLive() {                // jeden Frame: Pfeil und Marker wandern live!
+  const W = mapCan.width, R = MAP_R, sc = W/(R*2);
+  mapCtx.drawImage(mapTerr, 0, 0, W, W);
+  mapCtx.font='15px sans-serif'; mapCtx.textAlign='center'; mapCtx.textBaseline='middle';
+  const all = customTarget ? mapMarks.concat([{x:customTarget.x, z:customTarget.z, e:'📍'}]) : mapMarks;
+  for (const m of all) {
+    const mx=(m.x-mapCx+R)*sc, my=(m.z-mapCz+R)*sc;
+    if (mx<9||mx>W-9||my<9||my>W-9) continue;
+    mapCtx.fillText(m.e, mx, my);
+  }
+  const ax=(player.x-mapCx+R)*sc, ay=(player.z-mapCz+R)*sc;
+  drawArrow(mapCtx, Math.max(8,Math.min(W-8,ax)), Math.max(8,Math.min(W-8,ay)), 10);
 }
 function openMap() {
-  drawMap();
+  renderMapTerrain();
+  drawMapLive();
   mapBox.style.display='flex';
   if (document.exitPointerLock) document.exitPointerLock();
   blip(520,0.06); blip(660,0.06);
 }
 function mapTap(clientX, clientY) {
   const r=mapCan.getBoundingClientRect(), W=mapCan.width, sc=W/(MAP_R*2);
-  const wx = Math.round(player.x + ((clientX-r.left)/r.width*W)/sc - MAP_R);
-  const wz = Math.round(player.z + ((clientY-r.top)/r.height*W)/sc - MAP_R);
+  const wx = Math.round(mapCx + ((clientX-r.left)/r.width*W)/sc - MAP_R);
+  const wz = Math.round(mapCz + ((clientY-r.top)/r.height*W)/sc - MAP_R);
   customTarget = { x:wx, z:wz, label:'Karten-Ziel' };
   compassMode = 3; compassOn = true;
   compTarget = { vx:wx, vz:wz, own:true, label:'Karten-Ziel' };
   compassEl.style.display = 'flex';
   document.getElementById('navBtn').classList.add('on');
   scheduleSave();
-  drawMap();
+  drawMapLive();
   toast('📍 Ziel gesetzt! Der Kompass-Pfeil oben zeigt dir den Weg.', 3200);
   blip(600,0.06); blip(780,0.08);
 }
@@ -3121,6 +3138,46 @@ mapCan.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches
 document.getElementById('mapClose').addEventListener('click', ()=>{ mapBox.style.display='none'; });
 document.getElementById('mapBtn').addEventListener('touchstart',e=>{e.preventDefault();openMap();},{passive:false});
 document.getElementById('mapBtn').addEventListener('mousedown',e=>{e.preventDefault();openMap();});
+
+// Mini-Karte unten links: läuft beim Laufen immer live mit! 🗺️
+const miniCan = document.getElementById('miniMap'), miniCtx = miniCan.getContext('2d');
+const MMN = 80;                         // 80x80 Blöcke rund um dich
+const mmBack = document.createElement('canvas');  mmBack.width = mmBack.height = MMN;
+const mmShow = document.createElement('canvas');  mmShow.width = mmShow.height = MMN;
+const mmBackCtx = mmBack.getContext('2d'), mmShowCtx = mmShow.getContext('2d');
+let mmRow = 0, mmCx = 1e9, mmCz = 1e9, mmNextCx = 0, mmNextCz = 0, mmMarks = [];
+
+function updateMiniTerrain() {          // pro Frame nur ein paar Zeilen malen (bleibt flüssig)
+  if (mmRow===0) { mmNextCx = Math.floor(player.x); mmNextCz = Math.floor(player.z); }
+  const H = MMN>>1;
+  for (let n=0; n<5 && mmRow<MMN; n++, mmRow++) {
+    for (let i=0; i<MMN; i++) {
+      mmBackCtx.fillStyle = terrColor(terrainHeight(mmNextCx-H+i, mmNextCz-H+mmRow));
+      mmBackCtx.fillRect(i, mmRow, 1, 1);
+    }
+  }
+  if (mmRow>=MMN) {                     // fertig! Bild übernehmen und Orte neu einsammeln
+    mmRow = 0;
+    mmShowCtx.drawImage(mmBack, 0, 0);
+    mmCx = mmNextCx; mmCz = mmNextCz;
+    mmMarks = collectMarks(mmCx, mmCz, H+12);
+  }
+}
+function drawMiniMap() {
+  if (mmCx>1e8) return;                 // erstes Bild ist noch nicht fertig
+  const W = miniCan.width, s = W/MMN, H = MMN>>1;
+  miniCtx.fillStyle='#16324a'; miniCtx.fillRect(0,0,W,W);
+  miniCtx.imageSmoothingEnabled = false;
+  miniCtx.drawImage(mmShow, (mmCx-H-player.x)*s + W/2, (mmCz-H-player.z)*s + W/2, MMN*s, MMN*s);
+  miniCtx.font='12px sans-serif'; miniCtx.textAlign='center'; miniCtx.textBaseline='middle';
+  const all = customTarget ? mmMarks.concat([{x:customTarget.x, z:customTarget.z, e:'📍'}]) : mmMarks;
+  for (const m of all) {
+    const mx=(m.x-player.x)*s + W/2, my=(m.z-player.z)*s + W/2;
+    if (mx<8||mx>W-8||my<8||my>W-8) continue;
+    miniCtx.fillText(m.e, mx, my);
+  }
+  drawArrow(miniCtx, W/2, W/2, 8);      // du bist immer in der Mitte
+}
 
 // ------------------------------ Wetter --------------------------------------
 let weather = 'clear', weatherT = 40 + Math.random()*40;
@@ -4510,6 +4567,9 @@ function frame(now) {
   updateAnimals(dt);
   updateWeather(dt, now);
   updateCompass(dt);
+  updateMiniTerrain();
+  drawMiniMap();
+  if (mapBox.style.display==='flex') drawMapLive();   // große Karte läuft live mit
   if (boostT > 0) boostT -= dt;
   if (jumpT > 0) jumpT -= dt;
   if (balloonT > 0) { balloonT -= dt; if (balloonT <= 0) toast('🎈 Dein Luftballon ist weggeflogen!', 2500); }
@@ -4631,6 +4691,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   document.getElementById('start').style.display='none';
   started=true;
   updateFoodHUD();
+  document.getElementById('miniMap').style.display='block';
   saveGame();                           // beim Start sofort speichern
   if (newVersionBackup) {
     // ... und als richtige Datei herunterladen – die ist sicher, egal was passiert!
