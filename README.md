@@ -182,7 +182,10 @@ Leertaste springen · Tasten 1–8 Block wählen
 - Landkarte! 🗺️ Unten links läuft immer eine kleine Mini-Karte mit:
   Du bist der rote Pfeil in der Mitte, die Karte wandert live mit,
   wenn du läufst, und der Pfeil dreht sich mit deiner Blickrichtung.
-  Der Karten-Knopf oben öffnet die große Karte mit allen Dörfern 🏠,
+  In der Nähe zeigt die Karte eine echte Draufsicht: Häuser mit ihren
+  Dächern, Bäume, Straßen, Fußballfeld-Linien und alles, was du
+  selbst gebaut hast! Tippe die Mini-Karte an (oder den Karten-Knopf
+  oben) – dann öffnet sich die große Karte mit allen Dörfern 🏠,
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!

@@ -49,7 +49,7 @@
   #mapBtn  { right:calc(262px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #miniMap { left:calc(10px + env(safe-area-inset-left)); bottom:calc(66px + env(safe-area-inset-bottom));
     width:130px; height:130px; border:2px solid rgba(255,255,255,.55); border-radius:14px;
-    pointer-events:none; z-index:14; opacity:.94; display:none; }
+    z-index:14; opacity:.94; display:none; }
   #mapBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,38,30,.96); padding:12px 16px; border-radius:14px;
     color:#fff; z-index:45; text-align:center; }
@@ -242,7 +242,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 59 &middot; Mini-Karte unten links! 🗺️</p>
+    Version 60 &middot; Karte zeigt Häuser, Antippen = groß! 🗺️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -286,7 +286,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 59;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 60;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3066,6 +3066,32 @@ function terrColor(h) {                 // Geländefarbe von oben
   const g = Math.min(1,(h-SEA)/14);                    // Wiese, je höher desto dunkler
   return 'rgb('+Math.round(92-34*g)+','+Math.round(170-62*g)+','+Math.round(72-28*g)+')';
 }
+// Farben für Gebäude und Bäume auf der Karte
+const MAP_BLOCK_COL = {
+  [WATER]:'#2f6fd0', [SAND]:'#ddca92', [DIRT]:'#8a6a48', [STONE]:'#8d8d8d',
+  [LEAF]:'#256b2f', [APPLE_LEAF]:'#256b2f', [WOOD]:'#6e5230', [PLANK]:'#b08a58',
+  [BRICK]:'#b04438', [SNOW]:'#f0f4f8', [WOOL]:'#f0efe8', [GLASS]:'#bcdcf0',
+  [TNT]:'#c04030', [BED]:'#c05050', [TABLE]:'#b08a58', [CABINET]:'#b08a58',
+  [CHEST]:'#8a6a3c', [CHEST_OPEN]:'#8a6a3c', [DOOR]:'#a8845c', [DOOR_TOP]:'#a8845c',
+  [DOOR_OPEN]:'#a8845c', [DOOR_TOP_OPEN]:'#a8845c', [FENCE]:'#9a7a4e',
+  [GATE]:'#9aa0a8', [GATE_OPEN]:'#9aa0a8', [SNOWMAN]:'#f0f4f8',
+  [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
+  [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58',
+};
+function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
+  const ch = getChunk(x>>4, z>>4);
+  if (!ch || !ch.data) return terrColor(terrainHeight(x,z));   // noch nicht geladen
+  const lx = x & 15, lz = z & 15;
+  for (let y=CH-1; y>0; y--) {
+    const b = ch.data[bidx(lx,y,lz)];
+    if (b===AIR) continue;
+    if (b===GRASS) return terrColor(y);
+    const c = MAP_BLOCK_COL[b];
+    if (c) return c;
+    // Kleinkram (Fackeln, Beete, Bilder ...) überspringen und weiterschauen
+  }
+  return terrColor(terrainHeight(x,z));
+}
 function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   const marks=[];
   const scan=(CELL,fn)=>{ const out=[];
@@ -3094,7 +3120,7 @@ function renderMapTerrain() {           // Gelände einmal beim Öffnen malen
   mapCx = Math.floor(player.x); mapCz = Math.floor(player.z);
   const W = mapTerr.width, R = MAP_R, sc = W/(R*2);
   for (let bz=-R; bz<R; bz++) for (let bx=-R; bx<R; bx++) {
-    mapTerrCtx.fillStyle = terrColor(terrainHeight(mapCx+bx, mapCz+bz));
+    mapTerrCtx.fillStyle = topColor(mapCx+bx, mapCz+bz);
     mapTerrCtx.fillRect((bx+R)*sc, (bz+R)*sc, sc+1, sc+1);
   }
   mapMarks = collectMarks(mapCx, mapCz, MAP_R);
@@ -3113,6 +3139,7 @@ function drawMapLive() {                // jeden Frame: Pfeil und Marker wandern
   drawArrow(mapCtx, Math.max(8,Math.min(W-8,ax)), Math.max(8,Math.min(W-8,ay)), 10);
 }
 function openMap() {
+  if (mapBox.style.display==='flex') return;   // ist schon offen
   renderMapTerrain();
   drawMapLive();
   mapBox.style.display='flex';
@@ -3152,7 +3179,7 @@ function updateMiniTerrain() {          // pro Frame nur ein paar Zeilen malen (
   const H = MMN>>1;
   for (let n=0; n<5 && mmRow<MMN; n++, mmRow++) {
     for (let i=0; i<MMN; i++) {
-      mmBackCtx.fillStyle = terrColor(terrainHeight(mmNextCx-H+i, mmNextCz-H+mmRow));
+      mmBackCtx.fillStyle = topColor(mmNextCx-H+i, mmNextCz-H+mmRow);
       mmBackCtx.fillRect(i, mmRow, 1, 1);
     }
   }
@@ -3178,6 +3205,23 @@ function drawMiniMap() {
   }
   drawArrow(miniCtx, W/2, W/2, 8);      // du bist immer in der Mitte
 }
+// Mini-Karte antippen = große Karte öffnen (Wischen zählt nicht als Tippen)
+let mmTouch = null;
+miniCan.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  mmTouch = { x:t.clientX, y:t.clientY, t:performance.now() };
+}, {passive:false});
+miniCan.addEventListener('touchend', e=>{
+  e.preventDefault();
+  if (!mmTouch) return;
+  const t=e.changedTouches[0];
+  if (Math.hypot(t.clientX-mmTouch.x, t.clientY-mmTouch.y) < 14 && performance.now()-mmTouch.t < 600)
+    openMap();
+  mmTouch = null;
+}, {passive:false});
+miniCan.addEventListener('mousedown', e=>{ e.preventDefault(); openMap(); });
+miniCan.addEventListener('click', e=>{ e.preventDefault(); openMap(); });
 
 // ------------------------------ Wetter --------------------------------------
 let weather = 'clear', weatherT = 40 + Math.random()*40;
