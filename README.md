@@ -189,6 +189,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Treppen! 🪜 Der Treppen-Block schaut automatisch in deine
+  Blickrichtung (Stufen steigen von dir weg). Das Beste: Du läufst
+  Treppen einfach hoch, ganz ohne Springen! Perfekt für Häuser mit
+  mehreren Stockwerken
 - Ritterburgen! 🏰⚔️ In der Landschaft stehen echte Burgen (auf der
   Karte als ⚔️): Steinmauern mit Zinnen, vier Ecktürme, ein Tor mit
   Fackeln und in der Mitte der Bergfried mit Schatzkammer (2 Truhen!)
