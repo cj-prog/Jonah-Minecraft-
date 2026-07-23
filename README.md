@@ -189,6 +189,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Selfie-Ansicht! 🤳 Der Selfie-Knopf oben zeigt dich selbst: blaue
+  Hose, rotes Shirt, braune Haare – beim Laufen schwingen Arme und
+  Beine, und mit Schwert siehst du es an deiner Seite! Genau so
+  sehen dich auch deine Freunde im Mehrspieler-Modus
 - Gewitter! ⚡ Bei Regen blitzt es ab und zu: ein leuchtender
   Zickzack-Blitz schlägt in der Nähe ein, der ganze Himmel wird
   kurz hell, Funken sprühen am Einschlag-Punkt und danach grummelt

@@ -55,6 +55,8 @@
   #mpBtn   { right:calc(212px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #mpBtn.on { background:rgba(110,255,140,.45); }
   #mapBtn  { right:calc(262px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #selfieBtn { right:calc(312px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #selfieBtn.on { background:rgba(255,190,120,.5); }
   #miniMap { left:calc(10px + env(safe-area-inset-left)); bottom:calc(66px + env(safe-area-inset-bottom));
     width:130px; height:130px; border:2px solid rgba(255,255,255,.55); border-radius:14px;
     z-index:14; opacity:.94; display:none; }
@@ -171,6 +173,7 @@
 <div class="hud btn" id="navBtn">🧭</div>
 <div class="hud btn" id="mpBtn">👥</div>
 <div class="hud btn" id="mapBtn">🗺️</div>
+<div class="hud btn" id="selfieBtn">🤳</div>
 <canvas class="hud" id="miniMap" width="130" height="130"></canvas>
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine Landkarte</h3>
@@ -256,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 67 &middot; Blitz und Donner! ⚡</p>
+    Version 68 &middot; Selfie-Ansicht: sieh dich selbst! 🤳</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -300,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 67;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 68;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2234,8 +2237,21 @@ function pushBox(arr, a, ox,oy,oz, sx,sy,sz, tileAll, tileFront) {
 }
 const animalBuf = gl.createBuffer();
 function drawAnimals() {
-  if (!animals.length && !friendP && !fireworks.length && !arrows.length && !lightning) return;
+  if (!animals.length && !friendP && !fireworks.length && !arrows.length && !lightning && !selfie) return;
   const arr=[];
+  if (selfie) {                         // DU! (in der Selfie-Ansicht)
+    const moving = Math.hypot(player.vx, player.vz) > 0.5;
+    const sw2 = moving ? Math.sin(performance.now()*0.012)*0.28 : 0;
+    const a={x:player.x, y:player.y, z:player.z, yaw, ph:0};
+    pushBox(arr,a, -0.12,0.4,sw2*0.4, 0.2,0.8,0.24, 40);   // blaue Hosen-Beine
+    pushBox(arr,a,  0.12,0.4,-sw2*0.4, 0.2,0.8,0.24, 40);
+    pushBox(arr,a, 0,1.1,0, 0.5,0.6,0.28, 25);             // rotes Shirt
+    pushBox(arr,a, -0.33,1.08,-sw2*0.5, 0.14,0.55,0.2, 25); // Arme schwingen mit
+    pushBox(arr,a,  0.33,1.08,sw2*0.5, 0.14,0.55,0.2, 25);
+    pushBox(arr,a, 0,1.63,0, 0.44,0.44,0.44, 22, 21);      // Kopf mit Gesicht
+    pushBox(arr,a, 0,1.88,0.02, 0.46,0.1,0.46, 5);         // braune Haare
+    if (sword) pushBox(arr,a, 0.42,1.0,-0.2, 0.07,0.5,0.07, 3);   // dein Schwert!
+  }
   if (friendP) {                        // dein Mitspieler!
     const a={x:friendP.x, y:friendP.y, z:friendP.z, yaw:friendP.yaw||0, ph:0};
     pushBox(arr,a, 0,0.4,0, 0.46,0.8,0.26, 40);          // blaue Hose
@@ -2850,6 +2866,16 @@ document.getElementById('shopClose').addEventListener('click', () => { shopBox.s
 const fireworks = [];
 let curLight = 1;
 
+// Selfie-Ansicht 🤳: die Kamera schaut dich von vorne an!
+let selfie = false;
+function toggleSelfie() {
+  selfie = !selfie;
+  document.getElementById('selfieBtn').classList.toggle('on', selfie);
+  toast(selfie ? '🤳 Selfie-Ansicht! So siehst du aus. (Nochmal tippen = zurück)'
+               : '👀 Zurück in deinen Augen!', 3000);
+  blip(selfie?700:400, 0.07);
+}
+
 // Zauber-Lasso 🌀: Blöcke einkreisen, und weg sind sie!
 let lassoOn = false;
 const lassoPath = [];
@@ -3374,6 +3400,8 @@ document.getElementById('brushBtn').addEventListener('touchstart',e=>{e.preventD
 document.getElementById('brushBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleBrush();});
 document.getElementById('lassoBtn').addEventListener('touchstart',e=>{e.preventDefault();setLasso(!lassoOn);},{passive:false});
 document.getElementById('lassoBtn').addEventListener('mousedown',e=>{e.preventDefault();setLasso(!lassoOn);});
+document.getElementById('selfieBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleSelfie();},{passive:false});
+document.getElementById('selfieBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleSelfie();});
 
 // Mini-Karte unten links: läuft beim Laufen immer live mit! 🗺️
 const miniCan = document.getElementById('miniMap'), miniCtx = miniCan.getContext('2d');
@@ -5010,13 +5038,23 @@ function frame(now) {
   const eyeInWater = getBlock(Math.floor(e[0]),Math.floor(e[1]),Math.floor(e[2]))===WATER;
   waterFx.style.display = eyeInWater?'block':'none';
 
+  // Selfie-Ansicht: Kamera schwebt vor dir und schaut dich an
+  let ce=e, cyaw=yaw, cpitch=pitch;
+  if (selfie) {
+    const f=forwardVec();
+    let d=3.4;
+    const chit=raycast(e[0],e[1],e[2],f[0],f[1],f[2],3.4);
+    if (chit && chit.t) d=Math.max(0.9, chit.t-0.4);
+    ce=[e[0]+f[0]*d, e[1]+f[1]*d+0.2, e[2]+f[2]*d];
+    cyaw=yaw+Math.PI; cpitch=-pitch*0.6+0.12;
+  }
   const proj=perspective(FOV, canvas.width/canvas.height, 0.1, 300);
-  const view=viewMatrix(e[0],e[1],e[2],yaw,pitch);
+  const view=viewMatrix(ce[0],ce[1],ce[2],cyaw,cpitch);
   const mvp=mat4mul(proj,view);
 
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.uniformMatrix4fv(loc.uMVP,false,new Float32Array(mvp));
-  gl.uniform3f(loc.uCam,e[0],e[1],e[2]);
+  gl.uniform3f(loc.uCam,ce[0],ce[1],ce[2]);
   if (eyeInWater) {
     gl.uniform3f(loc.uFogColor,0.1,0.3,0.7);
     gl.uniform1f(loc.uFogNear,2); gl.uniform1f(loc.uFogFar,18);
