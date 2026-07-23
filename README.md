@@ -189,6 +189,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Größere Dörfer! 🏘️ Die Dörfer haben jetzt bis zu 12 Häuser (6 neue
+  Bauplätze am Dorfrand – deine bekannten Häuser bleiben, wo sie
+  sind) und mehr Bewohner und Kinder auf den Wegen
 - Blumen! 🌸 Pflanze Blumen auf Gras oder Erde – jede blüht in
   ihrer eigenen Farbe (rot, gelb, rosa oder weiß). Mit dem
   Bau-Pinsel (3×3/5×5) pflanzt du ganze Blumenwiesen mit einem
