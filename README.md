@@ -189,6 +189,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Waffen! ⚔️🏹 Im Laden gibt es ein Schwert (5 €) und einen Bogen
+  (8 €) – manchmal liegt ein Schwert auch in Schatztruhen! Mit dem
+  Schwert besiegst du Höhlenmonster mit EINEM Schlag. Mit dem Bogen
+  schießt du echte Pfeile (🏹-Knopf unten rechts): Volltreffer
+  besiegen Monster aus der Ferne, Pfeile kicken den Fußball – und
+  wenn ein Pfeil TNT trifft: Fern-Zündung! 💥
 - Kompass-Merkliste! 🧭 Der Kompass merkt sich bis zu 8 Schilder:
   Schild antippen → „🧭 Merken". Mit dem Kompass-Knopf schaltest du
   durch: Dorf → Festung → Ziel 1 → Ziel 2 → ... Nochmal „Merken" auf
