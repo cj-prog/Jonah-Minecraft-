@@ -35,6 +35,7 @@
   .btn { display:flex; align-items:center; justify-content:center; border-radius:50%;
     background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
   #jumpBtn { right:calc(18px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:64px; height:64px; font-size:30px; }
+  #bowBtn  { right:calc(94px + env(safe-area-inset-right)); bottom:calc(82px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:26px; display:none; }
   #modeBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
   #rideBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
   #flyBtn  { right:calc(28px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:24px; }
@@ -150,6 +151,7 @@
 <div class="hud" id="crosshair"></div>
 <div class="hud" id="hotbar"></div>
 <div class="hud btn" id="jumpBtn">⬆</div>
+<div class="hud btn" id="bowBtn">🏹</div>
 <div class="hud btn" id="modeBtn">⛏️</div>
 <div class="hud btn" id="rideBtn" style="display:none">🐴</div>
 <div class="hud btn" id="flyBtn">✈️</div>
@@ -221,6 +223,8 @@
   <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 €</div>
   <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 €</div>
   <div class="shopRow" data-buy="ball">⚽ Fußball &mdash; 2 €</div>
+  <div class="shopRow" data-buy="sword">⚔️ Schwert &mdash; 5 €</div>
+  <div class="shopRow" data-buy="bow">🏹 Bogen &mdash; 8 €</div>
   <p>Verkaufen &mdash; so verdienst du Geld:</p>
   <div class="shopRow" data-sell="c">5 🥕 verkaufen &rarr; 2 €</div>
   <div class="shopRow" data-sell="w">5 🌾 verkaufen &rarr; 2 €</div>
@@ -242,7 +246,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 61 &middot; Kompass merkt sich mehrere Schilder! 🧭</p>
+    Version 62 &middot; Schwert und Bogen! ⚔️🏹</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -286,7 +290,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 61;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 62;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -965,6 +969,7 @@ function saveGame() {
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
+      sword: sword?1:0, bow: bow?1:0,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -1004,6 +1009,8 @@ function loadGame() {
     if (typeof s.gems==='number') gems = s.gems;
     if (typeof s.cakes==='number') cakes = s.cakes;
     if (typeof s.money==='number') money = s.money;
+    if (s.sword) sword = true;
+    if (s.bow) bow = true;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -2217,7 +2224,7 @@ function pushBox(arr, a, ox,oy,oz, sx,sy,sz, tileAll, tileFront) {
 }
 const animalBuf = gl.createBuffer();
 function drawAnimals() {
-  if (!animals.length && !friendP && !fireworks.length) return;
+  if (!animals.length && !friendP && !fireworks.length && !arrows.length) return;
   const arr=[];
   if (friendP) {                        // dein Mitspieler!
     const a={x:friendP.x, y:friendP.y, z:friendP.z, yaw:friendP.yaw||0, ph:0};
@@ -2382,6 +2389,14 @@ function drawAnimals() {
       }
       if (a.friend>=3) drawHeart(arr, a, 2.15);
     }
+  }
+  // fliegende Pfeile 🏹
+  for (const p of arrows) {
+    const pa = { x:p.x, y:p.y, z:p.z, yaw: Math.atan2(p.vx, -p.vz) };
+    pushBox(arr,pa, 0,0,-0.05, 0.05,0.05,0.5, 5);                 // Schaft
+    pushBox(arr,pa, 0,0,-0.34, 0.08,0.08,0.1, 3);                 // Spitze
+    pushBox(arr,pa, 0,0,0.24, 0.1,0.02,0.12, 10);                 // Federn
+    pushBox(arr,pa, 0,0,0.24, 0.02,0.1,0.12, 10);
   }
   gl.bindBuffer(gl.ARRAY_BUFFER, animalBuf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
@@ -2769,7 +2784,10 @@ function updateShopUI() {
   document.getElementById('shopGems').textContent = 'Du hast: 💶 ' + money + ' Euro · 💎 ' + gems;
 }
 function shopBuy(what) {
-  const cost = what==='cake' ? 2 : what==='balloon' ? 3 : what==='ball' ? 2 : 1;
+  if (what==='sword' && sword) { toast('⚔️ Du hast schon ein Schwert! 😄', 2500); return; }
+  if (what==='bow' && bow) { toast('🏹 Du hast schon einen Bogen! 😄', 2500); return; }
+  const cost = what==='cake' ? 2 : what==='balloon' ? 3 : what==='ball' ? 2
+             : what==='sword' ? 5 : what==='bow' ? 8 : 1;
   if (money < cost) {
     toast('Zu wenig Geld! 💶 Verkaufe dem Händler Gemüse, Wolle oder Diamanten!', 3200);
     blip(180,0.15);
@@ -2784,6 +2802,15 @@ function shopBuy(what) {
       z:player.z-Math.cos(yaw)*2.5, vx:0, vy:0, vz:0,
       yaw:0, kx:0, kz:0, walking:false, t:9, ph:0, onGround:false});
     toast('⚽ Dein eigener Fußball! Lauf rein oder tippe ihn an zum Schießen!', 3500);
+  }
+  if (what==='sword') {
+    sword = true;
+    toast('⚔️ Dein Schwert! Höhlenmonster besiegst du jetzt mit EINEM Schlag!', 3800);
+  }
+  if (what==='bow') {
+    bow = true;
+    document.getElementById('bowBtn').style.display='flex';
+    toast('🏹 Dein Bogen! Drück den 🏹-Knopf und du schießt einen Pfeil!', 3800);
   }
   blip(659,0.08); blip(784,0.1);
   updateShopUI(); updateFoodHUD(); scheduleSave();
@@ -2807,6 +2834,64 @@ document.getElementById('shopClose').addEventListener('click', () => { shopBox.s
 // Feuerwerk: Rakete steigt auf und zerplatzt in bunte Funken
 const fireworks = [];
 let curLight = 1;
+
+// ------------------------------ Waffen ⚔️🏹 ----------------------------------
+let sword = false, bow = false;         // deine Ausrüstung (wird gespeichert)
+const arrows = [];                      // fliegende Pfeile
+
+function shootArrow() {
+  if (!bow || arrows.length > 20) return;
+  const e = eyePos();
+  const d = [Math.sin(yaw)*Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw)*Math.cos(pitch)];
+  arrows.push({ x:e[0]+d[0]*0.6, y:e[1]+d[1]*0.6-0.1, z:e[2]+d[2]*0.6,
+                vx:d[0]*24, vy:d[1]*24, vz:d[2]*24, t:3, stuck:0 });
+  blip(600,0.04); blip(300,0.08);       // Pfeil-Schuss: zisch!
+}
+function updateArrows(dt) {
+  for (let i=arrows.length-1; i>=0; i--) {
+    const p = arrows[i];
+    p.t -= dt;
+    if (p.t<=0) { arrows.splice(i,1); continue; }
+    if (p.stuck) continue;              // steckt schon fest
+    p.vy -= 14*dt;
+    // in kleinen Schritten fliegen, damit nichts übersprungen wird
+    const dist = Math.hypot(p.vx,p.vy,p.vz)*dt;
+    const steps = Math.max(1, Math.ceil(dist/0.4));
+    let done = false;
+    for (let st=0; st<steps && !done; st++) {
+      const nx=p.x+p.vx*dt/steps, ny=p.y+p.vy*dt/steps, nz=p.z+p.vz*dt/steps;
+      // trifft der Pfeil ein Monster oder einen Ball?
+      for (const a of animals) {
+        if (a.type!=='slime' && a.type!=='ball') continue;
+        const k = ANIMAL_KIND[a.type];
+        if (Math.hypot(nx-a.x, nz-a.z) < k.half+0.4 && ny>a.y-0.3 && ny<a.y+k.height+0.5) {
+          const d = Math.hypot(p.vx,p.vz)||1;
+          if (a.type==='slime') {
+            toast('🏹 Volltreffer!', 1500);
+            slimeDamage(a, 3, [p.vx/d, 0, p.vz/d]);
+          } else {                      // Ball weiterschießen!
+            a.vx += p.vx*0.5; a.vz += p.vz*0.5; a.vy = Math.max(a.vy,4);
+            blip(320,0.06);
+          }
+          arrows.splice(i,1); done=true; break;
+        }
+      }
+      if (done) break;
+      // trifft er einen Block?
+      const b = getBlock(Math.floor(nx), Math.floor(ny), Math.floor(nz));
+      if (b!==AIR && b!==WATER && BLOCKS[b] && BLOCKS[b].solid) {
+        if (b===TNT) {                  // Fern-Zündung! 💥
+          igniteTNT(Math.floor(nx), Math.floor(ny), Math.floor(nz));
+          arrows.splice(i,1); done=true; break;
+        }
+        p.stuck = 1; p.t = Math.min(p.t, 1.2);   // bleibt kurz stecken
+        blip(200,0.05);
+        done = true; break;
+      }
+      p.x=nx; p.y=ny; p.z=nz;
+    }
+  }
+}
 function launchFirework() {
   const fx2 = player.x + Math.sin(yaw)*8 + (Math.random()*4-2);
   const fz2 = player.z - Math.cos(yaw)*8 + (Math.random()*4-2);
@@ -3169,6 +3254,8 @@ mapCan.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.touches
 document.getElementById('mapClose').addEventListener('click', ()=>{ mapBox.style.display='none'; });
 document.getElementById('mapBtn').addEventListener('touchstart',e=>{e.preventDefault();openMap();},{passive:false});
 document.getElementById('mapBtn').addEventListener('mousedown',e=>{e.preventDefault();openMap();});
+document.getElementById('bowBtn').addEventListener('touchstart',e=>{e.preventDefault();shootArrow();},{passive:false});
+document.getElementById('bowBtn').addEventListener('mousedown',e=>{e.preventDefault();shootArrow();});
 
 // Mini-Karte unten links: läuft beim Laufen immer live mit! 🗺️
 const miniCan = document.getElementById('miniMap'), miniCtx = miniCan.getContext('2d');
@@ -3710,6 +3797,20 @@ function releaseEntity(a) {
     scheduleSave();
   }
 }
+function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
+  a.hp -= dmg;
+  a.kx += dir[0]*6; a.kz += dir[2]*6; a.vy=4; a.onGround=false;
+  blip(150,0.08);
+  if (a.hp<=0) {
+    animals.splice(animals.indexOf(a),1);
+    const n=1+Math.floor(Math.random()*2);
+    gems += n; updateFoodHUD(); scheduleSave();
+    toast('💎 Monster besiegt! Es lässt '+n+' Diamant'+(n>1?'en':'')+' fallen!', 3200);
+    blip(700,0.1); blip(900,0.12);
+    return true;
+  }
+  return false;
+}
 function hitEntity(a, dir) {
   if (a.type==='jet') {                 // Einsteigen in den Privatjet!
     if (jetRiding || carRiding || heliRiding) return;
@@ -3809,18 +3910,9 @@ function hitEntity(a, dir) {
     return;
   }
   if (a.type==='slime') {               // Höhlenmonster bekämpfen!
-    a.hp--;
-    a.kx += dir[0]*6; a.kz += dir[2]*6; a.vy=4; a.onGround=false;
-    blip(150,0.08);
-    if (a.hp<=0) {
-      animals.splice(animals.indexOf(a),1);
-      const n=1+Math.floor(Math.random()*2);
-      gems += n; updateFoodHUD(); scheduleSave();
-      toast('💎 Monster besiegt! Es lässt '+n+' Diamant'+(n>1?'en':'')+' fallen!', 3200);
-      blip(700,0.1); blip(900,0.12);
-    } else {
+    if (sword) { blip(880,0.05); blip(660,0.07); }   // Schwert-Schwung: wusch!
+    if (!slimeDamage(a, sword?3:1, dir))
       toast('Getroffen! Noch '+a.hp+'x tippen! 👊', 1400);
-    }
     return;
   }
   if (a.type==='sheep') {               // Schaf scheren!
@@ -4102,6 +4194,7 @@ function doPlace(dir) {
     if (li===0) gems+=1;                // die Schätze landen wirklich im Beutel!
     if (li===1) money+=3;
     if (li===2) apples+=1;
+    if (li===3 && !sword) { sword=true; setTimeout(()=>toast('⚔️ Ein echtes Schwert! Höhlenmonster besiegst du jetzt mit EINEM Schlag!', 3800), 1600); }
     if (li===4) carrots+=5;
     if (li===7) money+=2;
     updateFoodHUD(); scheduleSave();
@@ -4638,6 +4731,7 @@ function frame(now) {
   if (jumpT > 0) jumpT -= dt;
   if (balloonT > 0) { balloonT -= dt; if (balloonT <= 0) toast('🎈 Dein Luftballon ist weggeflogen!', 2500); }
   updateFireworks(dt);
+  updateArrows(dt);
   mpPosT += dt;
   if (mpPosT > 0.12 && mpChan && mpChan.readyState==='open') {
     mpPosT = 0;
@@ -4756,6 +4850,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   started=true;
   updateFoodHUD();
   document.getElementById('miniMap').style.display='block';
+  if (bow) document.getElementById('bowBtn').style.display='flex';
   saveGame();                           // beim Start sofort speichern
   if (newVersionBackup) {
     // ... und als richtige Datei herunterladen – die ist sicher, egal was passiert!
