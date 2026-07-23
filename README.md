@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Bau-Pinsel! 🖌️ Der neue Knopf rechts (1×1) schaltet die
+  Pinsel-Größe um: 3×3 = 9 Blöcke, 5×5 = 25 Blöcke auf einmal setzen
+  oder abbauen – ganze Wände und Böden mit einem Tipp! Der Pinsel
+  arbeitet immer auf der Seite, die du antippst. Besondere Blöcke
+  (TNT, Beete, Türen, Schnee) lässt er beim Abbauen in Ruhe
 - Waffen! ⚔️🏹 Im Laden gibt es ein Schwert (5 €) und einen Bogen
   (8 €) – manchmal liegt ein Schwert auch in Schatztruhen! Mit dem
   Schwert besiegst du Höhlenmonster mit EINEM Schlag. Mit dem Bogen
