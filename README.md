@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Schulen und Kindergärten! 🏫🧸 Jedes Dorf hat jetzt eins von
+  beiden (mit Schild vor der Tür): Die Schule ist aus Ziegeln, mit
+  Tafel, Lehrer-Pult und Schulbänken – der Lehrer und Schulkinder
+  sind auch da. Der Kindergarten ist kunterbunt, mit Trampolin,
+  Mal-Tisch, Spielzeugkiste und Sandkasten davor!
 - Wälder mit Wasserfällen! 🌲💦 In der Landschaft gibt es dichte
   Wälder voller Bäume (auf der Karte als 🌲). Mitten im Wald stürzt
   ein Wasserfall von einer Felsklippe in einen Teich – du hörst ihn

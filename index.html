@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 71 &middot; Wälder mit Wasserfällen! 🌲💦</p>
+    Version 72 &middot; Schulen und Kindergärten! 🏫</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 71;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 72;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -977,6 +977,59 @@ function genChunkData(cx, cz) {
         put(tx0+3,by+2,tz0+6,DOOR_TOP,false);
         put(tx0+2,by+1,tz0+7,TORCH,true);
         put(tx0+4,by+1,tz0+7,TORCH,true);
+      }
+    }
+    // Schule oder Kindergarten: jedes Dorf hat eins von beiden! 🏫🧸
+    {
+      const istSchule = hash2(v.vx,v.vz,707) < 0.55;
+      const bx0 = v.vx-5, bz0 = v.vz+14;
+      const W2 = istSchule ? 11 : 8, D2 = istSchule ? 8 : 7, H2 = istSchule ? 4 : 3;
+      let bmin=999, bmax=-999;
+      for (const [qx,qz] of [[bx0,bz0],[bx0+W2-1,bz0],[bx0,bz0+D2-1],[bx0+W2-1,bz0+D2-1]]) {
+        const h2=terrainHeight(qx,qz); bmin=Math.min(bmin,h2); bmax=Math.max(bmax,h2);
+      }
+      if (bmax-bmin<=3 && bmin>SEA) {
+        const by=bmax;
+        for (let lx=0;lx<W2;lx++) for (let lz=0;lz<D2;lz++) {
+          const wx=bx0+lx, wz=bz0+lz;
+          const th5=terrainHeight(wx,wz);
+          for (let y=th5;y<by;y++) put(wx,y,wz,DIRT,false);
+          put(wx,by,wz,PLANK,false);
+          const edgeX=lx===0||lx===W2-1, edgeZ=lz===0||lz===D2-1;
+          for (let y=by+1;y<=by+H2;y++) {
+            let b2=AIR;
+            if (edgeX||edgeZ) {
+              b2 = istSchule ? BRICK : ((lx+lz)%2 ? WOOL : BRICK);   // Kindergarten: kunterbunt!
+              if (y===by+2 && ((edgeZ&&lx%3===1&&lx>0&&lx<W2-1) || (edgeX&&lz%3===1&&lz>0&&lz<D2-1))) b2=GLASS;
+            }
+            if (lz===0 && (lx===(W2>>1)||lx===(W2>>1)-1) && y<=by+2) b2=AIR;   // Tür vorne
+            put(wx,y,wz,b2,false);
+          }
+          put(wx,by+H2+1,wz,WOOD,false);                 // Dach
+        }
+        put(bx0+(W2>>1), by+1, bz0-1, SIGN, true);       // Schild vor der Tür
+        const bkey=(bx0+(W2>>1))+','+(by+1)+','+(bz0-1);
+        if (!signTexts.has(bkey)) signTexts.set(bkey, istSchule ? 'Schule' : 'Kindergarten');
+        put(bx0+1, by+1, bz0+1, TORCH, false);
+        if (istSchule) {
+          // Tafel an der Rückwand, Lehrer-Pult und Schulbänke mit Stühlen
+          for (let tx2=bx0+4; tx2<=bx0+6; tx2++) for (let y=by+2; y<=by+3; y++)
+            put(tx2, y, bz0+D2-1, STONE, false);
+          put(bx0+5, by+1, bz0+D2-2, TABLE, false);
+          for (const [ox,oz] of [[2,2],[5,2],[8,2],[2,4],[5,4],[8,4]]) {
+            put(bx0+ox, by+1, bz0+oz, TABLE, false);
+            put(bx0+ox, by+1, bz0+oz+1, CHAIR, false);
+          }
+        } else {
+          // Kindergarten: Trampolin, Mal-Tisch, Spielzeugkiste und Sandkasten draußen
+          put(bx0+2, by+1, bz0+4, TRAMPOLIN, false);
+          put(bx0+5, by+1, bz0+4, TABLE, false);
+          put(bx0+4, by+1, bz0+4, CHAIR, false);
+          put(bx0+6, by+1, bz0+4, CHAIR, false);
+          put(bx0+2, by+1, bz0+2, CHEST, false);
+          for (let sx2=bx0+W2+1; sx2<=bx0+W2+3; sx2++) for (let sz2=bz0+1; sz2<=bz0+3; sz2++)
+            put(sx2, terrainHeight(sx2,sz2), sz2, SAND, false);
+        }
       }
     }
   }
@@ -2103,6 +2156,15 @@ function spawnTick() {
                 v.vz + Math.floor(Math.random()*10)-5, { home:key, hx:v.vx, hz:v.vz, roam:true })) break;
         }
       }
+    }
+    // Kinder toben an der Schule bzw. am Kindergarten, der Lehrer passt auf
+    {
+      const istSchule = hash2(v.vx,v.vz,707) < 0.55;
+      for (let i=0;i<3;i++)
+        spawnMob('kid', v.vx-5+Math.floor(Math.random()*10), v.vz+13+Math.floor(Math.random()*8),
+          { home:key, hx:v.vx-1, hz:v.vz+17 });
+      if (istSchule)
+        spawnMob('villager', v.vx-2, v.vz+12, { home:key, hx:v.vx-1, hz:v.vz+16 });
     }
     // gespeicherte Freundschaften wiederherstellen
     const fr = savedFriends[key];
