@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 73 &middot; Blumen pflanzen! 🌸</p>
+    Version 74 &middot; Größere Dörfer mit mehr Häusern! 🏘️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 73;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 74;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -609,7 +609,8 @@ function fortressPos() {                // eine geheime Festung pro Welt
 
 // ------------------------------ Dörfer --------------------------------------
 const VCELL = 80;                       // Raster: pro 80x80-Feld höchstens 1 Dorf
-const HOUSE_SPOTS = [[0,5],[14,2],[-13,8],[6,-13],[-11,-10],[15,-9]];
+const HOUSE_SPOTS = [[0,5],[14,2],[-13,8],[6,-13],[-11,-10],[15,-9],
+                     [-22,-2],[-2,-20],[15,-20],[24,3],[-24,10],[12,24]];   // 6 neue Plätze am Dorfrand!
 function villageAt(cellX, cellZ) {
   if (hash2(cellX, cellZ, 4242) >= 0.42) return null;
   return {
@@ -2138,13 +2139,13 @@ function spawnTick() {
     if (!c || !c.data) continue;
     const key = v.vx+','+v.vz;
     if (countType(a=>a.home===key && !a.follow) > 0) continue;
-    for (let i=0;i<3;i++)
+    for (let i=0;i<5;i++)                 // mehr Häuser = mehr Bewohner!
       spawnMob('villager',
-        v.vx + Math.floor(Math.random()*14)-7, v.vz + Math.floor(Math.random()*14)-7,
+        v.vx + Math.floor(Math.random()*20)-10, v.vz + Math.floor(Math.random()*20)-10,
         { home:key, hx:v.vx, hz:v.vz });
-    for (let i=0;i<2;i++)                 // und zwei Kinder!
+    for (let i=0;i<3;i++)                 // und drei Kinder!
       spawnMob('kid',
-        v.vx + Math.floor(Math.random()*12)-6, v.vz + Math.floor(Math.random()*12)-6,
+        v.vx + Math.floor(Math.random()*16)-8, v.vz + Math.floor(Math.random()*16)-8,
         { home:key, hx:v.vx, hz:v.vz });
     if (hash2(v.vx,v.vz,606)<0.5) {       // Hochhaus-Dorf: da wohnen mehr Leute!
       for (let i=0;i<3;i++)
