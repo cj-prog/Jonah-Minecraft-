@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Gewitter! ⚡ Bei Regen blitzt es ab und zu: ein leuchtender
+  Zickzack-Blitz schlägt in der Nähe ein, der ganze Himmel wird
+  kurz hell, Funken sprühen am Einschlag-Punkt und danach grummelt
+  der Donner. Trifft der Blitz TNT... 💥 Und wenn er ganz nah
+  einschlägt: "Wow! Das war knapp!"
 - Regen-Pfützen! 🌧️ Wenn es regnet, sammelt sich das Wasser in
   Löchern und Mulden und bleibt dort stehen – tiefe Löcher füllen
   sich Stück für Stück. Grab vor dem Regen ein Becken, und du hast
