@@ -189,6 +189,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Achterbahn! 🎢 Bau mit dem Schienen-Block eine Strecke – gerade,
+  mit Kurven und über Stufen bergauf und bergab (Schienen verbinden
+  sich automatisch, auch eine Stufe hoch/runter). Dann anderen Block
+  wählen, Schiene antippen – und die Lore saust los! Bergab wird sie
+  richtig schnell (Ratter-ratter!), bergauf langsamer, an Kurven
+  biegt sie ab und an der Endstation steigst du aus. 🎢-Knopf =
+  zwischendurch aussteigen. Tipp: Bau eine Runde, dann fährst du
+  endlos im Kreis!
 - Selfie-Ansicht! 🤳 Der Selfie-Knopf oben zeigt dich selbst: blaue
   Hose, rotes Shirt, braune Haare – beim Laufen schwingen Arme und
   Beine, und mit Schwert siehst du es an deiner Seite! Genau so
