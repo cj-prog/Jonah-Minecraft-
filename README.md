@@ -189,6 +189,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Lange Tage! ☀️ Der Tag dauert jetzt gemütliche 4,5 Minuten, die
+  Nacht rauscht in nur 1,5 Minuten vorbei (oder du schläfst sie im
+  Bett einfach weg)
 - Zauber-Lasso! 🌀 Drück den Lasso-Knopf rechts und male mit dem
   Finger einen Kreis um die Blöcke, die weg sollen – simsalabim, alle
   eingekreisten Blöcke verschwinden! Es trifft nur, was du wirklich
