@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 69 &middot; Achterbahn mit Schienen! 🎢</p>
+    Version 70 &middot; Berge mit Gipfel-Höhlen! ⛰️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 69;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 70;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -594,6 +594,34 @@ function fieldAt(cellX, cellZ) {
   if (hmax-hmin>1 || hmin<=SEA) return null;    // nur auf flachem, trockenem Boden
   return { fx, fz, y:hmax };
 }
+// Berge! ⛰️ Hohe Steinkegel mit Krater-Eingang und Schatzkammer tief drinnen
+const BCELL = 128;
+const mountainCache = new Map();
+function mountainAt(cellX, cellZ) {
+  const key = cellX+','+cellZ;
+  if (mountainCache.has(key)) return mountainCache.get(key);
+  let m = null;
+  if (hash2(cellX,cellZ,7700) < 0.45) {
+    const mx = cellX*BCELL + 34 + Math.floor(hash2(cellX,cellZ,7701)*60);
+    const mz = cellZ*BCELL + 34 + Math.floor(hash2(cellX,cellZ,7702)*60);
+    const base = terrainHeight(mx,mz);
+    if (base > SEA+1) {
+      let ok = true;                    // nicht mitten auf ein Dorf bauen!
+      for (let vz=Math.floor((mz-40)/VCELL); vz<=Math.floor((mz+40)/VCELL) && ok; vz++)
+        for (let vx=Math.floor((mx-40)/VCELL); vx<=Math.floor((mx+40)/VCELL) && ok; vx++) {
+          const v = villageAt(vx,vz);
+          if (v && Math.hypot(v.vx-mx, v.vz-mz) < 38) ok = false;
+        }
+      if (ok) {
+        const hoehe = Math.min(CH-8-base, 14 + Math.floor(hash2(cellX,cellZ,7703)*8));
+        const r = 13 + Math.floor(hash2(cellX,cellZ,7704)*6);
+        if (hoehe >= 10) m = { mx, mz, base, hoehe, r };
+      }
+    }
+  }
+  mountainCache.set(key, m);
+  return m;
+}
 function houseParams(v, i) {            // Haus Nr. i eines Dorfes (deterministisch)
   const hx = v.vx + HOUSE_SPOTS[i][0] + Math.floor(hash2(v.vx,v.vz,i*3+1)*5)-2;
   const hz = v.vz + HOUSE_SPOTS[i][1] + Math.floor(hash2(v.vx,v.vz,i*3+2)*5)-2;
@@ -686,6 +714,47 @@ function genChunkData(cx, cz) {
         const leafB = hash2(tx+dx+ly, tz+dz, 991)<0.1 ? APPLE_LEAF : LEAF;
         put(tx+dx,ly,tz+dz,leafB,true);
       }
+    }
+  }
+  // Berge: Steinkegel mit Gras unten, Krater-Schacht und Schatzkammer ⛰️
+  {
+    const m0x=Math.floor((x0-24)/BCELL), m1x=Math.floor((x0+CS+24)/BCELL);
+    const m0z=Math.floor((z0-24)/BCELL), m1z=Math.floor((z0+CS+24)/BCELL);
+    for (let mcz=m0z; mcz<=m1z; mcz++) for (let mcx=m0x; mcx<=m1x; mcx++) {
+      const m = mountainAt(mcx,mcz);
+      if (!m) continue;
+      const ty = Math.min(CH-2, m.base+m.hoehe);   // Gipfelhöhe
+      for (let lx=0; lx<CS; lx++) for (let lz=0; lz<CS; lz++) {
+        const wx=x0+lx, wz=z0+lz;
+        const d = Math.hypot(wx-m.mx, wz-m.mz);
+        if (d >= m.r) continue;
+        const t = 1 - d/m.r;
+        const add = Math.round(m.hoehe * t*t*(3-2*t));
+        if (add<=0) continue;
+        const th = terrainHeight(wx,wz);
+        const topY = Math.min(CH-2, th+add);
+        for (let y=th+1; y<=topY; y++)
+          put(wx,y,wz, y===topY && add<m.hoehe*0.55 ? GRASS : STONE, false);
+      }
+      // Krater-Schacht (2x2) vom Gipfel bis zur Schatzkammer
+      const camY = m.base+2;
+      for (let y=camY; y<=ty+1; y++)
+        for (const [ox,oz] of [[0,0],[1,0],[0,1],[1,1]])
+          put(m.mx+ox, y, m.mz+oz, AIR, false);
+      // Schatzkammer mit festem Boden, Fackeln und zwei Truhen
+      for (let qx=m.mx-3; qx<=m.mx+4; qx++) for (let qz=m.mz-3; qz<=m.mz+4; qz++) {
+        put(qx, camY-1, qz, STONE, false);
+        for (let y=camY; y<=camY+2; y++) put(qx, y, qz, AIR, false);
+      }
+      put(m.mx-2, camY, m.mz-2, TORCH, false);
+      put(m.mx+3, camY, m.mz+3, TORCH, false);
+      put(m.mx-2, camY, m.mz+3, CHEST, false);
+      put(m.mx+3, camY, m.mz-2, CHEST, false);
+      // Sprungturm in der Ecke: antippen und du bist wieder oben!
+      for (let y=camY; y<=ty+1; y++) put(m.mx-3, y, m.mz-3, SPRUNGTURM, false);
+      // Fackeln am Krater-Rand, damit man den Eingang gut findet
+      put(m.mx-1, ty+1, m.mz, TORCH, false);
+      put(m.mx+2, ty+1, m.mz+1, TORCH, false);
     }
   }
   // Fußballplätze: weiße Linien im Rasen, Mittellinie und zwei Tore
@@ -3408,6 +3477,7 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   for (const v of scan(VCELL,villageAt)) marks.push({x:v.vx, z:v.vz, e:'🏠'});
   for (const f of scan(FCELL,fieldAt)) marks.push({x:f.fx, z:f.fz, e:'⚽'});
   for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
+  for (const m of scan(BCELL,mountainAt)) marks.push({x:m.mx, z:m.mz, e:'⛰️'});
   const ft=fortressPos(); marks.push({x:ft.fx, z:ft.gz, e:'🏰'});
   return marks;
 }
