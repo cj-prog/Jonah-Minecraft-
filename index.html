@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 75 &middot; Ritterburgen mit Rittern! 🏰⚔️</p>
+    Version 76 &middot; Häuser-Reparatur! 🔧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 75;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 76;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1178,9 +1178,22 @@ function genChunkData(cx, cz) {
       if (!signTexts.has(tkey)) signTexts.set(tkey,'König Jonahs Thron');
     }
   }
-  // gespeicherte Änderungen des Spielers anwenden
+  // gespeicherte Änderungen des Spielers anwenden.
+  // Alte Schnee- und Pfützen-Reste vom Wetter dürfen aber keine neuen
+  // Gebäude kaputt machen: liegen sie mitten in einer frisch gebauten
+  // Wand, werden sie weggeräumt statt angewendet.
   const e = edits.get(ckey(cx,cz));
-  if (e) for (const [i,v] of e) data[i]=v;
+  if (e) {
+    for (const [i,v] of [...e]) {
+      // Schnee lag immer in der Luft; steht da jetzt etwas Gebautes, fliegt er raus
+      if (v===SNOW && !(data[i]===AIR || data[i]===SNOW)) { e.delete(i); continue; }
+      // Pfützen lagen auf Naturboden; in Wänden/Böden von Gebäuden haben sie nichts verloren
+      if (v===WATER && !(data[i]===AIR || data[i]===WATER || data[i]===GRASS ||
+                         data[i]===DIRT || data[i]===SAND)) { e.delete(i); continue; }
+      data[i]=v;
+    }
+    if (!e.size) edits.delete(ckey(cx,cz));
+  }
   return data;
 }
 
