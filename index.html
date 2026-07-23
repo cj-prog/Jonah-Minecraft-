@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 76 &middot; Häuser-Reparatur! 🔧</p>
+    Version 77 &middot; Treppen zum Hochlaufen! 🪜</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 76;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 77;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -325,7 +325,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
       SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
-      RAIL=51, BLUME=52;
+      RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -404,6 +404,15 @@ const BLOCKS = {
     [0.12,0.16,0.14, 0.88,0.23,0.86, 55],               // schwarzes Laufband
     [0.36,0.23,0.82, 0.64,0.92,0.93, 56],               // Säule
     [0.39,0.66,0.79, 0.61,0.86,0.83, 9]] },             // blauer Bildschirm
+  // Treppen: halbe Stufe vorne, ganze hinten - hochlaufen ohne Springen!
+  [TREP_N]: { name:'Treppe 🪜 (einfach hochlaufen, ohne springen!)', tiles:[8,8,8], solid:true, model:[
+    [0,0,0, 1,0.5,1, 8], [0,0.5,0, 1,1,0.5, 8]] },
+  [TREP_S]: { name:'Treppe 🪜', tiles:[8,8,8], solid:true, model:[
+    [0,0,0, 1,0.5,1, 8], [0,0.5,0.5, 1,1,1, 8]] },
+  [TREP_E]: { name:'Treppe 🪜', tiles:[8,8,8], solid:true, model:[
+    [0,0,0, 1,0.5,1, 8], [0.5,0.5,0, 1,1,1, 8]] },
+  [TREP_W]: { name:'Treppe 🪜', tiles:[8,8,8], solid:true, model:[
+    [0,0,0, 1,0.5,1, 8], [0,0.5,0, 0.5,1,1, 8]] },
   [BLUME]: { name:'Blume 🌸 (auf Gras oder Erde pflanzen!)', tiles:[25,25,25], solid:false, model:[
     [0.47,0,0.47, 0.53,0.5,0.53, 7],                    // Stängel
     [0.36,0.12,0.48, 0.5,0.24,0.52, 7],                 // Blättchen
@@ -504,7 +513,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, BLUME, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1880,11 +1889,25 @@ function physics(dt) {
     player.vy = Math.max(player.vy, balloonT>0 ? -2.2 : -50);
   }
 
-  // Achsenweise bewegen und kollidieren
+  // Achsenweise bewegen und kollidieren (Treppen steigt man automatisch hoch!)
+  const istTreppe = (x,y,z) => {
+    const fy = Math.floor(y+0.01);
+    for (const ox of [-P_HALF,P_HALF]) for (const oz of [-P_HALF,P_HALF]) {
+      const b2 = getBlock(Math.floor(x+ox), fy, Math.floor(z+oz));
+      if (b2>=TREP_N && b2<=TREP_W) return true;
+    }
+    return false;
+  };
   let nx = player.x + player.vx*dt;
-  if (!collide(nx, player.y, player.z)) player.x = nx; else player.vx = 0;
+  if (!collide(nx, player.y, player.z)) player.x = nx;
+  else if (player.onGround && istTreppe(nx, player.y, player.z) && !collide(nx, player.y+1.02, player.z)) {
+    player.x = nx; player.y += 1.02; player.vy = 0;
+  } else player.vx = 0;
   let nz = player.z + player.vz*dt;
-  if (!collide(player.x, player.y, nz)) player.z = nz; else player.vz = 0;
+  if (!collide(player.x, player.y, nz)) player.z = nz;
+  else if (player.onGround && istTreppe(player.x, player.y, nz) && !collide(player.x, player.y+1.02, nz)) {
+    player.z = nz; player.y += 1.02; player.vy = 0;
+  } else player.vz = 0;
   let ny = player.y + player.vy*dt;
   player.onGround = false;
   if (!collide(player.x, ny, player.z)) {
@@ -3712,6 +3735,7 @@ const MAP_BLOCK_COL = {
   [GATE]:'#9aa0a8', [GATE_OPEN]:'#9aa0a8', [SNOWMAN]:'#f0f4f8',
   [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58',
+  [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -4889,6 +4913,14 @@ function doPlace(dir) {
     const oz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
     if (ox&&oy&&oz) return;
   }
+  if (b===TREP_N) {                     // Treppe: steigt von dir weg nach oben
+    const fx2=Math.sin(yaw), fz2=-Math.cos(yaw);
+    const pb = Math.abs(fx2)>Math.abs(fz2) ? (fx2>0?TREP_E:TREP_W) : (fz2>0?TREP_S:TREP_N);
+    setBlock(px,py,pz,pb);
+    toast('🪜 Treppe gebaut! Einfach drauflaufen – du steigst von selbst hoch.', 3000);
+    blip(330,0.06);
+    return;
+  }
   if (b===PIC) {                        // Bilder hängen an Wänden!
     if (hit.face[1]!==0) {
       toast('🖼️ Bilder hängt man an die Wand! Tippe seitlich auf eine Wand.', 2800);
@@ -5074,6 +5106,9 @@ const ICONS = {
     g.fillRect(1,4,3,8); g.fillRect(12,4,3,8); }),
   [RAIL]: iconURL(g=>{ g.fillStyle='#8a6a3c'; g.fillRect(1,3,14,2); g.fillRect(1,8,14,2); g.fillRect(1,13,14,2);
     g.fillStyle='#9aa0a8'; g.fillRect(4,1,2,14); g.fillRect(10,1,2,14); }),
+  [TREP_N]: iconURL(g=>{ g.fillStyle='#b08a58';
+    g.fillRect(1,11,14,4); g.fillRect(6,6,9,5); g.fillRect(11,1,4,5);
+    g.fillStyle='#8a6a3c'; g.fillRect(1,11,14,1); g.fillRect(6,6,9,1); g.fillRect(11,1,4,1); }),
   [BLUME]: iconURL(g=>{ g.fillStyle='#3f8f2e'; g.fillRect(7,8,2,7); g.fillRect(4,10,3,2);
     g.fillStyle='#e04848'; g.fillRect(5,2,6,6); g.fillRect(3,4,10,2); g.fillRect(7,0,2,10);
     g.fillStyle='#f5d93c'; g.fillRect(6,3,4,4); }),
