@@ -242,7 +242,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 60 &middot; Karte zeigt Häuser, Antippen = groß! 🗺️</p>
+    Version 61 &middot; Kompass merkt sich mehrere Schilder! 🧭</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -286,7 +286,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 60;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 61;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -960,7 +960,7 @@ function saveGame() {
       paints: Object.fromEntries(paintings),
       balls: animals.filter(a=>a.type==='ball' && a.own).map(a=>
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10]),
-      ziel: customTarget,
+      ziele: customTargets,
       jet: jetSave,
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
@@ -989,7 +989,8 @@ function loadGame() {
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.paints) for (const k in s.paints) paintings.set(k, s.paints[k]);
     if (Array.isArray(s.balls)) savedBalls = s.balls;
-    if (s.ziel && typeof s.ziel.x==='number') customTarget = s.ziel;
+    if (Array.isArray(s.ziele)) customTargets = s.ziele.filter(t=>t && typeof t.x==='number');
+    else if (s.ziel && typeof s.ziel.x==='number') customTargets = [s.ziel];   // alte Speicherstände
     if (Array.isArray(s.jet)) savedJet = s.jet;
     if (Array.isArray(s.heli)) savedHeli = s.heli;
     if (s.cabinets) for (const k in s.cabinets) cabinets.set(k, s.cabinets[k]);
@@ -3010,11 +3011,10 @@ function findVillageTarget() {
   }
   return best;
 }
-let compassMode = 0;                    // 0=aus, 1=Dorf, 2=Geheim-Festung, 3=mein Schild
-let customTarget = null;                // eigenes Ziel: ein gemerktes Schild
+let compassMode = 0;                    // 0=aus, 1=Dorf, 2=Festung, 3+i=gemerkte Schilder
+let customTargets = [];                 // eigene Ziele: alle gemerkten Schilder!
 function toggleCompass() {
-  compassMode = (compassMode + 1) % 4;
-  if (compassMode === 3 && !customTarget) compassMode = 0;   // kein eigenes Ziel gemerkt
+  compassMode = (compassMode + 1) % (3 + customTargets.length);
   compassOn = compassMode > 0;
   if (compassMode === 1) {
     compTarget = findVillageTarget();
@@ -3026,9 +3026,10 @@ function toggleCompass() {
     compTarget = { vx: ft.fx, vz: ft.gz, fort: true };
     toast('🏰 Der Pfeil zeigt zur geheimen Festung!', 3000);
   }
-  if (compassMode === 3) {
-    compTarget = { vx: customTarget.x, vz: customTarget.z, own: true, label: customTarget.label };
-    toast('📜 Der Pfeil zeigt zu deinem Schild: „'+customTarget.label+'"', 3200);
+  if (compassMode >= 3) {
+    const t = customTargets[compassMode-3];
+    compTarget = { vx: t.x, vz: t.z, own: true, label: t.label };
+    toast('📜 Ziel '+(compassMode-2)+' von '+customTargets.length+': „'+t.label+'"  (nochmal tippen = nächstes)', 3200);
   }
   compassOn = compassMode > 0;
   compassEl.style.display = compassOn ? 'flex' : 'none';
@@ -3129,7 +3130,7 @@ function drawMapLive() {                // jeden Frame: Pfeil und Marker wandern
   const W = mapCan.width, R = MAP_R, sc = W/(R*2);
   mapCtx.drawImage(mapTerr, 0, 0, W, W);
   mapCtx.font='15px sans-serif'; mapCtx.textAlign='center'; mapCtx.textBaseline='middle';
-  const all = customTarget ? mapMarks.concat([{x:customTarget.x, z:customTarget.z, e:'📍'}]) : mapMarks;
+  const all = mapMarks.concat(customTargets.map(t=>({x:t.x, z:t.z, e:'📍'})));
   for (const m of all) {
     const mx=(m.x-mapCx+R)*sc, my=(m.z-mapCz+R)*sc;
     if (mx<9||mx>W-9||my<9||my>W-9) continue;
@@ -3150,8 +3151,11 @@ function mapTap(clientX, clientY) {
   const r=mapCan.getBoundingClientRect(), W=mapCan.width, sc=W/(MAP_R*2);
   const wx = Math.round(mapCx + ((clientX-r.left)/r.width*W)/sc - MAP_R);
   const wz = Math.round(mapCz + ((clientY-r.top)/r.height*W)/sc - MAP_R);
-  customTarget = { x:wx, z:wz, label:'Karten-Ziel' };
-  compassMode = 3; compassOn = true;
+  // das Karten-Ziel ersetzt nur das alte Karten-Ziel, gemerkte Schilder bleiben!
+  const mi = customTargets.findIndex(t=>t.map);
+  if (mi>=0) customTargets.splice(mi,1);
+  customTargets.push({ x:wx, z:wz, label:'Karten-Ziel', map:true });
+  compassMode = 3 + customTargets.length - 1; compassOn = true;
   compTarget = { vx:wx, vz:wz, own:true, label:'Karten-Ziel' };
   compassEl.style.display = 'flex';
   document.getElementById('navBtn').classList.add('on');
@@ -3197,7 +3201,7 @@ function drawMiniMap() {
   miniCtx.imageSmoothingEnabled = false;
   miniCtx.drawImage(mmShow, (mmCx-H-player.x)*s + W/2, (mmCz-H-player.z)*s + W/2, MMN*s, MMN*s);
   miniCtx.font='12px sans-serif'; miniCtx.textAlign='center'; miniCtx.textBaseline='middle';
-  const all = customTarget ? mmMarks.concat([{x:customTarget.x, z:customTarget.z, e:'📍'}]) : mmMarks;
+  const all = mmMarks.concat(customTargets.map(t=>({x:t.x, z:t.z, e:'📍'})));
   for (const m of all) {
     const mx=(m.x-player.x)*s + W/2, my=(m.z-player.z)*s + W/2;
     if (mx<8||mx>W-8||my<8||my>W-8) continue;
@@ -4354,21 +4358,37 @@ function closeChat() {
   document.getElementById('chatSend').textContent='Sagen';
   document.getElementById('chatNav').style.display='none';
 }
-// 🧭 Merken: dieses Schild wird zum eigenen Kompass-Ziel!
+// 🧭 Merken: dieses Schild kommt in die Kompass-Merkliste (nochmal = vergessen)
 document.getElementById('chatNav').addEventListener('click',()=>{
   if (!signTarget) return;
   const key = signTarget;
   const label = chatInput.value.trim() || signTexts.get(key) || 'Mein Ort';
   setSignText(key, label);
   const p = key.split(',').map(Number);
-  customTarget = { x:p[0], z:p[2], label };
   closeChat();
-  compassMode = 3;
+  const old = customTargets.findIndex(t=>t.x===p[0] && t.z===p[2] && !t.map);
+  if (old >= 0) {                       // schon gemerkt? Dann vergessen!
+    customTargets.splice(old,1);
+    if (compassMode >= 3 + customTargets.length) compassMode = 0;
+    if (compassMode === 0) { compassOn=false; compassEl.style.display='none';
+      document.getElementById('navBtn').classList.remove('on'); }
+    toast('🧭 Schild „'+label+'" vergessen. ('+customTargets.length+(customTargets.length===1?' Ziel':' Ziele')+' gemerkt)', 3200);
+    blip(392,0.1); blip(330,0.1);
+    scheduleSave();
+    return;
+  }
+  if (customTargets.length >= 8) {
+    toast('🧭 Du hast schon 8 Ziele! Vergiss erst eins (Schild antippen → Merken).', 3500);
+    blip(220,0.15);
+    return;
+  }
+  customTargets.push({ x:p[0], z:p[2], label });
+  compassMode = 3 + customTargets.length - 1;
   compassOn = true;
-  compTarget = { vx:customTarget.x, vz:customTarget.z, own:true, label };
+  compTarget = { vx:p[0], vz:p[2], own:true, label };
   compassEl.style.display='flex';
   document.getElementById('navBtn').classList.add('on');
-  toast('🧭 Gemerkt! Der Kompass zeigt jetzt zu: „'+label+'"', 3500);
+  toast('🧭 Gemerkt! Ziel '+customTargets.length+': „'+label+'". Kompass-Knopf tippen = Ziele durchschalten!', 4000);
   blip(660,0.1); blip(784,0.1);
   scheduleSave();
 });
