@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Blumen! 🌸 Pflanze Blumen auf Gras oder Erde – jede blüht in
+  ihrer eigenen Farbe (rot, gelb, rosa oder weiß). Mit dem
+  Bau-Pinsel (3×3/5×5) pflanzt du ganze Blumenwiesen mit einem
+  Tipp! Wilde Blumen wachsen überall auf den Wiesen, im Wald
+  blüht es besonders bunt
 - Schulen und Kindergärten! 🏫🧸 Jedes Dorf hat jetzt eins von
   beiden (mit Schild vor der Tür): Die Schule ist aus Ziegeln, mit
   Tafel, Lehrer-Pult und Schulbänken – der Lehrer und Schulkinder

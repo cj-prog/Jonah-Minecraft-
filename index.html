@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 72 &middot; Schulen und Kindergärten! 🏫</p>
+    Version 73 &middot; Blumen pflanzen! 🌸</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 72;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 73;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -325,7 +325,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       DOOR=30, DOOR_TOP=31, DOOR_OPEN=32, DOOR_TOP_OPEN=33, GLASS=34, FENCE=35, WOOL=36,
       SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
-      RAIL=51;
+      RAIL=51, BLUME=52;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -404,6 +404,12 @@ const BLOCKS = {
     [0.12,0.16,0.14, 0.88,0.23,0.86, 55],               // schwarzes Laufband
     [0.36,0.23,0.82, 0.64,0.92,0.93, 56],               // Säule
     [0.39,0.66,0.79, 0.61,0.86,0.83, 9]] },             // blauer Bildschirm
+  [BLUME]: { name:'Blume 🌸 (auf Gras oder Erde pflanzen!)', tiles:[25,25,25], solid:false, model:[
+    [0.47,0,0.47, 0.53,0.5,0.53, 7],                    // Stängel
+    [0.36,0.12,0.48, 0.5,0.24,0.52, 7],                 // Blättchen
+    [0.32,0.5,0.42, 0.68,0.72,0.58, 25],                // Blüte (Farbe je nach Platz!)
+    [0.42,0.5,0.32, 0.58,0.72,0.68, 25],
+    [0.44,0.58,0.44, 0.56,0.7,0.56, 30]] },             // gelbe Mitte
   [RAIL]: { name:'Schiene 🎢 (Strecke bauen, dann antippen = mit der Lore fahren!)', tiles:[3,3,3], solid:false, model:[
     [0,0.05,0.18, 1,0.12,0.3, 3],
     [0,0.05,0.7, 1,0.12,0.82, 3],
@@ -498,7 +504,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, BLUME, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -746,6 +752,15 @@ function genChunkData(cx, cz) {
         put(tx+dx,ly,tz+dz,leafB,true);
       }
     }
+  }
+  // Wilde Blumen auf den Wiesen (im Wald blüht es besonders bunt!)
+  for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
+    const wx=x0+lx, wz=z0+lz;
+    const bh = hash2(wx,wz,5511);
+    if (bh > 0.02) continue;
+    const h = terrainHeight(wx,wz);
+    if (h<=SEA+1 || isTree(wx,wz)) continue;
+    if (bh < (inForest(wx,wz) ? 0.02 : 0.005)) put(wx,h+1,wz,BLUME,true);
   }
   // Wasserfälle: mitten im Wald stürzt Wasser von einer Felsklippe! 💦
   {
@@ -1549,6 +1564,8 @@ function buildMesh(ch) {
         let tl = bx[6];
         if (tl===59 && b>=PIC && b<=PIC_W)   // jedes Bild zeigt ein anderes Motiv!
           tl = 59 + Math.floor(hash2(wx+y*7, wz-y*5, 787)*4);
+        if (b===BLUME && tl===25)          // jede Blume blüht in ihrer eigenen Farbe!
+          tl = [25,30,51,10][Math.floor(hash2(wx*3+y, wz*5-y, 4242)*4)];
         for (let f=0;f<6;f++) {
           const F=FACES[f];
           for (let k=0;k<6;k++) {
@@ -3236,7 +3253,7 @@ function finishLasso() {
 
 // Bau-Pinsel: 1x1, 3x3 oder 5x5 Blöcke auf einmal setzen/abbauen 🖌️
 let brushSize = 1;
-const MULTI_OK = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL, FENCE];
+const MULTI_OK = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL, FENCE, BLUME];
 function toggleBrush() {
   brushSize = brushSize===1 ? 3 : brushSize===3 ? 5 : 1;
   const el = document.getElementById('brushBtn');
@@ -4754,7 +4771,7 @@ function doPlace(dir) {
       return;
     }
   }
-  if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {   // Gemüse braucht guten Boden
+  if (b===CARROT0 || b===TOMATO0 || b===WHEAT0 || b===BLUME) {   // braucht guten Boden
     const below = getBlock(px, py-1, pz);
     if (below!==GRASS && below!==DIRT) {
       toast('🌱 Das wächst nur auf Gras oder Erde!', 2500);
@@ -4802,6 +4819,10 @@ function doPlace(dir) {
       if (qy<1||qy>=CH) continue;
       const cur2=getBlock(qx,qy,qz);
       if (cur2!==AIR && cur2!==WATER) continue;
+      if (b===BLUME) {                  // Blumen nur auf Gras oder Erde
+        const bb2=getBlock(qx,qy-1,qz);
+        if (bb2!==GRASS && bb2!==DIRT) continue;
+      }
       if (BLOCKS[b].solid &&
           Math.abs(qx+0.5-player.x)<0.5+P_HALF && (qy+1>player.y) && (qy<player.y+P_HEIGHT) &&
           Math.abs(qz+0.5-player.z)<0.5+P_HALF) continue;   // nicht in dich selbst bauen
@@ -4821,6 +4842,7 @@ function doPlace(dir) {
   if (b===TRAMPOLIN) toast('🤸 Trampolin! Spring drauf – je öfter, desto höher!');
   if (b===SPRUNGTURM) toast('🏊 Sprungturm! Nochmal drauftippen = höher bauen. Anderen Block wählen + antippen = raufklettern!', 4000);
   if (b===RAIL) toast('🎢 Schiene gelegt! Bau eine Strecke – auch über Stufen hoch und runter. Anderen Block wählen + Schiene antippen = fahren!', 4000);
+  if (b===BLUME) { toast('🌸 Blume gepflanzt! Wie schön!', 2000); blip(660,0.05); blip(880,0.06); }
   if (b===GATE) toast('🎚️ Bau das Tor so groß du willst! Zum Öffnen: anderen Block wählen und Tor antippen.', 3500);
   if (b===CARROT0 || b===TOMATO0 || b===WHEAT0) {
     cropSet.add(px+','+py+','+pz);
@@ -4916,6 +4938,9 @@ const ICONS = {
     g.fillRect(1,4,3,8); g.fillRect(12,4,3,8); }),
   [RAIL]: iconURL(g=>{ g.fillStyle='#8a6a3c'; g.fillRect(1,3,14,2); g.fillRect(1,8,14,2); g.fillRect(1,13,14,2);
     g.fillStyle='#9aa0a8'; g.fillRect(4,1,2,14); g.fillRect(10,1,2,14); }),
+  [BLUME]: iconURL(g=>{ g.fillStyle='#3f8f2e'; g.fillRect(7,8,2,7); g.fillRect(4,10,3,2);
+    g.fillStyle='#e04848'; g.fillRect(5,2,6,6); g.fillRect(3,4,10,2); g.fillRect(7,0,2,10);
+    g.fillStyle='#f5d93c'; g.fillRect(6,3,4,4); }),
   [SPRUNGTURM]: iconURL(g=>{ g.fillStyle='#8a8f96'; g.fillRect(7,3,2,12);
     g.fillRect(5,5,6,1); g.fillRect(5,8,6,1); g.fillRect(5,11,6,1);
     g.fillStyle='#f2f6fa'; g.fillRect(2,2,12,2); g.fillStyle='#4a90d9'; g.fillRect(2,1,12,1); }),
