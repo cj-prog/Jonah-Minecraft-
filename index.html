@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 70 &middot; Berge mit Gipfel-Höhlen! ⛰️</p>
+    Version 71 &middot; Wälder mit Wasserfällen! 🌲💦</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 70;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 71;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -526,8 +526,39 @@ function terrainHeight(x, z) {
   let h = Math.floor(31 + base*15 + hills*5);
   return Math.max(2, Math.min(CH-10, h));
 }
+// Wälder mit Wasserfall in der Mitte! 🌲💦
+const WFCELL = 144;
+const forestCache = new Map();
+function forestAt(cellX, cellZ) {
+  const key = cellX+','+cellZ;
+  if (forestCache.has(key)) return forestCache.get(key);
+  let f = null;
+  if (hash2(cellX,cellZ,8800) < 0.55) {
+    const fx = cellX*WFCELL + 30 + Math.floor(hash2(cellX,cellZ,8801)*84);
+    const fz = cellZ*WFCELL + 30 + Math.floor(hash2(cellX,cellZ,8802)*84);
+    const base = terrainHeight(fx,fz);
+    if (base > SEA+2) {
+      const r = 16 + Math.floor(hash2(cellX,cellZ,8803)*7);
+      const hoehe = 7 + Math.floor(hash2(cellX,cellZ,8804)*4);
+      f = { fx, fz, base, r, hoehe };
+    }
+  }
+  forestCache.set(key, f);
+  return f;
+}
+function inForest(x, z) {
+  const cx = Math.floor(x/WFCELL), cz = Math.floor(z/WFCELL);
+  for (let dz=-1; dz<=1; dz++) for (let dx=-1; dx<=1; dx++) {
+    const f = forestAt(cx+dx, cz+dz);
+    if (f && Math.hypot(x-f.fx, z-f.fz) < f.r) return f;
+  }
+  return null;
+}
 function isTree(x, z) {
-  return hash2(x, z, 7777) < 0.007 && terrainHeight(x,z) > SEA+1;
+  if (terrainHeight(x,z) <= SEA+1) return false;
+  const f = inForest(x, z);
+  if (f && Math.hypot(x-f.fx, z-f.fz) > 6) return hash2(x,z,7777) < 0.06;   // dichter Wald!
+  return hash2(x, z, 7777) < 0.007;
 }
 
 // ------------------------------ Monster-Höhlen ------------------------------
@@ -713,6 +744,36 @@ function genChunkData(cx, cz) {
         // an manchen Blättern wachsen Äpfel!
         const leafB = hash2(tx+dx+ly, tz+dz, 991)<0.1 ? APPLE_LEAF : LEAF;
         put(tx+dx,ly,tz+dz,leafB,true);
+      }
+    }
+  }
+  // Wasserfälle: mitten im Wald stürzt Wasser von einer Felsklippe! 💦
+  {
+    const w0x=Math.floor((x0-28)/WFCELL), w1x=Math.floor((x0+CS+28)/WFCELL);
+    const w0z=Math.floor((z0-28)/WFCELL), w1z=Math.floor((z0+CS+28)/WFCELL);
+    for (let wcz=w0z; wcz<=w1z; wcz++) for (let wcx=w0x; wcx<=w1x; wcx++) {
+      const f = forestAt(wcx,wcz);
+      if (!f) continue;
+      const top = Math.min(CH-3, f.base + f.hoehe);
+      // die Felsklippe
+      for (let qx=f.fx-2; qx<=f.fx+2; qx++) for (let qz=f.fz-2; qz<=f.fz+1; qz++) {
+        const th=terrainHeight(qx,qz);
+        for (let y=th+1; y<=top; y++) put(qx,y,qz,STONE,false);
+        for (let y=top+1; y<=top+8; y++) put(qx,y,qz,AIR,false);   // Bäume oben wegräumen
+      }
+      // Quell-Teich oben auf der Klippe
+      for (let qx=f.fx-1; qx<=f.fx+1; qx++) { put(qx, top, f.fz, WATER, false); put(qx, top, f.fz-1, WATER, false); }
+      // der Wasserfall stürzt vor der Klippe herunter
+      for (let qx=f.fx-1; qx<=f.fx+1; qx++) {
+        const th=terrainHeight(qx, f.fz+2);
+        for (let y=th+1; y<=top; y++) put(qx, y, f.fz+2, WATER, false);
+        for (let y=top+1; y<=top+8; y++) put(qx, y, f.fz+2, AIR, false);
+      }
+      // Teich unten, in den das Wasser platscht
+      for (let qx=f.fx-3; qx<=f.fx+3; qx++) for (let qz=f.fz+2; qz<=f.fz+6; qz++) {
+        if (Math.abs(qx-f.fx) + Math.abs(qz-(f.fz+4)) > 4) continue;
+        const th=terrainHeight(qx,qz);
+        put(qx, th, qz, WATER, false);
       }
     }
   }
@@ -1806,6 +1867,7 @@ let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
 let flying = false;                     // Flugmodus
 let wasSwim = false;                    // für den Platsch beim Eintauchen
+let wfSoundT = 0;                       // Wasserfall-Rauschen-Takt
 let downHeld = false;
 
 function toggleFly() {
@@ -3478,6 +3540,7 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   for (const f of scan(FCELL,fieldAt)) marks.push({x:f.fx, z:f.fz, e:'⚽'});
   for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
   for (const m of scan(BCELL,mountainAt)) marks.push({x:m.mx, z:m.mz, e:'⛰️'});
+  for (const w of scan(WFCELL,forestAt)) marks.push({x:w.fx, z:w.fz, e:'🌲'});
   const ft=fortressPos(); marks.push({x:ft.fx, z:ft.gz, e:'🏰'});
   return marks;
 }
@@ -5161,6 +5224,13 @@ function frame(now) {
   updateAnimals(dt);
   updateWeather(dt, now);
   updateCompass(dt);
+  wfSoundT -= dt;                       // Rauschen in der Nähe von Wasserfällen
+  if (wfSoundT <= 0) {
+    wfSoundT = 0.4;
+    const wf = inForest(player.x, player.z);
+    if (wf && Math.hypot(player.x-wf.fx, player.z-wf.fz) < 14)
+      blip(80+Math.random()*140, 0.15);
+  }
   updateMiniTerrain();
   drawMiniMap();
   if (mapBox.style.display==='flex') drawMapLive();   // große Karte läuft live mit
