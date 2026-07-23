@@ -256,7 +256,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 65 &middot; Längere Tage, kurze Nächte! ☀️</p>
+    Version 66 &middot; Regen füllt Löcher mit Wasser! 🌧️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -300,7 +300,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 65;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 66;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3434,6 +3434,43 @@ let rainNoise = null, snowFallT = 0;
 const snowSet = new Set();              // liegender Schnee ("x,y,z")
 let snowCnt = 0;
 
+let rainFallT = 0, puddleCnt = 0;
+const istFest = b => b===WATER || (BLOCKS[b] && BLOCKS[b].solid && !BLOCKS[b].model && !BLOCKS[b].fence);
+function tryRainPuddle() {              // Regenwasser bleibt in Mulden und Löchern stehen!
+  if (puddleCnt > 250) return;
+  const x = Math.floor(player.x + Math.random()*36-18);
+  const z = Math.floor(player.z + Math.random()*36-18);
+  const ch = getChunk(x>>4, z>>4);
+  if (!ch || !ch.data) return;
+  for (let y=CH-1; y>0; y--) {
+    const b = getBlock(x,y,z);
+    if (b===AIR) continue;
+    if (!istFest(b)) return;            // oberster Block muss fester Boden oder Wasser sein
+    const py2 = y+1;
+    if (py2>=CH || getBlock(x,py2,z)!==AIR) return;
+    // Becken-Prüfung: das ganze Loch auf dieser Höhe absuchen.
+    // Läuft das Wasser irgendwo weg (Loch nach unten oder offenes Feld)? Dann nichts tun.
+    const seen = new Set();
+    const queue = [[x,z]];
+    const cells = [];
+    while (queue.length) {
+      const [cx2,cz2] = queue.pop();
+      const k = cx2+','+cz2;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (!istFest(getBlock(cx2,py2-1,cz2))) return;   // da würde es nach unten weglaufen
+      cells.push([cx2,cz2]);
+      if (cells.length > 40) return;                   // zu groß = kein Loch, offenes Feld
+      for (const [ox,oz] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nb = getBlock(cx2+ox,py2,cz2+oz);
+        if (nb===AIR) queue.push([cx2+ox,cz2+oz]);
+        else if (!istFest(nb)) return;                 // Zaun/Beet als Wand hält kein Wasser
+      }
+    }
+    for (const [cx2,cz2] of cells) { setBlock(cx2,py2,cz2,WATER); puddleCnt++; }
+    return;
+  }
+}
 function trySnowPlace() {
   if (snowSet.size > 400) return;
   const x = Math.floor(player.x + Math.random()*36-18);
@@ -3502,6 +3539,10 @@ function updateWeather(dt, now) {
   if (weather==='snow') {               // Schnee bleibt liegen!
     snowFallT += dt;
     if (snowFallT > 1) { snowFallT = 0; for (let i=0;i<4;i++) trySnowPlace(); }
+  }
+  if (weather==='rain') {               // Regen sammelt sich in Löchern!
+    rainFallT += dt;
+    if (rainFallT > 1.2) { rainFallT = 0; for (let i=0;i<4;i++) tryRainPuddle(); }
   }
   weatherT -= dt;
   if (weatherT <= 0) {
