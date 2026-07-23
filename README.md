@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Berge! ⛰️ In der Landschaft ragen hohe Steinberge auf (auch auf
+  der Karte als ⛰️). Oben am Gipfel leuchten Fackeln um einen
+  Krater: Das ist der Höhlen-Eingang! Spring hinein und du landest
+  tief unten in einer Schatzkammer mit zwei Truhen. Der Sprungturm
+  in der Ecke bringt dich mit einem Tipp wieder nach oben!
 - Achterbahn! 🎢 Bau mit dem Schienen-Block eine Strecke – gerade,
   mit Kurven und über Stufen bergauf und bergab (Schienen verbinden
   sich automatisch, auch eine Stufe hoch/runter). Dann anderen Block
