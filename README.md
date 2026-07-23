@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Drehen! 🔄 Der Dreh-Knopf oben startet den Dreh-Modus: Tippe
+  Möbel (Stühle, Betten, Schränke, Toiletten ...), Treppen oder
+  Bilder an – sie drehen sich bei jedem Tipp um 90 Grad. Geht bei
+  deinen eigenen Sachen UND bei allem, was schon in der Welt steht.
+  Die Drehung wird gespeichert
 - Treppen! 🪜 Der Treppen-Block schaut automatisch in deine
   Blickrichtung (Stufen steigen von dir weg). Das Beste: Du läufst
   Treppen einfach hoch, ganz ohne Springen! Perfekt für Häuser mit

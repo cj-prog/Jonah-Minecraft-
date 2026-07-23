@@ -57,6 +57,8 @@
   #mapBtn  { right:calc(262px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #selfieBtn { right:calc(312px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #selfieBtn.on { background:rgba(255,190,120,.5); }
+  #rotBtn { right:calc(362px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #rotBtn.on { background:rgba(150,220,150,.55); }
   #miniMap { left:calc(10px + env(safe-area-inset-left)); bottom:calc(66px + env(safe-area-inset-bottom));
     width:130px; height:130px; border:2px solid rgba(255,255,255,.55); border-radius:14px;
     z-index:14; opacity:.94; display:none; }
@@ -174,6 +176,7 @@
 <div class="hud btn" id="mpBtn">👥</div>
 <div class="hud btn" id="mapBtn">🗺️</div>
 <div class="hud btn" id="selfieBtn">🤳</div>
+<div class="hud btn" id="rotBtn">↪️</div>
 <canvas class="hud" id="miniMap" width="130" height="130"></canvas>
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine Landkarte</h3>
@@ -259,7 +262,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 77 &middot; Treppen zum Hochlaufen! 🪜</p>
+    Version 78 &middot; Möbel drehen! 🔄</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +306,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 77;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 78;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1242,6 +1245,7 @@ function setBlock(wx,wy,wz,v) {
   const lx=wx&15, lz=wz&15, i=bidx(lx,wy,lz);
   if (ch.data[i]===v) return;
   ch.data[i]=v;
+  if (v===AIR) rotations.delete(wx+','+wy+','+wz);   // Drehung mit wegräumen
   let e = edits.get(ckey(cx,cz));
   if (!e) { e=new Map(); edits.set(ckey(cx,cz),e); }
   e.set(i,v);
@@ -1276,6 +1280,7 @@ function saveGame() {
       seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
+      rots: Object.fromEntries(rotations),
       balls: animals.filter(a=>a.type==='ball' && a.own).map(a=>
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10]),
       ziele: customTargets,
@@ -1307,6 +1312,7 @@ function loadGame() {
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.paints) for (const k in s.paints) paintings.set(k, s.paints[k]);
+    if (s.rots) for (const k in s.rots) rotations.set(k, s.rots[k]);
     if (Array.isArray(s.balls)) savedBalls = s.balls;
     if (Array.isArray(s.ziele)) customTargets = s.ziele.filter(t=>t && typeof t.x==='number');
     else if (s.ziel && typeof s.ziel.x==='number') customTargets = [s.ziel];   // alte Speicherstände
@@ -1656,6 +1662,7 @@ function buildMesh(ch) {
           boxes.push([0.18,0.05,0, 0.3,0.12,1, 3],[0.7,0.05,0, 0.82,0.12,1, 3],
                      [0,0,0.12, 1,0.05,0.3, 5],[0,0,0.68, 1,0.05,0.86, 5]);
       }
+      const drehung = rotations.get(wx+','+y+','+wz) || 0;   // vom Dreh-Modus 🔄
       for (const bx of boxes) {
         const sh = bx[7]||1;
         let tl = bx[6];
@@ -1663,12 +1670,18 @@ function buildMesh(ch) {
           tl = 59 + Math.floor(hash2(wx+y*7, wz-y*5, 787)*4);
         if (b===BLUME && tl===25)          // jede Blume blüht in ihrer eigenen Farbe!
           tl = [25,30,51,10][Math.floor(hash2(wx*3+y, wz*5-y, 4242)*4)];
+        // Kiste um die Block-Mitte drehen (je 90 Grad)
+        let ax0=bx[0], az0=bx[2], ax1=bx[3], az1=bx[5];
+        for (let r2=0; r2<drehung; r2++) {
+          const q0=az0, q1=az1;
+          az0=1-ax1; az1=1-ax0; ax0=q0; ax1=q1;
+        }
         for (let f=0;f<6;f++) {
           const F=FACES[f];
           for (let k=0;k<6;k++) {
             const c=F.c[TRI[k]];
             const uv=tileUV(tl, c[3], c[4]);
-            opq.push(wx+bx[0]+(bx[3]-bx[0])*c[0], y+bx[1]+(bx[4]-bx[1])*c[1], wz+bx[2]+(bx[5]-bx[2])*c[2],
+            opq.push(wx+ax0+(ax1-ax0)*c[0], y+bx[1]+(bx[4]-bx[1])*c[1], wz+az0+(az1-az0)*c[2],
                      uv[0], uv[1], Math.min(1.6, F.s*sh));
           }
         }
@@ -3298,6 +3311,42 @@ function cartPhysics(dt) {
   player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
 }
 
+// Dreh-Modus 🔄: Möbel, Treppen und Bilder um 90 Grad drehen!
+const rotations = new Map();            // "x,y,z" -> 1..3 Vierteldrehungen
+let rotMode = false;
+function toggleRot() {
+  rotMode = !rotMode;
+  document.getElementById('rotBtn').classList.toggle('on', rotMode);
+  toast(rotMode ? '🔄 Dreh-Modus! Tippe Möbel, Treppen oder Bilder an – sie drehen sich. (Knopf nochmal = fertig)'
+                : '🔄 Dreh-Modus aus.', 3200);
+  blip(rotMode?600:350, 0.07);
+}
+function tryRotate(hit) {
+  const b = hit.block;
+  const key = hit.x+','+hit.y+','+hit.z;
+  if (b>=TREP_N && b<=TREP_W) {         // Treppen haben echte Richtungs-Varianten
+    const seq=[TREP_N,TREP_E,TREP_S,TREP_W];
+    setBlock(hit.x,hit.y,hit.z, seq[(seq.indexOf(b)+1)%4]);
+  } else if (b>=PIC && b<=PIC_W) {      // Bilder auch
+    const seq=[PIC,PIC_W,PIC_N,PIC_E];
+    setBlock(hit.x,hit.y,hit.z, seq[(seq.indexOf(b)+1)%4]);
+  } else if (b===RAIL) {
+    toast('🎢 Schienen drehen sich von ganz allein zu ihren Nachbarn!', 2500);
+    return;
+  } else if (BLOCKS[b] && BLOCKS[b].model && !DOOR_PARTS.includes(b) && b!==GATE && b!==GATE_OPEN) {
+    rotations.set(key, ((rotations.get(key)||0)+1)%4);
+    if (!rotations.get(key)) rotations.delete(key);
+    const ch=getChunk(hit.x>>4, hit.z>>4);
+    if (ch) ch.dirty = true;            // neu zeichnen
+    scheduleSave();
+  } else {
+    toast('🔄 Das lässt sich nicht drehen. Tippe Möbel, Treppen oder Bilder an!', 2500);
+    return;
+  }
+  toast('🔄 Gedreht!', 1000);
+  blip(520,0.05); blip(640,0.05);
+}
+
 // Selfie-Ansicht 🤳: die Kamera schaut dich von vorne an!
 let selfie = false;
 function toggleSelfie() {
@@ -3838,6 +3887,8 @@ document.getElementById('lassoBtn').addEventListener('touchstart',e=>{e.preventD
 document.getElementById('lassoBtn').addEventListener('mousedown',e=>{e.preventDefault();setLasso(!lassoOn);});
 document.getElementById('selfieBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleSelfie();},{passive:false});
 document.getElementById('selfieBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleSelfie();});
+document.getElementById('rotBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleRot();},{passive:false});
+document.getElementById('rotBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleRot();});
 
 // Mini-Karte unten links: läuft beim Laufen immer live mit! 🗺️
 const miniCan = document.getElementById('miniMap'), miniCtx = miniCan.getContext('2d');
@@ -4660,6 +4711,7 @@ function doBreak(dir) {
   // Ist Wasser ausgewählt, wirkt die Spitzhacke wie ein Eimer und saugt Wasser auf
   const scoop = HOTBAR_ITEMS[selSlot]===WATER;
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH,scoop);
+  if (rotMode) { if (hit) tryRotate(hit); return; }
   const eHit=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
   if (eHit) { hitEntity(eHit.a, dir); return; }
   if (!hit || hit.y<1) return;
@@ -4791,6 +4843,7 @@ function doPlace(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
   if (!hit) return;
+  if (rotMode) { tryRotate(hit); return; }
   if (hit.block===BED) {                // im Bett schlafen!
     if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen!'); blip(392,0.2); }
     else toast('Du bist noch nicht müde 😄');
