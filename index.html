@@ -40,6 +40,9 @@
   #rideBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
   #flyBtn  { right:calc(28px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:24px; }
   #flyBtn.on { background:rgba(110,190,255,.55); }
+  #brushBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:16px; font-weight:bold; color:#fff; }
+  #brushBtn.on { background:rgba(255,200,90,.5); }
   #downBtn { right:calc(94px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:56px; height:56px; font-size:26px; }
   #fsBtn   { right:calc(12px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
@@ -153,6 +156,7 @@
 <div class="hud btn" id="jumpBtn">⬆</div>
 <div class="hud btn" id="bowBtn">🏹</div>
 <div class="hud btn" id="modeBtn">⛏️</div>
+<div class="hud btn" id="brushBtn">1×1</div>
 <div class="hud btn" id="rideBtn" style="display:none">🐴</div>
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
@@ -246,7 +250,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 62 &middot; Schwert und Bogen! ⚔️🏹</p>
+    Version 63 &middot; Bau-Pinsel: viele Blöcke auf einmal! 🖌️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -290,7 +294,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 62;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 63;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2835,6 +2839,19 @@ document.getElementById('shopClose').addEventListener('click', () => { shopBox.s
 const fireworks = [];
 let curLight = 1;
 
+// Bau-Pinsel: 1x1, 3x3 oder 5x5 Blöcke auf einmal setzen/abbauen 🖌️
+let brushSize = 1;
+const MULTI_OK = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL, FENCE];
+function toggleBrush() {
+  brushSize = brushSize===1 ? 3 : brushSize===3 ? 5 : 1;
+  const el = document.getElementById('brushBtn');
+  el.textContent = brushSize===1 ? '1×1' : brushSize===3 ? '3×3' : '5×5';
+  el.classList.toggle('on', brushSize>1);
+  toast(brushSize===1 ? '🖌️ Pinsel klein: 1 Block wie immer.'
+      : '🖌️ Pinsel-Größe '+brushSize+'×'+brushSize+': du baust jetzt '+(brushSize*brushSize)+' Blöcke auf einmal!', 2800);
+  blip(brushSize===1?330:brushSize===3?440:550, 0.07);
+}
+
 // ------------------------------ Waffen ⚔️🏹 ----------------------------------
 let sword = false, bow = false;         // deine Ausrüstung (wird gespeichert)
 const arrows = [];                      // fliegende Pfeile
@@ -3256,6 +3273,8 @@ document.getElementById('mapBtn').addEventListener('touchstart',e=>{e.preventDef
 document.getElementById('mapBtn').addEventListener('mousedown',e=>{e.preventDefault();openMap();});
 document.getElementById('bowBtn').addEventListener('touchstart',e=>{e.preventDefault();shootArrow();},{passive:false});
 document.getElementById('bowBtn').addEventListener('mousedown',e=>{e.preventDefault();shootArrow();});
+document.getElementById('brushBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleBrush();},{passive:false});
+document.getElementById('brushBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleBrush();});
 
 // Mini-Karte unten links: läuft beim Laufen immer live mit! 🗺️
 const miniCan = document.getElementById('miniMap'), miniCtx = miniCan.getContext('2d');
@@ -4065,6 +4084,29 @@ function doBreak(dir) {
     setBlock(hit.x, hit.y+1, hit.z, AIR);
     cropSet.delete(hit.x+','+(hit.y+1)+','+hit.z);
   }
+  // Bau-Pinsel: gleich ein ganzes Feld mit abbauen!
+  if (brushSize>1) {
+    const [fx2,fy2,fz2] = hit.face;
+    const r=(brushSize-1)/2;
+    let n=1, wolle=0;
+    for (let u=-r;u<=r;u++) for (let v=-r;v<=r;v++) {
+      if (u===0&&v===0) continue;
+      let qx=hit.x, qy=hit.y, qz=hit.z;
+      if (fx2!==0) { qy+=u; qz+=v; } else if (fy2!==0) { qx+=u; qz+=v; } else { qx+=u; qy+=v; }
+      if (qy<1||qy>=CH) continue;
+      const b2=getBlock(qx,qy,qz);
+      // Spezial-Blöcke (TNT, Beete, Schnee, Türen ...) lässt der Pinsel in Ruhe
+      if (b2===AIR || b2===WATER || b2===TNT || b2===TNT_LIT || b2===SNOW ||
+          (b2>=CARROT0 && b2<=WHEAT2) || DOOR_PARTS.includes(b2)) continue;
+      if (b2===SIGN) removeSign(qx,qy,qz);
+      if (b2===CABINET) removeCabinet(qx,qy,qz);
+      if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
+      if (b2===WOOL) wolle++;
+      setBlock(qx,qy,qz,AIR); n++;
+    }
+    if (wolle) { wool+=wolle; updateFoodHUD(); scheduleSave(); }
+    if (n>1) toast('⛏️ Wusch! '+n+' Blöcke auf einmal weg!', 1600);
+  }
   blip(160,0.09);
 }
 function toggleGate(x, y, z) {          // alle verbundenen Tor-Blöcke zusammen schalten
@@ -4264,6 +4306,29 @@ function doPlace(dir) {
   }
   setBlock(px,py,pz,b);
   blip(330,0.06);
+  // Bau-Pinsel: gleich ein ganzes Feld setzen! (nur einfache Bau-Blöcke)
+  if (brushSize>1 && MULTI_OK.includes(b)) {
+    const [fx2,fy2,fz2] = hit.face;
+    const r=(brushSize-1)/2;
+    let n=1;
+    for (let u=-r;u<=r;u++) for (let v=-r;v<=r;v++) {
+      if (u===0&&v===0) continue;
+      if (b===WOOL && wool<=0) break;   // Wolle kostet weiter Wolle!
+      let qx=px, qy=py, qz=pz;
+      if (fx2!==0) { qy+=u; qz+=v; } else if (fy2!==0) { qx+=u; qz+=v; } else { qx+=u; qy+=v; }
+      if (qy<1||qy>=CH) continue;
+      const cur2=getBlock(qx,qy,qz);
+      if (cur2!==AIR && cur2!==WATER) continue;
+      if (BLOCKS[b].solid &&
+          Math.abs(qx+0.5-player.x)<0.5+P_HALF && (qy+1>player.y) && (qy<player.y+P_HEIGHT) &&
+          Math.abs(qz+0.5-player.z)<0.5+P_HALF) continue;   // nicht in dich selbst bauen
+      if (b===WOOL) { wool--; }
+      setBlock(qx,qy,qz,b); n++;
+    }
+    if (n>1) { toast('🧱 Zack! '+n+' Blöcke auf einmal gebaut!', 1600); blip(392,0.05); blip(494,0.06); }
+    if (b===WOOL) { updateFoodHUD(); scheduleSave(); }
+    return;
+  }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
   if (b===TOILET) toast('🚽 Toilette aufgestellt! Antippen zum Hinsetzen.');
