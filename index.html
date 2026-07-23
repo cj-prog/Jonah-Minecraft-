@@ -43,6 +43,10 @@
   #brushBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:16px; font-weight:bold; color:#fff; }
   #brushBtn.on { background:rgba(255,200,90,.5); }
+  #lassoBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(358px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:24px; }
+  #lassoBtn.on { background:rgba(190,120,255,.55); }
+  #lassoCanvas { left:0; top:0; pointer-events:none; z-index:12; display:none; }
   #downBtn { right:calc(94px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:56px; height:56px; font-size:26px; }
   #fsBtn   { right:calc(12px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #resetBtn{ right:calc(62px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:18px; }
@@ -157,6 +161,8 @@
 <div class="hud btn" id="bowBtn">🏹</div>
 <div class="hud btn" id="modeBtn">⛏️</div>
 <div class="hud btn" id="brushBtn">1×1</div>
+<div class="hud btn" id="lassoBtn">🌀</div>
+<canvas class="hud" id="lassoCanvas"></canvas>
 <div class="hud btn" id="rideBtn" style="display:none">🐴</div>
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
@@ -250,7 +256,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 63 &middot; Bau-Pinsel: viele Blöcke auf einmal! 🖌️</p>
+    Version 64 &middot; Zauber-Lasso: Blöcke einkreisen! 🌀</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -294,7 +300,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 63;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 64;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2839,6 +2845,92 @@ document.getElementById('shopClose').addEventListener('click', () => { shopBox.s
 const fireworks = [];
 let curLight = 1;
 
+// Zauber-Lasso 🌀: Blöcke einkreisen, und weg sind sie!
+let lassoOn = false;
+const lassoPath = [];
+const lassoCan = document.getElementById('lassoCanvas');
+const lassoCtx = lassoCan.getContext('2d');
+function lassoResize() { lassoCan.width = innerWidth; lassoCan.height = innerHeight; }
+addEventListener('resize', lassoResize); lassoResize();
+
+function setLasso(on) {
+  lassoOn = on;
+  document.getElementById('lassoBtn').classList.toggle('on', on);
+  lassoCan.style.display = on ? 'block' : 'none';
+  lassoPath.length = 0;
+  lassoCtx.clearRect(0,0,lassoCan.width,lassoCan.height);
+  if (on) {
+    if (document.exitPointerLock) document.exitPointerLock();
+    toast('🌀 Zauber-Lasso! Male mit dem Finger einen Kreis um die Blöcke, die weg sollen!', 4000);
+    blip(500,0.06); blip(650,0.06);
+  }
+}
+function lassoAdd(cx2, cy2) {
+  const last = lassoPath[lassoPath.length-1];
+  if (last && Math.hypot(cx2-last[0], cy2-last[1]) < 7) return;
+  lassoPath.push([cx2, cy2]);
+  lassoCtx.clearRect(0,0,lassoCan.width,lassoCan.height);
+  if (lassoPath.length < 2) return;
+  lassoCtx.strokeStyle = 'rgba(200,120,255,0.95)';
+  lassoCtx.lineWidth = 5; lassoCtx.lineJoin = 'round'; lassoCtx.lineCap = 'round';
+  lassoCtx.setLineDash([12, 8]);
+  lassoCtx.beginPath();
+  lassoCtx.moveTo(lassoPath[0][0], lassoPath[0][1]);
+  for (const p of lassoPath) lassoCtx.lineTo(p[0], p[1]);
+  lassoCtx.stroke();
+  lassoCtx.setLineDash([]);
+}
+function pointInPoly(x, y, poly) {
+  let inside = false;
+  for (let i=0, j=poly.length-1; i<poly.length; j=i++) {
+    const xi=poly[i][0], yi=poly[i][1], xj=poly[j][0], yj=poly[j][1];
+    if ((yi>y)!==(yj>y) && x < (xj-xi)*(y-yi)/(yj-yi)+xi) inside = !inside;
+  }
+  return inside;
+}
+function finishLasso() {
+  let n = 0, wolle = 0;
+  if (lassoPath.length >= 8) {
+    let x0=1e9, y0=1e9, x1=-1e9, y1=-1e9;
+    for (const p of lassoPath) {
+      x0=Math.min(x0,p[0]); y0=Math.min(y0,p[1]);
+      x1=Math.max(x1,p[0]); y1=Math.max(y1,p[1]);
+    }
+    // Punkte-Raster im Kreis abtasten und schauen, welche Blöcke man dort sieht
+    const found = new Map();
+    const e2 = eyePos();
+    outer:
+    for (let sy=y0; sy<=y1; sy+=11) for (let sx=x0; sx<=x1; sx+=11) {
+      if (!pointInPoly(sx, sy, lassoPath)) continue;
+      const dir = screenRay(sx, sy);
+      const hit = raycast(e2[0],e2[1],e2[2],dir[0],dir[1],dir[2],14);
+      if (!hit || hit.y<1) continue;
+      const b2 = hit.block;
+      // Besondere Blöcke lässt das Lasso in Ruhe
+      if (b2===AIR || b2===WATER || b2===TNT || b2===TNT_LIT || b2===SNOW ||
+          (b2>=CARROT0 && b2<=WHEAT2) || DOOR_PARTS.includes(b2)) continue;
+      found.set(hit.x+','+hit.y+','+hit.z, [hit.x, hit.y, hit.z, b2]);
+      if (found.size >= 120) break outer;
+    }
+    for (const [,[qx,qy,qz,b2]] of found) {
+      if (b2===SIGN) removeSign(qx,qy,qz);
+      if (b2===CABINET) removeCabinet(qx,qy,qz);
+      if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
+      if (b2===WOOL) wolle++;
+      setBlock(qx,qy,qz,AIR); n++;
+    }
+    if (wolle) { wool += wolle; updateFoodHUD(); scheduleSave(); }
+  }
+  if (n>0) {
+    toast('🌀 Simsalabim! '+n+' Blöcke verschwunden!', 2500);
+    blip(500,0.07); blip(700,0.08); blip(950,0.1);
+  } else {
+    toast('🌀 Nichts getroffen. Male den Kreis um Blöcke in deiner Nähe!', 2800);
+    blip(250,0.1);
+  }
+  setLasso(false);                      // nach jedem Kreis wieder normal
+}
+
 // Bau-Pinsel: 1x1, 3x3 oder 5x5 Blöcke auf einmal setzen/abbauen 🖌️
 let brushSize = 1;
 const MULTI_OK = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL, FENCE];
@@ -3275,6 +3367,8 @@ document.getElementById('bowBtn').addEventListener('touchstart',e=>{e.preventDef
 document.getElementById('bowBtn').addEventListener('mousedown',e=>{e.preventDefault();shootArrow();});
 document.getElementById('brushBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleBrush();},{passive:false});
 document.getElementById('brushBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleBrush();});
+document.getElementById('lassoBtn').addEventListener('touchstart',e=>{e.preventDefault();setLasso(!lassoOn);},{passive:false});
+document.getElementById('lassoBtn').addEventListener('mousedown',e=>{e.preventDefault();setLasso(!lassoOn);});
 
 // Mini-Karte unten links: läuft beim Laufen immer live mit! 🗺️
 const miniCan = document.getElementById('miniMap'), miniCtx = miniCan.getContext('2d');
@@ -4654,6 +4748,7 @@ const joyBase=document.getElementById('joyBase'), joyKnob=document.getElementByI
 
 canvas.addEventListener('touchstart',e=>{
   e.preventDefault();
+  if (lassoOn) { const t=e.changedTouches[0]; lassoPath.length=0; lassoAdd(t.clientX,t.clientY); return; }
   for (const t of e.changedTouches) {
     if (t.clientX < innerWidth*0.45 && joy.id===null) {
       joy.id=t.identifier; joy.ox=t.clientX; joy.oy=t.clientY;
@@ -4669,6 +4764,7 @@ canvas.addEventListener('touchstart',e=>{
 },{passive:false});
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
+  if (lassoOn) { const t=e.changedTouches[0]; lassoAdd(t.clientX,t.clientY); return; }
   for (const t of e.changedTouches) {
     if (t.identifier===joy.id) {
       let dx=t.clientX-joy.ox, dy=t.clientY-joy.oy;
@@ -4687,6 +4783,7 @@ canvas.addEventListener('touchmove',e=>{
 },{passive:false});
 function touchEnd(e){
   e.preventDefault();
+  if (lassoOn) { finishLasso(); return; }
   for (const t of e.changedTouches) {
     if (t.identifier===joy.id) {
       joy.id=null; joy.fwd=0; joy.strafe=0;
@@ -4722,6 +4819,14 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>keys[e.code]=false);
 canvas.addEventListener('mousedown',e=>{
   if (!started) return;
+  if (lassoOn) {                        // Lasso auch mit der Maus malen
+    e.preventDefault();
+    lassoPath.length=0; lassoAdd(e.clientX,e.clientY);
+    const mv=ev=>lassoAdd(ev.clientX,ev.clientY);
+    const up=()=>{ window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); finishLasso(); };
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+    return;
+  }
   if (!isTouch && document.pointerLockElement!==canvas) { canvas.requestPointerLock(); return; }
   if (document.pointerLockElement===canvas) {
     const dir=forwardVec();

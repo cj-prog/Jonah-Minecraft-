@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Zauber-Lasso! 🌀 Drück den Lasso-Knopf rechts und male mit dem
+  Finger einen Kreis um die Blöcke, die weg sollen – simsalabim, alle
+  eingekreisten Blöcke verschwinden! Es trifft nur, was du wirklich
+  siehst (nichts dahinter), und besondere Blöcke (TNT, Beete, Türen)
+  bleiben in Ruhe. Nach jedem Kreis schaltet es sich selbst aus
 - Bau-Pinsel! 🖌️ Der neue Knopf rechts (1×1) schaltet die
   Pinsel-Größe um: 3×3 = 9 Blöcke, 5×5 = 25 Blöcke auf einmal setzen
   oder abbauen – ganze Wände und Böden mit einem Tipp! Der Pinsel
