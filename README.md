@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Kompass-Merkliste! 🧭 Der Kompass merkt sich bis zu 8 Schilder:
+  Schild antippen → „🧭 Merken". Mit dem Kompass-Knopf schaltest du
+  durch: Dorf → Festung → Ziel 1 → Ziel 2 → ... Nochmal „Merken" auf
+  einem gemerkten Schild = vergessen. Alle gemerkten Ziele erscheinen
+  als 📍 auf der Karte!
 - Sprungtürme! 🏊 Bau dir ein Schwimmbad und stell einen Sprungturm
   ans Becken: Turm-Block setzen, nochmal drauftippen = ein Stück
   höher (so hoch du willst!). Oben ist automatisch eine weiße
