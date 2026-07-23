@@ -259,7 +259,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 74 &middot; Größere Dörfer mit mehr Häusern! 🏘️</p>
+    Version 75 &middot; Ritterburgen mit Rittern! 🏰⚔️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -303,7 +303,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 74;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 75;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -589,6 +589,35 @@ function cavePath(c) {                  // Tunnel-Kugeln vom Eingang zur Schatzk
     ]);
   }
   return pts;
+}
+
+// Ritterburgen! 🏰 Mauern mit Zinnen, 4 Türme, Bergfried und Ritter-Wachen
+const KCELL = 192;
+const castleCache = new Map();
+function castleAt(cellX, cellZ) {
+  const key = cellX+','+cellZ;
+  if (castleCache.has(key)) return castleCache.get(key);
+  let c = null;
+  if (hash2(cellX,cellZ,9900) < 0.5) {
+    const kx = cellX*KCELL + 40 + Math.floor(hash2(cellX,cellZ,9901)*112);
+    const kz = cellZ*KCELL + 40 + Math.floor(hash2(cellX,cellZ,9902)*112);
+    const base = terrainHeight(kx,kz);
+    if (base > SEA+1) {
+      let ok = true;                    // Abstand zu Dörfern halten
+      for (let vz=Math.floor((kz-45)/VCELL); vz<=Math.floor((kz+45)/VCELL) && ok; vz++)
+        for (let vx=Math.floor((kx-45)/VCELL); vx<=Math.floor((kx+45)/VCELL) && ok; vx++) {
+          const v = villageAt(vx,vz);
+          if (v && Math.hypot(v.vx-kx, v.vz-kz) < 42) ok = false;
+        }
+      let hmin=999, hmax=-999;          // halbwegs flach?
+      for (const [qx,qz] of [[kx-8,kz-8],[kx+8,kz-8],[kx-8,kz+8],[kx+8,kz+8],[kx,kz]]) {
+        const h=terrainHeight(qx,qz); hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
+      }
+      if (ok && hmax-hmin<=4) c = { kx, kz, base:hmax };
+    }
+  }
+  castleCache.set(key, c);
+  return c;
 }
 
 // ------------------------------ Jonahs Festung -------------------------------
@@ -1047,6 +1076,51 @@ function genChunkData(cx, cz) {
             put(sx2, terrainHeight(sx2,sz2), sz2, SAND, false);
         }
       }
+    }
+  }
+  // Ritterburgen bauen 🏰
+  {
+    const k0x=Math.floor((x0-24)/KCELL), k1x=Math.floor((x0+CS+24)/KCELL);
+    const k0z=Math.floor((z0-24)/KCELL), k1z=Math.floor((z0+CS+24)/KCELL);
+    for (let kcz=k0z; kcz<=k1z; kcz++) for (let kcx=k0x; kcx<=k1x; kcx++) {
+      const c = castleAt(kcx,kcz);
+      if (!c) continue;
+      const by = c.base, R = 8;
+      for (let dx=-R; dx<=R; dx++) for (let dz=-R; dz<=R; dz++) {
+        const wx=c.kx+dx, wz=c.kz+dz;
+        const th=terrainHeight(wx,wz);
+        const eck = Math.abs(dx)>=R-1 && Math.abs(dz)>=R-1;          // Eck-Türme (2x2)
+        const wall = Math.abs(dx)===R || Math.abs(dz)===R;
+        for (let y=th; y<=by; y++) put(wx,y,wz, y===by ? GRASS : DIRT, false);   // Hof einebnen
+        for (let y=by+1; y<=by+12; y++) put(wx,y,wz,AIR,false);                  // freiräumen
+        if (eck) {
+          for (let y=by+1; y<=by+7; y++) put(wx,y,wz,STONE,false);   // Türme
+          if ((dx+dz)%2===0) put(wx,by+8,wz,STONE,false);            // Turm-Zinnen
+        } else if (wall) {
+          for (let y=by+1; y<=by+4; y++) put(wx,y,wz,STONE,false);   // Mauer
+          if ((dx+dz)%2===0) put(wx,by+5,wz,STONE,false);            // Zinnen
+        }
+      }
+      // Tor vorne (Südseite) mit Fackeln
+      for (const gx of [-1,0,1]) for (let y=by+1; y<=by+3; y++) put(c.kx+gx, y, c.kz+R, AIR, false);
+      put(c.kx-2, by+2, c.kz+R+1, TORCH, true);
+      put(c.kx+2, by+2, c.kz+R+1, TORCH, true);
+      // Bergfried in der Mitte: Turm mit Schatzkammer und roter Fahne
+      for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+        const edge = Math.abs(dx)===2 || Math.abs(dz)===2;
+        for (let y=by+1; y<=by+8; y++)
+          put(c.kx+dx, y, c.kz+dz, edge ? BRICK : (y<=by+3 ? AIR : BRICK), false);
+        put(c.kx+dx, by+9, c.kz+dz, BRICK, false);
+        if (edge && (dx+dz)%2===0) put(c.kx+dx, by+10, c.kz+dz, BRICK, false);   // Zinnen
+      }
+      for (let y=by+1; y<=by+2; y++) put(c.kx, y, c.kz+2, AIR, false);           // Turm-Tür
+      put(c.kx-1, by+1, c.kz, CHEST, false);                                     // Schatz!
+      put(c.kx+1, by+1, c.kz, CHEST, false);
+      put(c.kx, by+1, c.kz-1, TORCH, false);
+      for (let y=by+10; y<=by+12; y++) put(c.kx, y, c.kz, FENCE, false);         // Fahnenmast
+      put(c.kx, by+13, c.kz, WOOL, false);
+      put(c.kx+1, by+13, c.kz, BRICK, false);      // rote Fahne
+      put(c.kx+1, by+12, c.kz, BRICK, false);
     }
   }
   // Jonahs unterirdische Festung bauen
@@ -1854,6 +1928,7 @@ const ANIMAL_KIND = {
   villager: { speed:1.0, half:0.3,  height:1.8,  tile:20, face:21 },
   kid:      { speed:1.9, half:0.22, height:1.25, tile:40, face:21 },
   trader:   { speed:0.8, half:0.3,  height:1.8,  tile:57, face:21 },
+  knight:   { speed:0.9, half:0.3,  height:1.85, tile:56, face:21 },
   ball:     { speed:0,   half:0.22, height:0.44, tile:10, face:10 },
 };
 const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird';
@@ -2129,6 +2204,30 @@ function spawnTick() {
         fx:f.fx, fz:f.fz, fy:f.y, yaw:0, kx:0, kz:0, walking:false, t:9, ph:0, onGround:false});
     }
   }
+  // Ritter bewachen ihre Burg! ⚔️
+  {
+    const kcx=Math.floor(player.x/KCELL), kcz=Math.floor(player.z/KCELL);
+    for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) {
+      const c=castleAt(kcx+dx, kcz+dz);
+      if (!c) continue;
+      if (Math.hypot(c.kx-player.x, c.kz-player.z) > 60) continue;
+      const bkey='burg'+c.kx+','+c.kz;
+      if (countType(a=>a.home===bkey)>0) continue;
+      const bch=getChunk(c.kx>>4, c.kz>>4);
+      if (!bch || !bch.data) continue;
+      let n=0;
+      for (let i=0;i<12 && n<3;i++) {   // direkt auf den (aufgeschütteten) Burghof stellen
+        const sx=c.kx+Math.floor(Math.random()*12)-6, sz=c.kz+Math.floor(Math.random()*12)-6;
+        if (Math.abs(sx-c.kx)<=2 && Math.abs(sz-c.kz)<=2) continue;   // nicht in den Bergfried
+        if (collideBox(sx+0.5, c.base+1.2, sz+0.5, 0.3, 1.8)) continue;
+        animals.push({type:'knight', x:sx+0.5, y:c.base+1.2, z:sz+0.5,
+          yaw:Math.random()*Math.PI*2, vy:0, kx:0, kz:0, hp:3,
+          walking:false, t:Math.random()*2, ph:0, onGround:false,
+          home:bkey, hx:c.kx, hz:c.kz});
+        n++;
+      }
+    }
+  }
   // Dorfbewohner: jedes Dorf in der Nähe bekommt seine Bewohner
   const pcx=Math.floor(player.x/VCELL), pcz=Math.floor(player.z/VCELL);
   for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) {
@@ -2352,8 +2451,10 @@ function updateAnimals(dt) {
       a.t = a.type==='kid' ? 0.7+Math.random()*1.5 : 1 + Math.random()*3;  // Kinder sind zappelig
       if (a.walking) {
         a.yaw = Math.random()*Math.PI*2;
-        // Dorfbewohner und Kinder bleiben in der Nähe ihres Dorfes
+        // Dorfbewohner, Kinder und Ritter bleiben in der Nähe ihres Zuhauses
         if ((a.type==='villager'||a.type==='kid') && Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
+          a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
+        if (a.type==='knight' && Math.hypot(a.hx-a.x, a.hz-a.z) > 9)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
         // der Händler bleibt an seiner Theke – aber wenn sie abgebaut wurde,
         // schnappt er sich seinen Bauchladen und läuft frei durchs Dorf!
@@ -2642,6 +2743,11 @@ function drawAnimals() {
       if (a.type==='trader') {                                     // rote Verkäufer-Mütze
         pushBox(arr,a, 0,1.94,0, 0.6,0.08,0.6, 25);
         pushBox(arr,a, 0,2.04,0, 0.36,0.18,0.36, 25);
+      }
+      if (a.type==='knight') {                                     // Helm, Federbusch, Schwert
+        pushBox(arr,a, 0,1.95,0, 0.52,0.16,0.52, 3);
+        pushBox(arr,a, 0,2.1,0, 0.12,0.24,0.12, 25);
+        pushBox(arr,a, 0.38,0.95,0.05, 0.08,0.72,0.08, 3);
       }
       if (a.friend>=3) drawHeart(arr, a, 2.15);
     }
@@ -3621,6 +3727,7 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
   for (const m of scan(BCELL,mountainAt)) marks.push({x:m.mx, z:m.mz, e:'⛰️'});
   for (const w of scan(WFCELL,forestAt)) marks.push({x:w.fx, z:w.fz, e:'🌲'});
+  for (const k of scan(KCELL,castleAt)) marks.push({x:k.kx, z:k.kz, e:'⚔️'});
   const ft=fortressPos(); marks.push({x:ft.fx, z:ft.gz, e:'🏰'});
   return marks;
 }
@@ -4354,6 +4461,21 @@ function hitEntity(a, dir) {
   }
   if (a.type==='trader') {              // beim Händler einkaufen!
     openShop(a);
+    return;
+  }
+  if (a.type==='knight') {              // mit dem Ritter sprechen!
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = false; a.t = 3;
+    const RITTER_TALK = [
+      'Halt! Wer da? ... Ach, DU bist es! 😄',
+      'Ich bewache diese Burg – bei Tag und bei Nacht!',
+      'Ein echter Ritter fürchtet sich vor gar nichts!',
+      'Siehst du meinen Helm? Frisch poliert!',
+      'Der Schatz im Turm ist gut bewacht, Freund!',
+      'Willst du mal ein Ritter werden? Dann trainiere fleißig!',
+    ];
+    toast('🛡️ Ritter: „'+RITTER_TALK[Math.floor(Math.random()*RITTER_TALK.length)]+'"', 3400);
+    blip(180,0.1); blip(240,0.08);      // metallisches Klirren
     return;
   }
   if (a.type==='ball') {                // Antippen = kräftiger Schuss!

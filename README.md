@@ -189,6 +189,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Ritterburgen! 🏰⚔️ In der Landschaft stehen echte Burgen (auf der
+  Karte als ⚔️): Steinmauern mit Zinnen, vier Ecktürme, ein Tor mit
+  Fackeln und in der Mitte der Bergfried mit Schatzkammer (2 Truhen!)
+  und roter Fahne. Drei Ritter in Rüstung mit Helm, rotem Federbusch
+  und Schwert bewachen die Burg – sprich mit ihnen: „Halt! Wer da?"
 - Größere Dörfer! 🏘️ Die Dörfer haben jetzt bis zu 12 Häuser (6 neue
   Bauplätze am Dorfrand – deine bekannten Häuser bleiben, wo sie
   sind) und mehr Bewohner und Kinder auf den Wegen
