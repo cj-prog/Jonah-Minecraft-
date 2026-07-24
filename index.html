@@ -127,11 +127,11 @@
     border:none; color:#fff; }
   #paintClear { background:#b3402e; }
   #paintDone { background:#4caf50; }
-  #bowlBox, #brkBox { inset:0; display:none; z-index:60; background:#06060e;
+  #bowlBox, #brkBox, #racBox { inset:0; display:none; z-index:60; background:#06060e;
     align-items:center; justify-content:center; }
-  #bowlCanvas, #brkCanvas { touch-action:none; image-rendering:pixelated;
+  #bowlCanvas, #brkCanvas, #racCanvas { touch-action:none; image-rendering:pixelated;
     border:3px solid #3ce0e0; border-radius:8px; }
-  #bowlClose, #brkClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
+  #bowlClose, #brkClose, #racClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
     right:calc(12px + env(safe-area-inset-right)); font-size:17px; font-weight:bold;
     background:rgba(255,255,255,.16); color:#fff; border:2px solid rgba(255,255,255,.4);
     border-radius:10px; padding:7px 14px; }
@@ -266,6 +266,10 @@
   <canvas id="brkCanvas" width="320" height="440"></canvas>
   <button id="brkClose">✖ Raus</button>
 </div>
+<div class="hud" id="racBox">
+  <canvas id="racCanvas" width="320" height="440"></canvas>
+  <button id="racClose">✖ Raus</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -279,7 +283,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 81 &middot; Blöcke-Knacker in der Spielhalle! 🧱</p>
+    Version 82 &middot; Auto-Rennen in der Spielhalle! 🏎️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -323,7 +327,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 81;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 82;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -346,7 +350,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
-      SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59;
+      SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -425,6 +429,9 @@ const BLOCKS = {
   [SCREEN_BREAK]: { name:'Spiel-Bildschirm 🧱 (antippen = Blöcke-Knacker!)', tiles:[66,66,66], solid:false, model:[
     [0.04,0.04,0, 0.96,0.96,0.08, 55],
     [0.1,0.12,0.08, 0.9,0.88,0.14, 66, 1.6]] },
+  [SCREEN_RACE]: { name:'Spiel-Bildschirm 🏎️ (antippen = Auto-Rennen!)', tiles:[67,67,67], solid:false, model:[
+    [0.04,0.04,0, 0.96,0.96,0.08, 55],
+    [0.1,0.12,0.08, 0.9,0.88,0.14, 67, 1.6]] },
   // Fitnessgeräte: Sport machen! 💪
   [HANTEL]: { name:'Hantel 💪 (antippen = Krafttraining!)', tiles:[55,55,55], solid:false, model:[
     [0.2,0.1,0.44, 0.8,0.2,0.56, 3],                    // Stange
@@ -544,7 +551,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1224,10 +1231,10 @@ function genChunkData(cx, cz) {
       put(A.ax-3, by+1, A.az+7, SIGN, true);                                    // Schild davor
       const askey=(A.ax-3)+','+(by+1)+','+(A.az+7);
       if (!signTexts.has(askey)) signTexts.set(askey,'🕹️ Spielhalle');
-      // Bildschirme an der Rückwand: Bowling, Blöcke-Knacker + eine Überraschung
+      // Bildschirme an der Rückwand: Bowling, Blöcke-Knacker und Auto-Rennen
       put(A.ax,   by+2, A.az-5, SCREEN_BOWL, false);
       put(A.ax-4, by+2, A.az-5, SCREEN_BREAK, false);
-      put(A.ax+4, by+2, A.az-5, SCREEN_SOON, false);
+      put(A.ax+4, by+2, A.az-5, SCREEN_RACE, false);
       put(A.ax-1, by+1, A.az-4, SIGN, false);                                   // Hinweis-Schild
       const bskey=(A.ax-1)+','+(by+1)+','+(A.az-4);
       if (!signTexts.has(bskey)) signTexts.set(bskey,'Bildschirm antippen!');
@@ -1387,7 +1394,7 @@ function saveGame() {
       jet: jetSave,
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money, bowlBest, brkBest,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money, bowlBest, brkBest, racBest,
       sword: sword?1:0, bow: bow?1:0,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
@@ -1431,6 +1438,7 @@ function loadGame() {
     if (typeof s.money==='number') money = s.money;
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
     if (typeof s.brkBest==='number') brkBest = s.brkBest;
+    if (typeof s.racBest==='number') racBest = s.racBest;
     if (s.sword) sword = true;
     if (s.bow) bow = true;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
@@ -1614,6 +1622,14 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y===11 && x>=7 && x<=8) return 'rgb(255,255,255)';          // Ball
     if (y===13 && x>=6 && x<=10) return vary(230,230,240,8);        // Schläger
     return vary(8,12,38,8);
+  });
+  tile(67,(x,y)=>{                                                  // Bildschirm: Auto-Rennen!
+    if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
+    if (x<4||x>11) return vary(56,136,58,14);                       // Gras am Rand
+    if (y>=10&&y<=12&&x>=5&&x<=7) return vary(225,55,45,10);        // rotes Renn-Auto
+    if (y>=3&&y<=5&&x>=9&&x<=11) return vary(70,130,220,10);        // blaues Auto entgegen
+    if ((x===7||x===8)&&y%4<2) return 'rgb(245,245,245)';           // Mittellinie
+    return vary(88,90,96,10);                                       // Straße
   });
   tile(65,(x,y)=>{                                                  // Bildschirm: bald neues Spiel (?)
     if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
@@ -3664,6 +3680,138 @@ brkCv.addEventListener('mousemove',  e=>{ if (brkOn) brkPoint(e.clientX); });
 document.getElementById('brkClose').addEventListener('click', ()=>closeBreakout());
 document.getElementById('brkClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeBreakout(); }, {passive:false});
 
+// ------------------------------ Auto-Rennen 🏎️ (wie Atari Speed Race!) ------
+const racBox = document.getElementById('racBox');
+const racCv = document.getElementById('racCanvas'), racG = racCv.getContext('2d');
+const RAC_X0=62, RAC_X1=258, RAC_COLS=['#58b6e8','#f5d93c','#9a5cd8','#5cc24e','#f0f0f8'];
+const racLane = i => RAC_X0 + (i+0.5)*(RAC_X1-RAC_X0)/3;
+let racOn=false, racCars=[], racPX=160, racSpd=165, racScore=0, racLives=3, racBest=0,
+    racOver=false, racStuck=true, racWait=0, racFlash=0, racDash=0, racSpawn=0,
+    racLastTs=0, racKey=0, racMsg='', racMsgT=0;
+
+function openRace() {
+  racOn=true; racCars.length=0; racPX=160; racSpd=165; racScore=0; racLives=3;
+  racOver=false; racStuck=true; racWait=0; racFlash=0; racDash=0; racSpawn=120;
+  racLastTs=0; racKey=0; racMsg=''; racMsgT=0;
+  const sc = Math.min((innerWidth-30)/320, (innerHeight-30)/440, 1.7);
+  racCv.style.width = Math.floor(320*sc)+'px';
+  racCv.style.height = Math.floor(440*sc)+'px';
+  racBox.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.08); blip(523,0.08); blip(659,0.1);
+  requestAnimationFrame(racLoop);
+}
+function closeRace() { racOn=false; racBox.style.display='none'; }
+function racTap() {
+  if (racOver) {                        // nochmal!
+    racCars.length=0; racPX=160; racSpd=165; racScore=0; racLives=3;
+    racOver=false; racStuck=true; racMsg=''; racMsgT=0;
+    blip(523,0.08); blip(659,0.1);
+  } else if (racStuck) {
+    racStuck=false;
+    blip(200,0.1); blip(300,0.1); blip(420,0.12);   // Brummmm!
+  }
+}
+function racStep(dt) {
+  racSpd = Math.min(380, racSpd + 6*dt);            // es wird immer schneller!
+  const rel = (racSpd-100)*dt;                      // so schnell ziehen wir vorbei
+  racDash = (racDash + racSpd*dt) % 40;
+  racSpawn -= rel;
+  if (racSpawn<=0) {                                // neue Autos tauchen vorn auf
+    const l1 = Math.floor(Math.random()*3);
+    racCars.push({x:racLane(l1), y:-60, col:RAC_COLS[Math.floor(Math.random()*RAC_COLS.length)]});
+    if (Math.random()<0.3) {                        // manchmal zwei – eine Spur bleibt frei!
+      const l2 = (l1 + 1 + Math.floor(Math.random()*2)) % 3;
+      racCars.push({x:racLane(l2), y:-140, col:RAC_COLS[Math.floor(Math.random()*RAC_COLS.length)]});
+    }
+    racSpawn = 170 + Math.random()*130;
+  }
+  for (const c of racCars) c.y += rel;
+  for (let i=racCars.length-1;i>=0;i--) {
+    if (racCars[i].y > 520) {                       // überholt! 🎉
+      racCars.splice(i,1); racScore++;
+      blip(700,0.04); blip(900,0.04);
+      continue;
+    }
+    if (Math.abs(racCars[i].x-racPX)<26 && Math.abs(racCars[i].y-360)<42) {   // 💥
+      racLives--; racFlash=0.7; racWait=1.2; racSpd=165;
+      racCars.length=0;
+      blip(120,0.2); blip(90,0.25); blip(70,0.3);
+      if (racLives<=0) {
+        racOver=true; racMsgT=0;
+        if (racScore>racBest) { racBest=racScore; scheduleSave(); }
+      } else { racMsg='💥 Autsch! Noch '+racLives+' Leben'; racMsgT=1.6; }
+      break;
+    }
+  }
+}
+function racLoop(ts) {
+  if (!racOn) return;
+  const dt = Math.min(0.03, racLastTs ? (ts-racLastTs)/1000 : 0.016);
+  racLastTs = ts;
+  if (racMsgT>0) racMsgT -= dt;
+  if (racFlash>0) racFlash -= dt;
+  if (racKey) racPX = Math.max(RAC_X0+16, Math.min(RAC_X1-16, racPX + racKey*300*dt));
+  if (racWait>0) racWait -= dt;
+  else if (!racStuck && !racOver) racStep(dt);
+  racDraw();
+  requestAnimationFrame(racLoop);
+}
+function racCarDraw(g, x, y, col) {     // kleines Pixel-Auto von oben
+  g.fillStyle='#16161c';
+  g.fillRect(x-16,y-19,5,11); g.fillRect(x+11,y-19,5,11);   // Reifen
+  g.fillRect(x-16,y+8,5,11);  g.fillRect(x+11,y+8,5,11);
+  g.fillStyle=col; g.fillRect(x-12,y-22,24,44);             // Karosserie
+  g.fillStyle='rgba(0,0,0,0.35)';
+  g.fillRect(x-9,y-12,18,8);                                // Frontscheibe
+  g.fillRect(x-9,y+9,18,6);                                 // Heckscheibe
+}
+function racDraw() {
+  const g = racG;
+  g.fillStyle='#2e7d32'; g.fillRect(0,0,320,440);           // Gras
+  g.fillStyle='#e8f0e8';                                    // Randpfosten sausen vorbei
+  for (let y=-40+((racDash*1.5)%60); y<440; y+=60) { g.fillRect(RAC_X0-14,y,6,14); g.fillRect(RAC_X1+8,y,6,14); }
+  g.fillStyle='#3c3c44'; g.fillRect(RAC_X0-4,0,RAC_X1-RAC_X0+8,440);   // Straße
+  g.fillStyle='#f0f0f0'; g.fillRect(RAC_X0-4,0,3,440); g.fillRect(RAC_X1+1,0,3,440);
+  for (let i=1;i<3;i++) {                                   // gestrichelte Spurlinien
+    const lx = RAC_X0 + i*(RAC_X1-RAC_X0)/3;
+    for (let y=-40+racDash; y<440; y+=40) g.fillRect(lx-2, y, 4, 22);
+  }
+  for (const c of racCars) racCarDraw(g, c.x, c.y, c.col);
+  if (!racOver) racCarDraw(g, racPX, 360, '#d63c3c');       // dein rotes Auto!
+  g.fillStyle='rgba(0,0,0,0.55)'; g.fillRect(0,0,320,46);   // Kopfzeile
+  g.fillStyle='#3ce0e0'; g.font='bold 15px monospace'; g.textAlign='center';
+  g.fillText('★ AUTO-RENNEN ★', 160, 20);
+  g.font='bold 12px monospace'; g.fillStyle='#fff';
+  g.fillText('Überholt:'+racScore+'  Tempo:'+Math.round(racSpd/2)+'  '+'❤'.repeat(Math.max(0,racLives)), 160, 38);
+  const now2 = performance.now();
+  if (racStuck && !racOver && Math.floor(now2/450)%2) {
+    g.fillStyle='#fff'; g.font='bold 14px monospace';
+    g.fillText('Tippen = Vollgas! 🏁', 160, 300);
+    g.fillText('Finger ziehen = lenken', 160, 320);
+  }
+  if (racMsgT>0) { g.fillStyle='#ffd83c'; g.font='bold 20px monospace'; g.fillText(racMsg, 160, 240); }
+  if (racFlash>0) { g.fillStyle='rgba(255,80,30,'+(racFlash*0.6)+')'; g.fillRect(0,0,320,440); }
+  if (racOver) {
+    g.fillStyle='rgba(0,0,0,0.6)'; g.fillRect(0,140,320,160);
+    g.fillStyle='#ffd83c'; g.font='bold 26px monospace'; g.fillText('VORBEI! 🏁', 160, 190);
+    g.fillStyle='#fff'; g.font='bold 16px monospace'; g.fillText('Überholte Autos: '+racScore, 160, 220);
+    g.fillStyle='#3ce0e0'; g.fillText('Rekord: '+racBest, 160, 244);
+    if (Math.floor(now2/400)%2) { g.fillStyle='#5cc24e'; g.font='bold 14px monospace';
+      g.fillText('Tippen = nochmal fahren!', 160, 280); }
+  }
+}
+function racPoint(clientX) {
+  const r = racCv.getBoundingClientRect();
+  racPX = Math.max(RAC_X0+16, Math.min(RAC_X1-16, (clientX-r.left)/r.width*320));
+}
+racCv.addEventListener('touchstart', e=>{ e.preventDefault(); racPoint(e.touches[0].clientX); racTap(); }, {passive:false});
+racCv.addEventListener('touchmove',  e=>{ e.preventDefault(); racPoint(e.touches[0].clientX); }, {passive:false});
+racCv.addEventListener('mousedown',  e=>{ e.preventDefault(); racPoint(e.clientX); racTap(); });
+racCv.addEventListener('mousemove',  e=>{ if (racOn) racPoint(e.clientX); });
+document.getElementById('racClose').addEventListener('click', ()=>closeRace());
+document.getElementById('racClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeRace(); }, {passive:false});
+
 // ------------------------------ Läden 🏪 ------------------------------------
 const shopBox = document.getElementById('shopBox');
 function openShop(a) {
@@ -5337,6 +5485,10 @@ function doPlace(dir) {
     openBreakout();
     return;
   }
+  if (hit.block===SCREEN_RACE && HOTBAR_ITEMS[selSlot]!==SCREEN_RACE) {   // Auto-Rennen!
+    openRace();
+    return;
+  }
   if (hit.block===SCREEN_SOON) {
     toast('🕹️ Hier kommt bald ein neues Spiel! Welches wünschst du dir?', 3000);
     blip(440,0.06); blip(550,0.06);
@@ -5958,6 +6110,13 @@ addEventListener('keydown',e=>{
     if (e.code==='Escape') closeBreakout();
     return;
   }
+  if (racOn) {                        // beim Auto-Rennen: Pfeile lenken
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); racTap(); }
+    if (e.code==='ArrowLeft')  { e.preventDefault(); racKey=-1; }
+    if (e.code==='ArrowRight') { e.preventDefault(); racKey=1; }
+    if (e.code==='Escape') closeRace();
+    return;
+  }
   if (e.code==='KeyT' && started) { e.preventDefault(); openChat(); return; }
   if (e.code==='KeyF' && started) { toggleFly(); return; }
   keys[e.code]=true;
@@ -5968,7 +6127,8 @@ addEventListener('keydown',e=>{
   if (e.code==='Space') e.preventDefault();
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
-  if ((e.code==='ArrowLeft' && brkKey<0) || (e.code==='ArrowRight' && brkKey>0)) brkKey=0; });
+  if ((e.code==='ArrowLeft' && brkKey<0) || (e.code==='ArrowRight' && brkKey>0)) brkKey=0;
+  if ((e.code==='ArrowLeft' && racKey<0) || (e.code==='ArrowRight' && racKey>0)) racKey=0; });
 canvas.addEventListener('mousedown',e=>{
   if (!started) return;
   if (lassoOn) {                        // Lasso auch mit der Maus malen
