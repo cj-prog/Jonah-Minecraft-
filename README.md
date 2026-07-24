@@ -189,6 +189,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
   Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
   auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+- Spielhalle mit Bowling! 🕹️🎳 In jeder Welt steht eine große
+  Spielhalle (auf der Karte als 🕹️): bunte Ziegel-Wände, Schachbrett-
+  Boden und Bildschirme an der Rückwand. Tippe den Bowling-Bildschirm
+  an – schon startet echtes Atari-Bowling! Erst wandert der Balken für
+  die Richtung, dann der für den Schwung – tippe jeweils genau in der
+  Mitte für den perfekten Wurf. 10 Runden, Strikes 🎉, Spares ⭐ und
+  dein Rekord wird gespeichert. Den Spiel-Bildschirm gibt es auch in
+  der Blockleiste – bau dir deine eigene Spielhalle! Auf den anderen
+  Bildschirmen kommen bald weitere Spiele
 - Drehen! 🔄 Der Dreh-Knopf oben startet den Dreh-Modus: Tippe
   Möbel (Stühle, Betten, Schränke, Toiletten ...), Treppen oder
   Bilder an – sie drehen sich bei jedem Tipp um 90 Grad. Geht bei
