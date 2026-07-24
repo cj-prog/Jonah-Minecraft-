@@ -199,14 +199,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   die Richtung, dann der für den Schwung – tippe jeweils genau in der
   Mitte für den perfekten Wurf. 10 Runden, Strikes 🎉, Spares ⭐ und
   dein Rekord wird gespeichert. Den Spiel-Bildschirm gibt es auch in
-  der Blockleiste – bau dir deine eigene Spielhalle! Auf dem letzten
-  Bildschirm kommt bald noch ein Spiel
+  der Blockleiste – bau dir deine eigene Spielhalle!
 - Blöcke-Knacker! 🧱 Das zweite Spiel in der Spielhalle (linker
   Bildschirm): echtes Atari-Breakout! Lenke den Schläger mit dem
   Finger (oder den Pfeiltasten), lass den Ball los und knacke die
   bunten Steinreihen – obere Reihen bringen mehr Punkte. 3 Leben,
   jedes Level wird schneller, der Rekord wird gespeichert. Auch
   diesen Bildschirm gibt es in der Blockleiste zum Selberbauen
+- Auto-Rennen! 🏎️ Das dritte Spiel in der Spielhalle (rechter
+  Bildschirm): Vollgas auf der Autobahn wie beim alten Atari! Lenke
+  dein rotes Auto mit dem Finger (oder den Pfeiltasten) und weiche
+  den anderen Autos aus – jedes überholte Auto gibt einen Punkt.
+  Es wird automatisch immer schneller! 3 Leben, Crash = Rums 💥,
+  der Überhol-Rekord wird gespeichert. Auch diesen Bildschirm gibt
+  es in der Blockleiste
 - Drehen! 🔄 Der Dreh-Knopf oben startet den Dreh-Modus: Tippe
   Möbel (Stühle, Betten, Schränke, Toiletten ...), Treppen oder
   Bilder an – sie drehen sich bei jedem Tipp um 90 Grad. Geht bei
