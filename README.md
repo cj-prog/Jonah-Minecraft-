@@ -185,10 +185,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   In der Nähe zeigt die Karte eine echte Draufsicht: Häuser mit ihren
   Dächern, Bäume, Straßen, Fußballfeld-Linien und alles, was du
   selbst gebaut hast! Tippe die Mini-Karte an (oder den Karten-Knopf
-  oben) – dann öffnet sich die große Karte mit allen Dörfern 🏠,
-  Fußballplätzen ⚽, Höhlen 🕳️, der geheimen Festung 🏰 und deinem
-  Ziel 📍 – auch dort wandert dein Pfeil live mit. Tippe irgendwo
-  auf die große Karte – dann führt dich der Kompass-Pfeil dorthin!
+  oben) – dann öffnet sich oben links die große Welt-Karte 🌍: Sie
+  zeigt die GANZE Welt auf einmal, mit allen Dörfern 🏠, Burgen ⚔️,
+  der Spielhalle 🕹️, Fußballplätzen ⚽, Bergen ⛰️, Wäldern 🌲,
+  Höhlen 🕳️, der geheimen Festung 🏰 und deinem Ziel 📍 – und dein
+  roter Pfeil wandert live mit, damit du immer weißt, wo du bist.
+  Tippe irgendwo auf die Welt-Karte – dann führt dich der
+  Kompass-Pfeil dorthin!
 - Spielhalle mit Bowling! 🕹️🎳 In jeder Welt steht eine große
   Spielhalle (auf der Karte als 🕹️): bunte Ziegel-Wände, Schachbrett-
   Boden und Bildschirme an der Rückwand. Tippe den Bowling-Bildschirm
