@@ -127,11 +127,11 @@
     border:none; color:#fff; }
   #paintClear { background:#b3402e; }
   #paintDone { background:#4caf50; }
-  #bowlBox { inset:0; display:none; z-index:60; background:#06060e;
+  #bowlBox, #brkBox { inset:0; display:none; z-index:60; background:#06060e;
     align-items:center; justify-content:center; }
-  #bowlCanvas { touch-action:none; image-rendering:pixelated;
+  #bowlCanvas, #brkCanvas { touch-action:none; image-rendering:pixelated;
     border:3px solid #3ce0e0; border-radius:8px; }
-  #bowlClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
+  #bowlClose, #brkClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
     right:calc(12px + env(safe-area-inset-right)); font-size:17px; font-weight:bold;
     background:rgba(255,255,255,.16); color:#fff; border:2px solid rgba(255,255,255,.4);
     border-radius:10px; padding:7px 14px; }
@@ -262,6 +262,10 @@
   <canvas id="bowlCanvas" width="320" height="440"></canvas>
   <button id="bowlClose">✖ Raus</button>
 </div>
+<div class="hud" id="brkBox">
+  <canvas id="brkCanvas" width="320" height="440"></canvas>
+  <button id="brkClose">✖ Raus</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -275,7 +279,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 80 &middot; Welt-Karte! 🌍</p>
+    Version 81 &middot; Blöcke-Knacker in der Spielhalle! 🧱</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -319,7 +323,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 80;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 81;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -342,7 +346,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
-      SCREEN_BOWL=57, SCREEN_SOON=58;
+      SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -418,6 +422,9 @@ const BLOCKS = {
   [SCREEN_SOON]: { name:'Spiel-Bildschirm (bald kommt hier ein Spiel!)', tiles:[65,65,65], solid:false, model:[
     [0.04,0.04,0, 0.96,0.96,0.08, 55],
     [0.1,0.12,0.08, 0.9,0.88,0.14, 65, 1.5]] },
+  [SCREEN_BREAK]: { name:'Spiel-Bildschirm 🧱 (antippen = Blöcke-Knacker!)', tiles:[66,66,66], solid:false, model:[
+    [0.04,0.04,0, 0.96,0.96,0.08, 55],
+    [0.1,0.12,0.08, 0.9,0.88,0.14, 66, 1.6]] },
   // Fitnessgeräte: Sport machen! 💪
   [HANTEL]: { name:'Hantel 💪 (antippen = Krafttraining!)', tiles:[55,55,55], solid:false, model:[
     [0.2,0.1,0.44, 0.8,0.2,0.56, 3],                    // Stange
@@ -537,7 +544,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1217,9 +1224,9 @@ function genChunkData(cx, cz) {
       put(A.ax-3, by+1, A.az+7, SIGN, true);                                    // Schild davor
       const askey=(A.ax-3)+','+(by+1)+','+(A.az+7);
       if (!signTexts.has(askey)) signTexts.set(askey,'🕹️ Spielhalle');
-      // Bildschirme an der Rückwand: Bowling + zwei Überraschungen
+      // Bildschirme an der Rückwand: Bowling, Blöcke-Knacker + eine Überraschung
       put(A.ax,   by+2, A.az-5, SCREEN_BOWL, false);
-      put(A.ax-4, by+2, A.az-5, SCREEN_SOON, false);
+      put(A.ax-4, by+2, A.az-5, SCREEN_BREAK, false);
       put(A.ax+4, by+2, A.az-5, SCREEN_SOON, false);
       put(A.ax-1, by+1, A.az-4, SIGN, false);                                   // Hinweis-Schild
       const bskey=(A.ax-1)+','+(by+1)+','+(A.az-4);
@@ -1380,7 +1387,7 @@ function saveGame() {
       jet: jetSave,
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money, bowlBest,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money, bowlBest, brkBest,
       sword: sword?1:0, bow: bow?1:0,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
@@ -1423,6 +1430,7 @@ function loadGame() {
     if (typeof s.cakes==='number') cakes = s.cakes;
     if (typeof s.money==='number') money = s.money;
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
+    if (typeof s.brkBest==='number') brkBest = s.brkBest;
     if (s.sword) sword = true;
     if (s.bow) bow = true;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
@@ -1596,6 +1604,16 @@ atlas.width = atlas.height = T*ATLAS_N;
       return vary(172,136,84,12);
     }
     return vary(8,12,38,8);                                         // dunkler Bildschirm
+  });
+  tile(66,(x,y)=>{                                                  // Bildschirm: Blöcke-Knacker!
+    if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
+    if (y>=3&&y<=8&&x>=3&&x<=12) {                                  // bunte Steinreihen
+      const c=[[214,60,60],[240,138,36],[245,217,60],[92,194,78],[88,182,232],[154,92,216]][y-3];
+      return (x===7||x===8) && y===6 ? vary(8,12,38,8) : vary(c[0],c[1],c[2],10);   // eine Lücke
+    }
+    if (y===11 && x>=7 && x<=8) return 'rgb(255,255,255)';          // Ball
+    if (y===13 && x>=6 && x<=10) return vary(230,230,240,8);        // Schläger
+    return vary(8,12,38,8);
   });
   tile(65,(x,y)=>{                                                  // Bildschirm: bald neues Spiel (?)
     if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
@@ -3508,6 +3526,144 @@ bowlCv.addEventListener('mousedown', bowlStart);
 document.getElementById('bowlClose').addEventListener('click', ()=>closeBowling());
 document.getElementById('bowlClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeBowling(); }, {passive:false});
 
+// ------------------------------ Blöcke-Knacker 🧱 (wie Atari Breakout!) -----
+const brkBox = document.getElementById('brkBox');
+const brkCv = document.getElementById('brkCanvas'), brkG = brkCv.getContext('2d');
+const BRK_COLS = ['#d63c3c','#f08a24','#f5d93c','#5cc24e','#58b6e8','#9a5cd8'];
+const BRK_PTS = [6,5,4,3,2,1];          // obere Reihen bringen mehr Punkte
+let brkOn=false, brkBricks=[], brkPadX=160, brkBallX=160, brkBallY=396, brkVX=0, brkVY=0,
+    brkStuck=true, brkScore=0, brkLives=3, brkLevel=1, brkBest=0, brkOver=false,
+    brkLastTs=0, brkKey=0, brkMsg='', brkMsgT=0;
+
+function brkNewWall() {
+  brkBricks.length = 0;
+  for (let r=0;r<6;r++) for (let c=0;c<10;c++)
+    brkBricks.push({x:10+c*30, y:70+r*14, r, alive:true});
+}
+function openBreakout() {
+  brkOn=true; brkScore=0; brkLives=3; brkLevel=1; brkOver=false;
+  brkPadX=160; brkStuck=true; brkKey=0; brkMsg=''; brkMsgT=0; brkLastTs=0;
+  brkNewWall();
+  const sc = Math.min((innerWidth-30)/320, (innerHeight-30)/440, 1.7);
+  brkCv.style.width = Math.floor(320*sc)+'px';
+  brkCv.style.height = Math.floor(440*sc)+'px';
+  brkBox.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.08); blip(523,0.08); blip(659,0.1);
+  requestAnimationFrame(brkLoop);
+}
+function closeBreakout() { brkOn=false; brkBox.style.display='none'; }
+function brkSpeed() { return 185 + (brkLevel-1)*35; }
+function brkServe() {
+  brkStuck=false;
+  const off = Math.random()*0.5-0.25;   // fast senkrecht nach oben
+  brkVX=Math.sin(off)*brkSpeed(); brkVY=-Math.cos(off)*brkSpeed();
+  blip(520,0.06);
+}
+function brkTap() {
+  if (brkOver) {                        // nochmal von vorn!
+    brkScore=0; brkLives=3; brkLevel=1; brkOver=false; brkStuck=true; brkNewWall();
+    blip(523,0.08); blip(659,0.1);
+  } else if (brkStuck) brkServe();
+}
+function brkStep(dt) {
+  const PW=52, PY=406, R=4.5;
+  if (brkStuck) { brkBallX=brkPadX; brkBallY=PY-10; return; }
+  const steps = Math.ceil(Math.hypot(brkVX,brkVY)*dt/4);   // nichts überspringen!
+  for (let i=0;i<steps;i++) {
+    const px=brkBallX, py=brkBallY;
+    brkBallX += brkVX*dt/steps; brkBallY += brkVY*dt/steps;
+    if (brkBallX<8+R)  { brkBallX=8+R;   brkVX=Math.abs(brkVX);  blip(300,0.03); }
+    if (brkBallX>312-R){ brkBallX=312-R; brkVX=-Math.abs(brkVX); blip(300,0.03); }
+    if (brkBallY<50+R) { brkBallY=50+R;  brkVY=Math.abs(brkVY);  blip(300,0.03); }
+    // Schläger: der Treffpunkt bestimmt den Winkel!
+    if (brkVY>0 && brkBallY>=PY-R && brkBallY<=PY+9 && Math.abs(brkBallX-brkPadX)<=PW/2+R) {
+      const off=(brkBallX-brkPadX)/(PW/2), sp=brkSpeed();
+      brkVX=Math.sin(off*1.05)*sp; brkVY=-Math.cos(off*1.05)*sp;
+      brkBallY=PY-R;
+      blip(420,0.04);
+    }
+    for (const b of brkBricks) {        // Steine knacken
+      if (!b.alive) continue;
+      if (brkBallX>b.x-R && brkBallX<b.x+30+R && brkBallY>b.y-R && brkBallY<b.y+13+R) {
+        b.alive=false;
+        brkScore += BRK_PTS[b.r];
+        if (py<=b.y-R || py>=b.y+13+R) brkVY=-brkVY; else brkVX=-brkVX;
+        blip(600+ (5-b.r)*60, 0.04);
+        break;
+      }
+    }
+    if (brkBallY>440+R) {               // runtergefallen!
+      brkLives--;
+      if (brkLives<=0) {
+        brkOver=true;
+        if (brkScore>brkBest) { brkBest=brkScore; scheduleSave(); }
+        blip(220,0.15); blip(180,0.2); blip(140,0.3);
+      } else {
+        brkStuck=true; brkMsg='Ups! Noch '+brkLives+' Leben'; brkMsgT=1.6;
+        blip(220,0.12); blip(180,0.16);
+      }
+      break;
+    }
+  }
+  if (!brkBricks.some(b=>b.alive)) {    // alle weg? Neues Level, schneller!
+    brkLevel++; brkScore+=20; brkNewWall(); brkStuck=true;
+    brkMsg='Level '+brkLevel+'! 🚀'; brkMsgT=2;
+    blip(523,0.08); blip(659,0.08); blip(784,0.1); blip(1047,0.14);
+  }
+}
+function brkLoop(ts) {
+  if (!brkOn) return;
+  const dt = Math.min(0.03, brkLastTs ? (ts-brkLastTs)/1000 : 0.016);
+  brkLastTs = ts;
+  if (brkMsgT>0) brkMsgT -= dt;
+  if (brkKey) brkPadX = Math.max(34, Math.min(286, brkPadX + brkKey*270*dt));
+  if (!brkOver) brkStep(dt);
+  brkDraw();
+  requestAnimationFrame(brkLoop);
+}
+function brkDraw() {
+  const g = brkG;
+  g.fillStyle='#06060e'; g.fillRect(0,0,320,440);
+  g.fillStyle='#3ce0e0'; g.font='bold 15px monospace'; g.textAlign='center';
+  g.fillText('★ BLÖCKE-KNACKER ★', 160, 22);
+  g.font='bold 12px monospace'; g.fillStyle='#fff';
+  g.fillText('Punkte:'+brkScore+'  Level:'+brkLevel+'  '+'❤'.repeat(Math.max(0,brkLives)), 160, 40);
+  g.fillStyle='#2a2a34';
+  g.fillRect(0,46,320,2); g.fillRect(6,46,2,394); g.fillRect(312,46,2,394);
+  for (const b of brkBricks) {
+    if (!b.alive) continue;
+    g.fillStyle=BRK_COLS[b.r]; g.fillRect(b.x+1, b.y+1, 28, 11);
+  }
+  g.fillStyle='#f0f0f8'; g.fillRect(brkPadX-26, 406, 52, 9);
+  if (!brkOver) { g.fillStyle='#fff'; g.beginPath(); g.arc(brkBallX, brkBallY, 4.5, 0, 7); g.fill(); }
+  const now2 = performance.now();
+  if (brkStuck && !brkOver && Math.floor(now2/450)%2) {
+    g.fillStyle='#5cc24e'; g.font='bold 13px monospace';
+    g.fillText('Tippen = Ball los!', 160, 366);
+    g.fillText('Finger ziehen = Schläger lenken', 160, 384);
+  }
+  if (brkMsgT>0) { g.fillStyle='#ffd83c'; g.font='bold 22px monospace'; g.fillText(brkMsg, 160, 240); }
+  if (brkOver) {
+    g.fillStyle='rgba(0,0,0,0.55)'; g.fillRect(0,140,320,160);
+    g.fillStyle='#ffd83c'; g.font='bold 26px monospace'; g.fillText('VORBEI! 🧱', 160, 190);
+    g.fillStyle='#fff'; g.font='bold 16px monospace'; g.fillText('Deine Punkte: '+brkScore, 160, 220);
+    g.fillStyle='#3ce0e0'; g.fillText('Rekord: '+brkBest, 160, 244);
+    if (Math.floor(now2/400)%2) { g.fillStyle='#5cc24e'; g.font='bold 14px monospace';
+      g.fillText('Tippen = nochmal spielen!', 160, 280); }
+  }
+}
+function brkPoint(clientX) {
+  const r = brkCv.getBoundingClientRect();
+  brkPadX = Math.max(34, Math.min(286, (clientX-r.left)/r.width*320));
+}
+brkCv.addEventListener('touchstart', e=>{ e.preventDefault(); brkPoint(e.touches[0].clientX); brkTap(); }, {passive:false});
+brkCv.addEventListener('touchmove',  e=>{ e.preventDefault(); brkPoint(e.touches[0].clientX); }, {passive:false});
+brkCv.addEventListener('mousedown',  e=>{ e.preventDefault(); brkPoint(e.clientX); brkTap(); });
+brkCv.addEventListener('mousemove',  e=>{ if (brkOn) brkPoint(e.clientX); });
+document.getElementById('brkClose').addEventListener('click', ()=>closeBreakout());
+document.getElementById('brkClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeBreakout(); }, {passive:false});
+
 // ------------------------------ Läden 🏪 ------------------------------------
 const shopBox = document.getElementById('shopBox');
 function openShop(a) {
@@ -5177,6 +5333,10 @@ function doPlace(dir) {
     openBowling();
     return;
   }
+  if (hit.block===SCREEN_BREAK && HOTBAR_ITEMS[selSlot]!==SCREEN_BREAK) {   // Blöcke-Knacker!
+    openBreakout();
+    return;
+  }
   if (hit.block===SCREEN_SOON) {
     toast('🕹️ Hier kommt bald ein neues Spiel! Welches wünschst du dir?', 3000);
     blip(440,0.06); blip(550,0.06);
@@ -5791,6 +5951,13 @@ addEventListener('keydown',e=>{
     if (e.code==='Escape') closeBowling();
     return;
   }
+  if (brkOn) {                        // beim Blöcke-Knacker: Pfeile lenken
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); brkTap(); }
+    if (e.code==='ArrowLeft')  { e.preventDefault(); brkKey=-1; }
+    if (e.code==='ArrowRight') { e.preventDefault(); brkKey=1; }
+    if (e.code==='Escape') closeBreakout();
+    return;
+  }
   if (e.code==='KeyT' && started) { e.preventDefault(); openChat(); return; }
   if (e.code==='KeyF' && started) { toggleFly(); return; }
   keys[e.code]=true;
@@ -5800,7 +5967,8 @@ addEventListener('keydown',e=>{
   }
   if (e.code==='Space') e.preventDefault();
 });
-addEventListener('keyup',e=>keys[e.code]=false);
+addEventListener('keyup',e=>{ keys[e.code]=false;
+  if ((e.code==='ArrowLeft' && brkKey<0) || (e.code==='ArrowRight' && brkKey>0)) brkKey=0; });
 canvas.addEventListener('mousedown',e=>{
   if (!started) return;
   if (lassoOn) {                        // Lasso auch mit der Maus malen
