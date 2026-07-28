@@ -127,11 +127,11 @@
     border:none; color:#fff; }
   #paintClear { background:#b3402e; }
   #paintDone { background:#4caf50; }
-  #bowlBox, #brkBox, #racBox { inset:0; display:none; z-index:60; background:#06060e;
-    align-items:center; justify-content:center; }
-  #bowlCanvas, #brkCanvas, #racCanvas { touch-action:none; image-rendering:pixelated;
-    border:3px solid #3ce0e0; border-radius:8px; }
-  #bowlClose, #brkClose, #racClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
+  #bowlBox, #brkBox, #racBox, #snkBox, #pngBox, #invBox { inset:0; display:none; z-index:60;
+    background:#06060e; align-items:center; justify-content:center; }
+  #bowlCanvas, #brkCanvas, #racCanvas, #snkCanvas, #pngCanvas, #invCanvas { touch-action:none;
+    image-rendering:pixelated; border:3px solid #3ce0e0; border-radius:8px; }
+  #bowlClose, #brkClose, #racClose, #snkClose, #pngClose, #invClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
     right:calc(12px + env(safe-area-inset-right)); font-size:17px; font-weight:bold;
     background:rgba(255,255,255,.16); color:#fff; border:2px solid rgba(255,255,255,.4);
     border-radius:10px; padding:7px 14px; }
@@ -270,6 +270,18 @@
   <canvas id="racCanvas" width="320" height="440"></canvas>
   <button id="racClose">✖ Raus</button>
 </div>
+<div class="hud" id="snkBox">
+  <canvas id="snkCanvas" width="320" height="440"></canvas>
+  <button id="snkClose">✖ Raus</button>
+</div>
+<div class="hud" id="pngBox">
+  <canvas id="pngCanvas" width="320" height="440"></canvas>
+  <button id="pngClose">✖ Raus</button>
+</div>
+<div class="hud" id="invBox">
+  <canvas id="invCanvas" width="320" height="440"></canvas>
+  <button id="invClose">✖ Raus</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -283,7 +295,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 82 &middot; Auto-Rennen in der Spielhalle! 🏎️</p>
+    Version 83 &middot; 3 neue Spiele: Schlange, Ping-Pong, Weltraum! 🐍🏓👾</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -327,7 +339,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 82;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 83;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -350,7 +362,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SNOW=37, SNOWMAN=38, GATE=39, GATE_OPEN=40, TOILET=41, SINK=42,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
-      SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60;
+      SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
+      SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -432,6 +445,15 @@ const BLOCKS = {
   [SCREEN_RACE]: { name:'Spiel-Bildschirm 🏎️ (antippen = Auto-Rennen!)', tiles:[67,67,67], solid:false, model:[
     [0.04,0.04,0, 0.96,0.96,0.08, 55],
     [0.1,0.12,0.08, 0.9,0.88,0.14, 67, 1.6]] },
+  [SCREEN_SNAKE]: { name:'Spiel-Bildschirm 🐍 (antippen = Schlange!)', tiles:[68,68,68], solid:false, model:[
+    [0.04,0.04,0, 0.96,0.96,0.08, 55],
+    [0.1,0.12,0.08, 0.9,0.88,0.14, 68, 1.6]] },
+  [SCREEN_PONG]: { name:'Spiel-Bildschirm 🏓 (antippen = Ping-Pong!)', tiles:[69,69,69], solid:false, model:[
+    [0.04,0.04,0, 0.96,0.96,0.08, 55],
+    [0.1,0.12,0.08, 0.9,0.88,0.14, 69, 1.6]] },
+  [SCREEN_INV]: { name:'Spiel-Bildschirm 👾 (antippen = Weltraum-Schützen!)', tiles:[70,70,70], solid:false, model:[
+    [0.04,0.04,0, 0.96,0.96,0.08, 55],
+    [0.1,0.12,0.08, 0.9,0.88,0.14, 70, 1.6]] },
   // Fitnessgeräte: Sport machen! 💪
   [HANTEL]: { name:'Hantel 💪 (antippen = Krafttraining!)', tiles:[55,55,55], solid:false, model:[
     [0.2,0.1,0.44, 0.8,0.2,0.56, 3],                    // Stange
@@ -551,7 +573,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1231,10 +1253,14 @@ function genChunkData(cx, cz) {
       put(A.ax-3, by+1, A.az+7, SIGN, true);                                    // Schild davor
       const askey=(A.ax-3)+','+(by+1)+','+(A.az+7);
       if (!signTexts.has(askey)) signTexts.set(askey,'🕹️ Spielhalle');
-      // Bildschirme an der Rückwand: Bowling, Blöcke-Knacker und Auto-Rennen
-      put(A.ax,   by+2, A.az-5, SCREEN_BOWL, false);
+      // Bildschirme an der Rückwand: sechs Spiele + ein Wunsch-Bildschirm!
+      put(A.ax-6, by+2, A.az-5, SCREEN_INV, false);
       put(A.ax-4, by+2, A.az-5, SCREEN_BREAK, false);
+      put(A.ax-2, by+2, A.az-5, SCREEN_SNAKE, false);
+      put(A.ax,   by+2, A.az-5, SCREEN_BOWL, false);
+      put(A.ax+2, by+2, A.az-5, SCREEN_PONG, false);
       put(A.ax+4, by+2, A.az-5, SCREEN_RACE, false);
+      put(A.ax+6, by+2, A.az-5, SCREEN_SOON, false);
       put(A.ax-1, by+1, A.az-4, SIGN, false);                                   // Hinweis-Schild
       const bskey=(A.ax-1)+','+(by+1)+','+(A.az-4);
       if (!signTexts.has(bskey)) signTexts.set(bskey,'Bildschirm antippen!');
@@ -1394,7 +1420,8 @@ function saveGame() {
       jet: jetSave,
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
-      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money, bowlBest, brkBest, racBest,
+      carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
+      bowlBest, brkBest, racBest, snkBest, pngBest, invBest,
       sword: sword?1:0, bow: bow?1:0,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
@@ -1439,6 +1466,9 @@ function loadGame() {
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
     if (typeof s.brkBest==='number') brkBest = s.brkBest;
     if (typeof s.racBest==='number') racBest = s.racBest;
+    if (typeof s.snkBest==='number') snkBest = s.snkBest;
+    if (typeof s.pngBest==='number') pngBest = s.pngBest;
+    if (typeof s.invBest==='number') invBest = s.invBest;
     if (s.sword) sword = true;
     if (s.bow) bow = true;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
@@ -1630,6 +1660,28 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y>=3&&y<=5&&x>=9&&x<=11) return vary(70,130,220,10);        // blaues Auto entgegen
     if ((x===7||x===8)&&y%4<2) return 'rgb(245,245,245)';           // Mittellinie
     return vary(88,90,96,10);                                       // Straße
+  });
+  tile(68,(x,y)=>{                                                  // Bildschirm: Schlange!
+    if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
+    if ((y===10&&x>=4&&x<=10) || (x===10&&y>=5&&y<=10)) return vary(92,204,96,12);  // grüne Schlange
+    if (y===4&&x===5) return vary(225,55,45,10);                    // roter Apfel
+    return vary(8,12,38,8);
+  });
+  tile(69,(x,y)=>{                                                  // Bildschirm: Ping-Pong!
+    if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
+    if (y===3&&x>=4&&x<=7) return 'rgb(245,245,245)';               // Schläger oben
+    if (y===12&&x>=8&&x<=11) return 'rgb(245,245,245)';             // Schläger unten
+    if (y===7&&x>=9&&x<=10) return vary(245,217,60,8);              // Ball
+    if (y===8&&x%3<2) return vary(70,74,110,10);                    // Mittellinie
+    return vary(8,12,38,8);
+  });
+  tile(70,(x,y)=>{                                                  // Bildschirm: Weltraum-Schützen!
+    if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
+    if (y===4&&(x===4||x===6||x===8||x===10)) return vary(216,80,200,10);   // Alien-Reihe
+    if (y===6&&(x===5||x===7||x===9)) return vary(150,220,90,10);   // zweite Reihe
+    if (y===9&&x===8) return 'rgb(255,255,255)';                    // Schuss
+    if ((y===12&&x>=7&&x<=9)||(y===11&&x===8)) return vary(80,200,230,10);  // Raumschiff
+    return vary(8,12,38,8);
   });
   tile(65,(x,y)=>{                                                  // Bildschirm: bald neues Spiel (?)
     if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
@@ -3812,6 +3864,420 @@ racCv.addEventListener('mousemove',  e=>{ if (racOn) racPoint(e.clientX); });
 document.getElementById('racClose').addEventListener('click', ()=>closeRace());
 document.getElementById('racClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeRace(); }, {passive:false});
 
+// ------------------------------ Schlange 🐍 (Snake-Klassiker!) ---------------
+const snkBoxEl = document.getElementById('snkBox');
+const snkCv = document.getElementById('snkCanvas'), snkG = snkCv.getContext('2d');
+const SNK_C=16, SNK_R=19, SNK_S=20, SNK_Y0=46;
+let snkOn=false, snake=[], snkDir=[1,0], snkNext=[1,0], snkFood=[12,10], snkGrow=0,
+    snkTick=0, snkStepT=0.17, snkScore=0, snkBest=0, snkOver=false, snkStuck=true,
+    snkLastTs=0, snkTouch=null;
+
+function snkPlaceFood() {
+  while (true) {
+    const f=[Math.floor(Math.random()*SNK_C), Math.floor(Math.random()*SNK_R)];
+    if (!snake.some(s=>s[0]===f[0]&&s[1]===f[1])) { snkFood=f; return; }
+  }
+}
+function snkReset() {
+  snake=[[8,10],[7,10],[6,10]]; snkDir=[1,0]; snkNext=[1,0]; snkGrow=0;
+  snkScore=0; snkStepT=0.17; snkOver=false; snkStuck=true; snkTick=0;
+  snkPlaceFood();
+}
+function openSnake() {
+  snkOn=true; snkLastTs=0; snkReset();
+  const sc = Math.min((innerWidth-30)/320, (innerHeight-30)/440, 1.7);
+  snkCv.style.width = Math.floor(320*sc)+'px';
+  snkCv.style.height = Math.floor(440*sc)+'px';
+  snkBoxEl.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.08); blip(523,0.08); blip(659,0.1);
+  requestAnimationFrame(snkLoop);
+}
+function closeSnake() { snkOn=false; snkBoxEl.style.display='none'; }
+function snkTap() {
+  if (snkOver) { snkReset(); blip(523,0.08); blip(659,0.1); }
+  else if (snkStuck) { snkStuck=false; blip(520,0.06); }
+}
+function snkTurn(dx,dy) {               // nicht rückwärts in sich selbst!
+  if (dx===-snkDir[0] && dy===-snkDir[1]) return;
+  snkNext=[dx,dy];
+}
+function snkStep() {
+  snkDir = snkNext;
+  const h=[snake[0][0]+snkDir[0], snake[0][1]+snkDir[1]];
+  if (h[0]<0||h[0]>=SNK_C||h[1]<0||h[1]>=SNK_R ||
+      snake.some(s=>s[0]===h[0]&&s[1]===h[1])) {          // Autsch!
+    snkOver=true;
+    if (snkScore>snkBest) { snkBest=snkScore; scheduleSave(); }
+    blip(220,0.15); blip(180,0.2); blip(140,0.3);
+    return;
+  }
+  snake.unshift(h);
+  if (h[0]===snkFood[0] && h[1]===snkFood[1]) {           // Apfel gefuttert!
+    snkGrow+=2; snkScore++;
+    snkStepT=Math.max(0.09, 0.17-snkScore*0.004);         // wird schneller!
+    snkPlaceFood();
+    blip(700,0.05); blip(900,0.06);
+  }
+  if (snkGrow>0) snkGrow--; else snake.pop();
+}
+function snkLoop(ts) {
+  if (!snkOn) return;
+  const dt = Math.min(0.05, snkLastTs ? (ts-snkLastTs)/1000 : 0.016);
+  snkLastTs = ts;
+  if (!snkStuck && !snkOver) {
+    snkTick += dt;
+    while (snkTick>=snkStepT && !snkOver) { snkTick-=snkStepT; snkStep(); }
+  }
+  snkDraw();
+  requestAnimationFrame(snkLoop);
+}
+function snkDraw() {
+  const g = snkG;
+  g.fillStyle='#06060e'; g.fillRect(0,0,320,440);
+  g.fillStyle='#101024';
+  for (let r=0;r<SNK_R;r++) for (let c=0;c<SNK_C;c++)
+    if ((r+c)%2===0) g.fillRect(c*SNK_S, SNK_Y0+r*SNK_S, SNK_S, SNK_S);
+  g.fillStyle='#d63c3c';                                  // Apfel
+  g.beginPath(); g.arc(snkFood[0]*SNK_S+10, SNK_Y0+snkFood[1]*SNK_S+11, 7, 0, 7); g.fill();
+  g.fillStyle='#5c8b2e'; g.fillRect(snkFood[0]*SNK_S+9, SNK_Y0+snkFood[1]*SNK_S+1, 3, 5);
+  snake.forEach((s,i)=>{                                  // die Schlange!
+    g.fillStyle = i===0 ? '#8ce65c' : '#5cc24e';
+    g.fillRect(s[0]*SNK_S+1, SNK_Y0+s[1]*SNK_S+1, SNK_S-2, SNK_S-2);
+    if (i===0) {                                          // Augen
+      g.fillStyle='#111';
+      const [dx,dy]=snkDir;
+      g.fillRect(s[0]*SNK_S+7+dx*4, SNK_Y0+s[1]*SNK_S+7+dy*4, 3, 3);
+      g.fillRect(s[0]*SNK_S+11+dx*4, SNK_Y0+s[1]*SNK_S+10+dy*4, 3, 3);
+    }
+  });
+  g.fillStyle='rgba(0,0,0,0.55)'; g.fillRect(0,0,320,46);
+  g.fillStyle='#3ce0e0'; g.font='bold 15px monospace'; g.textAlign='center';
+  g.fillText('★ SCHLANGE ★', 160, 20);
+  g.font='bold 12px monospace'; g.fillStyle='#fff';
+  g.fillText('Äpfel:'+snkScore+'  Länge:'+snake.length, 160, 38);
+  const now2 = performance.now();
+  if (snkStuck && !snkOver && Math.floor(now2/450)%2) {
+    g.fillStyle='#fff'; g.font='bold 14px monospace';
+    g.fillText('Tippen = Start!', 160, 250);
+    g.fillText('Wischen = Richtung 👆', 160, 270);
+  }
+  if (snkOver) {
+    g.fillStyle='rgba(0,0,0,0.6)'; g.fillRect(0,140,320,160);
+    g.fillStyle='#ffd83c'; g.font='bold 26px monospace'; g.fillText('VORBEI! 🐍', 160, 190);
+    g.fillStyle='#fff'; g.font='bold 16px monospace'; g.fillText('Äpfel gefuttert: '+snkScore, 160, 220);
+    g.fillStyle='#3ce0e0'; g.fillText('Rekord: '+snkBest, 160, 244);
+    if (Math.floor(now2/400)%2) { g.fillStyle='#5cc24e'; g.font='bold 14px monospace';
+      g.fillText('Tippen = nochmal spielen!', 160, 280); }
+  }
+}
+snkCv.addEventListener('touchstart', e=>{ e.preventDefault();
+  snkTouch=[e.touches[0].clientX, e.touches[0].clientY]; snkTap(); }, {passive:false});
+snkCv.addEventListener('touchmove', e=>{ e.preventDefault();
+  if (!snkTouch) return;
+  const dx=e.touches[0].clientX-snkTouch[0], dy=e.touches[0].clientY-snkTouch[1];
+  if (Math.hypot(dx,dy)>18) {                             // Wisch erkannt!
+    if (Math.abs(dx)>Math.abs(dy)) snkTurn(Math.sign(dx),0); else snkTurn(0,Math.sign(dy));
+    snkTouch=[e.touches[0].clientX, e.touches[0].clientY];
+  } }, {passive:false});
+snkCv.addEventListener('mousedown', e=>{ e.preventDefault();
+  snkTouch=[e.clientX,e.clientY]; snkTap(); });
+snkCv.addEventListener('mousemove', e=>{
+  if (!snkOn || !snkTouch || !(e.buttons&1)) return;
+  const dx=e.clientX-snkTouch[0], dy=e.clientY-snkTouch[1];
+  if (Math.hypot(dx,dy)>18) {
+    if (Math.abs(dx)>Math.abs(dy)) snkTurn(Math.sign(dx),0); else snkTurn(0,Math.sign(dy));
+    snkTouch=[e.clientX,e.clientY];
+  } });
+document.getElementById('snkClose').addEventListener('click', ()=>closeSnake());
+document.getElementById('snkClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeSnake(); }, {passive:false});
+
+// ------------------------------ Ping-Pong 🏓 (das allererste Atari-Spiel!) ---
+const pngBoxEl = document.getElementById('pngBox');
+const pngCv = document.getElementById('pngCanvas'), pngG = pngCv.getContext('2d');
+let pngOn=false, pngMe=160, pngCpu=160, pngBX=160, pngBY=240, pngVX=0, pngVY=0,
+    pngMyPts=0, pngCpuPts=0, pngStuck=true, pngOver=false, pngWon=false, pngBest=0,
+    pngLastTs=0, pngKey=0, pngServe=1, pngMsg='', pngMsgT=0;
+
+function openPong() {
+  pngOn=true; pngMe=160; pngCpu=160; pngMyPts=0; pngCpuPts=0;
+  pngOver=false; pngStuck=true; pngServe=1; pngLastTs=0; pngKey=0; pngMsg=''; pngMsgT=0;
+  const sc = Math.min((innerWidth-30)/320, (innerHeight-30)/440, 1.7);
+  pngCv.style.width = Math.floor(320*sc)+'px';
+  pngCv.style.height = Math.floor(440*sc)+'px';
+  pngBoxEl.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.08); blip(523,0.08); blip(659,0.1);
+  requestAnimationFrame(pngLoop);
+}
+function closePong() { pngOn=false; pngBoxEl.style.display='none'; }
+function pngTap() {
+  if (pngOver) {
+    pngMyPts=0; pngCpuPts=0; pngOver=false; pngStuck=true; pngServe=1;
+    blip(523,0.08); blip(659,0.1);
+  } else if (pngStuck) {                // Aufschlag!
+    pngStuck=false;
+    pngBX=160; pngBY=240;
+    const off=Math.random()*0.7-0.35;
+    pngVX=Math.sin(off)*230; pngVY=pngServe*Math.cos(off)*230;
+    blip(520,0.06);
+  }
+}
+function pngStep(dt) {
+  // Computer-Schläger denkt mit (aber nicht zu schnell!)
+  const ziel = pngVY<0 ? pngBX : 160;
+  pngCpu += Math.max(-130*dt, Math.min(130*dt, ziel-pngCpu));
+  pngCpu = Math.max(34, Math.min(286, pngCpu));
+  if (pngStuck) return;
+  const R=6;
+  const steps=Math.ceil(Math.hypot(pngVX,pngVY)*dt/5);
+  for (let i=0;i<steps;i++) {
+    pngBX += pngVX*dt/steps; pngBY += pngVY*dt/steps;
+    if (pngBX<10+R) { pngBX=10+R; pngVX=Math.abs(pngVX); blip(300,0.03); }
+    if (pngBX>310-R){ pngBX=310-R; pngVX=-Math.abs(pngVX); blip(300,0.03); }
+    if (pngVY>0 && pngBY>=398-R && pngBY<=410 && Math.abs(pngBX-pngMe)<=34) {     // dein Schläger
+      const off=(pngBX-pngMe)/28, sp=Math.min(400, Math.hypot(pngVX,pngVY)*1.05);
+      pngVX=Math.sin(off*1.0)*sp; pngVY=-Math.cos(off*1.0)*sp;
+      pngBY=398-R; blip(420,0.04);
+    }
+    if (pngVY<0 && pngBY<=72+R && pngBY>=60 && Math.abs(pngBX-pngCpu)<=34) {      // Computer
+      const off=(pngBX-pngCpu)/28, sp=Math.min(400, Math.hypot(pngVX,pngVY)*1.05);
+      pngVX=Math.sin(off*1.0)*sp; pngVY=Math.cos(off*1.0)*sp;
+      pngBY=72+R; blip(360,0.04);
+    }
+    if (pngBY>452) {                    // Punkt für den Computer
+      pngCpuPts++; pngServe=1; pngStuck=true;
+      pngMsg='Punkt für den Computer!'; pngMsgT=1.5;
+      blip(220,0.12); blip(180,0.16);
+      break;
+    }
+    if (pngBY<34) {                     // Punkt für DICH!
+      pngMyPts++; pngServe=-1; pngStuck=true;
+      pngMsg='⭐ Dein Punkt!'; pngMsgT=1.5;
+      blip(700,0.06); blip(900,0.08);
+      break;
+    }
+  }
+  if (pngMyPts>=5 || pngCpuPts>=5) {
+    pngOver=true; pngWon=pngMyPts>=5; pngMsgT=0;
+    if (pngWon) { pngBest++; scheduleSave(); blip(523,0.1); blip(659,0.1); blip(784,0.12); blip(1047,0.18); }
+    else { blip(220,0.15); blip(180,0.2); blip(140,0.3); }
+  }
+}
+function pngLoop(ts) {
+  if (!pngOn) return;
+  const dt = Math.min(0.03, pngLastTs ? (ts-pngLastTs)/1000 : 0.016);
+  pngLastTs = ts;
+  if (pngMsgT>0) pngMsgT -= dt;
+  if (pngKey) pngMe = Math.max(34, Math.min(286, pngMe + pngKey*300*dt));
+  if (!pngOver) pngStep(dt);
+  pngDraw();
+  requestAnimationFrame(pngLoop);
+}
+function pngDraw() {
+  const g = pngG;
+  g.fillStyle='#06060e'; g.fillRect(0,0,320,440);
+  g.fillStyle='#2a2a34'; g.fillRect(8,46,2,394); g.fillRect(310,46,2,394);
+  for (let x=14;x<310;x+=20) g.fillRect(x,240,12,3);      // Mittellinie
+  g.fillStyle='#f0f0f8';
+  g.fillRect(pngCpu-28,64,56,8);                          // Computer oben
+  g.fillRect(pngMe-28,398,56,8);                          // du unten
+  if (!pngStuck || pngOver) { g.fillStyle='#f5d93c';
+    g.beginPath(); g.arc(pngBX,pngBY,6,0,7); g.fill(); }
+  g.fillStyle='rgba(0,0,0,0.55)'; g.fillRect(0,0,320,46);
+  g.fillStyle='#3ce0e0'; g.font='bold 15px monospace'; g.textAlign='center';
+  g.fillText('★ PING-PONG ★', 160, 20);
+  g.font='bold 12px monospace'; g.fillStyle='#fff';
+  g.fillText('Du:'+pngMyPts+'  Computer:'+pngCpuPts+'  (wer zuerst 5 hat!)', 160, 38);
+  const now2 = performance.now();
+  if (pngStuck && !pngOver && Math.floor(now2/450)%2) {
+    g.fillStyle='#fff'; g.font='bold 14px monospace';
+    g.fillText('Tippen = Aufschlag!', 160, 300);
+    g.fillText('Finger ziehen = Schläger lenken', 160, 320);
+  }
+  if (pngMsgT>0) { g.fillStyle='#ffd83c'; g.font='bold 18px monospace'; g.fillText(pngMsg, 160, 240); }
+  if (pngOver) {
+    g.fillStyle='rgba(0,0,0,0.6)'; g.fillRect(0,140,320,160);
+    g.fillStyle='#ffd83c'; g.font='bold 24px monospace';
+    g.fillText(pngWon ? 'GEWONNEN! 🏆' : 'Verloren! 😅', 160, 190);
+    g.fillStyle='#fff'; g.font='bold 15px monospace';
+    g.fillText(pngMyPts+' : '+pngCpuPts, 160, 220);
+    g.fillStyle='#3ce0e0'; g.fillText('Deine Siege bisher: '+pngBest, 160, 244);
+    if (Math.floor(now2/400)%2) { g.fillStyle='#5cc24e'; g.font='bold 14px monospace';
+      g.fillText('Tippen = nochmal spielen!', 160, 280); }
+  }
+}
+function pngPoint(clientX) {
+  const r = pngCv.getBoundingClientRect();
+  pngMe = Math.max(34, Math.min(286, (clientX-r.left)/r.width*320));
+}
+pngCv.addEventListener('touchstart', e=>{ e.preventDefault(); pngPoint(e.touches[0].clientX); pngTap(); }, {passive:false});
+pngCv.addEventListener('touchmove',  e=>{ e.preventDefault(); pngPoint(e.touches[0].clientX); }, {passive:false});
+pngCv.addEventListener('mousedown',  e=>{ e.preventDefault(); pngPoint(e.clientX); pngTap(); });
+pngCv.addEventListener('mousemove',  e=>{ if (pngOn) pngPoint(e.clientX); });
+document.getElementById('pngClose').addEventListener('click', ()=>closePong());
+document.getElementById('pngClose').addEventListener('touchstart', e=>{ e.preventDefault(); closePong(); }, {passive:false});
+
+// ------------------------------ Weltraum-Schützen 👾 -------------------------
+const invBoxEl = document.getElementById('invBox');
+const invCv = document.getElementById('invCanvas'), invG = invCv.getContext('2d');
+let invOn=false, invAliens=[], invDir=1, invShots=[], invBombs=[], invShipX=160,
+    invScore=0, invLives=3, invWave=1, invBest=0, invOver=false, invStuck=true,
+    invLastTs=0, invKey=0, invMsg='', invMsgT=0, invCool=0, invBombT=1.6, invFlash=0;
+
+function invNewWave() {
+  invAliens.length=0;
+  for (let r=0;r<4;r++) for (let c=0;c<7;c++)
+    invAliens.push({x:52+c*36, y:84+r*30, r, alive:true});
+  invDir=1; invShots.length=0; invBombs.length=0; invBombT=1.6;
+}
+function openInvaders() {
+  invOn=true; invShipX=160; invScore=0; invLives=3; invWave=1;
+  invOver=false; invStuck=true; invLastTs=0; invKey=0; invMsg=''; invMsgT=0;
+  invCool=0; invFlash=0;
+  invNewWave();
+  const sc = Math.min((innerWidth-30)/320, (innerHeight-30)/440, 1.7);
+  invCv.style.width = Math.floor(320*sc)+'px';
+  invCv.style.height = Math.floor(440*sc)+'px';
+  invBoxEl.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.08); blip(523,0.08); blip(659,0.1);
+  requestAnimationFrame(invLoop);
+}
+function closeInvaders() { invOn=false; invBoxEl.style.display='none'; }
+function invShoot() {
+  if (invShots.length>=2) return;
+  invShots.push({x:invShipX, y:392});
+  blip(880,0.04);
+}
+function invTap() {
+  if (invOver) {
+    invScore=0; invLives=3; invWave=1; invOver=false; invStuck=true; invNewWave();
+    blip(523,0.08); blip(659,0.1);
+  } else if (invStuck) { invStuck=false; blip(520,0.06); }
+  else invShoot();
+}
+function invStep(dt) {
+  const lebend = invAliens.filter(a=>a.alive);
+  const sp = 18 + invWave*7 + (28-lebend.length)*1.1;     // weniger Aliens = flinker!
+  let minX=999, maxX=-999, maxY=0;
+  for (const a of lebend) { minX=Math.min(minX,a.x); maxX=Math.max(maxX,a.x); maxY=Math.max(maxY,a.y); }
+  for (const a of invAliens) a.x += invDir*sp*dt;
+  if (maxX>296 || minX<24) { invDir*=-1; for (const a of invAliens) a.y += 14; }
+  if (maxY>=376) {                                        // zu tief! Eine Chance noch
+    invLives--; invFlash=0.7;
+    for (const a of invAliens) a.y -= 140;
+    if (invLives<=0) { invOver=true; invMsgT=0;
+      if (invScore>invBest) { invBest=invScore; scheduleSave(); }
+      blip(220,0.15); blip(180,0.2); blip(140,0.3);
+    } else { invMsg='👾 Zu nah! Noch '+invLives+' Leben'; invMsgT=1.6; blip(220,0.12); blip(180,0.16); }
+  }
+  invCool -= dt;                                          // Dauerfeuer hilft mit!
+  if (invCool<=0) { invShoot(); invCool=0.55; }
+  for (let i=invShots.length-1;i>=0;i--) {
+    const s=invShots[i]; s.y -= 330*dt;
+    if (s.y<50) { invShots.splice(i,1); continue; }
+    for (const a of invAliens) {
+      if (!a.alive) continue;
+      if (Math.abs(a.x-s.x)<15 && Math.abs(a.y-s.y)<12) {
+        a.alive=false; invShots.splice(i,1);
+        invScore += 4-a.r;                                // obere Reihen = mehr Punkte
+        blip(600+a.r*80,0.05);
+        break;
+      }
+    }
+  }
+  invBombT -= dt;
+  if (invBombT<=0 && lebend.length) {                     // ein Alien lässt was fallen
+    const a = lebend[Math.floor(Math.random()*lebend.length)];
+    invBombs.push({x:a.x, y:a.y+10});
+    invBombT = Math.max(0.8, 1.7-invWave*0.12);
+  }
+  for (let i=invBombs.length-1;i>=0;i--) {
+    const b=invBombs[i]; b.y += (115+invWave*10)*dt;
+    if (b.y>440) { invBombs.splice(i,1); continue; }
+    if (Math.abs(b.x-invShipX)<16 && b.y>392 && b.y<422) {   // getroffen!
+      invBombs.length=0; invLives--; invFlash=0.7;
+      if (invLives<=0) { invOver=true; invMsgT=0;
+        if (invScore>invBest) { invBest=invScore; scheduleSave(); }
+        blip(220,0.15); blip(180,0.2); blip(140,0.3);
+      } else { invMsg='💥 Getroffen! Noch '+invLives+' Leben'; invMsgT=1.6; blip(220,0.12); blip(180,0.16); }
+      break;
+    }
+  }
+  if (!invAliens.some(a=>a.alive)) {                      // Welle geschafft!
+    invWave++; invScore+=25; invNewWave();
+    invMsg='Welle '+invWave+'! 🚀'; invMsgT=2;
+    blip(523,0.08); blip(659,0.08); blip(784,0.1); blip(1047,0.14);
+  }
+}
+function invLoop(ts) {
+  if (!invOn) return;
+  const dt = Math.min(0.03, invLastTs ? (ts-invLastTs)/1000 : 0.016);
+  invLastTs = ts;
+  if (invMsgT>0) invMsgT -= dt;
+  if (invFlash>0) invFlash -= dt;
+  if (invKey) invShipX = Math.max(24, Math.min(296, invShipX + invKey*300*dt));
+  if (!invStuck && !invOver) invStep(dt);
+  invDraw();
+  requestAnimationFrame(invLoop);
+}
+function invDraw() {
+  const g = invG;
+  g.fillStyle='#06060e'; g.fillRect(0,0,320,440);
+  g.fillStyle='#2a2a44';                                  // Sternchen
+  for (let i=0;i<40;i++) g.fillRect((i*73)%320, 50+(i*97)%380, 2, 2);
+  for (const a of invAliens) {                            // die Aliens!
+    if (!a.alive) continue;
+    g.fillStyle = a.r%2 ? '#96dc5a' : '#d850c8';
+    g.fillRect(a.x-11,a.y-7,22,14);
+    g.fillRect(a.x-15,a.y-2,4,6); g.fillRect(a.x+11,a.y-2,4,6);   // Ärmchen
+    g.fillStyle='#06060e';
+    g.fillRect(a.x-6,a.y-3,4,4); g.fillRect(a.x+2,a.y-3,4,4);     // Augen
+  }
+  g.fillStyle='#fff';
+  for (const s of invShots) g.fillRect(s.x-2,s.y-8,4,10);
+  g.fillStyle='#f5d93c';
+  for (const b of invBombs) g.fillRect(b.x-3,b.y-5,6,8);
+  if (!invOver) {                                         // dein Raumschiff
+    g.fillStyle='#50c8e6';
+    g.fillRect(invShipX-16,404,32,12);
+    g.fillRect(invShipX-5,394,10,10);
+    g.fillRect(invShipX-2,388,4,6);
+  }
+  g.fillStyle='rgba(0,0,0,0.55)'; g.fillRect(0,0,320,46);
+  g.fillStyle='#3ce0e0'; g.font='bold 15px monospace'; g.textAlign='center';
+  g.fillText('★ WELTRAUM-SCHÜTZEN ★', 160, 20);
+  g.font='bold 12px monospace'; g.fillStyle='#fff';
+  g.fillText('Punkte:'+invScore+'  Welle:'+invWave+'  '+'❤'.repeat(Math.max(0,invLives)), 160, 38);
+  const now2 = performance.now();
+  if (invStuck && !invOver && Math.floor(now2/450)%2) {
+    g.fillStyle='#fff'; g.font='bold 14px monospace';
+    g.fillText('Tippen = Start!', 160, 300);
+    g.fillText('Ziehen = fliegen · Tippen = schießen', 160, 320);
+  }
+  if (invMsgT>0) { g.fillStyle='#ffd83c'; g.font='bold 20px monospace'; g.fillText(invMsg, 160, 250); }
+  if (invFlash>0) { g.fillStyle='rgba(255,80,30,'+(invFlash*0.6)+')'; g.fillRect(0,0,320,440); }
+  if (invOver) {
+    g.fillStyle='rgba(0,0,0,0.6)'; g.fillRect(0,140,320,160);
+    g.fillStyle='#ffd83c'; g.font='bold 26px monospace'; g.fillText('VORBEI! 👾', 160, 190);
+    g.fillStyle='#fff'; g.font='bold 16px monospace'; g.fillText('Deine Punkte: '+invScore, 160, 220);
+    g.fillStyle='#3ce0e0'; g.fillText('Rekord: '+invBest, 160, 244);
+    if (Math.floor(now2/400)%2) { g.fillStyle='#5cc24e'; g.font='bold 14px monospace';
+      g.fillText('Tippen = nochmal spielen!', 160, 280); }
+  }
+}
+function invPoint(clientX) {
+  const r = invCv.getBoundingClientRect();
+  invShipX = Math.max(24, Math.min(296, (clientX-r.left)/r.width*320));
+}
+invCv.addEventListener('touchstart', e=>{ e.preventDefault(); invPoint(e.touches[0].clientX); invTap(); }, {passive:false});
+invCv.addEventListener('touchmove',  e=>{ e.preventDefault(); invPoint(e.touches[0].clientX); }, {passive:false});
+invCv.addEventListener('mousedown',  e=>{ e.preventDefault(); invPoint(e.clientX); invTap(); });
+invCv.addEventListener('mousemove',  e=>{ if (invOn) invPoint(e.clientX); });
+document.getElementById('invClose').addEventListener('click', ()=>closeInvaders());
+document.getElementById('invClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeInvaders(); }, {passive:false});
+
 // ------------------------------ Läden 🏪 ------------------------------------
 const shopBox = document.getElementById('shopBox');
 function openShop(a) {
@@ -5489,6 +5955,18 @@ function doPlace(dir) {
     openRace();
     return;
   }
+  if (hit.block===SCREEN_SNAKE && HOTBAR_ITEMS[selSlot]!==SCREEN_SNAKE) {  // Schlange!
+    openSnake();
+    return;
+  }
+  if (hit.block===SCREEN_PONG && HOTBAR_ITEMS[selSlot]!==SCREEN_PONG) {    // Ping-Pong!
+    openPong();
+    return;
+  }
+  if (hit.block===SCREEN_INV && HOTBAR_ITEMS[selSlot]!==SCREEN_INV) {      // Weltraum!
+    openInvaders();
+    return;
+  }
   if (hit.block===SCREEN_SOON) {
     toast('🕹️ Hier kommt bald ein neues Spiel! Welches wünschst du dir?', 3000);
     blip(440,0.06); blip(550,0.06);
@@ -6117,6 +6595,29 @@ addEventListener('keydown',e=>{
     if (e.code==='Escape') closeRace();
     return;
   }
+  if (snkOn) {                        // bei der Schlange: alle 4 Pfeile
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); snkTap(); }
+    if (e.code==='ArrowLeft')  { e.preventDefault(); snkTurn(-1,0); }
+    if (e.code==='ArrowRight') { e.preventDefault(); snkTurn(1,0); }
+    if (e.code==='ArrowUp')    { e.preventDefault(); snkTurn(0,-1); }
+    if (e.code==='ArrowDown')  { e.preventDefault(); snkTurn(0,1); }
+    if (e.code==='Escape') closeSnake();
+    return;
+  }
+  if (pngOn) {                        // beim Ping-Pong
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); pngTap(); }
+    if (e.code==='ArrowLeft')  { e.preventDefault(); pngKey=-1; }
+    if (e.code==='ArrowRight') { e.preventDefault(); pngKey=1; }
+    if (e.code==='Escape') closePong();
+    return;
+  }
+  if (invOn) {                        // bei den Weltraum-Schützen
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); invTap(); }
+    if (e.code==='ArrowLeft')  { e.preventDefault(); invKey=-1; }
+    if (e.code==='ArrowRight') { e.preventDefault(); invKey=1; }
+    if (e.code==='Escape') closeInvaders();
+    return;
+  }
   if (e.code==='KeyT' && started) { e.preventDefault(); openChat(); return; }
   if (e.code==='KeyF' && started) { toggleFly(); return; }
   keys[e.code]=true;
@@ -6128,7 +6629,9 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if ((e.code==='ArrowLeft' && brkKey<0) || (e.code==='ArrowRight' && brkKey>0)) brkKey=0;
-  if ((e.code==='ArrowLeft' && racKey<0) || (e.code==='ArrowRight' && racKey>0)) racKey=0; });
+  if ((e.code==='ArrowLeft' && racKey<0) || (e.code==='ArrowRight' && racKey>0)) racKey=0;
+  if ((e.code==='ArrowLeft' && pngKey<0) || (e.code==='ArrowRight' && pngKey>0)) pngKey=0;
+  if ((e.code==='ArrowLeft' && invKey<0) || (e.code==='ArrowRight' && invKey>0)) invKey=0; });
 canvas.addEventListener('mousedown',e=>{
   if (!started) return;
   if (lassoOn) {                        // Lasso auch mit der Maus malen
