@@ -192,6 +192,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   roter Pfeil wandert live mit, damit du immer weißt, wo du bist.
   Tippe irgendwo auf die Welt-Karte – dann führt dich der
   Kompass-Pfeil dorthin!
+- Häuser reparieren sich selbst! 🏠🔧 Uralte Abbau-Reste im
+  Spielstand (z. B. von einem Baum, der früher genau dort stand, wo
+  jetzt ein Haus ist) können keine Löcher mehr in Wände, Fenster,
+  Dächer und Ziegel von Gebäuden machen – beim Neuladen heilt sich
+  alles. Türen, Möbel und alles absichtlich Umgebaute bleibt
+  natürlich so, wie Jonah es haben will. Und die Bau-Türme der
+  fleißigen Bewohner sind jetzt nur noch vorübergehend – sie landen
+  nie im Spielstand
 - Fleißige Dorfbewohner! 🧑‍🌾🔨 Die Bewohner (und Kinder) können
   jetzt, was Jonah auch kann: Sie ernten reife Beete und säen neu,
   pflanzen Blumen, bauen kleine Türme (und räumen sie brav wieder

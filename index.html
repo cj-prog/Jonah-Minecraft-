@@ -301,7 +301,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 87 &middot; Fleißige Dorfbewohner! 🧑‍🌾🔨</p>
+    Version 88 &middot; Häuser reparieren sich selbst! 🏠🔧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -347,7 +347,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 87;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 88;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1357,6 +1357,12 @@ function genChunkData(cx, cz) {
       // Pfützen lagen auf Naturboden; in Wänden/Böden von Gebäuden haben sie nichts verloren
       if (v===WATER && !(data[i]===AIR || data[i]===WATER || data[i]===GRASS ||
                          data[i]===DIRT || data[i]===SAND)) { e.delete(i); continue; }
+      // Häuser heilen sich selbst: uralte Abbau-Löcher (z.B. von einem Baum,
+      // der früher hier stand) dürfen keine Wände, Fenster, Dächer oder
+      // Ziegel von Gebäuden durchlöchern. Türen, Möbel und alles andere,
+      // was Jonah absichtlich verändert hat, bleibt wie es ist!
+      if (v===AIR && (data[i]===PLANK || data[i]===GLASS ||
+                      data[i]===WOOL || data[i]===BRICK)) { e.delete(i); continue; }
       data[i]=v;
     }
     if (!e.size) edits.delete(ckey(cx,cz));
@@ -2305,6 +2311,14 @@ const REPLIES_DEFAULT = ['Ach so!','Wirklich? Erzähl mal mehr!','Da hast du rec
 function jobToast(a, msg) {             // nur erzählen, wenn Jonah zuschaut
   if (Math.hypot(player.x-a.x, player.z-a.z) < 14) toast(msg, 2800);
 }
+function setBlockFluechtig(wx,wy,wz,v) {   // Bewohner-Baustellen: nur zum Spaß,
+  if (wy<=CH_MIN || wy>=CH) return;        // sie landen NIE im Spielstand!
+  const ch = getChunk(wx>>4, wz>>4);
+  if (!ch || !ch.data) return;
+  const i = bidx(wx&15,wy,wz&15);
+  if (ch.data[i]===v) return;
+  ch.data[i]=v; ch.dirty=true;
+}
 function waehleJob(a) {                 // was gibt es hier zu tun?
   const ax=Math.floor(a.x), ay=Math.floor(a.y), az=Math.floor(a.z);
   const jobs=[];
@@ -2327,9 +2341,9 @@ function waehleJob(a) {                 // was gibt es hier zu tun?
 }
 function jobAufraeumen(a) {             // nichts Halbes stehenlassen!
   const j=a.job;
-  if (j && j.typ==='bauen' && j.bx!==undefined)
-    for (let i=0;i<3;i++)
-      if (getBlock(j.bx,j.by+i,j.bz)===PLANK) setBlock(j.bx,j.by+i,j.bz,AIR);
+  if (j && j.gebaut)                    // nur die eigenen Bretter wegräumen
+    for (const [gx,gy,gz] of j.gebaut)
+      if (getBlock(gx,gy,gz)===PLANK) setBlockFluechtig(gx,gy,gz,AIR);
   a.job=null;
 }
 function macheJob(a, dt) {
@@ -2386,7 +2400,7 @@ function macheJob(a, dt) {
       const by=Math.floor(a.y);
       if (getBlock(bx,by,bz)!==AIR || !isSolid(bx,by-1,bz) ||
           (Math.abs(bx+0.5-a.x)<0.9 && Math.abs(bz+0.5-a.z)<0.9)) { a.job=null; return; }
-      j.bx=bx; j.by=by; j.bz=bz; j.next=0.5; j.hoehe=0; j.abbau=false;
+      j.bx=bx; j.by=by; j.bz=bz; j.next=0.5; j.hoehe=0; j.abbau=false; j.gebaut=[];
       jobToast(a, '🔨 '+wer+' baut einen kleinen Turm - genau wie du!');
     }
     a.walking=false;
@@ -2395,17 +2409,18 @@ function macheJob(a, dt) {
       j.next = j.t+0.9;
       if (!j.abbau) {
         if (j.hoehe<3 && getBlock(j.bx, j.by+j.hoehe, j.bz)===AIR) {
-          setBlock(j.bx, j.by+j.hoehe, j.bz, PLANK);
+          setBlockFluechtig(j.bx, j.by+j.hoehe, j.bz, PLANK);
+          j.gebaut.push([j.bx, j.by+j.hoehe, j.bz]);
           blip(340+j.hoehe*60,0.05);
           j.hoehe++;
           if (j.hoehe>=3) { j.abbau=true; j.next=j.t+2.5;   // kurz bewundern
             jobToast(a, '✨ '+wer+': „Fertig! Und jetzt räume ich wieder auf."'); }
         } else j.abbau=true;
-      } else if (j.hoehe>0) {
-        j.hoehe--;
-        if (getBlock(j.bx, j.by+j.hoehe, j.bz)===PLANK) setBlock(j.bx, j.by+j.hoehe, j.bz, AIR);
+      } else if (j.gebaut.length>0) {
+        const [gx,gy,gz] = j.gebaut.pop();
+        if (getBlock(gx,gy,gz)===PLANK) setBlockFluechtig(gx,gy,gz,AIR);
         blip(260,0.05);
-        if (j.hoehe<=0) a.job=null;
+        if (j.gebaut.length<=0) a.job=null;
       } else a.job=null;
     }
   } else a.job=null;
