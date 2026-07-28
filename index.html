@@ -147,6 +147,7 @@
     white-space:normal; text-align:center; max-width:min(82vw,440px); width:max-content; }
 
   #waterFx { inset:0; background:rgba(20,60,160,.35); display:none; pointer-events:none; }
+  #lavaFx { inset:0; background:rgba(255,90,10,.4); display:none; pointer-events:none; }
   #foodBar { left:calc(12px + env(safe-area-inset-left)); top:calc(12px + env(safe-area-inset-top));
     display:flex; gap:6px; }
   .foodChip { display:none; align-items:center; background:rgba(0,0,0,.4); color:#fff;
@@ -228,6 +229,7 @@
 <div class="hud" id="joyKnob"></div>
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
+<div class="hud" id="lavaFx"></div>
 <div class="hud" id="foodBar">
   <div class="foodChip" id="foodC"></div>
   <div class="foodChip" id="foodT"></div>
@@ -299,7 +301,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 85 &middot; Riesig hoch bauen, tief graben! ⛏️🏗️</p>
+    Version 86 &middot; Lava in der Tiefe! 🌋</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -345,7 +347,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 85;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 86;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -369,7 +371,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
-      SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64;
+      SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -463,6 +465,7 @@ const BLOCKS = {
   [SCREEN_FROG]: { name:'Spiel-Bildschirm 🐸 (antippen = Hüpf-Frosch!)', tiles:[71,71,71], solid:false, model:[
     [0.04,0.04,0, 0.96,0.96,0.08, 55],
     [0.1,0.12,0.08, 0.9,0.88,0.14, 71, 1.6]] },
+  [LAVA]: { name:'Lava 🌋 (heiß! bloß nicht reinfallen!)', tiles:[72,72,72], solid:false },
   // Fitnessgeräte: Sport machen! 💪
   [HANTEL]: { name:'Hantel 💪 (antippen = Krafttraining!)', tiles:[55,55,55], solid:false, model:[
     [0.2,0.1,0.44, 0.8,0.2,0.56, 3],                    // Stange
@@ -824,11 +827,18 @@ function genChunkData(cx, cz) {
     const wx = x0+lx, wz = z0+lz;
     const h = terrainHeight(wx, wz);
     const beach = h <= SEA+1;
+    const lavaN = vnoise(wx*0.05, wz*0.05, 909);      // Lava-See am Weltboden
+    const pockN = vnoise(wx*0.07, wz*0.07, 911);      // Lava-Blasen weiter oben
+    const pockY = Math.floor(CH_MIN+10 + vnoise(wx*0.03, wz*0.03, 912)*38);
     for (let y=CH_MIN; y<=h; y++) {
       let b;
       if (y < h-3) b = STONE;
       else if (y < h) b = beach ? SAND : DIRT;
       else b = beach ? SAND : GRASS;
+      if (y>CH_MIN && y<h-6) {
+        if (lavaN>0.3 && y <= CH_MIN+1+Math.round((lavaN-0.3)*6)) b = LAVA;
+        else if (pockN>0.66 && Math.abs(y-pockY) <= 1+Math.round((pockN-0.66)*6)) b = LAVA;
+      }
       data[bidx(lx,y,lz)] = b;
     }
     for (let y=h+1; y<=SEA; y++) data[bidx(lx,y,lz)] = WATER;
@@ -1714,6 +1724,12 @@ atlas.width = atlas.height = T*ATLAS_N;
     }
     return vary(40,110,50,12);
   });
+  tile(72,(x,y)=>{                                                  // Lava: glühend heiß!
+    const n = vnoise(x*0.4, y*0.4, 933);
+    if (n>0.55 || rnd()<0.06) return vary(255,214,66,20);           // gelb glühende Adern
+    if (n>0.3) return vary(250,140,30,18);
+    return vary(216,74,18,20);                                      // tiefes Orange-Rot
+  });
   tile(65,(x,y)=>{                                                  // Bildschirm: bald neues Spiel (?)
     if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
     const q=(y===4&&x>=6&&x<=9)||(y===5&&(x===5||x===10))||(y===6&&x===10)||
@@ -1922,16 +1938,17 @@ function buildMesh(ch) {
       const nb = getBlock(wx+F.d[0], y+F.d[1], wz+F.d[2]);
       const nbModel = nb && (BLOCKS[nb].model || BLOCKS[nb].fence);
       let visible;
-      if (b===WATER) visible = (nb===AIR || nbModel);
+      if (b===WATER || b===LAVA) visible = (nb===AIR || nbModel);
       else if (b===GLASS) visible = (nb===AIR || nb===WATER || nbModel);
       else visible = (nb===AIR || nb===WATER || nb===GLASS || nbModel);
       if (!visible) continue;
       const tile = def.tiles[f===2?1:f===3?2:0];
       const arr = (b===WATER || b===GLASS) ? wat : opq;   // Glas ist durchsichtig
+      const sh2 = b===LAVA ? 1.5 : F.s;   // Lava glüht von selbst, auch im Dunkeln!
       for (let k=0;k<6;k++) {
         const c = F.c[TRI[k]];
         const uv = tileUV(tile, c[3], c[4]);
-        arr.push(wx+c[0], y+c[1], wz+c[2], uv[0], uv[1], F.s);
+        arr.push(wx+c[0], y+c[1], wz+c[2], uv[0], uv[1], sh2);
       }
     }
   }
@@ -2104,6 +2121,20 @@ function physics(dt) {
     blip(500,0.08); blip(300,0.12); blip(200,0.18);
   }
   wasSwim = swim;
+
+  // Lava ist HEISS: raus da, und zwar mit Schwung!
+  lavaHurtT -= dt;
+  const inLava = getBlock(Math.floor(player.x), Math.floor(player.y+0.2), Math.floor(player.z))===LAVA ||
+                 getBlock(Math.floor(player.x), Math.floor(player.y+0.9), Math.floor(player.z))===LAVA;
+  if (inLava && lavaHurtT<=0) {
+    lavaHurtT = 1.2;
+    player.vy = 13;                     // Aua-Hüpfer nach oben!
+    toast('🔥 AUAAA! Lava ist glühend heiß! Schnell weg da!', 2800);
+    blip(150,0.12); blip(220,0.1); blip(300,0.08); blip(500,0.06);
+    const fx2 = document.getElementById('lavaFx');
+    fx2.style.display='block';
+    setTimeout(()=>fx2.style.display='none', 450);
+  }
 
   // Bewegungs-Eingabe
   let mf = 0, ms = 0;
@@ -2291,6 +2322,7 @@ let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
 let flying = false;                     // Flugmodus
 let wasSwim = false;                    // für den Platsch beim Eintauchen
+let lavaHurtT = 0;                      // kurze Schonzeit nach dem Lava-Aua
 let wfSoundT = 0;                       // Wasserfall-Rauschen-Takt
 let downHeld = false;
 
@@ -5118,7 +5150,7 @@ const MAP_BLOCK_COL = {
   [TNT]:'#c04030', [BED]:'#c05050', [TABLE]:'#b08a58', [CABINET]:'#b08a58',
   [CHEST]:'#8a6a3c', [CHEST_OPEN]:'#8a6a3c', [DOOR]:'#a8845c', [DOOR_TOP]:'#a8845c',
   [DOOR_OPEN]:'#a8845c', [DOOR_TOP_OPEN]:'#a8845c', [FENCE]:'#9a7a4e',
-  [GATE]:'#9aa0a8', [GATE_OPEN]:'#9aa0a8', [SNOWMAN]:'#f0f4f8',
+  [GATE]:'#9aa0a8', [GATE_OPEN]:'#9aa0a8', [SNOWMAN]:'#f0f4f8', [LAVA]:'#e85a1e',
   [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -6068,6 +6100,17 @@ function doBreak(dir) {
     setBlock(hit.x,hit.y,hit.z,AIR);
     toast('🪣 Wasser aufgesaugt!');
     blip(500,0.08); blip(400,0.06);
+    return;
+  }
+  if (hit.block===LAVA) {
+    if (scoop) {                        // Wasser auf Lava = neuer Stein!
+      setBlock(hit.x,hit.y,hit.z,STONE);
+      toast('💦🌋 Zisssch! Das Wasser macht aus der Lava festen Stein!', 3000);
+      blip(800,0.1); blip(500,0.15); blip(300,0.1);
+    } else {
+      toast('🔥 Viel zu heiß zum Anfassen! Tipp: Wasser macht Lava zu Stein.', 3000);
+      blip(200,0.08);
+    }
     return;
   }
   if (hit.block===TNT) { igniteTNT(hit.x,hit.y,hit.z); return; }
