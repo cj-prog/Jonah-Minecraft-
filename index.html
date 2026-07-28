@@ -127,11 +127,11 @@
     border:none; color:#fff; }
   #paintClear { background:#b3402e; }
   #paintDone { background:#4caf50; }
-  #bowlBox, #brkBox, #racBox, #snkBox, #pngBox, #invBox { inset:0; display:none; z-index:60;
+  #bowlBox, #brkBox, #racBox, #snkBox, #pngBox, #invBox, #frgBox { inset:0; display:none; z-index:60;
     background:#06060e; align-items:center; justify-content:center; }
-  #bowlCanvas, #brkCanvas, #racCanvas, #snkCanvas, #pngCanvas, #invCanvas { touch-action:none;
+  #bowlCanvas, #brkCanvas, #racCanvas, #snkCanvas, #pngCanvas, #invCanvas, #frgCanvas { touch-action:none;
     image-rendering:pixelated; border:3px solid #3ce0e0; border-radius:8px; }
-  #bowlClose, #brkClose, #racClose, #snkClose, #pngClose, #invClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
+  #bowlClose, #brkClose, #racClose, #snkClose, #pngClose, #invClose, #frgClose { position:absolute; top:calc(10px + env(safe-area-inset-top));
     right:calc(12px + env(safe-area-inset-right)); font-size:17px; font-weight:bold;
     background:rgba(255,255,255,.16); color:#fff; border:2px solid rgba(255,255,255,.4);
     border-radius:10px; padding:7px 14px; }
@@ -282,6 +282,10 @@
   <canvas id="invCanvas" width="320" height="440"></canvas>
   <button id="invClose">✖ Raus</button>
 </div>
+<div class="hud" id="frgBox">
+  <canvas id="frgCanvas" width="320" height="440"></canvas>
+  <button id="frgClose">✖ Raus</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -295,7 +299,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 83 &middot; 3 neue Spiele: Schlange, Ping-Pong, Weltraum! 🐍🏓👾</p>
+    Version 84 &middot; Hüpf-Frosch in der Spielhalle! 🐸</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -339,7 +343,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 83;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 84;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -363,7 +367,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       PIC=43, PIC_N=44, PIC_E=45, PIC_W=46, HANTEL=47, LAUFBAND=48, TRAMPOLIN=49, SPRUNGTURM=50,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
-      SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63;
+      SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -454,6 +458,9 @@ const BLOCKS = {
   [SCREEN_INV]: { name:'Spiel-Bildschirm 👾 (antippen = Weltraum-Schützen!)', tiles:[70,70,70], solid:false, model:[
     [0.04,0.04,0, 0.96,0.96,0.08, 55],
     [0.1,0.12,0.08, 0.9,0.88,0.14, 70, 1.6]] },
+  [SCREEN_FROG]: { name:'Spiel-Bildschirm 🐸 (antippen = Hüpf-Frosch!)', tiles:[71,71,71], solid:false, model:[
+    [0.04,0.04,0, 0.96,0.96,0.08, 55],
+    [0.1,0.12,0.08, 0.9,0.88,0.14, 71, 1.6]] },
   // Fitnessgeräte: Sport machen! 💪
   [HANTEL]: { name:'Hantel 💪 (antippen = Krafttraining!)', tiles:[55,55,55], solid:false, model:[
     [0.2,0.1,0.44, 0.8,0.2,0.56, 3],                    // Stange
@@ -573,7 +580,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1260,7 +1267,7 @@ function genChunkData(cx, cz) {
       put(A.ax,   by+2, A.az-5, SCREEN_BOWL, false);
       put(A.ax+2, by+2, A.az-5, SCREEN_PONG, false);
       put(A.ax+4, by+2, A.az-5, SCREEN_RACE, false);
-      put(A.ax+6, by+2, A.az-5, SCREEN_SOON, false);
+      put(A.ax+6, by+2, A.az-5, SCREEN_FROG, false);
       put(A.ax-1, by+1, A.az-4, SIGN, false);                                   // Hinweis-Schild
       const bskey=(A.ax-1)+','+(by+1)+','+(A.az-4);
       if (!signTexts.has(bskey)) signTexts.set(bskey,'Bildschirm antippen!');
@@ -1421,7 +1428,7 @@ function saveGame() {
       heli: heliSave,
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
-      bowlBest, brkBest, racBest, snkBest, pngBest, invBest,
+      bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest,
       sword: sword?1:0, bow: bow?1:0,
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
@@ -1469,6 +1476,7 @@ function loadGame() {
     if (typeof s.snkBest==='number') snkBest = s.snkBest;
     if (typeof s.pngBest==='number') pngBest = s.pngBest;
     if (typeof s.invBest==='number') invBest = s.invBest;
+    if (typeof s.frgBest==='number') frgBest = s.frgBest;
     if (s.sword) sword = true;
     if (s.bow) bow = true;
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
@@ -1682,6 +1690,21 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y===9&&x===8) return 'rgb(255,255,255)';                    // Schuss
     if ((y===12&&x>=7&&x<=9)||(y===11&&x===8)) return vary(80,200,230,10);  // Raumschiff
     return vary(8,12,38,8);
+  });
+  tile(71,(x,y)=>{                                                  // Bildschirm: Hüpf-Frosch!
+    if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
+    if (y>=11&&y<=13&&x>=6&&x<=9) return vary(120,220,90,10);       // der Frosch unten
+    if (y>=10) return vary(40,110,50,12);                           // Wiese
+    if (y>=6&&y<=9) {                                               // Straße mit Autos
+      if (y===7&&x>=3&&x<=5) return vary(245,217,60,8);
+      if (y===8&&x>=9&&x<=11) return vary(216,80,80,8);
+      return vary(70,72,78,8);
+    }
+    if (y>=2&&y<=5) {                                               // Fluss mit Stämmen
+      if ((y===3&&x>=4&&x<=8)||(y===5&&x>=8&&x<=12)) return vary(140,100,60,10);
+      return vary(60,120,210,14);
+    }
+    return vary(40,110,50,12);
   });
   tile(65,(x,y)=>{                                                  // Bildschirm: bald neues Spiel (?)
     if (x<1||x>14||y<1||y>14) return vary(44,46,54,8);              // Rahmen
@@ -4278,6 +4301,220 @@ invCv.addEventListener('mousemove',  e=>{ if (invOn) invPoint(e.clientX); });
 document.getElementById('invClose').addEventListener('click', ()=>closeInvaders());
 document.getElementById('invClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeInvaders(); }, {passive:false});
 
+// ------------------------------ Hüpf-Frosch 🐸 (wie Frogger!) ----------------
+const frgBoxEl = document.getElementById('frgBox');
+const frgCv = document.getElementById('frgCanvas'), frgG = frgCv.getContext('2d');
+const FRG_Y0=46, FRG_H=40;              // 9 Reihen à 40 Pixel
+const FRG_ROWS = [                      // von oben nach unten
+  {typ:'ziel'},
+  {typ:'fluss',   sp: 52, gap: 170, w: 96},
+  {typ:'fluss',   sp:-68, gap: 205, w: 76},
+  {typ:'fluss',   sp: 58, gap: 185, w: 116},
+  {typ:'gras'},
+  {typ:'strasse', sp:-78, gap: 155, w: 54},
+  {typ:'strasse', sp: 92, gap: 195, w: 54},
+  {typ:'strasse', sp:-66, gap: 165, w: 54},
+  {typ:'gras'},
+];
+const FRG_CARCOL = ['#f5d93c','#58b6e8','#d85050','#9a5cd8','#f08a24'];
+let frgOn=false, frgObjs=[], frgX=160, frgRow=8, frgScore=0, frgLives=3, frgLevel=1,
+    frgBest=0, frgOver=false, frgStuck=true, frgDead=0, frgLastTs=0,
+    frgMsg='', frgMsgT=0, frgTouch=null, frgMoved=false;
+
+function frgSetup() {
+  frgObjs = FRG_ROWS.map((r,ri)=>{
+    if (!r.sp) return [];
+    const span = Math.ceil(480/r.gap)*r.gap;
+    const arr=[]; arr.span=span;
+    for (let x=0; x<span; x+=r.gap) arr.push({x: x + (ri*57)%r.gap, col: FRG_CARCOL[(ri+arr.length)%FRG_CARCOL.length]});
+    return arr;
+  });
+}
+function frgHome() { frgX=160; frgRow=8; }
+function openFrog() {
+  frgOn=true; frgScore=0; frgLives=3; frgLevel=1; frgOver=false; frgStuck=true;
+  frgDead=0; frgLastTs=0; frgMsg=''; frgMsgT=0;
+  frgSetup(); frgHome();
+  const sc = Math.min((innerWidth-30)/320, (innerHeight-30)/440, 1.7);
+  frgCv.style.width = Math.floor(320*sc)+'px';
+  frgCv.style.height = Math.floor(440*sc)+'px';
+  frgBoxEl.style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.08); blip(523,0.08); blip(659,0.1);
+  requestAnimationFrame(frgLoop);
+}
+function closeFrog() { frgOn=false; frgBoxEl.style.display='none'; }
+function frgTap() {
+  if (frgOver) {
+    frgScore=0; frgLives=3; frgLevel=1; frgOver=false; frgStuck=true;
+    frgSetup(); frgHome();
+    blip(523,0.08); blip(659,0.1);
+  } else if (frgStuck) { frgStuck=false; blip(520,0.06); }
+}
+function frgHop(dx,dy) {
+  if (frgStuck || frgOver || frgDead>0) return;
+  frgX = Math.max(20, Math.min(300, frgX + dx*FRG_H));
+  frgRow = Math.max(0, Math.min(8, frgRow + dy));
+  blip(600,0.04); blip(750,0.03);
+  if (frgRow===0) {                     // GESCHAFFT! 🎉
+    frgScore++;
+    frgMsg='🐸 Gerettet!'; frgMsgT=1.4;
+    blip(523,0.08); blip(659,0.08); blip(784,0.12);
+    if (frgScore%5===0) {               // alle 5 Frösche: schneller!
+      frgLevel++;
+      frgMsg='Level '+frgLevel+'! Schneller! 🚀'; frgMsgT=2;
+    }
+    frgHome();
+  }
+}
+function frgOuch(art) {                 // Platsch oder Autsch!
+  frgDead=0.7; frgLives--;
+  frgMsg = art==='wasser' ? '💦 Platsch!' : '💥 Autsch!';
+  frgMsgT=1.4;
+  blip(220,0.12); blip(180,0.16); blip(140,0.2);
+  if (frgLives<=0) {
+    frgOver=true; frgMsgT=0;
+    if (frgScore>frgBest) { frgBest=frgScore; scheduleSave(); }
+    blip(120,0.25); blip(90,0.3);
+  }
+}
+function frgStep(dt) {
+  const f = 1 + (frgLevel-1)*0.18;      // jedes Level schneller!
+  for (let ri=0; ri<FRG_ROWS.length; ri++) {
+    const r=FRG_ROWS[ri];
+    if (!r.sp) continue;
+    for (const o of frgObjs[ri]) o.x = ((o.x + r.sp*f*dt) % frgObjs[ri].span + frgObjs[ri].span) % frgObjs[ri].span;
+  }
+  if (frgDead>0) {                      // kurze Schreck-Pause, dann zurück zum Start
+    frgDead -= dt;
+    if (frgDead<=0 && !frgOver) frgHome();
+    return;
+  }
+  const r = FRG_ROWS[frgRow];
+  if (r.typ==='strasse') {              // Auto erwischt?
+    for (const o of frgObjs[frgRow]) {
+      const cx = o.x - 80;
+      if (Math.abs(frgX-(cx+r.w/2)) < r.w/2+13) { frgOuch('auto'); return; }
+    }
+  } else if (r.typ==='fluss') {         // auf einem Stamm? Sonst: platsch!
+    let stamm = null;
+    for (const o of frgObjs[frgRow]) {
+      const cx = o.x - 80;
+      if (frgX>cx-8 && frgX<cx+r.w+8) { stamm=o; break; }
+    }
+    if (stamm) {
+      frgX += FRG_ROWS[frgRow].sp*(1+(frgLevel-1)*0.18)*dt;   // treiben lassen
+      if (frgX<12 || frgX>308) frgOuch('wasser');             // vom Rand gespült!
+    } else frgOuch('wasser');
+  }
+}
+function frgLoop(ts) {
+  if (!frgOn) return;
+  const dt = Math.min(0.03, frgLastTs ? (ts-frgLastTs)/1000 : 0.016);
+  frgLastTs = ts;
+  if (frgMsgT>0) frgMsgT -= dt;
+  if (!frgStuck && !frgOver) frgStep(dt);
+  frgDraw();
+  requestAnimationFrame(frgLoop);
+}
+function frgRowY(r) { return FRG_Y0 + r*FRG_H; }
+function frgDraw() {
+  const g = frgG;
+  g.fillStyle='#06060e'; g.fillRect(0,0,320,440);
+  for (let ri=0; ri<FRG_ROWS.length; ri++) {
+    const r=FRG_ROWS[ri], y=frgRowY(ri);
+    if (r.typ==='gras' || r.typ==='ziel') {
+      g.fillStyle = ri===0 ? '#1e5c28' : '#2e7d32';
+      g.fillRect(0,y,320,FRG_H);
+      if (ri===0) {                     // Seerosen am Ziel
+        g.fillStyle='#58b66e';
+        for (let x=30;x<320;x+=64) { g.beginPath(); g.arc(x,y+20,13,0,7); g.fill(); }
+      }
+    } else if (r.typ==='fluss') {
+      g.fillStyle='#1d4fa8'; g.fillRect(0,y,320,FRG_H);
+      g.fillStyle='#8a6a3c';
+      for (const o of frgObjs[ri]) {
+        const cx=o.x-80;
+        g.fillRect(cx, y+8, r.w, 24);
+        g.fillStyle='#6e5230'; g.fillRect(cx+4, y+12, r.w-8, 4); g.fillStyle='#8a6a3c';
+      }
+    } else {                            // Straße
+      g.fillStyle='#3c3c44'; g.fillRect(0,y,320,FRG_H);
+      g.fillStyle='#f0f0f0';
+      for (let x=6;x<320;x+=28) g.fillRect(x,y+FRG_H-2,14,2);
+      for (const o of frgObjs[ri]) {    // Autos von der Seite
+        const cx=o.x-80;
+        g.fillStyle='#16161c';
+        g.fillRect(cx+6,y+28,12,7); g.fillRect(cx+r.w-18,y+28,12,7);   // Räder
+        g.fillStyle=o.col; g.fillRect(cx,y+8,r.w,22);
+        g.fillStyle='rgba(0,0,0,0.35)';
+        g.fillRect(cx + (r.sp>0 ? r.w-20 : 8), y+11, 12, 16);          // Scheibe vorn
+      }
+    }
+  }
+  if (frgDead<=0 && !frgOver) {         // der Frosch! 🐸
+    const y=frgRowY(frgRow)+20;
+    g.fillStyle='#3c9636';
+    g.fillRect(frgX-14,y-6,6,12); g.fillRect(frgX+8,y-6,6,12);         // Beine
+    g.fillStyle='#5cc24e'; g.fillRect(frgX-10,y-11,20,22);             // Körper
+    g.fillStyle='#8ce65c'; g.fillRect(frgX-10,y-11,20,8);              // Kopf
+    g.fillStyle='#fff'; g.fillRect(frgX-8,y-14,6,6); g.fillRect(frgX+2,y-14,6,6);
+    g.fillStyle='#111'; g.fillRect(frgX-6,y-12,3,3); g.fillRect(frgX+4,y-12,3,3);
+  }
+  if (frgDead>0 && !frgOver) {          // Schreck-Ringe
+    g.strokeStyle='#fff'; g.lineWidth=3;
+    g.beginPath(); g.arc(frgX, frgRowY(frgRow)+20, (0.7-frgDead)*40+6, 0, 7); g.stroke();
+  }
+  g.fillStyle='rgba(0,0,0,0.55)'; g.fillRect(0,0,320,46);
+  g.fillStyle='#3ce0e0'; g.font='bold 15px monospace'; g.textAlign='center';
+  g.fillText('★ HÜPF-FROSCH ★', 160, 20);
+  g.font='bold 12px monospace'; g.fillStyle='#fff';
+  g.fillText('Gerettet:'+frgScore+'  Level:'+frgLevel+'  '+'❤'.repeat(Math.max(0,frgLives)), 160, 38);
+  const now2 = performance.now();
+  if (frgStuck && !frgOver && Math.floor(now2/450)%2) {
+    g.fillStyle='#fff'; g.font='bold 13px monospace';
+    g.fillText('Tippen = Start!', 160, 250);
+    g.fillText('Tippen = hüpfen · Wischen = seitwärts', 160, 270);
+  }
+  if (frgMsgT>0) { g.fillStyle='#ffd83c'; g.font='bold 22px monospace'; g.fillText(frgMsg, 160, 250); }
+  if (frgOver) {
+    g.fillStyle='rgba(0,0,0,0.6)'; g.fillRect(0,140,320,160);
+    g.fillStyle='#ffd83c'; g.font='bold 26px monospace'; g.fillText('VORBEI! 🐸', 160, 190);
+    g.fillStyle='#fff'; g.font='bold 16px monospace'; g.fillText('Gerettete Frösche: '+frgScore, 160, 220);
+    g.fillStyle='#3ce0e0'; g.fillText('Rekord: '+frgBest, 160, 244);
+    if (Math.floor(now2/400)%2) { g.fillStyle='#5cc24e'; g.font='bold 14px monospace';
+      g.fillText('Tippen = nochmal spielen!', 160, 280); }
+  }
+}
+frgCv.addEventListener('touchstart', e=>{ e.preventDefault();
+  frgTouch=[e.touches[0].clientX, e.touches[0].clientY]; frgMoved=false;
+  if (frgStuck || frgOver) { frgTap(); frgMoved=true; } }, {passive:false});
+frgCv.addEventListener('touchmove', e=>{ e.preventDefault();
+  if (!frgTouch || frgMoved) return;
+  const dx=e.touches[0].clientX-frgTouch[0], dy=e.touches[0].clientY-frgTouch[1];
+  if (Math.hypot(dx,dy)>22) {                             // Wisch = seitwärts/zurück
+    if (Math.abs(dx)>Math.abs(dy)) frgHop(Math.sign(dx),0); else frgHop(0,Math.sign(dy));
+    frgMoved=true;
+  } }, {passive:false});
+frgCv.addEventListener('touchend', e=>{ e.preventDefault();
+  if (frgTouch && !frgMoved) frgHop(0,-1);                // Tipp = nach vorn hüpfen!
+  frgTouch=null; }, {passive:false});
+frgCv.addEventListener('mousedown', e=>{ e.preventDefault();
+  frgTouch=[e.clientX,e.clientY]; frgMoved=false;
+  if (frgStuck || frgOver) { frgTap(); frgMoved=true; } });
+frgCv.addEventListener('mousemove', e=>{
+  if (!frgOn || !frgTouch || frgMoved || !(e.buttons&1)) return;
+  const dx=e.clientX-frgTouch[0], dy=e.clientY-frgTouch[1];
+  if (Math.hypot(dx,dy)>22) {
+    if (Math.abs(dx)>Math.abs(dy)) frgHop(Math.sign(dx),0); else frgHop(0,Math.sign(dy));
+    frgMoved=true;
+  } });
+frgCv.addEventListener('mouseup', e=>{
+  if (frgTouch && !frgMoved) frgHop(0,-1);
+  frgTouch=null; });
+document.getElementById('frgClose').addEventListener('click', ()=>closeFrog());
+document.getElementById('frgClose').addEventListener('touchstart', e=>{ e.preventDefault(); closeFrog(); }, {passive:false});
+
 // ------------------------------ Läden 🏪 ------------------------------------
 const shopBox = document.getElementById('shopBox');
 function openShop(a) {
@@ -5967,6 +6204,10 @@ function doPlace(dir) {
     openInvaders();
     return;
   }
+  if (hit.block===SCREEN_FROG && HOTBAR_ITEMS[selSlot]!==SCREEN_FROG) {    // Hüpf-Frosch!
+    openFrog();
+    return;
+  }
   if (hit.block===SCREEN_SOON) {
     toast('🕹️ Hier kommt bald ein neues Spiel! Welches wünschst du dir?', 3000);
     blip(440,0.06); blip(550,0.06);
@@ -6616,6 +6857,16 @@ addEventListener('keydown',e=>{
     if (e.code==='ArrowLeft')  { e.preventDefault(); invKey=-1; }
     if (e.code==='ArrowRight') { e.preventDefault(); invKey=1; }
     if (e.code==='Escape') closeInvaders();
+    return;
+  }
+  if (frgOn) {                        // beim Hüpf-Frosch: Pfeile = hüpfen
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault();
+      if (frgStuck||frgOver) frgTap(); else frgHop(0,-1); }
+    if (e.code==='ArrowLeft')  { e.preventDefault(); frgHop(-1,0); }
+    if (e.code==='ArrowRight') { e.preventDefault(); frgHop(1,0); }
+    if (e.code==='ArrowUp')    { e.preventDefault(); frgHop(0,-1); }
+    if (e.code==='ArrowDown')  { e.preventDefault(); frgHop(0,1); }
+    if (e.code==='Escape') closeFrog();
     return;
   }
   if (e.code==='KeyT' && started) { e.preventDefault(); openChat(); return; }
