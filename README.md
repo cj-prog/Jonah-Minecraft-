@@ -192,6 +192,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   roter Pfeil wandert live mit, damit du immer weißt, wo du bist.
   Tippe irgendwo auf die Welt-Karte – dann führt dich der
   Kompass-Pfeil dorthin!
+- Lava in der Tiefe! 🌋 Wer tief gräbt, stößt auf glühende
+  Lava-Blasen – und ganz unten am Weltboden wartet ein riesiger
+  Lava-See! Lava leuchtet von selbst im Dunkeln. Aber Vorsicht:
+  Reinfallen tut weh – du wirst mit einem Aua-Hüpfer rausgeschleudert!
+  Profi-Trick: Wähle Wasser und tippe auf Lava – zisssch, sie wird
+  zu festem Stein! So baust du dir sichere Brücken über den Lava-See
 - Riesen-Welt nach oben und unten! ⛏️🏗️ Der Himmel ist jetzt fast
   200 Blöcke hoch – bau Wolkenkratzer, so hoch du willst! Und nach
   unten kannst du über 60 Blöcke tief graben: Unter der Erde warten
