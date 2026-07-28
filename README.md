@@ -192,6 +192,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   roter Pfeil wandert live mit, damit du immer weißt, wo du bist.
   Tippe irgendwo auf die Welt-Karte – dann führt dich der
   Kompass-Pfeil dorthin!
+- Riesen-Welt nach oben und unten! ⛏️🏗️ Der Himmel ist jetzt fast
+  200 Blöcke hoch – bau Wolkenkratzer, so hoch du willst! Und nach
+  unten kannst du über 60 Blöcke tief graben: Unter der Erde warten
+  vergrabene Schatztruhen 💎 auf fleißige Buddler. Nur die
+  allerunterste Schicht hält die Welt zusammen – da geht's nicht
+  weiter. Alte Welten funktionieren weiter wie gewohnt!
 - Spielhalle mit Bowling! 🕹️🎳 In jeder Welt steht eine große
   Spielhalle (auf der Karte als 🕹️): bunte Ziegel-Wände, Schachbrett-
   Boden und Bildschirme an der Rückwand. Tippe den Bowling-Bildschirm

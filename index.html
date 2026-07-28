@@ -299,7 +299,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 84 &middot; Hüpf-Frosch in der Spielhalle! 🐸</p>
+    Version 85 &middot; Riesig hoch bauen, tief graben! ⛏️🏗️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -336,14 +336,16 @@
 
 // ------------------------------ Konstanten ---------------------------------
 const CS = 16;            // Chunk-Größe (x/z)
-const CH = 64;            // Welt-Höhe
+const CH = 192;           // Welt-Obergrenze: RIESIG hoch bauen!
+const CH_MIN = -64;       // Welt-Boden: tief, tief graben!
+const CH_TOT = CH - CH_MIN;   // 256 Schichten im Speicher
 const SEA = 29;           // Meeresspiegel
 const VIEW_R = 3;         // Sichtweite in Chunks
 const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 84;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 85;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -813,28 +815,31 @@ function houseParams(v, i) {            // Haus Nr. i eines Dorfes (deterministi
 const chunks = new Map();               // "cx,cz" -> chunk
 const edits = new Map();                // "cx,cz" -> Map(idx -> blockId)
 const ckey = (cx,cz)=>cx+','+cz;
-const bidx = (lx,y,lz)=>(y<<8)|(lz<<4)|lx;
+const bidx = (lx,y,lz)=>((y-CH_MIN)<<8)|(lz<<4)|lx;
 
 function genChunkData(cx, cz) {
-  const data = new Uint8Array(CS*CS*CH);
+  const data = new Uint8Array(CS*CS*CH_TOT);
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
     const wx = x0+lx, wz = z0+lz;
     const h = terrainHeight(wx, wz);
     const beach = h <= SEA+1;
-    for (let y=0; y<=h; y++) {
+    for (let y=CH_MIN; y<=h; y++) {
       let b;
-      if (y===0) b = STONE;
-      else if (y < h-3) b = STONE;
+      if (y < h-3) b = STONE;
       else if (y < h) b = beach ? SAND : DIRT;
       else b = beach ? SAND : GRASS;
       data[bidx(lx,y,lz)] = b;
     }
     for (let y=h+1; y<=SEA; y++) data[bidx(lx,y,lz)] = WATER;
+    if (hash2(wx,wz,4207) < 0.004) {    // tief vergrabene Schatztruhe! 💎
+      const ty = CH_MIN+3 + Math.floor(hash2(wx,wz,4208)*Math.max(4, h-12-CH_MIN-3));
+      data[bidx(lx,ty,lz)] = CHEST;
+    }
   }
   const put = (wx,wy,wz,b,onlyAir) => {
     const lx=wx-x0, lz=wz-z0;
-    if (lx<0||lx>=CS||lz<0||lz>=CS||wy<1||wy>=CH) return;
+    if (lx<0||lx>=CS||lz<0||lz>=CS||wy<=CH_MIN||wy>=CH) return;
     const i = bidx(lx,wy,lz);
     if (onlyAir && data[i]!==AIR) return;
     data[i]=b;
@@ -1359,15 +1364,15 @@ function ensureData(cx,cz) {
     for (let i=0;i<ch.data.length;i++) {
       const b=ch.data[i];
       if (b===CARROT0 || b===CARROT1 || b===TOMATO0 || b===TOMATO1 || b===WHEAT0 || b===WHEAT1)
-        cropSet.add((cx*CS+(i&15))+','+(i>>8)+','+(cz*CS+((i>>4)&15)));
+        cropSet.add((cx*CS+(i&15))+','+((i>>8)+CH_MIN)+','+(cz*CS+((i>>4)&15)));
       else if (b===SNOW)
-        snowSet.add((cx*CS+(i&15))+','+(i>>8)+','+(cz*CS+((i>>4)&15)));
+        snowSet.add((cx*CS+(i&15))+','+((i>>8)+CH_MIN)+','+(cz*CS+((i>>4)&15)));
     }
   }
   return ch;
 }
 function getBlock(wx,wy,wz) {
-  if (wy<0) return STONE;
+  if (wy<CH_MIN) return STONE;
   if (wy>=CH) return AIR;
   const ch = getChunk(wx>>4, wz>>4);
   if (!ch || !ch.data) return AIR;
@@ -1378,7 +1383,7 @@ function isSolid(wx,wy,wz) {
   return b!==AIR && BLOCKS[b].solid;
 }
 function setBlock(wx,wy,wz,v) {
-  if (wy<1 || wy>=CH) return;
+  if (wy<=CH_MIN || wy>=CH) return;   // die unterste Schicht ist der Weltboden
   const cx=wx>>4, cz=wz>>4;
   const ch = getChunk(cx,cz);
   if (!ch || !ch.data) return;
@@ -1417,7 +1422,7 @@ function saveGame() {
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      seed, edits:ed, dayTime, pets, friends:savedFriends, companions,
+      seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
       rots: Object.fromEntries(rotations),
@@ -1442,9 +1447,12 @@ function loadGame() {
     const s = JSON.parse(raw);
     if (typeof s.seed !== 'number') return null;
     seed = s.seed;
+    // Alte Speicherstände kannten noch keinen tiefen Untergrund: ihre
+    // Schicht-Nummern werden auf die neue, tiefere Welt umgerechnet.
+    const shift = ((-CH_MIN) - (typeof s.depth==='number' ? s.depth : 0)) << 8;
     for (const k in (s.edits||{})) {
       const a=s.edits[k], m=new Map();
-      for (let i=0;i<a.length;i+=2) m.set(a[i],a[i+1]);
+      for (let i=0;i<a.length;i+=2) m.set(a[i]+shift, a[i+1]);
       edits.set(k,m);
     }
     if (typeof s.dayTime==='number') dayTime = s.dayTime;
@@ -1838,7 +1846,7 @@ function buildMesh(ch) {
   const opq=[], wat=[];
   const x0=ch.cx*CS, z0=ch.cz*CS;
   const data = ch.data;
-  for (let y=0;y<CH;y++) for (let lz=0;lz<CS;lz++) for (let lx=0;lx<CS;lx++) {
+  for (let y=CH_MIN;y<CH;y++) for (let lz=0;lz<CS;lz++) for (let lx=0;lx<CS;lx++) {
     const b = data[bidx(lx,y,lz)];
     if (b===AIR) continue;
     const def = BLOCKS[b];
@@ -2160,7 +2168,7 @@ function physics(dt) {
     player.vy = 0;
   }
 
-  if (player.y < -12) { spawn(); }
+  if (player.y < CH_MIN - 12) { spawn(); }   // unter den Weltboden fällt niemand
 }
 
 function spawn() {
@@ -5119,7 +5127,7 @@ function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser 
   const ch = getChunk(x>>4, z>>4);
   if (!ch || !ch.data) return terrColor(terrainHeight(x,z));   // noch nicht geladen
   const lx = x & 15, lz = z & 15;
-  for (let y=CH-1; y>0; y--) {
+  for (let y=CH-1; y>CH_MIN; y--) {
     const b = ch.data[bidx(lx,y,lz)];
     if (b===AIR) continue;
     if (b===GRASS) return terrColor(y);
@@ -6050,7 +6058,12 @@ function doBreak(dir) {
   if (rotMode) { if (hit) tryRotate(hit); return; }
   const eHit=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
   if (eHit) { hitEntity(eHit.a, dir); return; }
-  if (!hit || hit.y<1) return;
+  if (!hit) return;
+  if (hit.y<=CH_MIN) {                  // die allerunterste Schicht hält die Welt zusammen
+    toast('🌋 Das ist der Boden der Welt – tiefer geht es nicht!', 2500);
+    blip(180,0.1);
+    return;
+  }
   if (hit.block===WATER) {
     setBlock(hit.x,hit.y,hit.z,AIR);
     toast('🪣 Wasser aufgesaugt!');
@@ -6130,7 +6143,7 @@ function doBreak(dir) {
       if (u===0&&v===0) continue;
       let qx=hit.x, qy=hit.y, qz=hit.z;
       if (fx2!==0) { qy+=u; qz+=v; } else if (fy2!==0) { qx+=u; qz+=v; } else { qx+=u; qy+=v; }
-      if (qy<1||qy>=CH) continue;
+      if (qy<=CH_MIN||qy>=CH) continue;
       const b2=getBlock(qx,qy,qz);
       // Spezial-Blöcke (TNT, Beete, Schnee, Türen ...) lässt der Pinsel in Ruhe
       if (b2===AIR || b2===WATER || b2===TNT || b2===TNT_LIT || b2===SNOW ||
@@ -6324,7 +6337,7 @@ function doPlace(dir) {
     return;
   }
   const px=hit.x+hit.face[0], py=hit.y+hit.face[1], pz=hit.z+hit.face[2];
-  if (py<0||py>=CH) return;
+  if (py<=CH_MIN||py>=CH) return;
   const cur=getBlock(px,py,pz);
   if (cur!==AIR && cur!==WATER) return;
   // nicht im Spieler platzieren
@@ -6406,7 +6419,7 @@ function doPlace(dir) {
       if (b===WOOL && wool<=0) break;   // Wolle kostet weiter Wolle!
       let qx=px, qy=py, qz=pz;
       if (fx2!==0) { qy+=u; qz+=v; } else if (fy2!==0) { qx+=u; qz+=v; } else { qx+=u; qy+=v; }
-      if (qy<1||qy>=CH) continue;
+      if (qy<=CH_MIN||qy>=CH) continue;
       const cur2=getBlock(qx,qy,qz);
       if (cur2!==AIR && cur2!==WATER) continue;
       if (b===BLUME) {                  // Blumen nur auf Gras oder Erde
@@ -6460,7 +6473,7 @@ function explode(cx,cy,cz) {
   for (let dx=-R;dx<=R;dx++) for (let dy=-R;dy<=R;dy++) for (let dz=-R;dz<=R;dz++) {
     if (dx*dx+dy*dy+dz*dz > R*R+1) continue;
     const x=cx+dx, y=cy+dy, z=cz+dz;
-    if (y<1 || y>=CH) continue;
+    if (y<=CH_MIN || y>=CH) continue;
     const b=getBlock(x,y,z);
     if (b===AIR || b===WATER) continue;
     if (b===TNT) { igniteTNT(x,y,z, 0.15+Math.random()*0.35); continue; }  // Kettenreaktion!
