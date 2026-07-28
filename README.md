@@ -213,6 +213,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   Es wird automatisch immer schneller! 3 Leben, Crash = Rums 💥,
   der Überhol-Rekord wird gespeichert. Auch diesen Bildschirm gibt
   es in der Blockleiste
+- Noch 3 Spiele! 🐍🏓👾 Die Spielhalle hat jetzt SIEBEN Bildschirme:
+  Schlange (wischen zum Lenken, Äpfel futtern, bloß nicht anecken!),
+  Ping-Pong (das allererste Atari-Spiel – schlag den Computer, wer
+  zuerst 5 Punkte hat, gewinnt!) und Weltraum-Schützen (Raumschiff
+  lenken, Dauerfeuer auf die Alien-Wellen, Bomben ausweichen!).
+  Alle Rekorde werden gespeichert, alle Bildschirme gibt es auch in
+  der Blockleiste – und ein Wunsch-Bildschirm ist noch frei!
 - Drehen! 🔄 Der Dreh-Knopf oben startet den Dreh-Modus: Tippe
   Möbel (Stühle, Betten, Schränke, Toiletten ...), Treppen oder
   Bilder an – sie drehen sich bei jedem Tipp um 90 Grad. Geht bei
