@@ -301,7 +301,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 86 &middot; Lava in der Tiefe! 🌋</p>
+    Version 87 &middot; Fleißige Dorfbewohner! 🧑‍🌾🔨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -347,7 +347,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 86;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 87;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2301,8 +2301,119 @@ const REPLIES = [
 const REPLIES_QUESTION = ['Gute Frage! Frag doch auch mal die anderen im Dorf.','Hmm, da muss ich lange nachdenken...'];
 const REPLIES_DEFAULT = ['Ach so!','Wirklich? Erzähl mal mehr!','Da hast du recht!','Hihi, mit dir wird es nie langweilig!','Hmm, interessant!'];
 
+// --------- Fleißige Bewohner: kleine Arbeiten rund ums Dorf 🧑‍🌾🔨 ----------
+function jobToast(a, msg) {             // nur erzählen, wenn Jonah zuschaut
+  if (Math.hypot(player.x-a.x, player.z-a.z) < 14) toast(msg, 2800);
+}
+function waehleJob(a) {                 // was gibt es hier zu tun?
+  const ax=Math.floor(a.x), ay=Math.floor(a.y), az=Math.floor(a.z);
+  const jobs=[];
+  let blumen=0, pflanzPlatz=null;
+  for (let dx=-6;dx<=6;dx++) for (let dz=-6;dz<=6;dz++) for (let dy=-2;dy<=2;dy++) {
+    const qx=ax+dx, qy=ay+dy, qz=az+dz;
+    const b=getBlock(qx,qy,qz);
+    if (b===CARROT2||b===TOMATO2||b===WHEAT2) jobs.push({typ:'ernten',x:qx,y:qy,z:qz});
+    else if (b===CHAIR) jobs.push({typ:'sitzen',x:qx,y:qy,z:qz});
+    else if (b===TRAMPOLIN) jobs.push({typ:'huepfen',x:qx,y:qy,z:qz});
+    else if (b===HANTEL||b===LAUFBAND) jobs.push({typ:'sport',x:qx,y:qy,z:qz});
+    else if (b===BLUME) blumen++;
+    else if (!pflanzPlatz && b===GRASS && Math.abs(dx)>2 && Math.abs(dz)>1 &&
+             getBlock(qx,qy+1,qz)===AIR && Math.random()<0.25)
+      pflanzPlatz={x:qx,y:qy+1,z:qz};
+  }
+  if (pflanzPlatz && blumen<5) jobs.push({typ:'pflanzen', ...pflanzPlatz});
+  jobs.push({typ:'bauen'});             // einen Mini-Turm bauen geht immer!
+  a.job = { ...jobs[Math.floor(Math.random()*jobs.length)], t:0 };
+}
+function jobAufraeumen(a) {             // nichts Halbes stehenlassen!
+  const j=a.job;
+  if (j && j.typ==='bauen' && j.bx!==undefined)
+    for (let i=0;i<3;i++)
+      if (getBlock(j.bx,j.by+i,j.bz)===PLANK) setBlock(j.bx,j.by+i,j.bz,AIR);
+  a.job=null;
+}
+function macheJob(a, dt) {
+  const j = a.job, wer = a.name || (a.type==='kid'?'Ein Kind':'Ein Bewohner');
+  j.t += dt;
+  if (j.t > 30) { jobAufraeumen(a); return; }        // zu lange? Feierabend.
+  if (j.typ!=='bauen' && j.x!==undefined) {          // erst mal hinlaufen
+    const d = Math.hypot(j.x+0.5-a.x, j.z+0.5-a.z);
+    if (d > 1.4) {
+      a.yaw = Math.atan2(j.x+0.5-a.x, -(j.z+0.5-a.z));
+      a.walking = true;
+      return;
+    }
+    a.walking = false;
+  }
+  if (j.typ==='ernten') {
+    const b = getBlock(j.x,j.y,j.z);
+    if (b===CARROT2||b===TOMATO2||b===WHEAT2) {
+      setBlock(j.x,j.y,j.z, b===CARROT2?CARROT0:b===TOMATO2?TOMATO0:WHEAT0);
+      cropSet.add(j.x+','+j.y+','+j.z);
+      jobToast(a, '🧑‍🌾 '+wer+' erntet das Beet und sät gleich neu!');
+      blip(500,0.05); blip(620,0.05);
+    }
+    a.job=null;
+  } else if (j.typ==='pflanzen') {
+    const unten = getBlock(j.x,j.y-1,j.z);
+    if (getBlock(j.x,j.y,j.z)===AIR && (unten===GRASS||unten===DIRT)) {
+      setBlock(j.x,j.y,j.z,BLUME);
+      jobToast(a, '🌸 '+wer+' pflanzt eine Blume. Wie hübsch!');
+      blip(600,0.05); blip(760,0.06);
+    }
+    a.job=null;
+  } else if (j.typ==='sitzen') {
+    if (getBlock(j.x,j.y,j.z)!==CHAIR) { a.job=null; return; }
+    if (!j.bis) { j.bis=j.t+4+Math.random()*4;
+      jobToast(a, '🪑 '+wer+' setzt sich für ein Päuschen hin.'); }
+    a.x=j.x+0.5; a.z=j.z+0.5; a.y=j.y+0.55; a.vy=0; a.walking=false;
+    if (j.t>j.bis) { a.vy=3; a.job=null; }
+  } else if (j.typ==='huepfen') {
+    if (getBlock(j.x,j.y,j.z)!==TRAMPOLIN) { a.job=null; return; }
+    if (!j.bis) { j.bis=j.t+5+Math.random()*4;
+      jobToast(a, '🤸 '+wer+' springt Trampolin! Boing, boing!'); }
+    a.x=j.x+0.5; a.z=j.z+0.5; a.walking=false;
+    if (a.y<j.y+1.5 && a.vy<=0) { a.y=j.y+1.05; a.vy=6+Math.random()*3; blip(300,0.05); }
+    if (j.t>j.bis) a.job=null;
+  } else if (j.typ==='sport') {
+    if (!j.bis) { j.bis=j.t+4;
+      jobToast(a, '💪 '+wer+' macht Sport: 1... 2... 3!'); }
+    if (a.onGround && Math.random()<dt*3) a.vy=3;    // Kniebeugen-Hüpfer
+    if (j.t>j.bis) a.job=null;
+  } else if (j.typ==='bauen') {
+    if (j.bx===undefined) {              // Bauplatz direkt vor der Nase
+      const bx=Math.floor(a.x+Math.sin(a.yaw)*1.8), bz=Math.floor(a.z-Math.cos(a.yaw)*1.8);
+      const by=Math.floor(a.y);
+      if (getBlock(bx,by,bz)!==AIR || !isSolid(bx,by-1,bz) ||
+          (Math.abs(bx+0.5-a.x)<0.9 && Math.abs(bz+0.5-a.z)<0.9)) { a.job=null; return; }
+      j.bx=bx; j.by=by; j.bz=bz; j.next=0.5; j.hoehe=0; j.abbau=false;
+      jobToast(a, '🔨 '+wer+' baut einen kleinen Turm - genau wie du!');
+    }
+    a.walking=false;
+    a.yaw = Math.atan2(j.bx+0.5-a.x, -(j.bz+0.5-a.z));
+    if (j.t>j.next) {
+      j.next = j.t+0.9;
+      if (!j.abbau) {
+        if (j.hoehe<3 && getBlock(j.bx, j.by+j.hoehe, j.bz)===AIR) {
+          setBlock(j.bx, j.by+j.hoehe, j.bz, PLANK);
+          blip(340+j.hoehe*60,0.05);
+          j.hoehe++;
+          if (j.hoehe>=3) { j.abbau=true; j.next=j.t+2.5;   // kurz bewundern
+            jobToast(a, '✨ '+wer+': „Fertig! Und jetzt räume ich wieder auf."'); }
+        } else j.abbau=true;
+      } else if (j.hoehe>0) {
+        j.hoehe--;
+        if (getBlock(j.bx, j.by+j.hoehe, j.bz)===PLANK) setBlock(j.bx, j.by+j.hoehe, j.bz, AIR);
+        blip(260,0.05);
+        if (j.hoehe<=0) a.job=null;
+      } else a.job=null;
+    }
+  } else a.job=null;
+}
+
 const VILLAGER_TALK = [
   'Hallo! Schön, dich zu sehen!',
+  'Ich baue, pflanze und ernte – genau wie du! Nur TNT fasse ich NIEMALS an. Viel zu gefährlich!',
   'Hmm hmm hmm!',
   'Hast du schon unsere Schatztruhen gefunden? Sie stehen in den Häusern!',
   'Was für ein schöner Tag zum Bauen!',
@@ -2752,6 +2863,19 @@ function updateAnimals(dt) {
         a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
         a.walking = true; a.t = Math.max(a.t, 0.4);
       } else if (dp<=2.2) { a.walking = false; a.t = Math.max(a.t, 0.6); }
+    }
+
+    // Fleißige Bewohner: sie bauen, pflanzen, ernten und turnen wie Jonah!
+    // (Nur TNT fassen sie NIEMALS an - versprochen.)
+    if ((a.type==='villager'||a.type==='kid') && !a.follow &&
+        !(a.friend>=3 && Math.hypot(player.x-a.x, player.z-a.z)<10)) {
+      const dSp = Math.hypot(player.x-a.x, player.z-a.z);
+      if (a.jobT===undefined) a.jobT = 4 + Math.random()*10;
+      if (!a.job && dSp < 45) {
+        a.jobT -= dt;
+        if (a.jobT<=0) { a.jobT = 12 + Math.random()*16; waehleJob(a); }
+      }
+      if (a.job) { macheJob(a, dt); a.t = Math.max(a.t, 0.4); }
     }
 
     // KI: abwechselnd stehen und in eine zufällige Richtung laufen

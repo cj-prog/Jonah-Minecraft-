@@ -192,6 +192,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   roter Pfeil wandert live mit, damit du immer weißt, wo du bist.
   Tippe irgendwo auf die Welt-Karte – dann führt dich der
   Kompass-Pfeil dorthin!
+- Fleißige Dorfbewohner! 🧑‍🌾🔨 Die Bewohner (und Kinder) können
+  jetzt, was Jonah auch kann: Sie ernten reife Beete und säen neu,
+  pflanzen Blumen, bauen kleine Türme (und räumen sie brav wieder
+  ab!), machen Pause auf Stühlen, springen Trampolin und machen
+  Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
+  Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
 - Lava in der Tiefe! 🌋 Wer tief gräbt, stößt auf glühende
   Lava-Blasen – und ganz unten am Weltboden wartet ein riesiger
   Lava-See! Lava leuchtet von selbst im Dunkeln. Aber Vorsicht:
