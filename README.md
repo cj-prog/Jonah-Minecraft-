@@ -219,7 +219,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   zuerst 5 Punkte hat, gewinnt!) und Weltraum-Schützen (Raumschiff
   lenken, Dauerfeuer auf die Alien-Wellen, Bomben ausweichen!).
   Alle Rekorde werden gespeichert, alle Bildschirme gibt es auch in
-  der Blockleiste – und ein Wunsch-Bildschirm ist noch frei!
+  der Blockleiste!
+- Hüpf-Frosch! 🐸 Jonahs Wunsch-Spiel auf dem siebten Bildschirm:
+  Tippen = nach vorn hüpfen, Wischen = seitwärts. Erst über die
+  Straße (drei Auto-Spuren!), kurz verschnaufen, dann über den Fluss –
+  aber nur auf den treibenden Baumstämmen, sonst platsch! 💦 Oben
+  auf den Seerosen ist der Frosch gerettet. Alle 5 geretteten
+  Frösche wird es schneller. 3 Leben, Rekord wird gespeichert
 - Drehen! 🔄 Der Dreh-Knopf oben startet den Dreh-Modus: Tippe
   Möbel (Stühle, Betten, Schränke, Toiletten ...), Treppen oder
   Bilder an – sie drehen sich bei jedem Tipp um 90 Grad. Geht bei
