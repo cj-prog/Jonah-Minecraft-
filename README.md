@@ -213,6 +213,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Wanderer! 🥾 Menschen gibt es jetzt nicht nur in den Dörfern:
+  Draußen in der Landschaft sind Wanderer unterwegs (auch Kinder!),
+  die zielstrebig in lange Richtungen durchs Land ziehen, über
+  Hügel, durch Wälder und sogar durch Flüsse. Sie erzählen vom
+  Wandern („Ich habe schon Berge und Meer gesehen! ⛰️"), können
+  alles, was Dorfbewohner können – und wer sie dreimal anspricht,
+  gewinnt einen reiselustigen Freund
 - Sprechblasen! 💬 Die Bewohner reden jetzt in echten Sprechblasen
   über ihren Köpfen – ganz ohne Antippen! Sie plaudern von allein
   und sagen, was gerade passt: Bei Regen jammern sie über nasse
