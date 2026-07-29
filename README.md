@@ -192,17 +192,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   roter Pfeil wandert live mit, damit du immer weißt, wo du bist.
   Tippe irgendwo auf die Welt-Karte – dann führt dich der
   Kompass-Pfeil dorthin!
-- Reparatur-Knopf! 🔧 Abbauen bleibt abgebaut – auch bei Häusern,
-  denn hier bestimmt Jonah! Aber falls ein Gebäude mal Löcher hat,
-  die man gar nicht selbst gemacht hat (uralte Abbau-Reste, z. B.
-  von einem Baum, der früher genau dort stand, wo jetzt ein Haus
-  ist): Auf dem Startbildschirm gibt es den Knopf
-  „🔧 Häuser reparieren". Einmal antippen, dann auf ▶ Spielen –
-  und alle Wände, Fenster, Dächer und Ziegel von Gebäuden sind
-  wieder ganz. Türen, Möbel, gefällte Bäume und alle eigenen
-  Umbauten bleiben unangetastet. Die Bau-Türme der fleißigen
-  Bewohner sind außerdem nur noch vorübergehend – sie landen nie
-  im Spielstand
+- Zielgenaue Reparatur! 🔧 Abbauen bleibt abgebaut – hier bestimmt
+  Jonah! Falls ein Gebäude aber Löcher hat, die man gar nicht selbst
+  gemacht hat (uralte Abbau-Reste, z. B. von einem Baum, der früher
+  genau dort stand, wo jetzt ein Haus ist): Im Spiel den 🔧-Knopf
+  oben antippen, dann GENAU das kaputte Gebäude antippen – nur
+  dieses eine Gebäude (kleiner Umkreis) bekommt seine Wände,
+  Fenster, Dächer und Ziegel zurück. Alle anderen Umbauten überall
+  in der Welt bleiben exakt so, wie Jonah sie gemacht hat! Türen,
+  Möbel und gefällte Bäume werden nie angefasst. Die Bau-Türme der
+  fleißigen Bewohner sind außerdem nur vorübergehend – sie landen
+  nie im Spielstand
 - Fleißige Dorfbewohner! 🧑‍🌾🔨 Die Bewohner (und Kinder) können
   jetzt, was Jonah auch kann: Sie ernten reife Beete und säen neu,
   pflanzen Blumen, bauen kleine Türme (und räumen sie brav wieder
