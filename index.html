@@ -59,6 +59,8 @@
   #selfieBtn.on { background:rgba(255,190,120,.5); }
   #rotBtn { right:calc(362px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #rotBtn.on { background:rgba(150,220,150,.55); }
+  #repBtn { right:calc(412px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #repBtn.on { background:rgba(255,170,80,.55); }
   #miniMap { left:calc(10px + env(safe-area-inset-left)); bottom:calc(66px + env(safe-area-inset-bottom));
     width:130px; height:130px; border:2px solid rgba(255,255,255,.55); border-radius:14px;
     z-index:14; opacity:.94; display:none; }
@@ -188,6 +190,7 @@
 <div class="hud btn" id="mapBtn">🗺️</div>
 <div class="hud btn" id="selfieBtn">🤳</div>
 <div class="hud btn" id="rotBtn">↪️</div>
+<div class="hud btn" id="repBtn">🔧</div>
 <canvas class="hud" id="miniMap" width="130" height="130"></canvas>
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine ganze Welt</h3>
@@ -302,7 +305,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 90 &middot; Der orange 🔧-Knopf ist hier unten! ⬇️</p>
+    Version 91 &middot; Zielgenaue Reparatur mit dem 🔧 im Spiel!</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -326,7 +329,6 @@
     <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
     <button id="expBtn">📤 Spielstand sichern</button>
     <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
-    <button id="repairBtn">🔧 Häuser reparieren</button>
   </div>
   <div id="err"></div>
 </div>
@@ -349,7 +351,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 90;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 91;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1369,31 +1371,61 @@ function genChunkData(cx, cz, ohneEdits) {
   return data;
 }
 
-// Häuser-Reparatur auf Wunsch: NUR wenn Jonah den 🔧-Knopf drückt!
-// Alte Abbau-Löcher, die mitten in Wänden, Fenstern, Dächern oder Ziegeln
-// von Gebäuden liegen, werden entfernt - alles andere bleibt unberührt.
-let repairWunsch = false;
-function repariereGebaeude() {
+// Zielgenaue Haus-Reparatur: Jonah tippt im 🔧-Modus GENAU das Gebäude an,
+// das wieder heil werden soll. Nur dort (im kleinen Umkreis) werden alte
+// Abbau-Löcher in Wänden, Fenstern, Dächern und Ziegeln geflickt -
+// alle anderen Umbauten in der Welt bleiben unberührt!
+function repariereUmkreis(x0, z0, r) {
   let anzahl = 0;
-  for (const [key, e] of [...edits]) {
-    const [rcx, rcz] = key.split(',').map(Number);
-    let pure = null, hier = 0;
-    for (const [i,v] of [...e]) {
-      if (v!==AIR) continue;
-      if (!pure) pure = genChunkData(rcx, rcz, true);   // Welt ohne Änderungen
-      const b = pure[i];
-      if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) { e.delete(i); hier++; }
+  for (let rcz=(z0-r)>>4; rcz<=(z0+r)>>4; rcz++)
+    for (let rcx=(x0-r)>>4; rcx<=(x0+r)>>4; rcx++) {
+      const key = ckey(rcx,rcz), e = edits.get(key);
+      if (!e) continue;
+      let pure = null, hier = 0;
+      for (const [i,v] of [...e]) {
+        if (v!==AIR) continue;
+        const wx = rcx*CS + (i&15), wz = rcz*CS + ((i>>4)&15);
+        if (Math.abs(wx-x0)>r || Math.abs(wz-z0)>r) continue;
+        if (!pure) pure = genChunkData(rcx, rcz, true);   // Welt ohne Änderungen
+        const b = pure[i];
+        if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) { e.delete(i); hier++; }
+      }
+      if (hier) {
+        anzahl += hier;
+        if (!e.size) edits.delete(key);
+        const ch = getChunk(rcx, rcz);
+        if (ch) { ch.data = null; ch.dirty = true; ensureData(rcx, rcz); }
+      }
     }
-    if (hier) {
-      anzahl += hier;
-      if (!e.size) edits.delete(key);
-      const ch = getChunk(rcx, rcz);
-      if (ch) { ch.data = null; ch.dirty = true; }      // Chunk frisch aufbauen
-    }
-  }
   if (anzahl) scheduleSave();
   return anzahl;
 }
+let repMode = false;
+const repBtnEl = document.getElementById('repBtn');
+function setRepMode(an) {
+  repMode = an;
+  repBtnEl.classList.toggle('on', an);
+  if (an && rotMode) toggleRot();       // nicht beides gleichzeitig
+}
+function toggleRep() {
+  setRepMode(!repMode);
+  if (repMode) toast('🔧 Reparatur-Modus: Tippe das Gebäude an, das wieder heil werden soll!', 3500);
+  else toast('🔧 Reparatur-Modus aus.', 1500);
+  blip(repMode?600:300, 0.06);
+}
+function tryRepair(hit) {
+  const n = repariereUmkreis(hit.x, hit.z, 10);
+  if (n>0) {
+    toast('🔧 '+(n===1?'1 Loch':n+' Löcher')+' geflickt - das Gebäude ist wieder heil! ✨', 3500);
+    blip(523,0.08); blip(659,0.08); blip(784,0.12);
+  } else {
+    toast('🔧 Hier ist nichts zu reparieren - alles heil (oder selbst gebaut)!', 3000);
+    blip(300,0.08);
+  }
+  setRepMode(false);
+}
+repBtnEl.addEventListener('touchstart', e=>{ e.preventDefault(); toggleRep(); }, {passive:false});
+repBtnEl.addEventListener('mousedown', e=>{ e.preventDefault(); toggleRep(); });
 
 function getChunk(cx,cz){ return chunks.get(ckey(cx,cz)); }
 function ensureData(cx,cz) {
@@ -6251,6 +6283,7 @@ function doBreak(dir) {
   // Ist Wasser ausgewählt, wirkt die Spitzhacke wie ein Eimer und saugt Wasser auf
   const scoop = HOTBAR_ITEMS[selSlot]===WATER;
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH,scoop);
+  if (repMode) { if (hit) tryRepair(hit); return; }
   if (rotMode) { if (hit) tryRotate(hit); return; }
   const eHit=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
   if (eHit) { hitEntity(eHit.a, dir); return; }
@@ -6399,6 +6432,7 @@ function doPlace(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
   if (!hit) return;
+  if (repMode) { tryRepair(hit); return; }
   if (rotMode) { tryRotate(hit); return; }
   if (hit.block===SCREEN_BOWL && HOTBAR_ITEMS[selSlot]!==SCREEN_BOWL) {   // Bowling spielen!
     openBowling();
@@ -7310,13 +7344,6 @@ if (!isTouch) {
 }
 document.getElementById('playBtn').addEventListener('click',()=>{
   const saved=loadGame();
-  if (repairWunsch) {                   // Jonah hat den 🔧-Knopf gedrückt!
-    const n = repariereGebaeude();
-    setTimeout(()=>toast(n>0
-      ? '🔧 '+n+' Löcher in Gebäuden repariert! Alles wieder heil.'
-      : '🔧 Alles schon heil - nichts zu reparieren!', 4500), 1200);
-    repairWunsch = false;
-  }
   if (saved) {
     player.x=saved.x; player.y=saved.y; player.z=saved.z;
     yaw=saved.yaw||0; pitch=saved.pitch||0;
@@ -7418,11 +7445,6 @@ document.getElementById('playBtn').addEventListener('click',()=>{
 });
 // ---- Spielstand sichern und laden (als Datei) ----
 // Sicherung von der letzten Version zurückholen
-document.getElementById('repairBtn').addEventListener('click', function() {
-  repairWunsch = !repairWunsch;
-  this.textContent = repairWunsch ? '🔧 Wird beim Start repariert!' : '🔧 Häuser reparieren';
-  this.style.background = repairWunsch ? '#4caf50' : '';
-});
 const restoreBtn = document.getElementById('restoreBtn');
 try {
   const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
