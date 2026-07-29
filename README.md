@@ -213,6 +213,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Sprechblasen! 💬 Die Bewohner reden jetzt in echten Sprechblasen
+  über ihren Köpfen – ganz ohne Antippen! Sie plaudern von allein
+  und sagen, was gerade passt: Bei Regen jammern sie über nasse
+  Kleider, nachts schauen sie die Sterne an und werden müde, und
+  wenn Jonah nah herankommt, drehen sie sich um und begrüßen ihn
+  („Hallo Jonah! 👋"). Auch bei der Arbeit erzählen sie in Blasen,
+  was sie tun („Ich baue einen Turm – wie Jonah!"). Die Blasen
+  schweben live über den Köpfen mit und werden mit der Entfernung
+  kleiner
 - Bewohner fliegen, graben und klettern! 🕊️⛏️ Die Bewohner können
   noch mehr wie Jonah: Sie heben ab und drehen eine richtige
   Flugrunde über dem Dorf, sie buddeln neugierig Löcher (und

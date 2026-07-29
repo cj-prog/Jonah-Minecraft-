@@ -143,6 +143,13 @@
     background:rgba(0,0,0,.2); display:none; pointer-events:none; }
   #joyKnob { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.55); display:none; pointer-events:none; }
 
+  #bubbles { inset:0; pointer-events:none; overflow:hidden; }
+  .sprech { position:absolute; transform:translate(-50%,-100%); background:rgba(255,255,255,.96);
+    color:#222; border-radius:12px; padding:5px 10px; font-size:13px; line-height:1.25;
+    max-width:170px; text-align:center; pointer-events:none; white-space:normal;
+    box-shadow:0 2px 6px rgba(0,0,0,.25); }
+  .sprech::after { content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px;
+    border:7px solid transparent; border-top-color:rgba(255,255,255,.96); border-bottom:none; }
   #toast { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
     background:rgba(0,0,0,.55); color:#fff; padding:6px 14px; border-radius:8px; font-size:14px;
     opacity:0; transition:opacity .25s; pointer-events:none;
@@ -231,6 +238,7 @@
 <div class="hud btn" id="resetBtn">🔄</div>
 <div class="hud" id="joyBase"></div>
 <div class="hud" id="joyKnob"></div>
+<div class="hud" id="bubbles"></div>
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
 <div class="hud" id="lavaFx"></div>
@@ -305,7 +313,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 95 &middot; Bewohner tauchen unter wie du! 💦</p>
+    Version 96 &middot; Sprechblasen über den Köpfen! 💬</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -351,7 +359,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 95;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 96;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2390,10 +2398,80 @@ const REPLIES = [
 const REPLIES_QUESTION = ['Gute Frage! Frag doch auch mal die anderen im Dorf.','Hmm, da muss ich lange nachdenken...'];
 const REPLIES_DEFAULT = ['Ach so!','Wirklich? Erzähl mal mehr!','Da hast du recht!','Hihi, mit dir wird es nie langweilig!','Hmm, interessant!'];
 
-// --------- Fleißige Bewohner: kleine Arbeiten rund ums Dorf 🧑‍🌾🔨 ----------
-function jobToast(a, msg) {             // nur erzählen, wenn Jonah zuschaut
-  if (Math.hypot(player.x-a.x, player.z-a.z) < 14) toast(msg, 2800);
+// --------- Sprechblasen: Bewohner reden über ihren Köpfen! 💬 ----------------
+function sagen(a, text, dauer) {        // schwebt als Blase über dem Kopf
+  a.sagText = text;
+  a.sagT = dauer || 3.5;
 }
+function jobToast(a, msg) { sagen(a, msg); }   // alte Aufrufe reden jetzt in Blasen
+function worldToScreen(wx, wy, wz) {    // Weltpunkt -> Bildschirm-Pixel
+  const e = eyePos();
+  const dx=wx-e[0], dy=wy-e[1], dz=wz-e[2];
+  const cy2=Math.cos(yaw), sy2=Math.sin(yaw), cp2=Math.cos(pitch), sp2=Math.sin(pitch);
+  const zc = dx*(sy2*cp2) + dy*(-sp2) + dz*(-cy2*cp2);
+  if (zc < 0.6) return null;            // hinter der Kamera
+  const xc = dx*cy2 + dz*sy2;
+  const yc = dx*(sy2*sp2) + dy*cp2 + dz*(-cy2*sp2);
+  const th=Math.tan(FOV/2), aspect=innerWidth/innerHeight;
+  return [ (xc/(zc*th*aspect)*0.5+0.5)*innerWidth,
+           (0.5 - yc/(zc*th)*0.5)*innerHeight, zc ];
+}
+const bubbleBox = document.getElementById('bubbles');
+const bubbleDivs = [];
+function updateBubbles(dt) {
+  const zeig = [];
+  for (const a of animals) {
+    if (!a.sagT) continue;
+    a.sagT -= dt;
+    if (a.sagT <= 0) { a.sagT = 0; continue; }
+    if (Math.hypot(a.x-player.x, a.z-player.z) > 20) continue;
+    const k = ANIMAL_KIND[a.type] || {height:1.8};
+    const p = worldToScreen(a.x, a.y + k.height + 0.5, a.z);
+    if (p) zeig.push([p, a]);
+  }
+  zeig.sort((A,B)=>A[0][2]-B[0][2]);    // die nächsten zuerst
+  if (zeig.length > 5) zeig.length = 5;
+  while (bubbleDivs.length < zeig.length) {
+    const dv = document.createElement('div');
+    dv.className = 'sprech';
+    bubbleBox.appendChild(dv);
+    bubbleDivs.push(dv);
+  }
+  bubbleDivs.forEach((dv, i) => {
+    if (i >= zeig.length) { dv.style.display='none'; return; }
+    const [[px,py,zc], a] = zeig[i];
+    dv.style.display = 'block';
+    if (dv.textContent !== a.sagText) dv.textContent = a.sagText;
+    dv.style.left = px+'px';
+    dv.style.top = py+'px';
+    dv.style.fontSize = Math.max(10, Math.min(14, 130/zc + 8))+'px';
+    dv.style.opacity = a.sagT < 0.5 ? a.sagT*2 : 1;
+  });
+}
+// ... und sie plaudern von ganz allein, passend zur Lage!
+const PLAUDER_TAG = ['Was für ein schöner Tag! ☀️','Unser Dorf ist das allerschönste!',
+  'Ich mag Blumen. 🌸','Hmm hmm hmm! 🎵','Nachher backe ich ein Brot. 🍞',
+  'Meine Nase ist die größte im Dorf!'];
+const PLAUDER_NACHT = ['Schau mal, die Sterne! ✨','Ich bin müüüde... 😴',
+  'Gleich lege ich mich ins Bett.','Nachts sind Höhlenmonster unterwegs. Brrr!'];
+const PLAUDER_REGEN = ['Ich werd ja ganz nass! 🌧️','Schnell unter ein Dach!',
+  'Der Regen ist gut für die Blumen!','Platsch, platsch - überall Pfützen!'];
+const PLAUDER_HALLO = ['Hallo Jonah! 👋','Schön, dich zu sehen!','Na, was baust du heute?',
+  'Du bist unser Lieblings-Baumeister!'];
+const PLAUDER_KIND = ['Spielst du mit? ⚽','Fang mich doch! 😄','Ich kann ganz hoch hüpfen!',
+  'Weißt du, wo die Spielhalle ist? 🕹️'];
+function plaudern(a, dSp) {
+  if (a.sagT) return;
+  let pool;
+  if (dSp < 5) pool = PLAUDER_HALLO;
+  else if (weather==='rain') pool = PLAUDER_REGEN;
+  else if (isNight()) pool = PLAUDER_NACHT;
+  else pool = a.type==='kid' ? PLAUDER_KIND : PLAUDER_TAG;
+  sagen(a, pool[Math.floor(Math.random()*pool.length)], 3.2);
+  if (dSp < 5) { a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z)); a.walking=false; a.t=Math.max(a.t,1.5); }
+}
+
+// --------- Fleißige Bewohner: kleine Arbeiten rund ums Dorf 🧑‍🌾🔨 ----------
 function setBlockFluechtig(wx,wy,wz,v) {   // Bewohner-Baustellen: nur zum Spaß,
   if (wy<=CH_MIN || wy>=CH) return;        // sie landen NIE im Spielstand!
   const ch = getChunk(wx>>4, wz>>4);
@@ -2454,7 +2532,7 @@ function macheJob(a, dt) {
     if (b===CARROT2||b===TOMATO2||b===WHEAT2) {
       setBlock(j.x,j.y,j.z, b===CARROT2?CARROT0:b===TOMATO2?TOMATO0:WHEAT0);
       cropSet.add(j.x+','+j.y+','+j.z);
-      jobToast(a, '🧑‍🌾 '+wer+' erntet das Beet und sät gleich neu!');
+      sagen(a, '🥕 Ernte-Zeit! Und gleich säe ich neu.');
       blip(500,0.05); blip(620,0.05);
     }
     a.job=null;
@@ -2462,26 +2540,26 @@ function macheJob(a, dt) {
     const unten = getBlock(j.x,j.y-1,j.z);
     if (getBlock(j.x,j.y,j.z)===AIR && (unten===GRASS||unten===DIRT)) {
       setBlock(j.x,j.y,j.z,BLUME);
-      jobToast(a, '🌸 '+wer+' pflanzt eine Blume. Wie hübsch!');
+      sagen(a, '🌸 Eine Blume für unser Dorf!');
       blip(600,0.05); blip(760,0.06);
     }
     a.job=null;
   } else if (j.typ==='sitzen') {
     if (getBlock(j.x,j.y,j.z)!==CHAIR) { a.job=null; return; }
     if (!j.bis) { j.bis=j.t+4+Math.random()*4;
-      jobToast(a, '🪑 '+wer+' setzt sich für ein Päuschen hin.'); }
+      sagen(a, '🪑 Ahh, ein Päuschen!'); }
     a.x=j.x+0.5; a.z=j.z+0.5; a.y=j.y+0.55; a.vy=0; a.walking=false;
     if (j.t>j.bis) { a.vy=3; a.job=null; }
   } else if (j.typ==='huepfen') {
     if (getBlock(j.x,j.y,j.z)!==TRAMPOLIN) { a.job=null; return; }
     if (!j.bis) { j.bis=j.t+5+Math.random()*4;
-      jobToast(a, '🤸 '+wer+' springt Trampolin! Boing, boing!'); }
+      sagen(a, '🤸 Boing, boing, boing!'); }
     a.x=j.x+0.5; a.z=j.z+0.5; a.walking=false;
     if (a.y<j.y+1.5 && a.vy<=0) { a.y=j.y+1.05; a.vy=6+Math.random()*3; blip(300,0.05); }
     if (j.t>j.bis) a.job=null;
   } else if (j.typ==='sport') {
     if (!j.bis) { j.bis=j.t+4;
-      jobToast(a, '💪 '+wer+' macht Sport: 1... 2... 3!'); }
+      sagen(a, '💪 Sport: 1... 2... 3!'); }
     if (a.onGround && Math.random()<dt*3) a.vy=3;    // Kniebeugen-Hüpfer
     if (j.t>j.bis) a.job=null;
   } else if (j.typ==='fliegen') {        // abheben und eine Runde drehen - wie Jonah!
@@ -2490,7 +2568,7 @@ function macheJob(a, dt) {
       j.winkel = Math.random()*Math.PI*2;
       j.cx = a.x; j.cz = a.z;
       j.hoehe = 5 + Math.random()*4;
-      jobToast(a, '🕊️ '+wer+' hebt ab und fliegt eine Runde - genau wie du!');
+      sagen(a, '🕊️ Ich kann fliegen! Juhuuu!');
       blip(480,0.06); blip(620,0.08);
     }
     j.winkel += dt*0.8;
@@ -2503,7 +2581,7 @@ function macheJob(a, dt) {
     a.walking = false; a.ph += dt*4;    // Beine baumeln fröhlich
     if (j.t > j.bis && (a.onGround || a.y <= boden + 1.3)) {
       a.kx = 0; a.kz = 0; a.job = null;
-      jobToast(a, '🛬 '+wer+': „Gelandet! Fliegen ist das Allerbeste!"');
+      sagen(a, '🛬 Gelandet! Fliegen ist das Allerbeste!');
       blip(500,0.06); blip(400,0.08);
     }
   } else if (j.typ==='graben') {         // buddeln und wieder zuschütten
@@ -2513,7 +2591,7 @@ function macheJob(a, dt) {
       const b=getBlock(gx,gy,gz), b2=getBlock(gx,gy-1,gz);
       if (!(b===GRASS||b===DIRT||b===SAND) || getBlock(gx,gy+1,gz)!==AIR) { a.job=null; return; }
       j.gx=gx; j.gy=gy; j.gz=gz; j.war=[b,b2]; j.next=0.7; j.stufe=0;
-      jobToast(a, '⛏️ '+wer+' gräbt ein Loch - mal sehen, was drunter ist!');
+      sagen(a, '⛏️ Mal sehen, was unter der Erde ist!');
     }
     a.walking=false;
     a.yaw = Math.atan2(j.gx+0.5-a.x, -(j.gz+0.5-a.z));
@@ -2522,7 +2600,7 @@ function macheJob(a, dt) {
       j.stufe++;
       if (j.stufe===1) { setBlockFluechtig(j.gx,j.gy,j.gz,AIR); blip(300,0.05); }
       else if (j.stufe===2) { setBlockFluechtig(j.gx,j.gy-1,j.gz,AIR); blip(280,0.05); }
-      else if (j.stufe===3) { jobToast(a, '👀 '+wer+': „Hmm, nur Erde und Steine. Wieder zu damit!"'); }
+      else if (j.stufe===3) { sagen(a, '👀 Nur Erde und Steine. Wieder zu damit!'); }
       else if (j.stufe===4) { setBlockFluechtig(j.gx,j.gy-1,j.gz,j.war[1]); blip(340,0.05); }
       else { setBlockFluechtig(j.gx,j.gy,j.gz,j.war[0]); blip(380,0.05); a.job=null; }
     }
@@ -2533,7 +2611,7 @@ function macheJob(a, dt) {
       if (getBlock(bx,by,bz)!==AIR || !isSolid(bx,by-1,bz) ||
           (Math.abs(bx+0.5-a.x)<0.9 && Math.abs(bz+0.5-a.z)<0.9)) { a.job=null; return; }
       j.bx=bx; j.by=by; j.bz=bz; j.next=0.5; j.hoehe=0; j.abbau=false; j.gebaut=[];
-      jobToast(a, '🔨 '+wer+' baut einen kleinen Turm - genau wie du!');
+      sagen(a, '🔨 Ich baue einen Turm - wie Jonah!');
     }
     a.walking=false;
     a.yaw = Math.atan2(j.bx+0.5-a.x, -(j.bz+0.5-a.z));
@@ -2546,7 +2624,7 @@ function macheJob(a, dt) {
           blip(340+j.hoehe*60,0.05);
           j.hoehe++;
           if (j.hoehe>=3) { j.abbau=true; j.next=j.t+2.5;   // kurz bewundern
-            jobToast(a, '✨ '+wer+': „Fertig! Und jetzt räume ich wieder auf."'); }
+            sagen(a, '✨ Fertig! Und jetzt räume ich wieder auf.'); }
         } else j.abbau=true;
       } else if (j.gebaut.length>0) {
         const [gx,gy,gz] = j.gebaut.pop();
@@ -3023,6 +3101,12 @@ function updateAnimals(dt) {
         if (a.jobT<=0) { a.jobT = 12 + Math.random()*16; waehleJob(a); }
       }
       if (a.job) { macheJob(a, dt); a.t = Math.max(a.t, 0.4); }
+      // ... und sie plaudern von allein - ohne Antippen!
+      a.plauderT = (a.plauderT===undefined ? 4+Math.random()*8 : a.plauderT-dt);
+      if (a.plauderT<=0) {
+        a.plauderT = 9 + Math.random()*13;
+        if (dSp < 13) plaudern(a, dSp);
+      }
       // In ein Loch gefallen? Dann klettern sie wie Jonah wieder raus!
       if (a.onGround && !a.job && Math.random() < dt*0.6) {
         const ax2=Math.floor(a.x), ay2=Math.floor(a.y), az2=Math.floor(a.z);
@@ -3032,7 +3116,7 @@ function updateAnimals(dt) {
         if (waende===4) {                 // rundum eingemauert: hoch geht's!
           a.vy = 9.5;
           a.kx = Math.sin(a.yaw)*2.5; a.kz = -Math.cos(a.yaw)*2.5;
-          jobToast(a, '🕳️ '+(a.name||'Ein Bewohner')+': „Uups, ins Loch gefallen! Und huuup - wieder raus!"');
+          sagen(a, '🕳️ Uups, ins Loch gefallen! Und huuup - wieder raus!');
           blip(300,0.08); blip(450,0.1); blip(600,0.12);
         }
       }
@@ -3121,7 +3205,7 @@ function updateAnimals(dt) {
         if (!a.warImWasser && (a.trockenT===undefined || a.trockenT>0.5)) {
           a.tauchT = 0;                 // frischer Sprung ins Wasser (kein Gebobbe)
           if (a.vy < -6 && Math.hypot(a.x-player.x, a.z-player.z) < 16) {
-            toast('💦 PLATSCH! '+(a.name||'Ein Bewohner')+' ist ins Wasser geplumpst!', 2500);
+            sagen(a, '💦 PLATSCH! Brrr, ist das nass!');
             blip(500,0.08); blip(300,0.12); blip(200,0.16);
           }
         }
@@ -6274,6 +6358,7 @@ function hitEntity(a, dir) {
       }
       const talk = kid ? KID_TALK : VILLAGER_TALK;
       const say = talk[Math.floor(Math.random()*talk.length)];
+      sagen(a, say, 4);
       toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"  (❤ '+a.friend+'/3)', 3500);
     } else {                                     // Freunde kommen mit ins Abenteuer!
       a.follow = !a.follow;
@@ -7332,6 +7417,7 @@ function frame(now) {
   }
   updateMiniTerrain();
   drawMiniMap();
+  updateBubbles(dt);                    // Sprechblasen über den Köpfen
   if (mapBox.style.display==='flex') drawMapLive();   // große Karte läuft live mit
   if (boostT > 0) boostT -= dt;
   if (jumpT > 0) jumpT -= dt;
