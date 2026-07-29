@@ -213,6 +213,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Bewohner fliegen, graben und klettern! 🕊️⛏️ Die Bewohner können
+  noch mehr wie Jonah: Sie heben ab und drehen eine richtige
+  Flugrunde über dem Dorf, sie buddeln neugierig Löcher (und
+  schütten sie danach wieder zu), und wenn sie selbst in ein Loch
+  fallen – Schwerkraft gilt ja auch für sie! – rufen sie „Uups!"
+  und hüpfen wieder heraus
 - Lava in der Tiefe! 🌋 Wer tief gräbt, stößt auf glühende
   Lava-Blasen – und ganz unten am Weltboden wartet ein riesiger
   Lava-See! Lava leuchtet von selbst im Dunkeln. Aber Vorsicht:
