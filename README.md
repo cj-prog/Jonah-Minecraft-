@@ -218,7 +218,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Flugrunde über dem Dorf, sie buddeln neugierig Löcher (und
   schütten sie danach wieder zu), und wenn sie selbst in ein Loch
   fallen – Schwerkraft gilt ja auch für sie! – rufen sie „Uups!"
-  und hüpfen wieder heraus
+  und hüpfen wieder heraus. Und im Wasser machen sie es jetzt wie
+  Jonah: Erst PLATSCH und untertauchen (blubb, blubb 🫧), dann
+  hochpaddeln und oben schwimmen. Tiere schwimmen weiter sofort
+  oben – die können das einfach besser!
 - Lava in der Tiefe! 🌋 Wer tief gräbt, stößt auf glühende
   Lava-Blasen – und ganz unten am Weltboden wartet ein riesiger
   Lava-See! Lava leuchtet von selbst im Dunkeln. Aber Vorsicht:
