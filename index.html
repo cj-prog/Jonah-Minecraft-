@@ -305,7 +305,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 92 &middot; Der 🔧 repariert jetzt auch Dächer!</p>
+    Version 93 &middot; Der 🔧 flickt genau EIN Loch pro Tipp!</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -351,7 +351,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 92;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 93;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1375,37 +1375,53 @@ function genChunkData(cx, cz, ohneEdits) {
 // das wieder heil werden soll. Nur dort (im kleinen Umkreis) werden alte
 // Abbau-Löcher in Wänden, Fenstern, Dächern und Ziegeln geflickt -
 // alle anderen Umbauten in der Welt bleiben unberührt!
-function repariereUmkreis(x0, z0, r) {
-  let anzahl = 0;
-  for (let rcz=(z0-r)>>4; rcz<=(z0+r)>>4; rcz++)
-    for (let rcx=(x0-r)>>4; rcx<=(x0+r)>>4; rcx++) {
-      const key = ckey(rcx,rcz), e = edits.get(key);
-      if (!e) continue;
-      let pure = null, hier = 0;
-      for (const [i,v] of [...e]) {
-        if (v!==AIR) continue;
-        const wx = rcx*CS + (i&15), wz = rcz*CS + ((i>>4)&15);
-        if (Math.abs(wx-x0)>r || Math.abs(wz-z0)>r) continue;
-        if (!pure) pure = genChunkData(rcx, rcz, true);   // Welt ohne Änderungen
-        const b = pure[i];
-        let dran = (b===PLANK || b===GLASS || b===WOOL || b===BRICK);
-        if (!dran && b===WOOD) {
-          // Haus-Holz (Dächer, Eck-Balken) reparieren - aber KEINE Bäume!
-          // Ein Baumstamm wächst aus Gras oder Erde, ein Haus nicht.
-          let sy = i>>8;
-          while (sy>0 && pure[(sy-1<<8)|(i&255)]===WOOD) sy--;
-          const unter = pure[(sy-1<<8)|(i&255)];
-          dran = !(unter===GRASS || unter===DIRT || unter===SAND);
-        }
-        if (dran) { e.delete(i); hier++; }
-      }
-      if (hier) {
-        anzahl += hier;
-        if (!e.size) edits.delete(key);
-        const ch = getChunk(rcx, rcz);
-        if (ch) { ch.data = null; ch.dirty = true; ensureData(rcx, rcz); }
-      }
+const _pureCache = new Map();           // frisch generierte Welt, pro Reparatur
+function _pureAt(wx, wy, wz) {
+  const rcx=wx>>4, rcz=wz>>4, key=ckey(rcx,rcz);
+  let pure = _pureCache.get(key);
+  if (!pure) { pure = genChunkData(rcx, rcz, true); _pureCache.set(key, pure); }
+  return pure[bidx(wx&15, wy, wz&15)];
+}
+function _istBauLoch(wx, wy, wz) {      // fehlt hier ein Gebäude-Block?
+  if (getBlock(wx,wy,wz)!==AIR) return false;
+  const b = _pureAt(wx,wy,wz);
+  if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) return true;
+  if (b!==WOOD) return false;
+  // Haus-Holz reparieren, aber KEINE Bäume: ein Baumstamm wächst aus
+  // Gras oder Erde, ein Haus nicht.
+  let uy = wy;
+  while (uy-1>CH_MIN && _pureAt(wx,uy-1,wz)===WOOD) uy--;
+  const unter = _pureAt(wx,uy-1,wz);
+  return !(unter===GRASS || unter===DIRT || unter===SAND);
+}
+function repariereLoch(sx, sy, sz) {    // EIN Loch flicken: nur die eine Lücke!
+  _pureCache.clear();
+  if (!_istBauLoch(sx,sy,sz)) return 0;
+  const offen=[[sx,sy,sz]], gesehen=new Set([sx+','+sy+','+sz]);
+  const zellen=[];
+  while (offen.length && zellen.length<250) {   // zusammenhängende Lücke absuchen
+    const [wx,wy,wz] = offen.shift();
+    zellen.push([wx,wy,wz]);
+    for (const [dx,dy,dz] of [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]) {
+      const qx=wx+dx, qy=wy+dy, qz=wz+dz, qk=qx+','+qy+','+qz;
+      if (gesehen.has(qk)) continue;
+      gesehen.add(qk);
+      if (Math.abs(qx-sx)>12 || Math.abs(qy-sy)>12 || Math.abs(qz-sz)>12) continue;
+      if (_istBauLoch(qx,qy,qz)) offen.push([qx,qy,qz]);
     }
+  }
+  let anzahl = 0;
+  for (const [wx,wy,wz] of zellen) {    // die Lücke füllen: Abbau-Rest löschen
+    const rcx=wx>>4, rcz=wz>>4, i=bidx(wx&15,wy,wz&15);
+    const e = edits.get(ckey(rcx,rcz));
+    if (!e || e.get(i)!==AIR) continue;
+    e.delete(i);
+    if (!e.size) edits.delete(ckey(rcx,rcz));
+    const ch = getChunk(rcx,rcz);
+    if (ch && ch.data) { ch.data[i] = _pureAt(wx,wy,wz); ch.dirty = true; }
+    anzahl++;
+  }
+  _pureCache.clear();
   if (anzahl) scheduleSave();
   return anzahl;
 }
@@ -1423,15 +1439,16 @@ function toggleRep() {
   blip(repMode?600:300, 0.06);
 }
 function tryRepair(hit) {
-  const n = repariereUmkreis(hit.x, hit.z, 10);
+  // repariert wird die Lücke DIREKT VOR der angetippten Fläche
+  const n = repariereLoch(hit.x+hit.face[0], hit.y+hit.face[1], hit.z+hit.face[2]);
   if (n>0) {
-    toast('🔧 '+(n===1?'1 Loch':n+' Löcher')+' geflickt - das Gebäude ist wieder heil! ✨', 3500);
+    toast('🔧 '+(n===1?'1 Block':n+' Blöcke')+' geflickt - Lücke geschlossen! ✨', 3500);
     blip(523,0.08); blip(659,0.08); blip(784,0.12);
+    setRepMode(false);
   } else {
-    toast('🔧 Hier ist nichts zu reparieren - alles heil (oder selbst gebaut)!', 3000);
+    toast('🔧 Hier fehlt nichts. Ziele mitten in die Lücke, die geflickt werden soll!', 3200);
     blip(300,0.08);
   }
-  setRepMode(false);
 }
 repBtnEl.addEventListener('touchstart', e=>{ e.preventDefault(); toggleRep(); }, {passive:false});
 repBtnEl.addEventListener('mousedown', e=>{ e.preventDefault(); toggleRep(); });

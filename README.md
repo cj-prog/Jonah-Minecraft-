@@ -196,9 +196,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   Jonah! Falls ein Gebäude aber Löcher hat, die man gar nicht selbst
   gemacht hat (uralte Abbau-Reste, z. B. von einem Baum, der früher
   genau dort stand, wo jetzt ein Haus ist): Im Spiel den 🔧-Knopf
-  oben antippen, dann GENAU das kaputte Gebäude antippen – nur
-  dieses eine Gebäude (kleiner Umkreis) bekommt seine Wände,
-  Fenster, Ziegel und auch seine Holz-Dächer und Eck-Balken zurück.
+  oben antippen, dann mitten in die LÜCKE zielen und tippen – genau
+  dieses eine zusammenhängende Loch wird geflickt (z. B. das ganze
+  fehlende Dach), Wände, Fenster, Ziegel, Holz-Dächer, Eck-Balken.
+  Nichts drumherum wird angefasst – jede andere Lücke bleibt, bis
+  Jonah sie selbst antippt.
   Das Werkzeug ist schlau: Baum-Holz wächst aus Gras oder Erde und
   wird deshalb NIE repariert – gefällte Bäume bleiben gefällt!
   Alle anderen Umbauten überall in der Welt bleiben exakt so, wie
