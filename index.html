@@ -301,7 +301,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 88 &middot; Häuser reparieren sich selbst! 🏠🔧</p>
+    Version 89 &middot; Reparatur-Knopf: DU bestimmst! 🔧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -325,6 +325,7 @@
     <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
     <button id="expBtn">📤 Spielstand sichern</button>
     <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
+    <button id="repairBtn">🔧 Häuser reparieren</button>
   </div>
   <div id="err"></div>
 </div>
@@ -347,7 +348,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 88;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 89;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -820,7 +821,7 @@ const edits = new Map();                // "cx,cz" -> Map(idx -> blockId)
 const ckey = (cx,cz)=>cx+','+cz;
 const bidx = (lx,y,lz)=>((y-CH_MIN)<<8)|(lz<<4)|lx;
 
-function genChunkData(cx, cz) {
+function genChunkData(cx, cz, ohneEdits) {
   const data = new Uint8Array(CS*CS*CH_TOT);
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
@@ -1349,7 +1350,7 @@ function genChunkData(cx, cz) {
   // Alte Schnee- und Pfützen-Reste vom Wetter dürfen aber keine neuen
   // Gebäude kaputt machen: liegen sie mitten in einer frisch gebauten
   // Wand, werden sie weggeräumt statt angewendet.
-  const e = edits.get(ckey(cx,cz));
+  const e = ohneEdits ? null : edits.get(ckey(cx,cz));
   if (e) {
     for (const [i,v] of [...e]) {
       // Schnee lag immer in der Luft; steht da jetzt etwas Gebautes, fliegt er raus
@@ -1357,17 +1358,40 @@ function genChunkData(cx, cz) {
       // Pfützen lagen auf Naturboden; in Wänden/Böden von Gebäuden haben sie nichts verloren
       if (v===WATER && !(data[i]===AIR || data[i]===WATER || data[i]===GRASS ||
                          data[i]===DIRT || data[i]===SAND)) { e.delete(i); continue; }
-      // Häuser heilen sich selbst: uralte Abbau-Löcher (z.B. von einem Baum,
-      // der früher hier stand) dürfen keine Wände, Fenster, Dächer oder
-      // Ziegel von Gebäuden durchlöchern. Türen, Möbel und alles andere,
-      // was Jonah absichtlich verändert hat, bleibt wie es ist!
-      if (v===AIR && (data[i]===PLANK || data[i]===GLASS ||
-                      data[i]===WOOL || data[i]===BRICK)) { e.delete(i); continue; }
+      // Abbau-Löcher bleiben, wie Jonah sie gemacht hat - auch in Häusern!
+      // Wer ein kaputtes Haus heilen möchte, drückt selbst auf den
+      // 🔧-Knopf auf dem Startbildschirm.
       data[i]=v;
     }
     if (!e.size) edits.delete(ckey(cx,cz));
   }
   return data;
+}
+
+// Häuser-Reparatur auf Wunsch: NUR wenn Jonah den 🔧-Knopf drückt!
+// Alte Abbau-Löcher, die mitten in Wänden, Fenstern, Dächern oder Ziegeln
+// von Gebäuden liegen, werden entfernt - alles andere bleibt unberührt.
+let repairWunsch = false;
+function repariereGebaeude() {
+  let anzahl = 0;
+  for (const [key, e] of [...edits]) {
+    const [rcx, rcz] = key.split(',').map(Number);
+    let pure = null, hier = 0;
+    for (const [i,v] of [...e]) {
+      if (v!==AIR) continue;
+      if (!pure) pure = genChunkData(rcx, rcz, true);   // Welt ohne Änderungen
+      const b = pure[i];
+      if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) { e.delete(i); hier++; }
+    }
+    if (hier) {
+      anzahl += hier;
+      if (!e.size) edits.delete(key);
+      const ch = getChunk(rcx, rcz);
+      if (ch) { ch.data = null; ch.dirty = true; }      // Chunk frisch aufbauen
+    }
+  }
+  if (anzahl) scheduleSave();
+  return anzahl;
 }
 
 function getChunk(cx,cz){ return chunks.get(ckey(cx,cz)); }
@@ -7285,6 +7309,13 @@ if (!isTouch) {
 }
 document.getElementById('playBtn').addEventListener('click',()=>{
   const saved=loadGame();
+  if (repairWunsch) {                   // Jonah hat den 🔧-Knopf gedrückt!
+    const n = repariereGebaeude();
+    setTimeout(()=>toast(n>0
+      ? '🔧 '+n+' Löcher in Gebäuden repariert! Alles wieder heil.'
+      : '🔧 Alles schon heil - nichts zu reparieren!', 4500), 1200);
+    repairWunsch = false;
+  }
   if (saved) {
     player.x=saved.x; player.y=saved.y; player.z=saved.z;
     yaw=saved.yaw||0; pitch=saved.pitch||0;
@@ -7386,6 +7417,11 @@ document.getElementById('playBtn').addEventListener('click',()=>{
 });
 // ---- Spielstand sichern und laden (als Datei) ----
 // Sicherung von der letzten Version zurückholen
+document.getElementById('repairBtn').addEventListener('click', function() {
+  repairWunsch = !repairWunsch;
+  this.textContent = repairWunsch ? '🔧 Wird beim Start repariert!' : '🔧 Häuser reparieren';
+  this.style.background = repairWunsch ? '#4caf50' : '';
+});
 const restoreBtn = document.getElementById('restoreBtn');
 try {
   const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
