@@ -198,9 +198,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   genau dort stand, wo jetzt ein Haus ist): Im Spiel den 🔧-Knopf
   oben antippen, dann GENAU das kaputte Gebäude antippen – nur
   dieses eine Gebäude (kleiner Umkreis) bekommt seine Wände,
-  Fenster, Dächer und Ziegel zurück. Alle anderen Umbauten überall
-  in der Welt bleiben exakt so, wie Jonah sie gemacht hat! Türen,
-  Möbel und gefällte Bäume werden nie angefasst. Die Bau-Türme der
+  Fenster, Ziegel und auch seine Holz-Dächer und Eck-Balken zurück.
+  Das Werkzeug ist schlau: Baum-Holz wächst aus Gras oder Erde und
+  wird deshalb NIE repariert – gefällte Bäume bleiben gefällt!
+  Alle anderen Umbauten überall in der Welt bleiben exakt so, wie
+  Jonah sie gemacht hat, Türen und Möbel werden nie angefasst. Die Bau-Türme der
   fleißigen Bewohner sind außerdem nur vorübergehend – sie landen
   nie im Spielstand
 - Fleißige Dorfbewohner! 🧑‍🌾🔨 Die Bewohner (und Kinder) können

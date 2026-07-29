@@ -305,7 +305,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 91 &middot; Zielgenaue Reparatur mit dem 🔧 im Spiel!</p>
+    Version 92 &middot; Der 🔧 repariert jetzt auch Dächer!</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -351,7 +351,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 91;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 92;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1388,7 +1388,16 @@ function repariereUmkreis(x0, z0, r) {
         if (Math.abs(wx-x0)>r || Math.abs(wz-z0)>r) continue;
         if (!pure) pure = genChunkData(rcx, rcz, true);   // Welt ohne Änderungen
         const b = pure[i];
-        if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) { e.delete(i); hier++; }
+        let dran = (b===PLANK || b===GLASS || b===WOOL || b===BRICK);
+        if (!dran && b===WOOD) {
+          // Haus-Holz (Dächer, Eck-Balken) reparieren - aber KEINE Bäume!
+          // Ein Baumstamm wächst aus Gras oder Erde, ein Haus nicht.
+          let sy = i>>8;
+          while (sy>0 && pure[(sy-1<<8)|(i&255)]===WOOD) sy--;
+          const unter = pure[(sy-1<<8)|(i&255)];
+          dran = !(unter===GRASS || unter===DIRT || unter===SAND);
+        }
+        if (dran) { e.delete(i); hier++; }
       }
       if (hier) {
         anzahl += hier;
