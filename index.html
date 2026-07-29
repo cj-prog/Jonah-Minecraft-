@@ -160,7 +160,8 @@
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
     padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
   #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
-  #saveRow { display:flex; gap:10px; }
+  #saveRow { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  #repairBtn { background:#c4661e !important; border-color:#ffd9a8 !important; font-weight:bold; }
   #saveRow button, #saveRow label { font-size:13px; color:#fff; background:rgba(0,0,0,.3);
     border:1px solid rgba(255,255,255,.5); border-radius:8px; padding:7px 12px; cursor:pointer; }
   #err { color:#b00; background:#fff; padding:8px 14px; border-radius:8px; display:none; }
@@ -301,7 +302,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 89 &middot; Reparatur-Knopf: DU bestimmst! 🔧</p>
+    Version 90 &middot; Der orange 🔧-Knopf ist hier unten! ⬇️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -348,7 +349,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 89;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 90;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
