@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 108 &middot; Licht versteinert Zombies + Räuber am Tag! 🗿😈</p>
+    Version 109 &middot; Baue mit deiner eigenen Lava! 🌋</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 108;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 109;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -639,7 +639,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -7151,6 +7151,10 @@ function doBreak(dir) {
       setBlock(hit.x,hit.y,hit.z,STONE);
       toast('💦🌋 Zisssch! Das Wasser macht aus der Lava festen Stein!', 3000);
       blip(800,0.1); blip(500,0.15); blip(300,0.1);
+    } else if (HOTBAR_ITEMS[selSlot]===LAVA) {   // Lava-Eimer saugt Lava wieder auf!
+      setBlock(hit.x,hit.y,hit.z,AIR);
+      toast('🌋🪣 Lava aufgesaugt!');
+      blip(300,0.1); blip(200,0.12);
     } else {
       toast('🔥 Viel zu heiß zum Anfassen! Tipp: Wasser macht Lava zu Stein.', 3000);
       blip(200,0.08);
@@ -7281,6 +7285,7 @@ function toggleGate(x, y, z) {          // alle verbundenen Tor-Blöcke zusammen
   toast(opening ? '🎚️ Rrrrr... Tor auf! ('+cells.length+' Blöcke)' : '🎚️ Rrrrr... Tor zu!', 2000);
   blip(160,0.1); blip(200,0.1); blip(240,0.12);
 }
+let lavaTipp = false;                   // Erklärung nur beim ersten Lava-Setzen
 function doPlace(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
@@ -7441,6 +7446,25 @@ function doPlace(dir) {
     const oy=(py+1>player.y) && (py<player.y+P_HEIGHT);
     const oz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
     if (ox&&oy&&oz) return;
+  }
+  if (b===LAVA) {                       // deine eigene Lava! 🌋
+    const lox=Math.abs(px+0.5-player.x)<0.5+P_HALF;
+    const loy=(py+1>player.y) && (py<player.y+P_HEIGHT);
+    const loz=Math.abs(pz+0.5-player.z)<0.5+P_HALF;
+    if (lox&&loy&&loz) { toast('🔥 Autsch – Lava nicht direkt auf dich selbst!', 2200); return; }
+    if (cur===WATER) {                  // Lava in Wasser = sofort Stein!
+      setBlock(px,py,pz,STONE);
+      toast('💦🌋 Zisssch! Lava und Wasser machen zusammen festen Stein!', 2800);
+      blip(800,0.1); blip(500,0.15);
+      return;
+    }
+    setBlock(px,py,pz,LAVA);
+    if (!lavaTipp) {
+      lavaTipp = true;
+      toast('🌋 Deine eigene Lava! VORSICHT, heiß! (Mit Lava in der Hand antippen = aufsaugen, Wasser drauf = Stein)', 4000);
+    }
+    blip(200,0.1); blip(150,0.12);
+    return;
   }
   if (b===TREP_N) {                     // Treppe: steigt von dir weg nach oben
     const fx2=Math.sin(yaw), fz2=-Math.cos(yaw);
