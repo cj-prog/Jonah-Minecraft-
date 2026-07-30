@@ -213,6 +213,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Menschen fahren mit und zocken! 🚗🚤🕹️ Die Bewohner, Kinder und
+  Wanderer sind noch lebendiger: Steht ein Auto in der Nähe, steigen
+  sie ein und fahren hupend eine Runde mit („Brumm brumm!"); am Ufer
+  setzen sie sich ins Schaukel-Boot. Vor Spiel-Bildschirmen (in der
+  Spielhalle oder von Jonah aufgestellt) bleiben sie stehen, spielen
+  aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
+  ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
+  die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
 - Die Blitzmaus! ⚡🐭 Eine kleine gelbe Maus mit langen Ohren,
   roten Bäckchen und Zickzack-Schwanz hüpft durch die Welt (eine
   wartet gleich beim Start!). Antippen = zähmen, dann folgt sie
