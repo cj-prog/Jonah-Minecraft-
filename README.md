@@ -213,6 +213,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- VERSION 100 – das Jubiläum! 🎉 Beim ersten Start steigt ein
+  großes Fest: Feuerwerks-Salven rund um Jonah, ein tanzender
+  „VERSION 100!"-Schriftzug, alle Bewohner (und der Drache!) jubeln
+  in ihren Sprechblasen. Als Geschenk gibt es 100 € Taschengeld und
+  den goldenen Jubiläums-Pokal 🏆 – ein funkelnder neuer Block in
+  der Blockleiste, den Jonah sich aufs Regal, vors Haus oder auf
+  den Berggipfel stellen kann. Danke für 100 Versionen JonahCraft!
 - Dein lieber Drache! 🐉 Ein freundlicher grüner Drache mit
   Goldbauch, großen Kulleraugen, rotem Lächeln und Sattel wartet
   gleich beim Start auf Jonah. Antippen = aufsteigen und losfliegen:
