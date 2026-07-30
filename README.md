@@ -379,9 +379,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   sich Stück für Stück. Grab vor dem Regen ein Becken, und du hast
   danach ein Schwimmbad! (Wegmachen: ⛏️-Modus mit Wasser-Block
   saugt es auf)
-- Lange Tage! ☀️ Der Tag dauert jetzt gemütliche 4,5 Minuten, die
-  Nacht rauscht in nur 1,5 Minuten vorbei (oder du schläfst sie im
-  Bett einfach weg)
+- Lange Tage UND lange Nächte! ☀️🌙 Tag und Nacht sind jetzt gleich
+  lang – beide dauern gemütliche 4,5 Minuten. So bleibt nachts
+  genug Zeit für Zombie-Jagd, Sternegucken und Monster-König-Kämpfe
+  (und wer keine Lust auf Nacht hat, schläft sie im Bett einfach weg)
 - Zauber-Lasso! 🌀 Drück den Lasso-Knopf rechts und male mit dem
   Finger einen Kreis um die Blöcke, die weg sollen – simsalabim, alle
   eingekreisten Blöcke verschwinden! Es trifft nur, was du wirklich
