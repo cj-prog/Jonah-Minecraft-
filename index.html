@@ -323,7 +323,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 101 &middot; Nacht-Monster und der Monster-König! 🧟👑</p>
+    Version 102 &middot; Die Blitzmaus ist da! ⚡🐭</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -369,7 +369,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 101;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 102;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1843,6 +1843,7 @@ atlas.width = atlas.height = T*ATLAS_N;
     }
     return vary(40,110,50,12);
   });
+  tile(73,()=>vary(250,214,60,16));                                 // Blitzmaus-Gelb ⚡
   tile(72,(x,y)=>{                                                  // Lava: glühend heiß!
     const n = vnoise(x*0.4, y*0.4, 933);
     if (n>0.55 || rnd()<0.06) return vary(255,214,66,20);           // gelb glühende Adern
@@ -2351,6 +2352,7 @@ const ANIMAL_KIND = {
   heli:     { speed:0,   half:0.9,  height:1.6,  tile:25, face:25 },
   dragon:   { speed:0,   half:0.95, height:1.8,  tile:53, face:53 },
   zombie:   { speed:1.5, half:0.32, height:1.8,  tile:18, face:19 },
+  blitzmaus:{ speed:2.2, half:0.3,  height:0.75, tile:73, face:73 },
   boss:     { speed:1.3, half:0.75, height:1.7,  tile:53, face:54 },
   boat:     { speed:0,   half:0.7,  height:0.9,  tile:8,  face:8 },
   dog:      { speed:1.3, half:0.28, height:0.7,  tile:31, face:32 },
@@ -2363,16 +2365,18 @@ const ANIMAL_KIND = {
   knight:   { speed:0.9, half:0.3,  height:1.85, tile:56, face:21 },
   ball:     { speed:0,   half:0.22, height:0.44, tile:10, face:10 },
 };
-const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird';
+const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird' || a.type==='blitzmaus';
 const TAME_MSG = {
   dog: '🐶 Der Hund ist jetzt dein Freund! ❤️',
   cat: '🐱 Die Katze ist jetzt dein Freund! ❤️',
   pig: '🐷 Das Schwein ist jetzt dein Freund! ❤️',
   cow: '🐮 Die Kuh ist jetzt dein Freund! ❤️',
   bird:'🐦 Der Vogel fliegt jetzt mit dir mit! ❤️',
+  blitzmaus:'⚡🐭 Die Blitzmaus ist jetzt dein Freund! Sie beschützt dich vor Monstern! ❤️',
 };
 const TAME_SOUND = {
   dog: [150,130], cat: [620,520], pig: [260,210], cow: [140,110], bird: [1600,1900],
+  blitzmaus: [1300,1600],
 };
 
 const VILLAGER_NAMES = ['Hans','Emma','Otto','Frieda','Karl','Lina','Paul','Greta','Willi','Marta'];
@@ -2864,6 +2868,11 @@ function spawnTick() {
       blip(60,0.35); blip(45,0.45);
     }
   }
+  if (countType(a=>a.type==='blitzmaus' && !a.tame) < 2 && Math.random() < 0.12) {
+    const mang=Math.random()*Math.PI*2, md=14+Math.random()*26;   // Blitzmäuse huschen umher!
+    spawnMob('blitzmaus', Math.floor(player.x+Math.cos(mang)*md),
+             Math.floor(player.z+Math.sin(mang)*md));
+  }
   if (countType(a=>a.wandert) < 3 && Math.random() < 0.2) {   // Wanderer ziehen durchs Land!
     const wang=Math.random()*Math.PI*2, wd=24+Math.random()*24;
     const wx=Math.floor(player.x+Math.cos(wang)*wd), wz=Math.floor(player.z+Math.sin(wang)*wd);
@@ -3337,6 +3346,34 @@ function updateAnimals(dt) {
       a.woolT -= dt;
       if (a.woolT <= 0) a.sheared = false;
     }
+    if (a.type==='blitzmaus') {         // die Blitzmaus zappt Monster weg! ⚡
+      if (a.walking && a.onGround && Math.random()<dt*1.5) a.vy=4.5;   // hüpft fröhlich
+      a.zapT = (a.zapT===undefined ? 2 : a.zapT-dt);
+      if (a.zapT<=0) {
+        a.zapT = 2.5 + Math.random()*3;
+        let ziel=null, bd=4.5;
+        for (const m of animals) {
+          if (m.type!=='slime' && m.type!=='zombie' && m.type!=='boss') continue;
+          const d=Math.hypot(m.x-a.x, m.z-a.z);
+          if (d<bd) { bd=d; ziel=m; }
+        }
+        if (ziel) {                     // BZZZT! Blitz aufs Monster!
+          for (let s2=0;s2<8;s2++) {
+            const t2=s2/7;
+            fireworks.push({x:a.x+(ziel.x-a.x)*t2, y:a.y+0.6+(ziel.y+0.8-a.y-0.6)*t2,
+              z:a.z+(ziel.z-a.z)*t2, vx:(Math.random()-0.5)*2, vy:1+Math.random(),
+              vz:(Math.random()-0.5)*2, tile:s2%2?30:52, t:0.35});
+          }
+          sagen(a, 'Bzzzt! ⚡', 1.5);
+          blip(1300,0.05); blip(1000,0.05); blip(700,0.06);
+          slimeDamage(ziel, 1, [(ziel.x-a.x)/Math.max(0.3,bd), 0, (ziel.z-a.z)/Math.max(0.3,bd)]);
+        } else if (Math.random()<0.3 && Math.hypot(a.x-player.x,a.z-player.z)<10) {
+          sagen(a, ['Bzzz! ⚡','Piiiek!','⚡⚡⚡'][Math.floor(Math.random()*3)], 1.5);
+          fireworks.push({x:a.x, y:a.y+1.1, z:a.z, vx:0, vy:1.5, vz:0, tile:30, t:0.3});
+          blip(1200,0.04); blip(1400,0.04);
+        }
+      }
+    }
     if (a.type==='kid') {
       if (a.walking && a.onGround && Math.random()<dt*0.5) a.vy=5.2;       // hüpft beim Spielen
       if (Math.hypot(a.x-player.x,a.z-player.z)<10 && Math.random()<dt*0.04)
@@ -3617,6 +3654,25 @@ function drawAnimals() {
       pushBox(arr,a,  0.1,0.13, 0.28+sw*0.7, 0.09,0.26,0.09, k.tile);
       pushBox(arr,a, 0,0.48,0.55, 0.07,0.07,0.4, k.tile);          // langer Schwanz
       if (a.tame) pushBox(arr,a, 0,0.46,-0.3, 0.28,0.1,0.2, 25);   // rotes Halsband
+    } else if (a.type==='blitzmaus') {                             // die kleine Blitzmaus! ⚡
+      pushBox(arr,a, 0,0.3,0.05, 0.46,0.42,0.6, 73);               // gelber Körper
+      pushBox(arr,a, 0,0.52,-0.35, 0.4,0.38,0.32, 73);             // Kopf
+      pushBox(arr,a, -0.12,0.82,-0.35, 0.1,0.3,0.08, 73);          // lange Ohren
+      pushBox(arr,a,  0.12,0.82,-0.35, 0.1,0.3,0.08, 73);
+      pushBox(arr,a, -0.12,0.99,-0.35, 0.1,0.09,0.08, 55);         // schwarze Ohr-Spitzen
+      pushBox(arr,a,  0.12,0.99,-0.35, 0.1,0.09,0.08, 55);
+      pushBox(arr,a, -0.1,0.56,-0.52, 0.08,0.08,0.04, 55);         // Knopfaugen
+      pushBox(arr,a,  0.1,0.56,-0.52, 0.08,0.08,0.04, 55);
+      pushBox(arr,a, -0.17,0.44,-0.51, 0.1,0.1,0.04, 25);          // rote Bäckchen!
+      pushBox(arr,a,  0.17,0.44,-0.51, 0.1,0.1,0.04, 25);
+      pushBox(arr,a, -0.12,0.09,-0.12+sw*0.5, 0.11,0.18,0.11, 73); // Beinchen
+      pushBox(arr,a,  0.12,0.09,-0.12-sw*0.5, 0.11,0.18,0.11, 73);
+      pushBox(arr,a, -0.12,0.09, 0.22-sw*0.5, 0.11,0.18,0.11, 73);
+      pushBox(arr,a,  0.12,0.09, 0.22+sw*0.5, 0.11,0.18,0.11, 73);
+      pushBox(arr,a, 0,0.42,0.42, 0.09,0.09,0.24, 73);             // Zickzack-Schwanz
+      pushBox(arr,a, 0.1,0.58,0.55, 0.09,0.26,0.09, 73);
+      pushBox(arr,a, 0,0.78,0.55, 0.28,0.11,0.09, 73);
+      if (a.tame) pushBox(arr,a, 0,0.36,-0.3, 0.32,0.09,0.16, 25); // rotes Halsband
     } else if (a.type==='kid') {                                   // Dorf-Kind
       pushBox(arr,a, 0,0.22, sw*0.3, 0.36,0.44,0.24, k.tile);      // Beine/Hose
       pushBox(arr,a, 0,0.62,0, 0.4,0.4,0.24, k.tile);              // Körper
@@ -7953,7 +8009,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   // Ein paar Tiere gleich in der Nähe – und garantiert Pferd, Hund und Katze!
   for (let i=0; i<24 && animals.length<5; i++) trySpawnAnimal(6,18);
   for (let i=0;i<3;i++) spawnBird(8,20);
-  for (const typ of ['horse','dog','cat','sheep']) {
+  for (const typ of ['horse','dog','cat','sheep','blitzmaus']) {
     for (let i=0; i<30; i++) {
       const ang=Math.random()*Math.PI*2, d=7+Math.random()*12;
       if (spawnMob(typ, Math.floor(player.x+Math.cos(ang)*d), Math.floor(player.z+Math.sin(ang)*d))) break;
