@@ -220,7 +220,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aber mit Flügelschlag-Wusch und Drachen-Schnurren! Er schlägt die
   Flügel, wedelt mit dem Schwanz, spricht in Sprechblasen („Ich hab
   dich lieb, Jonah! 💚") und kommt angeflogen, wenn man ihn weit
-  zurücklässt. Sein Platz wird gespeichert – er geht nie verloren
+  zurücklässt. Sein Platz wird gespeichert – er geht nie verloren.
+  Und er spuckt FEUER! 🔥 Beim Reiten erscheint der 🔥-Knopf:
+  Antippen und der Drache ruft „ROOOAR!" und faucht eine glühende
+  Feuer-Fontäne nach vorn – sie verscheucht Höhlenmonster, zündet
+  TNT und schmilzt Schnee. Häuser und Tiere passiert nichts, der
+  Drache ist ja ein lieber Drache
 - Wanderer! 🥾 Menschen gibt es jetzt nicht nur in den Dörfern:
   Draußen in der Landschaft sind Wanderer unterwegs (auch Kinder!),
   die zielstrebig in lange Richtungen durchs Land ziehen, über

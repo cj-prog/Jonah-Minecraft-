@@ -38,6 +38,8 @@
   #bowBtn  { right:calc(94px + env(safe-area-inset-right)); bottom:calc(82px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:26px; display:none; }
   #modeBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
   #rideBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
+  #fireBtn { right:calc(156px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom));
+    width:54px; height:54px; display:none; background:rgba(255,120,30,.35); }
   #flyBtn  { right:calc(28px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:24px; }
   #flyBtn.on { background:rgba(110,190,255,.55); }
   #brushBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
@@ -188,6 +190,7 @@
 <div class="hud btn" id="lassoBtn">🌀</div>
 <canvas class="hud" id="lassoCanvas"></canvas>
 <div class="hud btn" id="rideBtn" style="display:none">🐴</div>
+<div class="hud btn" id="fireBtn">🔥</div>
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
 <div class="hud btn" id="fsBtn">⛶</div>
@@ -313,7 +316,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 98 &middot; Dein lieber Reit-Drache! 🐉</p>
+    Version 99 &middot; Der Drache spuckt Feuer! 🔥</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -359,7 +362,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 98;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 99;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6260,15 +6263,17 @@ function enterDragon(a) {
   sitting = null;
   dragonRiding = a;
   document.getElementById('downBtn').style.display='flex';
+  document.getElementById('fireBtn').style.display='flex';
   const rb = document.getElementById('rideBtn');
   rb.style.display='flex'; rb.textContent='🛬';
   sagen(a, 'Schnurrr! Halt dich gut fest! 🐉', 3.5);
-  toast('🐉 Flieg los! ⬆ = steigen, ⬇ = sinken. Dein Drache trägt dich überall hin!', 3500);
+  toast('🐉 Flieg los! ⬆ = steigen, ⬇ = sinken. Und mit 🔥 spuckst du FEUER!', 3500);
   blip(90,0.2); blip(70,0.25);          // freundliches Drachen-Brummen
 }
 function exitDragon() {
   const a = dragonRiding;
   dragonRiding = null;
+  document.getElementById('fireBtn').style.display='none';
   document.getElementById('downBtn').style.display = flying ? 'flex' : 'none';
   const rb = document.getElementById('rideBtn');
   rb.style.display='none'; rb.textContent='🐴';
@@ -6307,9 +6312,44 @@ function dragonPhysics(dt) {
   a.yaw = yaw;
   a.flapT = (a.flapT||0) - dt;
   if (a.flapT<=0) { a.flapT=0.55; blip(110,0.12); }   // wusch, wusch - Flügelschlag
+  fireCd -= dt;
   player.x=a.x; player.z=a.z; player.y=a.y+1.3;
   player.vx=player.vy=player.vz=0;
 }
+let fireCd = 0;
+function dragonFire() {                 // FFFWOOSH! 🔥
+  if (!dragonRiding || fireCd > 0) return;
+  fireCd = 1.2;
+  const a = dragonRiding;
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw);
+  const sx=a.x+fx*1.9, sy=a.y+1.8, sz=a.z+fz*1.9;    // aus der Schnauze!
+  for (let i=0;i<34;i++) {                            // Feuer-Fontäne
+    const dx=fx+(Math.random()-0.5)*0.4, dyv=(Math.random()-0.5)*0.3, dz=fz+(Math.random()-0.5)*0.4;
+    const sp=7+Math.random()*6;
+    fireworks.push({x:sx, y:sy, z:sz, vx:dx*sp, vy:dyv*sp+0.8, vz:dz*sp,
+      tile:[27,25,30][i%3], t:0.4+Math.random()*0.35});
+  }
+  blip(90,0.25); blip(140,0.3); blip(200,0.2);        // Feuer-Fauchen
+  sagen(a, 'ROOOAR! 🔥', 1.5);
+  // Das Feuer wirkt: Monster verscheuchen, TNT zünden, Schnee schmelzen
+  for (const m of animals) {
+    if (m.type!=='slime') continue;
+    const ddx=m.x-a.x, ddz=m.z-a.z, d=Math.hypot(ddx,ddz);
+    if (d<9 && Math.abs(m.y-sy)<4 && (ddx*fx+ddz*fz)/Math.max(0.1,d) > 0.55)
+      slimeDamage(m, 3, [fx,0,fz]);
+  }
+  for (let i=1;i<=7;i++) {
+    const bx=Math.floor(sx+fx*i), byy=Math.floor(sy), bz=Math.floor(sz+fz*i);
+    for (let dy=-2;dy<=0;dy++) {
+      const b=getBlock(bx,byy+dy,bz);
+      if (b===TNT) igniteTNT(bx,byy+dy,bz);
+      else if (b===SNOW) setBlock(bx,byy+dy,bz,AIR);  // schmilzt weg!
+    }
+  }
+}
+const fireBtnEl = document.getElementById('fireBtn');
+fireBtnEl.addEventListener('touchstart', e=>{ e.preventDefault(); dragonFire(); }, {passive:false});
+fireBtnEl.addEventListener('mousedown', e=>{ e.preventDefault(); dragonFire(); });
 
 // ------------------------------ Privatjet -----------------------------------
 let jetRiding = null, jetTalkT = 0, jetNoise = null;
