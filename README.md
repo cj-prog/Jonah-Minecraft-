@@ -213,6 +213,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Dein lieber Drache! 🐉 Ein freundlicher grüner Drache mit
+  Goldbauch, großen Kulleraugen, rotem Lächeln und Sattel wartet
+  gleich beim Start auf Jonah. Antippen = aufsteigen und losfliegen:
+  Steuerknüppel lenkt, ⬆ steigt, ⬇ sinkt – wie beim Hubschrauber,
+  aber mit Flügelschlag-Wusch und Drachen-Schnurren! Er schlägt die
+  Flügel, wedelt mit dem Schwanz, spricht in Sprechblasen („Ich hab
+  dich lieb, Jonah! 💚") und kommt angeflogen, wenn man ihn weit
+  zurücklässt. Sein Platz wird gespeichert – er geht nie verloren
 - Wanderer! 🥾 Menschen gibt es jetzt nicht nur in den Dörfern:
   Draußen in der Landschaft sind Wanderer unterwegs (auch Kinder!),
   die zielstrebig in lange Richtungen durchs Land ziehen, über
