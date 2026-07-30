@@ -63,6 +63,19 @@
   #rotBtn.on { background:rgba(150,220,150,.55); }
   #repBtn { right:calc(412px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #repBtn.on { background:rgba(255,170,80,.55); }
+  #lookBtn { right:calc(462px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
+  #lookBtn.on { background:rgba(255,150,220,.5); }
+  #lookBox { left:calc(10px + env(safe-area-inset-left)); top:50%; transform:translateY(-50%);
+    display:none; flex-direction:column; gap:9px; background:rgba(40,28,52,.94);
+    padding:12px 14px; border-radius:14px; color:#fff; z-index:45; }
+  #lookBox h3 { font-size:17px; text-align:center; }
+  #lookBox p { font-size:11px; opacity:.85; max-width:210px; text-align:center; }
+  .lookRow { display:flex; align-items:center; gap:6px; }
+  .lookRow b { font-size:14px; width:66px; }
+  .lookSwatch { width:26px; height:26px; border-radius:8px; border:2px solid rgba(255,255,255,.35); }
+  .lookSwatch.sel { border:3px solid #fff; transform:scale(1.18); }
+  #lookDone { font-size:15px; font-weight:bold; padding:7px 16px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   #miniMap { left:calc(10px + env(safe-area-inset-left)); bottom:calc(66px + env(safe-area-inset-bottom));
     width:130px; height:130px; border:2px solid rgba(255,255,255,.55); border-radius:14px;
     z-index:14; opacity:.94; display:none; }
@@ -207,6 +220,16 @@
 <div class="hud btn" id="selfieBtn">🤳</div>
 <div class="hud btn" id="rotBtn">↪️</div>
 <div class="hud btn" id="repBtn">🔧</div>
+<div class="hud btn" id="lookBtn">👕</div>
+<div class="hud" id="lookBox">
+  <h3>👕 Dein Aussehen</h3>
+  <div class="lookRow" id="lookRowShirt"><b>👕 Hemd</b></div>
+  <div class="lookRow" id="lookRowHose"><b>👖 Hose</b></div>
+  <div class="lookRow" id="lookRowHaar"><b>💇 Haare</b></div>
+  <div class="lookRow" id="lookRowHaut"><b>✋ Haut</b></div>
+  <p>Tippe die Farben an &ndash; du siehst dich gleich daneben!</p>
+  <button id="lookDone">✔ Fertig</button>
+</div>
 <canvas class="hud" id="miniMap" width="130" height="130"></canvas>
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine ganze Welt</h3>
@@ -323,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 105 &middot; Menschen fahren Auto, Boot und zocken! 🚗🕹️</p>
+    Version 106 &middot; Such dir dein Aussehen selbst aus! 👕</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -369,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 105;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 106;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1562,6 +1585,7 @@ function saveGame() {
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
+      look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
     }));
@@ -1616,6 +1640,12 @@ function loadGame() {
     if (s.jub100) jub100 = true;
     if (s.sword) sword = true;
     if (s.bow) bow = true;
+    if (Array.isArray(s.look)) {            // dein ausgesuchtes Aussehen
+      if (LOOK_FARBEN.shirt.some(f=>f[0]===s.look[0])) outfit.shirt = s.look[0];
+      if (LOOK_FARBEN.hose.some(f=>f[0]===s.look[1])) outfit.hose = s.look[1];
+      if (LOOK_FARBEN.haar.some(f=>f[0]===s.look[2])) outfit.haar = s.look[2];
+      if (s.look[3]>=0 && s.look[3]<LOOK_HAUT.length) outfit.haut = s.look[3];
+    }
     if (Array.isArray(s.regrow)) for (const r of s.regrow) appleRegrow.push([r[0],r[1],r[2],Math.max(5,r[3]||20)]);
     return s.player || null;
   } catch(e) { return null; }
@@ -1844,6 +1874,21 @@ atlas.width = atlas.height = T*ATLAS_N;
     return vary(40,110,50,12);
   });
   tile(73,()=>vary(250,214,60,16));                                 // Blitzmaus-Gelb ⚡
+  // Haut-Farben zum Aussuchen: Körper-Kachel + passendes Gesicht
+  function hautPaar(nHaut, nGesicht, r, g, b) {
+    tile(nHaut, ()=>vary(r,g,b,14));
+    tile(nGesicht,(x,y)=>{
+      if (y===4&&x>=3&&x<=12) return 'rgb(45,32,20)';                          // Augenbraue
+      if ((x>=3&&x<=4||x>=11&&x<=12)&&y>=5&&y<=6) return 'rgb(45,90,50)';      // Augen
+      if (x>=7&&x<=8&&y>=6&&y<=10) return vary(r*0.88,g*0.82,b*0.76,8);        // Nase
+      if (y===12&&x>=6&&x<=9) return 'rgb(90,58,42)';                          // Mund
+      return vary(r,g,b,14);
+    });
+  }
+  hautPaar(74, 75, 168, 120, 82);                                   // mittelbraun
+  hautPaar(76, 77, 116, 80, 54);                                    // dunkelbraun
+  tile(78,()=>vary(150,74,204,22));                                 // Kleidung lila
+  tile(79,()=>vary(240,110,170,20));                                // Kleidung pink
   tile(72,(x,y)=>{                                                  // Lava: glühend heiß!
     const n = vnoise(x*0.4, y*0.4, 933);
     if (n>0.55 || rnd()<0.06) return vary(255,214,66,20);           // gelb glühende Adern
@@ -3521,13 +3566,14 @@ function drawAnimals() {
     const moving = Math.hypot(player.vx, player.vz) > 0.5;
     const sw2 = moving ? Math.sin(performance.now()*0.012)*0.28 : 0;
     const a={x:player.x, y:player.y, z:player.z, yaw, ph:0};
-    pushBox(arr,a, -0.12,0.4,sw2*0.4, 0.2,0.8,0.24, 40);   // blaue Hosen-Beine
-    pushBox(arr,a,  0.12,0.4,-sw2*0.4, 0.2,0.8,0.24, 40);
-    pushBox(arr,a, 0,1.1,0, 0.5,0.6,0.28, 25);             // rotes Shirt
-    pushBox(arr,a, -0.33,1.08,-sw2*0.5, 0.14,0.55,0.2, 25); // Arme schwingen mit
-    pushBox(arr,a,  0.33,1.08,sw2*0.5, 0.14,0.55,0.2, 25);
-    pushBox(arr,a, 0,1.63,0, 0.44,0.44,0.44, 22, 21);      // Kopf mit Gesicht
-    pushBox(arr,a, 0,1.88,0.02, 0.46,0.1,0.46, 5);         // braune Haare
+    const HT = LOOK_HAUT[outfit.haut];                       // deine ausgesuchten Farben!
+    pushBox(arr,a, -0.12,0.4,sw2*0.4, 0.2,0.8,0.24, outfit.hose);   // Hosen-Beine
+    pushBox(arr,a,  0.12,0.4,-sw2*0.4, 0.2,0.8,0.24, outfit.hose);
+    pushBox(arr,a, 0,1.1,0, 0.5,0.6,0.28, outfit.shirt);            // Shirt
+    pushBox(arr,a, -0.33,1.08,-sw2*0.5, 0.14,0.55,0.2, outfit.shirt); // Arme schwingen mit
+    pushBox(arr,a,  0.33,1.08,sw2*0.5, 0.14,0.55,0.2, outfit.shirt);
+    pushBox(arr,a, 0,1.63,0, 0.44,0.44,0.44, HT[0], HT[1]);       // Kopf mit Gesicht
+    pushBox(arr,a, 0,1.88,0.02, 0.46,0.1,0.46, outfit.haar);        // Haare
     if (sword) pushBox(arr,a, 0.42,1.0,-0.2, 0.07,0.5,0.07, 3);   // dein Schwert!
   }
   if (friendP) {                        // dein Mitspieler!
@@ -5425,6 +5471,55 @@ function toggleSelfie() {
                : '👀 Zurück in deinen Augen!', 3000);
   blip(selfie?700:400, 0.07);
 }
+
+// Dein Aussehen 👕: Hemd, Hose, Haare und Haut selbst aussuchen!
+const LOOK_HAUT = [[22,21],[74,75],[76,77]];   // [Körper-Kachel, Gesicht-Kachel]
+const LOOK_FARBEN = {                          // [Kachel bzw. Haut-Nummer, Knopf-Farbe]
+  shirt: [[25,'#c42c30'],[40,'#5274ac'],[53,'#5ccc60'],[73,'#fad63c'],[42,'#e9701c'],
+          [78,'#9a4acc'],[79,'#f06eaa'],[49,'#f5f3f0'],[55,'#26262a']],
+  hose:  [[40,'#5274ac'],[55,'#26262a'],[5,'#6b5232'],[3,'#7f7f7f'],[25,'#c42c30'],
+          [53,'#5ccc60'],[78,'#9a4acc'],[79,'#f06eaa']],
+  haar:  [[5,'#6b5232'],[55,'#26262a'],[73,'#fad63c'],[42,'#e9701c'],[3,'#9a9a9a'],
+          [78,'#9a4acc'],[25,'#c42c30']],
+  haut:  [[0,'#c8a078'],[1,'#a87852'],[2,'#745036']],
+};
+const outfit = { shirt:25, hose:40, haar:5, haut:0 };
+const lookBox = document.getElementById('lookBox');
+const LOOK_ROWS = { shirt:'lookRowShirt', hose:'lookRowHose', haar:'lookRowHaar', haut:'lookRowHaut' };
+for (const teil in LOOK_ROWS) {
+  const row = document.getElementById(LOOK_ROWS[teil]);
+  for (const [wert, farbe] of LOOK_FARBEN[teil]) {
+    const b = document.createElement('button');
+    b.className = 'lookSwatch';
+    b.style.background = farbe;
+    b.dataset.teil = teil; b.dataset.wert = wert;
+    const tap = e => { e.preventDefault(); outfit[teil] = wert; lookMarkiere(); blip(660,0.05); scheduleSave(); };
+    b.addEventListener('mousedown', tap);
+    b.addEventListener('touchstart', tap, {passive:false});
+    row.appendChild(b);
+  }
+}
+function lookMarkiere() {                       // zeigt, welche Farben gerade an sind
+  for (const b of lookBox.querySelectorAll('.lookSwatch'))
+    b.classList.toggle('sel', outfit[b.dataset.teil] === +b.dataset.wert);
+}
+function toggleLook() {
+  const auf = lookBox.style.display !== 'flex';
+  lookBox.style.display = auf ? 'flex' : 'none';
+  document.getElementById('lookBtn').classList.toggle('on', auf);
+  if (auf) {
+    if (!selfie) toggleSelfie();                // damit du dich gleich siehst!
+    lookMarkiere();
+    toast('👕 Such dir deine Lieblingsfarben aus!', 3000);
+  } else {
+    if (selfie) toggleSelfie();
+    scheduleSave();
+  }
+  blip(auf?720:420, 0.06);
+}
+document.getElementById('lookBtn').addEventListener('touchstart',e=>{e.preventDefault();toggleLook();},{passive:false});
+document.getElementById('lookBtn').addEventListener('mousedown',e=>{e.preventDefault();toggleLook();});
+document.getElementById('lookDone').addEventListener('click',()=>{ if (lookBox.style.display==='flex') toggleLook(); });
 
 // Zauber-Lasso 🌀: Blöcke einkreisen, und weg sind sie!
 let lassoOn = false;

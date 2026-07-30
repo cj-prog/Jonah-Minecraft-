@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Dein Aussehen aussuchen! 👕 Mit dem neuen 👕-Knopf oben öffnet sich
+  die Anzieh-Kiste: Hemd, Hose, Haare und Hautfarbe zum Antippen –
+  mit vielen Farben von Rot über Lila bis Pink. Dabei springt das
+  Spiel automatisch in die Selfie-Ansicht, damit Jonah sich sofort
+  sieht. Das Aussehen wird gespeichert und bleibt beim nächsten
+  Spielen genau so!
 - Die Blitzmaus! ⚡🐭 Eine kleine gelbe Maus mit langen Ohren,
   roten Bäckchen und Zickzack-Schwanz hüpft durch die Welt (eine
   wartet gleich beim Start!). Antippen = zähmen, dann folgt sie
