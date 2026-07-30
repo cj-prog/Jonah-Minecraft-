@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Licht versteinert Zombies! 🗿 Sobald die Sonne aufgeht – oder ein
+  Zombie nachts einer Fackel zu nahe kommt – erstarrt er zu einer
+  grauen Stein-Statue mit ausgestreckten Armen. Die Statuen bleiben
+  stehen (auch nach dem Neuladen!) und können angetippt werden: Sie
+  zerbröseln und in jeder steckt 1 Diamant. Fackeln sind jetzt also
+  auch eine Zombie-Abwehr!
+- Der Räuber – ein Tag-Gegner! 😈 Tagsüber schleicht manchmal ein
+  Räuber mit Ringelhemd, Augenmaske, roter Mütze und Beutesack durch
+  die Gegend (nie in den Dörfern). Er jagt Jonah, und wenn er ihn
+  erwischt, stibitzt er 1 €! Wer ihn besiegt (Antippen, Schwert,
+  Pfeile, Drachenfeuer oder Blitzmaus-Zap), bekommt 3 € Beute
+  zurück. Nachts schleicht er sich davon.
 - Der Schutz-Block! 🛡️ Ein Block mit goldenem Rahmen und leuchtendem
   Diamant-Kern, der einfach unkaputtbar ist: TNT und Explosionen
   prallen an ihm ab, das Zauber-Lasso und der große Abbau-Pinsel
