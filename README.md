@@ -221,6 +221,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Eigene Lava bauen! 🌋 Lava ist jetzt in der Blockleiste (neben dem
+  Wasser): eigene Lava-Seen, Vulkane und Burggräben bauen! Mit Lava
+  in der Hand saugt Antippen die Lava wieder auf, Wasser darauf (oder
+  Lava ins Wasser) macht festen Stein – und auf die eigenen Füße
+  kann man sie nicht setzen. Vorsicht bleibt trotzdem: Lava ist heiß!
 - Licht versteinert Zombies! 🗿 Sobald die Sonne aufgeht – oder ein
   Zombie nachts einer Fackel zu nahe kommt – erstarrt er zu einer
   grauen Stein-Statue mit ausgestreckten Armen. Die Statuen bleiben
