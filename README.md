@@ -219,7 +219,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Jonah überallhin und bekommt ein rotes Halsband. Das Beste: Sie
   ist ein Blitz-Beschützer! Kommt ein Monster zu nahe, ruft sie
   „Bzzzt! ⚡" und zappt es mit einem funkelnden Mini-Blitz. Und
-  zwischendurch macht sie einfach fröhliche Funken
+  zwischendurch macht sie einfach fröhliche Funken. Die gezähmte
+  Maus nochmal antippen = sie hüpft auf Jonahs SCHULTER und reitet
+  überall mit (im 🤳-Selfie sieht man sie sitzen!) – von dort oben
+  zappt sie Monster weiter. Der 🐭-Knopf setzt sie wieder ab
 - Nacht-Monster und der Monster-König! 🧟👑 Nachts kriechen grüne
   Zombies mit ausgestreckten Armen aus der Dunkelheit (nie bei den
   Dörfern!) und jagen Jonah – sie schubsen, aber beißen nicht.

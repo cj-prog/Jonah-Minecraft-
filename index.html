@@ -323,7 +323,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 103 &middot; Die Nacht ist so lang wie der Tag! 🌙</p>
+    Version 104 &middot; Die Blitzmaus auf deiner Schulter! 🐭</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -369,7 +369,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 103;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 104;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1537,7 +1537,7 @@ function saveGame() {
     const ed = {};
     for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
     const pets = animals.filter(a=>a.tame).map(a=>
-      [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0]);
+      [a.type, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.sit?1:0, a.col||0, a.schulter?1:0]);
     const jetA = animals.find(a=>a.type==='jet');
     const jetSave = jetA ? [Math.round(jetA.x*10)/10, Math.round(jetA.y*10)/10, Math.round(jetA.z*10)/10] : null;
     const heliA = animals.find(a=>a.type==='heli');
@@ -3347,6 +3347,12 @@ function updateAnimals(dt) {
       if (a.woolT <= 0) a.sheared = false;
     }
     if (a.type==='blitzmaus') {         // die Blitzmaus zappt Monster weg! ⚡
+      if (a.schulter) {                 // sitzt auf Jonahs Schulter!
+        const rx=Math.cos(yaw), rz=Math.sin(yaw);
+        a.x = player.x + rx*0.42; a.z = player.z + rz*0.42;
+        a.y = player.y + 1.05;
+        a.yaw = yaw; a.vy = 0; a.walking = false; a.ph += dt*2;
+      }
       if (a.walking && a.onGround && Math.random()<dt*1.5) a.vy=4.5;   // hüpft fröhlich
       a.zapT = (a.zapT===undefined ? 2 : a.zapT-dt);
       if (a.zapT<=0) {
@@ -3373,6 +3379,7 @@ function updateAnimals(dt) {
           blip(1200,0.04); blip(1400,0.04);
         }
       }
+      if (a.schulter) continue;         // auf der Schulter: keine eigene Schwerkraft
     }
     if (a.type==='kid') {
       if (a.walking && a.onGround && Math.random()<dt*0.5) a.vy=5.2;       // hüpft beim Spielen
@@ -6190,6 +6197,7 @@ function rayEntity(o, d, maxT) {  // trifft der Strahl ein Tier/Wesen?
   let best=null;
   for (const a of animals) {
     if (a===riding) continue;           // das eigene Pferd nicht antippen können
+    if (a.schulter) continue;           // die Schulter-Maus blockiert kein Tippen
     const k=ANIMAL_KIND[a.type];
     let t0=0, t1=maxT, ok=true;
     const mins=[a.x-k.half, a.y, a.z-k.half], maxs=[a.x+k.half, a.y+k.height, a.z+k.half];
@@ -6400,6 +6408,18 @@ function heliPhysics(dt) {
 
 // ------------------------------ Der liebe Drache 🐉 --------------------------
 let dragonRiding = null;
+let schulterMaus = null;                // sitzt eine Blitzmaus auf der Schulter?
+function mausAbsetzen() {
+  const m = schulterMaus;
+  if (!m) return;
+  m.schulter = false; schulterMaus = null;
+  m.x = player.x + Math.sin(yaw)*1.2; m.z = player.z - Math.cos(yaw)*1.2;
+  m.y = player.y + 0.5; m.vy = 2;
+  sagen(m, 'Das war schön da oben! ⚡', 2.5);
+  toast('🐭 Die Blitzmaus hüpft von deiner Schulter. Sie folgt dir weiter!', 3000);
+  blip(1500,0.05); blip(1100,0.06);
+  scheduleSave();
+}
 function enterDragon(a) {
   if (riding) dismount();
   if (flying) toggleFly();
@@ -6743,6 +6763,11 @@ function hitEntity(a, dir) {
       toast(TAME_MSG[a.type]);
       const s = TAME_SOUND[a.type];
       blip(s[0],0.1); blip(s[1],0.12);
+    } else if (a.type==='blitzmaus') {  // hüpft auf die Schulter! ⚡
+      a.schulter = true; a.sit = false; schulterMaus = a;
+      sagen(a, 'Bzzz! Beste Aussicht! ⚡', 3);
+      toast('⚡🐭 Die Blitzmaus hüpft auf deine Schulter! (🤳 Selfie zeigt sie dir, 🐭-Knopf setzt sie ab)', 4000);
+      blip(1300,0.06); blip(1600,0.08);
     } else if (a.type==='bird') {
       a.sit = !a.sit;
       toast(a.sit ? '🐦 Flieg frei, kleiner Vogel!' : '🐦 Flieg mit mir!');
@@ -7528,7 +7553,7 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-const rideOff = ()=>{ if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else dismount(); };
+const rideOff = ()=>{ if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
@@ -7780,6 +7805,11 @@ function frame(now) {
   updateMiniTerrain();
   drawMiniMap();
   updateBubbles(dt);                    // Sprechblasen über den Köpfen
+  if (!riding && !jetRiding && !heliRiding && !boatRiding && !carRiding && !cartRiding && !dragonRiding) {
+    const rb2 = document.getElementById('rideBtn');    // 🐭-Knopf für die Schulter-Maus
+    if (schulterMaus) { rb2.style.display='flex'; rb2.textContent='🐭'; }
+    else if (rb2.textContent==='🐭') { rb2.style.display='none'; rb2.textContent='🐴'; }
+  }
   if (mapBox.style.display==='flex') drawMapLive();   // große Karte läuft live mit
   if (boostT > 0) boostT -= dt;
   if (jumpT > 0) jumpT -= dt;
@@ -7944,8 +7974,10 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     if (!ANIMAL_KIND[type]) continue;
     animals.push({ type, x:p[1], y:p[2], z:p[3],
       tame:true, sit:!!p[4], col: p[5] || (Math.random()<0.5?35:36),
+      schulter: !!p[6],
       yaw:0, vy:0, kx:0, kz:0, hp:3,
       walking:false, t:0, ph:0, onGround:false });
+    if (p[6]) schulterMaus = animals[animals.length-1];
   }
   // Deine gekauften Fußbälle liegen noch da, wo du sie gelassen hast
   for (const p of savedBalls) {
