@@ -213,6 +213,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Die Blitzmaus! ⚡🐭 Eine kleine gelbe Maus mit langen Ohren,
+  roten Bäckchen und Zickzack-Schwanz hüpft durch die Welt (eine
+  wartet gleich beim Start!). Antippen = zähmen, dann folgt sie
+  Jonah überallhin und bekommt ein rotes Halsband. Das Beste: Sie
+  ist ein Blitz-Beschützer! Kommt ein Monster zu nahe, ruft sie
+  „Bzzzt! ⚡" und zappt es mit einem funkelnden Mini-Blitz. Und
+  zwischendurch macht sie einfach fröhliche Funken
 - Nacht-Monster und der Monster-König! 🧟👑 Nachts kriechen grüne
   Zombies mit ausgestreckten Armen aus der Dunkelheit (nie bei den
   Dörfern!) und jagen Jonah – sie schubsen, aber beißen nicht.
