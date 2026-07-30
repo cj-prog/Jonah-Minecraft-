@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Schutz-Block! 🛡️ Ein Block mit goldenem Rahmen und leuchtendem
+  Diamant-Kern, der einfach unkaputtbar ist: TNT und Explosionen
+  prallen an ihm ab, das Zauber-Lasso und der große Abbau-Pinsel
+  lassen ihn in Ruhe, und beim Zusammen-Spielen kann ihn nicht mal
+  der Mitspieler wegnehmen. Nur Jonah selbst kann ihn mit einem
+  direkten Tipp wieder abbauen. Perfekt für Schatzkammern und
+  Burgen!
 - Dein Aussehen aussuchen! 👕 Mit dem neuen 👕-Knopf oben öffnet sich
   die Anzieh-Kiste: Hemd, Hose, Haare und Hautfarbe zum Antippen –
   mit vielen Farben von Rot über Lila bis Pink. Dabei springt das
