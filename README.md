@@ -213,6 +213,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   ab!), machen Pause auf Stühlen, springen Trampolin und machen
   Sport an Hantel und Laufband. Wer in der Nähe steht, hört ihre
   Sprüche. Nur TNT fassen sie NIEMALS an – versprochen!
+- Nacht-Monster und der Monster-König! 🧟👑 Nachts kriechen grüne
+  Zombies mit ausgestreckten Armen aus der Dunkelheit (nie bei den
+  Dörfern!) und jagen Jonah – sie schubsen, aber beißen nicht.
+  Kämpfen geht mit Tippen, Schwert ⚔️, Pfeil und Bogen 🏹 oder
+  Drachenfeuer 🔥, besiegte Monster lassen Diamanten fallen. Und
+  ganz selten erscheint der riesige MONSTER-KÖNIG mit goldener
+  Krone: 12 Leben, wirft Jonah durch die Luft – wer ihn besiegt,
+  bekommt 5 Diamanten, 10 € und ein Konfetti-Feuerwerk! Sobald die
+  Sonne aufgeht, verpuffen alle Nacht-Monster von selbst
 - VERSION 100 – das Jubiläum! 🎉 Beim ersten Start steigt ein
   großes Fest: Feuerwerks-Salven rund um Jonah, ein tanzender
   „VERSION 100!"-Schriftzug, alle Bewohner (und der Drache!) jubeln
