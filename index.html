@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 113 &middot; TNT und Lava besiegen Monster! 💥🌋</p>
+    Version 114 &middot; Mittagsschlaf im Bett = Nacht! 🌙</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 113;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 114;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -442,7 +442,7 @@ const BLOCKS = {
     [0.18,0,0.18, 0.3,0.4,0.3, 5],[0.7,0,0.18, 0.82,0.4,0.3, 5],
     [0.18,0,0.7, 0.3,0.4,0.82, 5],[0.7,0,0.7, 0.82,0.4,0.82, 5],
     [0.15,0.55,0.7, 0.85,1.25,0.85, 8]] },
-  [BED]:   { name:'Bett (nachts antippen = schlafen!)', tiles:[25,25,25], solid:true, model:[
+  [BED]:   { name:'Bett (nachts antippen = Morgen, tagsüber = Nacht!)', tiles:[25,25,25], solid:true, model:[
     [0,0,0, 1,0.25,1, 5],
     [0,0.25,0, 1,0.5,0.72, 25],
     [0.08,0.25,0.72, 0.92,0.55,0.98, 26]] },
@@ -7361,8 +7361,13 @@ function doPlace(dir) {
     return;
   }
   if (hit.block===BED) {                // im Bett schlafen!
-    if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen!'); blip(392,0.2); }
-    else toast('Du bist noch nicht müde 😄');
+    if (isNight()) { dayTime=0.06; toast('😴 Gute Nacht... schon ist es Morgen! ☀️'); blip(392,0.2); }
+    else {                              // Mittagsschlaf: schwups, ist es Nacht!
+      dayTime=0.56;
+      toast('😴 Ein Mittagsschlaf... schwups, ist es Nacht! 🌙 (Pass auf die Monster auf!)', 3200);
+      blip(292,0.2); blip(220,0.15);
+    }
+    scheduleSave();
     return;
   }
   if (hit.block===SIGN) {               // Schild neu beschriften
