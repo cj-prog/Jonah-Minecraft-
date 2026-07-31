@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 111 &middot; Blöcke ohne Halt fallen runter! 🪨</p>
+    Version 112 &middot; König- und Räuber-Statuen! 👑🗿</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 111;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 112;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1580,7 +1580,8 @@ function saveGame() {
       balls: animals.filter(a=>a.type==='ball' && a.own).map(a=>
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10]),
       statuen: animals.filter(a=>a.type==='statue').map(a=>
-        [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, Math.round(a.yaw*100)/100]),
+        [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, Math.round(a.yaw*100)/100,
+         a.von==='boss'?'b':a.von==='raeuber'?'r':'z']),
       ziele: customTargets,
       jet: jetSave,
       heli: heliSave,
@@ -3445,24 +3446,10 @@ function updateAnimals(dt) {
     if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber') {
       // Sonnenaufgang: Zombies erstarren im Licht zu Stein-Statuen! 🗿
       if (a.type==='zombie' && !isNight()) { werdeStatue(a); continue; }
-      // ... der Monster-König verpufft wie bisher
-      if (a.type==='boss' && !isNight()) {
-        for (let s2=0;s2<10;s2++)
-          fireworks.push({x:a.x, y:a.y+0.8, z:a.z, vx:(Math.random()-0.5)*3,
-            vy:1+Math.random()*2.5, vz:(Math.random()-0.5)*3, tile:52, t:0.5});
-        if (Math.hypot(a.x-player.x,a.z-player.z)<22)
-          toast('☀️ Die Sonne vertreibt den Monster-König!', 2500);
-        animals.splice(i,1); continue;
-      }
-      // ... und der Räuber schleicht sich davon, wenn es dunkel wird
-      if (a.type==='raeuber' && isNight()) {
-        for (let s2=0;s2<8;s2++)
-          fireworks.push({x:a.x, y:a.y+0.8, z:a.z, vx:(Math.random()-0.5)*3,
-            vy:1+Math.random()*2, vz:(Math.random()-0.5)*3, tile:55, t:0.5});
-        if (Math.hypot(a.x-player.x,a.z-player.z)<22)
-          toast('🌙 Der Räuber schleicht sich in der Dunkelheit davon!', 2500);
-        animals.splice(i,1); continue;
-      }
+      // ... der Monster-König wird vom Sonnenlicht zur RIESEN-Statue!
+      if (a.type==='boss' && !isNight()) { werdeStatue(a); continue; }
+      // ... und den Räuber versteinert die Dunkelheit der Nacht
+      if (a.type==='raeuber' && isNight()) { werdeStatue(a); continue; }
       // Fackel-Licht versteinert Zombies auch mitten in der Nacht!
       if (a.type==='zombie') {
         a.lichtT = (a.lichtT===undefined ? 0.5 : a.lichtT-dt);
@@ -3762,17 +3749,20 @@ function drawAnimals() {
       pushBox(arr,a, 0,1.0,1.05, 1.5,0.1,0.5, 49);                 // Höhenleitwerk
       pushBox(arr,a, -0.85,0.42,-0.3, 0.3,0.3,0.75, 3);            // Triebwerke
       pushBox(arr,a,  0.85,0.42,-0.3, 0.3,0.3,0.75, 3);
-    } else if (a.type==='slime' || a.type==='boss') {
-      const sc = a.type==='boss' ? 2.3 : 1;
-      const sq = 1 + Math.sin(a.ph*1.5)*0.1;
-      pushBox(arr,a, 0,0.35*sc*sq,0, 0.7*sc,0.7*sc*sq,0.7*sc, k.tile, k.face);
-      if (a.type==='boss') {            // die goldene Königskrone!
+    } else if (a.type==='slime' || a.type==='boss' || (a.type==='statue' && a.von==='boss')) {
+      const istStein = a.type==='statue';               // die versteinerte König-Statue!
+      const sc = a.type==='slime' ? 1 : 2.3;
+      const sq = istStein ? 1 : 1 + Math.sin(a.ph*1.5)*0.1;
+      pushBox(arr,a, 0,0.35*sc*sq,0, 0.7*sc,0.7*sc*sq,0.7*sc,
+        istStein?3:k.tile, istStein?81:k.face);
+      if (a.type==='boss' || istStein) {  // die Königskrone (versteinert: aus Stein)
+        const kT = istStein ? 3 : 30;
         const ky = 0.7*sc*sq + 0.12;
-        pushBox(arr,a, 0,ky,0, 0.55,0.2,0.55, 30);
-        pushBox(arr,a, -0.2,ky+0.2,0, 0.1,0.16,0.1, 30);
-        pushBox(arr,a,  0.2,ky+0.2,0, 0.1,0.16,0.1, 30);
-        pushBox(arr,a, 0,ky+0.2,-0.2, 0.1,0.16,0.1, 30);
-        pushBox(arr,a, 0,ky+0.2, 0.2, 0.1,0.16,0.1, 30);
+        pushBox(arr,a, 0,ky,0, 0.55,0.2,0.55, kT);
+        pushBox(arr,a, -0.2,ky+0.2,0, 0.1,0.16,0.1, kT);
+        pushBox(arr,a,  0.2,ky+0.2,0, 0.1,0.16,0.1, kT);
+        pushBox(arr,a, 0,ky+0.2,-0.2, 0.1,0.16,0.1, kT);
+        pushBox(arr,a, 0,ky+0.2, 0.2, 0.1,0.16,0.1, kT);
       }
     } else if (a.type==='sheep') {
       if (!a.sheared) {
@@ -3878,16 +3868,17 @@ function drawAnimals() {
         pushBox(arr,a, 0,2.1,0, 0.12,0.24,0.12, 25);
         pushBox(arr,a, 0.38,0.95,0.05, 0.08,0.72,0.08, 3);
       }
-      if (a.type==='zombie' || a.type==='statue') {                // ausgestreckte Grusel-Arme!
+      if (a.type==='zombie' || (a.type==='statue' && a.von!=='raeuber')) {   // Grusel-Arme!
         const armT = a.type==='statue' ? 3 : 18;
         pushBox(arr,a, -0.3,1.25,-0.5, 0.15,0.15,0.7, armT);
         pushBox(arr,a,  0.3,1.25,-0.5, 0.15,0.15,0.7, armT);
       }
-      if (a.type==='raeuber') {                                    // Räuber: Maske und rote Mütze!
-        pushBox(arr,a, 0,1.73,-0.26, 0.54,0.15,0.05, 55);          // schwarze Augen-Maske
-        pushBox(arr,a, 0,1.95,0, 0.54,0.13,0.54, 25);              // rote Mütze
-        pushBox(arr,a, 0,2.06,0, 0.3,0.13,0.3, 25);
-        pushBox(arr,a, 0.34,1.15,0.2, 0.22,0.26,0.22, 5);          // Beute-Sack auf dem Rücken
+      if (a.type==='raeuber' || (a.type==='statue' && a.von==='raeuber')) {  // Räuber-Umriss!
+        const stein = a.type==='statue';
+        pushBox(arr,a, 0,1.73,-0.26, 0.54,0.15,0.05, stein?3:55);  // Augen-Maske
+        pushBox(arr,a, 0,1.95,0, 0.54,0.13,0.54, stein?3:25);      // Mütze
+        pushBox(arr,a, 0,2.06,0, 0.3,0.13,0.3, stein?3:25);
+        pushBox(arr,a, 0.34,1.15,0.2, 0.22,0.26,0.22, stein?3:5);  // Beute-Sack
       }
       if (a.friend>=3) drawHeart(arr, a, 2.15);
     }
@@ -6874,14 +6865,18 @@ function releaseEntity(a) {
     scheduleSave();
   }
 }
-function werdeStatue(a) {               // Licht macht Zombies zu Stein-Statuen! 🗿
+function werdeStatue(a) {               // Monster erstarren zu Stein-Statuen! 🗿
+  a.von = a.type;                       // damit die Statue ihre Form behält
   a.type = 'statue'; a.walking = false; a.kx = a.kz = 0; a.hp = 0;
   a.job = null; a.tame = false; a.follow = false;
-  for (let s2=0; s2<14; s2++)
-    fireworks.push({x:a.x, y:a.y+0.9, z:a.z, vx:(Math.random()-0.5)*3.5,
-      vy:0.5+Math.random()*3, vz:(Math.random()-0.5)*3.5, tile:3, t:0.6});
-  if (Math.hypot(a.x-player.x, a.z-player.z) < 26)
-    toast('🗿 Licht! Ein Zombie ist zu einer Stein-Statue erstarrt! (Antippen = zertrümmern)', 3500);
+  const gross = a.von==='boss' ? 2 : 1;
+  for (let s2=0; s2<14*gross; s2++)
+    fireworks.push({x:a.x, y:a.y+0.9*gross, z:a.z, vx:(Math.random()-0.5)*3.5*gross,
+      vy:0.5+Math.random()*3, vz:(Math.random()-0.5)*3.5*gross, tile:3, t:0.6});
+  if (Math.hypot(a.x-player.x, a.z-player.z) < 30)
+    toast(a.von==='boss' ? '👑🗿 Das Sonnenlicht hat den MONSTER-KÖNIG versteinert! Eine Riesen-Statue!'
+        : a.von==='raeuber' ? '🌙🗿 Die Dunkelheit hat den Räuber versteinert!'
+        : '🗿 Licht! Ein Zombie ist zu einer Stein-Statue erstarrt! (Antippen = zertrümmern)', 3500);
   blip(120,0.15); blip(85,0.2);
   const statuen = animals.filter(x=>x.type==='statue');
   if (statuen.length > 10) animals.splice(animals.indexOf(statuen[0]), 1);   // die älteste bröselt weg
@@ -7045,12 +7040,24 @@ function hitEntity(a, dir) {
   }
   if (a.type==='statue') {              // Statue antippen = zertrümmern!
     animals.splice(animals.indexOf(a), 1);
-    gems += 1; updateFoodHUD(); scheduleSave();
-    for (let s2=0; s2<16; s2++)
-      fireworks.push({x:a.x, y:a.y+0.9, z:a.z, vx:(Math.random()-0.5)*4,
-        vy:1+Math.random()*3.5, vz:(Math.random()-0.5)*4, tile:3, t:0.7});
-    toast('🗿💥 Statue zertrümmert! In ihr steckte 1 Diamant! 💎', 3000);
-    blip(200,0.1); blip(140,0.14);
+    const gross = a.von==='boss' ? 2 : 1;
+    for (let s2=0; s2<16*gross; s2++)
+      fireworks.push({x:a.x, y:a.y+0.9*gross, z:a.z, vx:(Math.random()-0.5)*4*gross,
+        vy:1+Math.random()*3.5, vz:(Math.random()-0.5)*4*gross, tile:3, t:0.7});
+    if (a.von==='boss') {               // im versteinerten König steckt ein Schatz!
+      gems += 3; money += 5;
+      toast('👑🗿💥 König-Statue zertrümmert! Darin steckten 3 💎 und 5 €!', 3800);
+      blip(523,0.08); blip(659,0.1); blip(784,0.12);
+    } else if (a.von==='raeuber') {
+      money += 2;
+      toast('🗿💥 Räuber-Statue zertrümmert! Seine Beute: 2 €!', 3000);
+      blip(200,0.1); blip(300,0.1);
+    } else {
+      gems += 1;
+      toast('🗿💥 Statue zertrümmert! In ihr steckte 1 Diamant! 💎', 3000);
+      blip(200,0.1); blip(140,0.14);
+    }
+    updateFoodHUD(); scheduleSave();
     return;
   }
   if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber') {   // Monster bekämpfen!
@@ -8422,9 +8429,10 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     animals.push({type:'ball', own:true, x:p[0], y:p[1]+0.5, z:p[2], vx:0, vy:0, vz:0,
       yaw:0, kx:0, kz:0, walking:false, t:9, ph:0, onGround:false});
   }
-  // Versteinerte Zombies stehen noch als Statuen herum
+  // Versteinerte Monster stehen noch als Statuen herum
   for (const p of savedStatuen) {
     animals.push({type:'statue', x:p[0], y:p[1], z:p[2], yaw:p[3]||0, vy:0,
+      von: p[4]==='b'?'boss':p[4]==='r'?'raeuber':'zombie',
       kx:0, kz:0, hp:0, walking:false, t:9, ph:0, onGround:false});
   }
   // Abenteuer-Begleiter (Freunde, die mitgekommen sind)
