@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- König- und Räuber-Statuen! 👑🗿 Jetzt versteinern ALLE Gegner:
+  Der Monster-König erstarrt beim Sonnenaufgang zu einer Riesen-
+  Statue mit Stein-Krone, und Räuber werden von der Dunkelheit der
+  Nacht versteinert (mit Stein-Mütze und Beutesack). Zertrümmern
+  lohnt sich: In der König-Statue stecken 3 Diamanten und 5 €, in
+  der Räuber-Statue 2 € Beute.
 - Schwerkraft für Blöcke! 🪨 Ein Block, der frei in der Luft hängt –
   nichts drunter UND nichts an den Seiten, woran er sich festhalten
   kann – fällt jetzt herunter (mit Plumps-Geräusch). Häuser, Dächer,
