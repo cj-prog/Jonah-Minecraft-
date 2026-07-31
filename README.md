@@ -221,6 +221,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Mittagsschlaf macht Nacht! 🌙 Das Bett kann jetzt beides: Nachts
+  antippen = schlafen bis zum Morgen (wie bisher). Und NEU: tagsüber
+  antippen = Mittagsschlaf, und schwups bricht die Nacht herein –
+  perfekt, um gleich Monster zu jagen oder Sternschnuppen zu gucken.
 - TNT und Lava besiegen Monster! 💥🌋 Explosionen tun jetzt allen
   Gegnern richtig weh: Zombies, Schleime und Räuber fliegen weg und
   werden zerstört (mit Beute!), und selbst der Monster-König verliert
