@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 110 &middot; Wasser und Lava zerfließen jetzt echt! 🌊🌋</p>
+    Version 111 &middot; Blöcke ohne Halt fallen runter! 🪨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 110;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 111;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3636,7 +3636,7 @@ function pushBox(arr, a, ox,oy,oz, sx,sy,sz, tileAll, tileFront) {
 }
 const animalBuf = gl.createBuffer();
 function drawAnimals() {
-  if (!animals.length && !friendP && !fireworks.length && !arrows.length && !lightning && !selfie) return;
+  if (!animals.length && !friendP && !fireworks.length && !arrows.length && !lightning && !selfie && !fallende.length) return;
   const arr=[];
   if (selfie) {                         // DU! (in der Selfie-Ansicht)
     const moving = Math.hypot(player.vx, player.vz) > 0.5;
@@ -3891,6 +3891,11 @@ function drawAnimals() {
       }
       if (a.friend>=3) drawHeart(arr, a, 2.15);
     }
+  }
+  // herabfallende Blöcke 🪨
+  for (const f of fallende) {
+    const fa = { x:f.x+0.5, y:f.y, z:f.z+0.5, yaw:0 };
+    pushBox(arr,fa, 0,0.5,0, 0.98,0.98,0.98, BLOCKS[f.b].tiles[1]);
   }
   // fliegende Pfeile 🏹
   for (const p of arrows) {
@@ -5680,6 +5685,7 @@ function finishLasso() {
       if (b2===WOOL) wolle++;
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,lCtr);
+      pruefeNachbarn(qx,qy,qz);
     }
     if (wolle) { wool += wolle; updateFoodHUD(); scheduleSave(); }
   }
@@ -7168,6 +7174,7 @@ function doBreak(dir) {
   if (hit.block===SCHUTZ) {          // nur DU darfst das - und nur mit direktem Tippen!
     setBlock(hit.x,hit.y,hit.z,AIR);
     weckeFluessigkeit(hit.x,hit.y,hit.z);
+    pruefeNachbarn(hit.x,hit.y,hit.z);
     toast('🛡️ Schutz-Block weggenommen – das kannst nur du!', 2200);
     blip(620,0.06); blip(780,0.08);
     return;
@@ -7229,6 +7236,7 @@ function doBreak(dir) {
   if (hit.block===WOOL) { wool++; updateFoodHUD(); scheduleSave(); }  // Wolle zurück!
   setBlock(hit.x,hit.y,hit.z,AIR);
   weckeFluessigkeit(hit.x,hit.y,hit.z);   // Damm kaputt? Wasser/Lava strömt los!
+  pruefeNachbarn(hit.x,hit.y,hit.z);      // und wer den Halt verliert, fällt!
   // Stand ein Beet auf dem Block? Dann verschwindet es mit (so wird man Beete los)
   const ab = getBlock(hit.x, hit.y+1, hit.z);
   if (CROP_NEXT[ab] || ab===CARROT2 || ab===TOMATO2) {
@@ -7256,6 +7264,7 @@ function doBreak(dir) {
       if (b2===WOOL) wolle++;
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,wCtr);
+      pruefeNachbarn(qx,qy,qz);
     }
     if (wolle) { wool+=wolle; updateFoodHUD(); scheduleSave(); }
     if (n>1) toast('⛏️ Wusch! '+n+' Blöcke auf einmal weg!', 1600);
@@ -7542,11 +7551,13 @@ function doPlace(dir) {
       toast('🌊 Dein Wasser zerfließt! Bau einen Rand drumherum, wenn es bleiben soll.', 3800);
     }
   }
+  if (FALLBAR.has(b) && !istGehalten(px,py,pz)) starteFall(px,py,pz);   // frei in der Luft? Plumps!
   // Bau-Pinsel: gleich ein ganzes Feld setzen! (nur einfache Bau-Blöcke)
   if (brushSize>1 && MULTI_OK.includes(b)) {
     const [fx2,fy2,fz2] = hit.face;
     const r=(brushSize-1)/2;
     let n=1;
+    const gebaut = [[px,py,pz]];        // erst alles bauen, dann Halt prüfen
     for (let u=-r;u<=r;u++) for (let v=-r;v<=r;v++) {
       if (u===0&&v===0) continue;
       if (b===WOOL && wool<=0) break;   // Wolle kostet weiter Wolle!
@@ -7564,7 +7575,9 @@ function doPlace(dir) {
           Math.abs(qz+0.5-player.z)<0.5+P_HALF) continue;   // nicht in dich selbst bauen
       if (b===WOOL) { wool--; }
       setBlock(qx,qy,qz,b); n++;
+      gebaut.push([qx,qy,qz]);
     }
+    for (const [qx,qy,qz] of gebaut) fallQ.push([qx,qy,qz]);   // ohne Halt? Dann plumps!
     if (n>1) { toast('🧱 Zack! '+n+' Blöcke auf einmal gebaut!', 1600); blip(392,0.05); blip(494,0.06); }
     if (b===WOOL) { updateFoodHUD(); scheduleSave(); }
     return;
@@ -7620,6 +7633,64 @@ function weckeFluessigkeit(x,y,z,ctr) { // Block weg? Nachbar-Flüssigkeit läuf
       flowQ.push({x:x+dx, y:y+dy, z:z+dz, b, steps: b===WATER?3:2, n:c});
   }
 }
+// --------- Schwerkraft 🪨: Blöcke ohne Halt fallen herunter! ---------------
+// Ein Block fällt, wenn unter ihm nichts ist UND er sich an keiner Seite
+// festhalten kann. So bleiben Häuser, Brücken und Baumkronen heil.
+const FALLBAR = new Set([GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL]);
+const fallende = [];                    // gerade herabfallende Blöcke
+const fallQ = [];                       // Zellen, die geprüft werden wollen
+let fallT = 0, fallTipp = false;
+const haeltFest = b => b!==AIR && b!==WATER && b!==LAVA;
+function istGehalten(x,y,z) {
+  if (haeltFest(getBlock(x,y-1,z))) return true;      // steht auf etwas
+  for (const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]])
+    if (haeltFest(getBlock(x+dx,y,z+dz))) return true; // hält sich seitlich fest
+  return false;
+}
+function pruefeNachbarn(x,y,z) {        // nach dem Entfernen eines Blocks
+  fallQ.push([x,y+1,z],[x+1,y,z],[x-1,y,z],[x,y,z+1],[x,y,z-1]);
+}
+function starteFall(x,y,z) {
+  if (fallende.length > 80) return;     // Sicherheitsbremse
+  const b = getBlock(x,y,z);
+  if (!FALLBAR.has(b)) return;
+  setBlock(x,y,z,AIR);
+  fallende.push({x, y:y, z, b, vy:0});
+  pruefeNachbarn(x,y,z);                // wer sich an ihm festhielt, fällt mit
+  if (!fallTipp && Math.hypot(x-player.x,z-player.z)<24) {
+    fallTipp = true;
+    toast('🪨 Plumps! Blöcke ohne Halt fallen jetzt herunter!', 3200);
+  }
+}
+function bloeckeFallen(dt) {
+  fallT -= dt;                          // Prüf-Warteschlange abarbeiten
+  if (fallT<=0 && fallQ.length) {
+    fallT = 0.12;
+    let work = Math.min(fallQ.length, 60);
+    while (work-- > 0) {
+      const [qx,qy,qz] = fallQ.shift();
+      if (qy<=CH_MIN+1 || qy>=CH) continue;
+      const b = getBlock(qx,qy,qz);
+      if (FALLBAR.has(b) && !istGehalten(qx,qy,qz)) starteFall(qx,qy,qz);
+    }
+  }
+  for (let i=fallende.length-1; i>=0; i--) {   // die Blöcke sausen nach unten
+    const f = fallende[i];
+    const imWasser = getBlock(f.x, Math.floor(f.y+0.5), f.z)===WATER;
+    f.vy = imWasser ? Math.max(f.vy-22*dt, -3) : Math.max(f.vy-22*dt, -18);
+    const ny = f.y + Math.max(f.vy*dt, -0.9);   // nie durch Böden hindurchsausen
+    const zelle = Math.floor(ny);
+    if (zelle<=CH_MIN || haeltFest(getBlock(f.x, zelle, f.z))) {   // gelandet!
+      let landY = Math.max(zelle+1, CH_MIN+1);
+      while (haeltFest(getBlock(f.x, landY, f.z)) && landY < CH-1) landY++;  // Platz suchen
+      setBlock(f.x, landY, f.z, f.b);   // (ersetzt notfalls Wasser oder Lava)
+      fallende.splice(i,1);
+      if (Math.hypot(f.x-player.x, f.z-player.z) < 20) blip(140,0.08);
+      continue;
+    }
+    f.y = ny;
+  }
+}
 function fliesse(dt) {
   flowT -= dt;
   if (flowT>0 || !flowQ.length) return;
@@ -7664,6 +7735,7 @@ function explode(cx,cy,cz) {
     if (b===TNT) { igniteTNT(x,y,z, 0.15+Math.random()*0.35); continue; }  // Kettenreaktion!
     setBlock(x,y,z,AIR);
     weckeFluessigkeit(x,y,z,exCtr);     // Wasser und Lava strömen in den Krater!
+    pruefeNachbarn(x,y,z);              // lose Blöcke am Kraterrand fallen nach
   }
   boom();
   shake = 0.45;
@@ -8157,6 +8229,7 @@ function frame(now) {
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
+  bloeckeFallen(dt);
   updateAnimals(dt);
   updateWeather(dt, now);
   updateCompass(dt);

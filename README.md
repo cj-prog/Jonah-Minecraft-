@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Schwerkraft für Blöcke! 🪨 Ein Block, der frei in der Luft hängt –
+  nichts drunter UND nichts an den Seiten, woran er sich festhalten
+  kann – fällt jetzt herunter (mit Plumps-Geräusch). Häuser, Dächer,
+  Brücken und Baumkronen bleiben heil, weil ihre Blöcke sich
+  gegenseitig halten. Aber wer die Stütze unter einem Block wegtippt
+  oder mitten in die Luft baut, sieht ihn sausen! Nur der magische
+  Schutz-Block darf weiter schweben.
 - Wasser und Lava zerfließen! 🌊 Frisch gesetztes Wasser sucht sich
   seinen Weg: Erst fällt es nach unten, dann breitet es sich zu einer
   Pfütze aus – Lava kriecht genauso, nur langsamer und weniger weit.
