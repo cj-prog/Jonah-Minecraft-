@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Wasser und Lava zerfließen! 🌊 Frisch gesetztes Wasser sucht sich
+  seinen Weg: Erst fällt es nach unten, dann breitet es sich zu einer
+  Pfütze aus – Lava kriecht genauso, nur langsamer und weniger weit.
+  In einem Gefäß (Becken mit Rand, Burggraben, Loch) bleibt alles
+  brav drin. Aber wehe, man tippt eine Wand weg: Dann bricht der
+  Damm und es strömt heraus! Auch TNT-Krater neben Wasser laufen
+  voll, und wo fließendes Wasser auf Lava trifft, zischt es und wird
+  zu Stein.
 - Eigene Lava bauen! 🌋 Lava ist jetzt in der Blockleiste (neben dem
   Wasser): eigene Lava-Seen, Vulkane und Burggräben bauen! Mit Lava
   in der Hand saugt Antippen die Lava wieder auf, Wasser darauf (oder
