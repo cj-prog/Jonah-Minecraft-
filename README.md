@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- TNT und Lava besiegen Monster! 💥🌋 Explosionen tun jetzt allen
+  Gegnern richtig weh: Zombies, Schleime und Räuber fliegen weg und
+  werden zerstört (mit Beute!), und selbst der Monster-König verliert
+  bei einem nahen Treffer 8 seiner 12 Herzen. Wer in Lava tappt,
+  verliert zischend Herz um Herz – Lava-Burggräben sind jetzt eine
+  echte Monster-Falle!
 - König- und Räuber-Statuen! 👑🗿 Jetzt versteinern ALLE Gegner:
   Der Monster-König erstarrt beim Sonnenaufgang zu einer Riesen-
   Statue mit Stein-Krone, und Räuber werden von der Dunkelheit der
