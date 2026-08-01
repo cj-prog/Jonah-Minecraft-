@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Bagger-Rettung! ⛑️ Ein Fehler ist behoben: Der geparkte Bagger
+  (und Statuen) konnten in noch nicht geladenen Teilen der Welt bis
+  zum Weltboden durchsacken – dann stand man auf der Karte richtig,
+  aber der Bagger war 90 Blöcke tiefer. Jetzt wirkt Schwerkraft nur
+  in geladener Welt, und wer doch mal unten liegt, wird beim Laden
+  und im Spiel automatisch an die Oberfläche zurückgeholt.
 - Fahrzeuge auf der Karte! 🗺️ Bagger 🚜, Drache 🐉, Hubschrauber 🚁
   und Jet ✈️ sind jetzt live auf der großen Welt-Karte UND der
   Mini-Karte zu sehen. Nie wieder den Bagger verlieren: Karte
