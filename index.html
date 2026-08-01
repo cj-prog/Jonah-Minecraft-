@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 114 &middot; Mittagsschlaf im Bett = Nacht! 🌙</p>
+    Version 115 &middot; Friedliche Spazier-Monster! 🧟🌼</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 114;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 115;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2974,6 +2974,11 @@ function spawnTick() {
       }
     if (frei && spawnMob('zombie', zx, zz, {hp:2})) blip(80,0.2);
   }
+  if (!isNight() && countType(a=>a.friedlich) < 3 && Math.random() < 0.12) {
+    const fang=Math.random()*Math.PI*2, fd=16+Math.random()*24;   // friedliche Spazier-Monster!
+    spawnMob('zombie', Math.floor(player.x+Math.cos(fang)*fd),
+             Math.floor(player.z+Math.sin(fang)*fd), {hp:2, friedlich:true});
+  }
   if (!isNight() && countType(a=>a.type==='raeuber') < 2 && Math.random() < 0.1) {
     const rang=Math.random()*Math.PI*2, rd=20+Math.random()*20;   // tagsüber schleichen Räuber umher!
     const rx=Math.floor(player.x+Math.cos(rang)*rd), rz=Math.floor(player.z+Math.sin(rang)*rd);
@@ -3445,7 +3450,8 @@ function updateAnimals(dt) {
     }
     if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber') {
       // Sonnenaufgang: Zombies erstarren im Licht zu Stein-Statuen! 🗿
-      if (a.type==='zombie' && !isNight()) { werdeStatue(a); continue; }
+      // (friedliche Spazier-Monster sind davon ausgenommen - die dürfen bleiben!)
+      if (a.type==='zombie' && !isNight() && !a.friedlich) { werdeStatue(a); continue; }
       // ... der Monster-König wird vom Sonnenlicht zur RIESEN-Statue!
       if (a.type==='boss' && !isNight()) { werdeStatue(a); continue; }
       // ... und den Räuber versteinert die Dunkelheit der Nacht
@@ -3464,7 +3470,7 @@ function updateAnimals(dt) {
         } else a.lavaT = 0.25;          // nur ab und zu nachschauen
       }
       // Fackel-Licht versteinert Zombies auch mitten in der Nacht!
-      if (a.type==='zombie') {
+      if (a.type==='zombie' && !a.friedlich) {
         a.lichtT = (a.lichtT===undefined ? 0.5 : a.lichtT-dt);
         if (a.lichtT<=0) {
           a.lichtT = 0.4;
@@ -3477,8 +3483,12 @@ function updateAnimals(dt) {
           if (licht) { werdeStatue(a); continue; }
         }
       }
-      const jagd = a.type==='boss' ? 15 : a.type==='zombie' ? 13 : a.type==='raeuber' ? 12 : 9;
+      // Friedliche Monster jagen NIEMANDEN - sie spazieren nur herum
+      const jagd = a.friedlich ? -1
+                 : a.type==='boss' ? 15 : a.type==='zombie' ? 13 : a.type==='raeuber' ? 12 : 9;
       const dx=player.x-a.x, dz=player.z-a.z, dp=Math.hypot(dx,dz);
+      if (a.friedlich && dp<10 && Math.random()<dt*0.04)
+        sagen(a, ['Uuuh... schöner Tag! ☀️','Uuh, Blumen! 🌼','Nur spazieren. Uuuh.','Brmmm... 🎵'][Math.floor(Math.random()*4)], 3);
       if (dp<jagd) {
         a.yaw=Math.atan2(dx,-dz); a.walking=true; a.t=0.5;
         if (dp < (a.type==='boss'?1.9:1.2) && Math.abs(player.y-a.y)<1.8) {
@@ -3533,6 +3543,7 @@ function updateAnimals(dt) {
         a.zapT = 2.5 + Math.random()*3;
         let ziel=null, bd=4.5;
         for (const m of animals) {
+          if (m.friedlich) continue;    // friedliche Spazier-Monster zappt sie nicht
           if (m.type!=='slime' && m.type!=='zombie' && m.type!=='boss' && m.type!=='raeuber') continue;
           const d=Math.hypot(m.x-a.x, m.z-a.z);
           if (d<bd) { bd=d; ziel=m; }
@@ -3885,6 +3896,10 @@ function drawAnimals() {
         const armT = a.type==='statue' ? 3 : 18;
         pushBox(arr,a, -0.3,1.25,-0.5, 0.15,0.15,0.7, armT);
         pushBox(arr,a,  0.3,1.25,-0.5, 0.15,0.15,0.7, armT);
+      }
+      if (a.friedlich) {                                           // Blümchen auf dem Kopf!
+        pushBox(arr,a, 0.14,1.98,0, 0.06,0.18,0.06, 53);           // grüner Stiel
+        pushBox(arr,a, 0.14,2.12,0, 0.16,0.12,0.16, 73);           // gelbe Blüte
       }
       if (a.type==='raeuber' || (a.type==='statue' && a.von==='raeuber')) {  // Räuber-Umriss!
         const stein = a.type==='statue';

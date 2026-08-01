@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Friedliche Spazier-Monster! 🧟🌼 Tagsüber laufen jetzt auch ganz
+  harmlose Monster herum – erkennbar am gelben Blümchen auf dem
+  Kopf. Sie greifen niemanden an, brummeln nur vor sich hin („Uuh,
+  Blumen!"), versteinern nie (weder Sonne noch Fackeln) und die
+  Blitzmaus lässt sie in Ruhe. Aber wenn Jonah will, kann er sie
+  ganz normal besiegen – Beute gibt's trotzdem!
 - Mittagsschlaf macht Nacht! 🌙 Das Bett kann jetzt beides: Nachts
   antippen = schlafen bis zum Morgen (wie bisher). Und NEU: tagsüber
   antippen = Mittagsschlaf, und schwups bricht die Nacht herein –
