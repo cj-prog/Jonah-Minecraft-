@@ -221,6 +221,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Fahrzeuge auf der Karte! 🗺️ Bagger 🚜, Drache 🐉, Hubschrauber 🚁
+  und Jet ✈️ sind jetzt live auf der großen Welt-Karte UND der
+  Mini-Karte zu sehen. Nie wieder den Bagger verlieren: Karte
+  öffnen, aufs 🚜 tippen – und der Kompass-Pfeil zeigt den Weg!
 - Der RIESEN-BAGGER! 🚜 Ein gewaltiges gelbes Gefährt mit schwarzen
   Ketten, Blinklicht und einer riesigen rotierenden Fräs-Walze wird
   gleich neben dem Start angeliefert. Antippen, Gas geben – und die

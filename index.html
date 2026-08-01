@@ -234,7 +234,7 @@
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine ganze Welt</h3>
   <canvas id="mapCanvas" width="320" height="320"></canvas>
-  <div id="mapLegend">🔺 Du &middot; 🏠 Dorf &middot; 🏰 Festung &middot; 🕹️ Spielhalle &middot; ⚽ Fußball &middot; 📍 Ziel</div>
+  <div id="mapLegend">🔺 Du &middot; 🏠 Dorf &middot; 🏰 Festung &middot; 🕹️ Spielhalle &middot; 🚜 Bagger &middot; 📍 Ziel</div>
   <p>Tippe irgendwo auf die Karte &ndash; dann zeigt dir der Kompass-Pfeil den Weg dorthin!</p>
   <button id="mapClose">Fertig</button>
 </div>
@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 117 &middot; Der Bagger schaufelt auch Monster weg! 🚜🧟</p>
+    Version 118 &middot; Finde deine Fahrzeuge auf der Karte! 🗺️🚜</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 117;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 118;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6148,11 +6148,21 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   }
   mapMarks = collectMarks(0, 0, mapR);
 }
+function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der Karte!
+  const out=[];
+  for (const a of animals) {
+    if (a.type==='bagger') out.push({x:a.x, z:a.z, e:'🚜'});
+    else if (a.type==='dragon') out.push({x:a.x, z:a.z, e:'🐉'});
+    else if (a.type==='heli') out.push({x:a.x, z:a.z, e:'🚁'});
+    else if (a.type==='jet') out.push({x:a.x, z:a.z, e:'✈️'});
+  }
+  return out;
+}
 function drawMapLive() {                // jeden Frame: Pfeil und Marker wandern live!
   const W = mapCan.width, R = mapR, sc = W/(R*2);
   mapCtx.drawImage(mapTerr, 0, 0, W, W);
   mapCtx.font='13px sans-serif'; mapCtx.textAlign='center'; mapCtx.textBaseline='middle';
-  const all = mapMarks.concat(customTargets.map(t=>({x:t.x, z:t.z, e:'📍'})));
+  const all = mapMarks.concat(fahrzeugMarks(), customTargets.map(t=>({x:t.x, z:t.z, e:'📍'})));
   for (const m of all) {
     const mx=(m.x-mapCx+R)*sc, my=(m.z-mapCz+R)*sc;
     if (mx<7||mx>W-7||my<7||my>W-7) continue;
@@ -6233,7 +6243,7 @@ function drawMiniMap() {
   miniCtx.imageSmoothingEnabled = false;
   miniCtx.drawImage(mmShow, (mmCx-H-player.x)*s + W/2, (mmCz-H-player.z)*s + W/2, MMN*s, MMN*s);
   miniCtx.font='12px sans-serif'; miniCtx.textAlign='center'; miniCtx.textBaseline='middle';
-  const all = mmMarks.concat(customTargets.map(t=>({x:t.x, z:t.z, e:'📍'})));
+  const all = mmMarks.concat(fahrzeugMarks(), customTargets.map(t=>({x:t.x, z:t.z, e:'📍'})));
   for (const m of all) {
     const mx=(m.x-player.x)*s + W/2, my=(m.z-player.z)*s + W/2;
     if (mx<8||mx>W-8||my<8||my>W-8) continue;
