@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 116 &middot; Der RIESEN-BAGGER frisst Blöcke! 🚜</p>
+    Version 117 &middot; Der Bagger schaufelt auch Monster weg! 🚜🧟</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 116;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 117;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6631,6 +6631,17 @@ function baggerPhysics(dt) {
             tile:(BLOCKS[b]&&BLOCKS[b].tiles)?BLOCKS[b].tiles[1]:3, t:0.5});
         }
     if (n>0) { blip(60+Math.random()*40,0.09); blip(150,0.05); }   // Knirsch, mampf!
+    // Monster im Weg? Die Walze schaufelt sie gleich mit weg!
+    const wx=a.x+bfx*2, wz=a.z+bfz*2;   // Mitte der Fräs-Walze
+    for (const m of [...animals]) {
+      if (Math.hypot(m.x-wx, m.z-wz) > 2.8 || Math.abs(m.y-a.y) > 3) continue;
+      if (m.type==='statue') {          // Statuen zerbröseln mit ihrer Beute!
+        hitEntity(m, [bfx, 0, bfz]);
+      } else if (m.type==='slime' || m.type==='zombie' || m.type==='boss' || m.type==='raeuber') {
+        slimeDamage(m, 4, [bfx, 0, bfz]);
+        blip(90,0.1);
+      }
+    }
   }
   let blocked=false;
   const stuck = collideBox(a.x,a.y,a.z,1.1,2.0);
