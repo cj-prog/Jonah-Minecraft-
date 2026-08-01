@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der RIESEN-BAGGER! 🚜 Ein gewaltiges gelbes Gefährt mit schwarzen
+  Ketten, Blinklicht und einer riesigen rotierenden Fräs-Walze wird
+  gleich neben dem Start angeliefert. Antippen, Gas geben – und die
+  Walze frisst alles weg, was vor ihr liegt: ein Maul von 5 Blöcken
+  Breite und 4 Blöcken Höhe knabbert sich durch Berge, Wälder und
+  Mauern (mit Krümel-Funken und Knirsch-Geräuschen). Nur Wasser,
+  Lava, TNT und der Schutz-Block bleiben verschont. Der Bagger wird
+  mitgespeichert und wartet brav, wo man ihn parkt.
 - Friedliche Spazier-Monster! 🧟🌼 Tagsüber laufen jetzt auch ganz
   harmlose Monster herum – erkennbar am gelben Blümchen auf dem
   Kopf. Sie greifen niemanden an, brummeln nur vor sich hin („Uuh,
