@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 119 &middot; Bagger-Rettung: er taucht wieder auf! 🚜⛑️</p>
+    Version 120 &middot; Der Bagger tuckert dir hinterher! 🚜💨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 119;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 120;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3313,6 +3313,26 @@ function updateAnimals(dt) {
     if (a.type==='bagger') {            // der Riesen-Bagger parkt brav und sinkt sanft
       if (a!==baggerRiding) {
         a.walking=false;
+        // ... und tuckert hinterher, wenn Jonah zu weit weg ist (wie der Heli!)
+        const dpB = Math.hypot(a.x-player.x, a.z-player.z);
+        if (dpB > 48 && !a.ferry) { a.ferry = true; toast('🚜 Dein Bagger kommt hinter dir angetuckert!', 2500); }
+        if (a.ferry) {
+          if (dpB < 10) {
+            a.ferry = false;
+            toast('🚜 Dein Bagger ist da und parkt neben dir!', 2500);
+            blip(70,0.15); blip(90,0.1);
+          } else {
+            const dirB = Math.atan2(player.x-a.x, -(player.z-a.z));
+            a.yaw = dirB;
+            a.x += Math.sin(dirB)*8*dt;
+            a.z += -Math.cos(dirB)*8*dt;
+            const tyB = Math.max(terrainHeight(Math.floor(a.x), Math.floor(a.z)), SEA) + 1.1;
+            a.y += Math.max(-9*dt, Math.min(9*dt, tyB - a.y));   // rollt über die Hügel
+            a.vy = 0; a.ph += dt*8;
+            if (Math.random()<dt*0.5) blip(55+Math.random()*15,0.1);   // Diesel-Tuckern
+            continue;
+          }
+        }
         const chB = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
         if (chB && chB.data) {          // Schwerkraft nur in geladener Welt!
           a.vy = Math.max(a.vy-25*dt, -20);
