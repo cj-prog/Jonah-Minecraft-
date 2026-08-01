@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 118 &middot; Finde deine Fahrzeuge auf der Karte! 🗺️🚜</p>
+    Version 119 &middot; Bagger-Rettung: er taucht wieder auf! 🚜⛑️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 118;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 119;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3313,9 +3313,18 @@ function updateAnimals(dt) {
     if (a.type==='bagger') {            // der Riesen-Bagger parkt brav und sinkt sanft
       if (a!==baggerRiding) {
         a.walking=false;
-        a.vy = Math.max(a.vy-25*dt, -20);
-        const nyb2=a.y+a.vy*dt;
-        if (!collideBox(a.x,nyb2,a.z,1.1,2.0)) a.y=nyb2; else a.vy=0;
+        const chB = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
+        if (chB && chB.data) {          // Schwerkraft nur in geladener Welt!
+          a.vy = Math.max(a.vy-25*dt, -20);
+          const nyb2=a.y+a.vy*dt;
+          if (!collideBox(a.x,nyb2,a.z,1.1,2.0)) a.y=nyb2; else a.vy=0;
+        } else a.vy = 0;
+        if (a.y <= CH_MIN+3) {          // in die Tiefe gerutscht? Rettung nach oben!
+          a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 2;
+          a.vy = 0;
+          if (Math.hypot(a.x-player.x, a.z-player.z) < 40)
+            toast('🚜 Dein Bagger ist wieder aufgetaucht! Er war in die Tiefe gerutscht.', 3500);
+        }
       }
       continue;
     }
@@ -3323,9 +3332,15 @@ function updateAnimals(dt) {
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.type==='statue') {            // Stein-Statuen stehen einfach still da
       a.walking = false; a.kx = a.kz = 0;
-      a.vy = Math.max(a.vy-25*dt, -30); // höchstens sanft auf den Boden sinken
-      const nys = a.y + a.vy*dt;
-      if (!collideBox(a.x,nys,a.z,0.32,1.8)) a.y = nys; else a.vy = 0;
+      const chS = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
+      if (chS && chS.data) {            // Schwerkraft nur in geladener Welt!
+        a.vy = Math.max(a.vy-25*dt, -30);
+        const nys = a.y + a.vy*dt;
+        if (!collideBox(a.x,nys,a.z,0.32,1.8)) a.y = nys; else a.vy = 0;
+      } else a.vy = 0;
+      if (a.y <= CH_MIN+3) {            // durchgesackt? Zurück an die Oberfläche!
+        a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1; a.vy = 0;
+      }
       continue;
     }
     if (a.type==='boat') {              // Boote schaukeln am Ufer
@@ -8614,7 +8629,8 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   }
   // Versteinerte Monster stehen noch als Statuen herum
   for (const p of savedStatuen) {
-    animals.push({type:'statue', x:p[0], y:p[1], z:p[2], yaw:p[3]||0, vy:0,
+    const sty = p[1] <= CH_MIN+3 ? terrainHeight(Math.floor(p[0]), Math.floor(p[2]))+1 : p[1];
+    animals.push({type:'statue', x:p[0], y:sty, z:p[2], yaw:p[3]||0, vy:0,
       von: p[4]==='b'?'boss':p[4]==='r'?'raeuber':'zombie',
       kx:0, kz:0, hp:0, walking:false, t:9, ph:0, onGround:false});
   }
@@ -8675,7 +8691,9 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   }
   // Dein RIESEN-BAGGER! 🚜
   if (savedBagger) {
-    animals.push({type:'bagger', x:savedBagger[0], y:savedBagger[1], z:savedBagger[2],
+    let bgy = savedBagger[1];           // war er in die Tiefe gerutscht? Rauf damit!
+    if (bgy <= CH_MIN+3) bgy = terrainHeight(Math.floor(savedBagger[0]), Math.floor(savedBagger[2])) + 2;
+    animals.push({type:'bagger', x:savedBagger[0], y:bgy, z:savedBagger[2],
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
   } else {
     let bx2=Math.floor(player.x)+8, bz2=Math.floor(player.z)+8;
