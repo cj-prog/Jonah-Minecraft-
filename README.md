@@ -228,7 +228,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Breite und 4 Blöcken Höhe knabbert sich durch Berge, Wälder und
   Mauern (mit Krümel-Funken und Knirsch-Geräuschen). Nur Wasser,
   Lava, TNT und der Schutz-Block bleiben verschont. Der Bagger wird
-  mitgespeichert und wartet brav, wo man ihn parkt.
+  mitgespeichert und wartet brav, wo man ihn parkt. Und die Walze
+  schaufelt auch MONSTER weg: Zombies, Schleime, Räuber und sogar
+  der Monster-König werden weggebaggert (mit Beute!), Statuen
+  zerbröseln samt Schatz gleich mit.
 - Friedliche Spazier-Monster! 🧟🌼 Tagsüber laufen jetzt auch ganz
   harmlose Monster herum – erkennbar am gelben Blümchen auf dem
   Kopf. Sie greifen niemanden an, brummeln nur vor sich hin („Uuh,
