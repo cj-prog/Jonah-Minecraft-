@@ -221,6 +221,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Bagger fährt hinterher! 🚜💨 Wie Hubschrauber, Jet und Drache
+  kommt jetzt auch der Riesen-Bagger von allein angetuckert, wenn
+  Jonah zu weit weggelaufen ist – mit Diesel-Geknatter rollt er
+  über die Hügel und parkt brav neben ihm.
 - Bagger-Rettung! ⛑️ Ein Fehler ist behoben: Der geparkte Bagger
   (und Statuen) konnten in noch nicht geladenen Teilen der Welt bis
   zum Weltboden durchsacken – dann stand man auf der Karte richtig,
