@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 121 &middot; Pfützen verdunsten (das Meer bleibt)! 💨💧</p>
+    Version 122 &middot; Bagger gräbt keine heimlichen Löcher mehr! 🚜✅</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 121;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 122;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6648,12 +6648,14 @@ function baggerPhysics(dt) {
   if (ml>0.05) { a.yaw=Math.atan2(vx,-vz); a.ph+=dt*8; }
   a.vy = Math.max(a.vy-25*dt, -40);
   // Das FRESS-MAUL: alles vor der Walze wird weggeknabbert!
+  // Aber NUR mit den Ketten am Boden - sonst frisst es im Hüpfen
+  // versehentlich Gräben in den Boden, die man gar nicht sieht!
   a.fressT = (a.fressT||0) - dt;
-  if (ml>0.05 && a.fressT<=0) {
+  if (ml>0.05 && a.onGround && a.fressT<=0) {
     a.fressT = 0.12;
     const bfx=Math.sin(a.yaw), bfz=-Math.cos(a.yaw);
     const brx=Math.cos(a.yaw), brz=Math.sin(a.yaw);
-    const wCtr={v:10}, by0=Math.floor(a.y);
+    const wCtr={v:10}, by0=Math.floor(a.y + 0.45);   // Maul sauber auf Ketten-Höhe
     let n=0;
     for (let tiefe=1; tiefe<=3; tiefe++)
       for (let seite=-2; seite<=2; seite++)
