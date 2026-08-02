@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 122 &middot; Bagger gräbt keine heimlichen Löcher mehr! 🚜✅</p>
+    Version 123 &middot; Wasser verdunstet jetzt viel schneller! 💨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 122;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 123;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -7838,11 +7838,11 @@ function updateFuses(dt) {
 // Jeder Eintrag teilt sich einen Zähler (n), damit nie zu viel entsteht.
 const flowQ = [];
 let flowT = 0;
-// Pfützen verdunsten! Selbst gemachtes Wasser trocknet nach ~2 Minuten weg.
+// Pfützen verdunsten! Selbst gemachtes Wasser trocknet nach ~30-45 Sekunden.
 // Das Meer und alte Seen aus der Welt-Erzeugung bleiben für immer.
 const pfuetzen = [];
 function merkePfuetze(x,y,z) {
-  if (pfuetzen.length < 600) pfuetzen.push({x, y, z, t: 100 + Math.random()*40});
+  if (pfuetzen.length < 600) pfuetzen.push({x, y, z, t: 30 + Math.random()*15});
 }
 function verdunste(dt) {
   for (let i=pfuetzen.length-1; i>=0; i--) {

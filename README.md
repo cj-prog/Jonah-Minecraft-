@@ -228,9 +228,9 @@ Leertaste springen · Tasten 1–8 Block wählen
   fest am Boden und sauber auf Ketten-Höhe. Der Boden unter der
   Fahrspur bleibt heil!
 - Pfützen verdunsten! 💨💧 Selbst gemachtes Wasser (hingestellt oder
-  zerflossen) trocknet nach ungefähr 2 Minuten von allein weg – mit
-  aufsteigenden Dampfwölkchen und leisem Zischen. Das Meer und die
-  Seen aus der Welt-Erzeugung bleiben natürlich für immer voll.
+  zerflossen) trocknet nach etwa einer halben Minute von allein weg –
+  mit aufsteigenden Dampfwölkchen und leisem Zischen. Das Meer und
+  die Seen aus der Welt-Erzeugung bleiben natürlich für immer voll.
 - Der Bagger fährt hinterher! 🚜💨 Wie Hubschrauber, Jet und Drache
   kommt jetzt auch der Riesen-Bagger von allein angetuckert, wenn
   Jonah zu weit weggelaufen ist – mit Diesel-Geknatter rollt er
