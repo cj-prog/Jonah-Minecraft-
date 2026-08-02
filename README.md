@@ -227,10 +227,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   unsichtbaren Löcher. Jetzt frisst das Maul nur noch mit den Ketten
   fest am Boden und sauber auf Ketten-Höhe. Der Boden unter der
   Fahrspur bleibt heil!
-- Pfützen verdunsten! 💨💧 Selbst gemachtes Wasser (hingestellt oder
-  zerflossen) trocknet nach etwa einer halben Minute von allein weg –
-  mit aufsteigenden Dampfwölkchen und leisem Zischen. Das Meer und
-  die Seen aus der Welt-Erzeugung bleiben natürlich für immer voll.
+- Pfützen verdunsten, Lava erlischt! 💨💧🌋 Selbst gemachtes Wasser
+  (hingestellt oder zerflossen) trocknet nach etwa einer halben
+  Minute mit Dampfwölkchen weg – und selbst gemachte Lava erlischt
+  genauso, mit dunklem Rauch. Das Meer, die Seen und die tiefen
+  Lava-Seen aus der Welt-Erzeugung bleiben natürlich für immer.
 - Der Bagger fährt hinterher! 🚜💨 Wie Hubschrauber, Jet und Drache
   kommt jetzt auch der Riesen-Bagger von allein angetuckert, wenn
   Jonah zu weit weggelaufen ist – mit Diesel-Geknatter rollt er
