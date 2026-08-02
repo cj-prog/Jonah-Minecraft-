@@ -221,6 +221,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Pfützen verdunsten! 💨💧 Selbst gemachtes Wasser (hingestellt oder
+  zerflossen) trocknet nach ungefähr 2 Minuten von allein weg – mit
+  aufsteigenden Dampfwölkchen und leisem Zischen. Das Meer und die
+  Seen aus der Welt-Erzeugung bleiben natürlich für immer voll.
 - Der Bagger fährt hinterher! 🚜💨 Wie Hubschrauber, Jet und Drache
   kommt jetzt auch der Riesen-Bagger von allein angetuckert, wenn
   Jonah zu weit weggelaufen ist – mit Diesel-Geknatter rollt er

@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 120 &middot; Der Bagger tuckert dir hinterher! 🚜💨</p>
+    Version 121 &middot; Pfützen verdunsten (das Meer bleibt)! 💨💧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 120;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 121;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -7762,6 +7762,7 @@ function doPlace(dir) {
   if (b===SCHUTZ) toast('🛡️ Schutz-Block! TNT und Explosionen können ihm NICHTS anhaben – nur du kannst ihn wegtippen.', 3200);
   if (b===WATER) {                      // frisches Wasser sucht sich seinen Weg!
     flowQ.push({x:px, y:py, z:pz, b:WATER, steps:3, n:{v:50}});
+    merkePfuetze(px, py, pz);
     if (!wasserTipp) {
       wasserTipp = true;
       toast('🌊 Dein Wasser zerfließt! Bau einen Rand drumherum, wenn es bleiben soll.', 3800);
@@ -7835,6 +7836,26 @@ function updateFuses(dt) {
 // Jeder Eintrag teilt sich einen Zähler (n), damit nie zu viel entsteht.
 const flowQ = [];
 let flowT = 0;
+// Pfützen verdunsten! Selbst gemachtes Wasser trocknet nach ~2 Minuten weg.
+// Das Meer und alte Seen aus der Welt-Erzeugung bleiben für immer.
+const pfuetzen = [];
+function merkePfuetze(x,y,z) {
+  if (pfuetzen.length < 600) pfuetzen.push({x, y, z, t: 100 + Math.random()*40});
+}
+function verdunste(dt) {
+  for (let i=pfuetzen.length-1; i>=0; i--) {
+    const p = pfuetzen[i];
+    p.t -= dt;
+    if (p.t > 0) continue;
+    pfuetzen.splice(i,1);
+    if (getBlock(p.x,p.y,p.z)!==WATER) continue;      // ist schon weg
+    setBlock(p.x,p.y,p.z,AIR);
+    for (let s2=0;s2<3;s2++)                          // Dampfwölkchen steigen auf
+      fireworks.push({x:p.x+0.5, y:p.y+0.7, z:p.z+0.5, vx:(Math.random()-0.5)*0.8,
+        vy:1+Math.random()*1.5, vz:(Math.random()-0.5)*0.8, tile:52, t:0.6});
+    if (Math.hypot(p.x-player.x, p.z-player.z) < 16 && Math.random()<0.3) blip(900,0.04);
+  }
+}
 function zischFx(x,y,z) {               // Dampfwölkchen, wenn Wasser auf Lava trifft
   for (let s2=0;s2<6;s2++)
     fireworks.push({x:x+0.5, y:y+0.8, z:z+0.5, vx:(Math.random()-0.5)*1.5,
@@ -7924,6 +7945,7 @@ function fliesse(dt) {
     }
     if (unten===AIR) {                  // erst fällt es nach unten ...
       setBlock(c.x,c.y-1,c.z,c.b); c.n.v--;
+      if (c.b===WATER) merkePfuetze(c.x,c.y-1,c.z);
       flowQ.push({x:c.x, y:c.y-1, z:c.z, b:c.b, steps: c.b===WATER?3:2, n:c.n});
       continue;
     }
@@ -7934,6 +7956,7 @@ function fliesse(dt) {
       if (b2===gegner) { setBlock(c.x+dx,c.y,c.z+dz,STONE); zischFx(c.x+dx,c.y,c.z+dz); c.n.v--; continue; }
       if (b2!==AIR) continue;           // Wände und Gefäße halten dicht!
       setBlock(c.x+dx,c.y,c.z+dz,c.b); c.n.v--;
+      if (c.b===WATER) merkePfuetze(c.x+dx,c.y,c.z+dz);
       flowQ.push({x:c.x+dx, y:c.y, z:c.z+dz, b:c.b, steps:c.steps-1, n:c.n});
     }
   }
@@ -8454,6 +8477,7 @@ function frame(now) {
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
+  verdunste(dt);
   bloeckeFallen(dt);
   updateAnimals(dt);
   updateWeather(dt, now);
