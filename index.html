@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 129 &middot; Kein Durchfallen mehr durch den Boden! 🕳️✅</p>
+    Version 130 &middot; Zauber-Rettung aus tiefen Löchern! 🕳️✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 129;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 130;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2322,6 +2322,14 @@ function physics(dt) {
                  getBlock(Math.floor(player.x), Math.floor(player.y+0.9), Math.floor(player.z))===LAVA;
   if (inLava && lavaHurtT<=0) {
     lavaHurtT = 1.2;
+    // Tief unten in der dunklen Lava? Da hilft kein Hüpfen - Zauber-Rettung!
+    if (player.y < terrainHeight(Math.floor(player.x), Math.floor(player.z)) - 10 && letzterBoden) {
+      const fx3 = document.getElementById('lavaFx');
+      fx3.style.display='block';
+      setTimeout(()=>fx3.style.display='none', 450);
+      retteZurueck();
+      return;
+    }
     player.vy = 13;                     // Aua-Hüpfer nach oben!
     toast('🔥 AUAAA! Lava ist glühend heiß! Schnell weg da!', 2800);
     blip(150,0.12); blip(220,0.1); blip(300,0.08); blip(500,0.06);
@@ -2412,7 +2420,23 @@ function physics(dt) {
     }
   }
 
-  if (player.y < CH_MIN - 12) { spawn(); }   // unter den Weltboden fällt niemand
+  // Sicheren Stand merken - und tiefe Schacht-Stürze sofort zurückzaubern!
+  if (player.onGround) {
+    const gefallen = fallStartY - player.y;
+    if (gefallen > 22) {                // ein RICHTIG tiefer Sturz ...
+      const px3=Math.floor(player.x), py3=Math.floor(player.y), pz3=Math.floor(player.z);
+      let waende=0;
+      for (const [qx,qz] of [[1,0],[-1,0],[0,1],[0,-1]])
+        if (isSolid(px3+qx,py3,pz3+qz) && isSolid(px3+qx,py3+1,pz3+qz)) waende++;
+      if (waende>=3 && letzterBoden) { retteZurueck(); return; }   // ... in einen engen Schacht!
+    }
+    fallStartY = player.y;
+    if (!swim && !inLava) {
+      bodenMerkT -= dt;
+      if (bodenMerkT<=0) { bodenMerkT=0.25; letzterBoden={x:player.x, y:player.y, z:player.z}; }
+    }
+  } else if (player.vy >= 0) fallStartY = Math.max(fallStartY, player.y);
+  if (player.y < CH_MIN - 12) retteZurueck();   // unter den Weltboden fällt niemand
 }
 
 function spawn() {
@@ -2858,6 +2882,18 @@ function feiereJubilaeum() {            // 🎉 100 Versionen JonahCraft!
   scheduleSave();
 }
 let lavaHurtT = 0;                      // kurze Schonzeit nach dem Lava-Aua
+// Zauber-Rettung 🕳️✨: wir merken uns, wo Jonah zuletzt sicher stand.
+// Fällt er in einen tiefen dunklen Schacht, kommt er GENAU DORTHIN zurück -
+// nicht mehr an den Strand zum Startpunkt!
+let letzterBoden = null, bodenMerkT = 0, fallStartY = 0;
+function retteZurueck() {
+  if (!letzterBoden) { spawn(); return; }
+  player.x = letzterBoden.x; player.y = letzterBoden.y + 0.2; player.z = letzterBoden.z;
+  player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
+  player.onGround = true;
+  toast('🕳️✨ Zauber-Rettung! Du bist wieder oben - genau da, wo du reingefallen bist.', 3500);
+  blip(400,0.08); blip(600,0.1); blip(800,0.12);
+}
 let wfSoundT = 0;                       // Wasserfall-Rauschen-Takt
 let downHeld = false;
 
