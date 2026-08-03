@@ -228,6 +228,8 @@ Leertaste springen · Tasten 1–8 Block wählen
   jetzt eine Schneise von 7 Blöcken Breite und 5 Blöcken Höhe. Und
   das Beste: Ein Mähdrescher ERNTET natürlich – reifer Weizen,
   Karotten und Tomaten auf dem Weg landen automatisch im Beutel!
+  Der Fahrer sitzt hoch oben auf der Kabine mit freier Sicht über
+  das Schneidwerk hinweg.
 - Der Bagger kann schwimmen! 🌊 Wie ein Amphibien-Fahrzeug: Im
   Wasser treibt er oben, die Ketten paddeln los (mit Platsch-Wellen
   und Blubber-Geräuschen), und auch geparkt schwimmt er an der
