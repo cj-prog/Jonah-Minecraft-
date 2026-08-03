@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 128 &middot; Freie Sicht vom Mähdrescher-Dach! 👀</p>
+    Version 129 &middot; Kein Durchfallen mehr durch den Boden! 🕳️✅</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 128;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 129;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1436,6 +1436,7 @@ function _istBauLoch(wx, wy, wz) {      // fehlt hier ein Gebäude-Block?
   if (getBlock(wx,wy,wz)!==AIR) return false;
   const b = _pureAt(wx,wy,wz);
   if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) return true;
+  if (b===GRASS || b===DIRT || b===STONE || b===SAND) return true;   // Erd-Löcher zuschütten!
   if (b!==WOOD) return false;
   // Haus-Holz reparieren, aber KEINE Bäume: ein Baumstamm wächst aus
   // Gras oder Erde, ein Haus nicht.
@@ -2248,6 +2249,8 @@ function collideBox(px,py,pz,half,height) { // steht diese AABB in einem festen 
 function collide(px,py,pz) { return collideBox(px,py,pz,P_HALF,P_HEIGHT); }
 
 function physics(dt) {
+  // Der Boden unter dir wird SOFORT erzeugt - niemand fällt mehr ins Ungeladene
+  ensureData(Math.floor(player.x)>>4, Math.floor(player.z)>>4);
   const ch = getChunk(Math.floor(player.x)>>4, Math.floor(player.z)>>4);
   if (!ch || !ch.data) return;   // warten bis der Boden geladen ist
 
@@ -2349,7 +2352,19 @@ function physics(dt) {
     player.vy = Math.max(player.vy, -3.5);
   } else {
     player.vy -= (balloonT>0 ? GRAVITY*0.22 : GRAVITY)*dt;   // 🎈 Ballon: fast schwerelos
-    if ((jumpHeld || keys['Space']) && player.onGround) { player.vy = jumpT>0 ? 12 : JUMP_V; player.onGround=false; }
+    if ((jumpHeld || keys['Space']) && player.onGround) {
+      // In einem engen Loch gefangen? Dann bekommt der Sprung SUPER-KRAFT!
+      const px2=Math.floor(player.x), py2=Math.floor(player.y), pz2=Math.floor(player.z);
+      let waende=0;
+      for (const [qx,qz] of [[1,0],[-1,0],[0,1],[0,-1]])
+        if (isSolid(px2+qx,py2,pz2+qz) && isSolid(px2+qx,py2+1,pz2+qz)) waende++;
+      if (waende===4) {
+        player.vy = 14.5;
+        toast('🕳️💪 Super-Sprung! Huuup - raus aus dem Loch!', 2000);
+        blip(300,0.08); blip(450,0.1); blip(650,0.12);
+      } else player.vy = jumpT>0 ? 12 : JUMP_V;
+      player.onGround=false;
+    }
     player.vy = Math.max(player.vy, balloonT>0 ? -2.2 : -50);
   }
 
@@ -2372,22 +2387,29 @@ function physics(dt) {
   else if (player.onGround && istTreppe(player.x, player.y, nz) && !collide(player.x, player.y+1.02, nz)) {
     player.z = nz; player.y += 1.02; player.vy = 0;
   } else player.vz = 0;
-  let ny = player.y + player.vy*dt;
+  // Senkrecht in kleinen Schritten bewegen: so saust man bei schnellem Fallen
+  // NIE durch dünne Böden hindurch (das waren die "unsichtbaren Löcher"!)
+  const dy = player.vy*dt;
   player.onGround = false;
-  if (!collide(player.x, ny, player.z)) {
-    player.y = ny;
-  } else {
-    if (player.vy < 0) {
-      // Trampolin? Dann: Boing! Je schneller du fällst, desto höher fliegst du
-      const bu = getBlock(Math.floor(player.x), Math.floor(player.y)-1, Math.floor(player.z));
-      if (bu===TRAMPOLIN && player.vy < -3) {
-        player.vy = Math.min(16, -player.vy*0.9 + 5);
-        blip(180,0.07); blip(320,0.1);
-        return;
+  const ySteps = Math.max(1, Math.ceil(Math.abs(dy)/0.4));
+  for (let s=0; s<ySteps; s++) {
+    const ny = player.y + dy/ySteps;
+    if (!collide(player.x, ny, player.z)) {
+      player.y = ny;
+    } else {
+      if (player.vy < 0) {
+        // Trampolin? Dann: Boing! Je schneller du fällst, desto höher fliegst du
+        const bu = getBlock(Math.floor(player.x), Math.floor(player.y)-1, Math.floor(player.z));
+        if (bu===TRAMPOLIN && player.vy < -3) {
+          player.vy = Math.min(16, -player.vy*0.9 + 5);
+          blip(180,0.07); blip(320,0.1);
+          return;
+        }
+        player.onGround = true; player.y = Math.floor(player.y*1000)/1000;
       }
-      player.onGround = true; player.y = Math.floor(player.y*1000)/1000;
+      player.vy = 0;
+      break;
     }
-    player.vy = 0;
   }
 
   if (player.y < CH_MIN - 12) { spawn(); }   // unter den Weltboden fällt niemand
@@ -6610,7 +6632,7 @@ function carPhysics(dt) {
   const nz=a.z+vz*dt;
   if (stuck || !collideBox(a.x,a.y,nz,0.55,0.95)) a.z=nz; else blocked=true;
   if (blocked && a.onGround && !jump) a.vy=6;        // hüpft Stufen hoch
-  const ny=a.y+a.vy*dt;
+  const ny=a.y+Math.max(a.vy*dt,-0.9);   // nie durch Böden hindurchsausen
   a.onGround=false;
   if (stuck || !collideBox(a.x,ny,a.z,0.55,0.95)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
@@ -6756,7 +6778,7 @@ function baggerPhysics(dt) {
   const nz=a.z+vz*dt;
   if (stuck || !collideBox(a.x,a.y,nz,1.4,2.6)) a.z=nz; else blocked=true;
   if (blocked && a.onGround && !jump) a.vy=6;   // klettert Stufen hoch
-  const ny=a.y+a.vy*dt;
+  const ny=a.y+Math.max(a.vy*dt,-0.9);   // nie durch Böden hindurchsausen
   a.onGround=false;
   if (stuck || !collideBox(a.x,ny,a.z,1.4,2.6)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
@@ -7396,7 +7418,7 @@ function ridePhysics(dt) {
   const nz=a.z+vz*dt;
   if (!collideBox(a.x,a.y,nz,k.half,k.height)) a.z=nz; else blocked=true;
   if (blocked && a.onGround && !jump) a.vy=8;        // hüpft Stufen automatisch hoch
-  const ny=a.y+a.vy*dt;
+  const ny=a.y+Math.max(a.vy*dt,-0.9);   // nie durch Böden hindurchsausen
   a.onGround=false;
   if (!collideBox(a.x,ny,a.z,k.half,k.height)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }

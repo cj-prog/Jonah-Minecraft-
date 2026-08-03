@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Nie mehr durch den Boden fallen! 🕳️✅ Ein großer Physik-Fehler ist
+  behoben: Wer sehr schnell fiel, konnte durch dünne Böden einfach
+  HINDURCHSAUSEN und landete in Höhlen darunter – das waren die
+  „unsichtbaren Löcher". Jetzt wird die Fallbewegung in kleinen
+  Schritten geprüft (auch bei Auto, Pferd und Mähdrescher), und der
+  Boden unter dem Spieler wird immer sofort erzeugt. Dazu zwei
+  Rettungen: In engen Löchern bekommt der Sprung SUPER-KRAFT
+  („Huuup!"), und der 🔧-Reparaturknopf kann jetzt auch Erd-Löcher
+  im Boden zuschütten.
 - Aus dem Bagger wird der RIESEN-MÄHDRESCHER! 🌾🚜 Noch größer als
   vorher: grüner Riesen-Rumpf, gewaltige schwarze Räder mit gelben
   Felgen, hohe Glaskabine, Korntank und Auswurfrohr – und vorne ein
