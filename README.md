@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Zauber-Rettung ÜBERALL (v132)! ✨ Der Strand-Teleport ist endgültig
+  abgeschafft: Auch Stürze in große offene Höhlen werden zurück-
+  gezaubert, und wer mit Auto, Pferd oder Mähdrescher in die Tiefe
+  fällt, kommt samt Fahrzeug wieder oben an der Absturzstelle raus.
+  Die Rettungs-Nachricht verrät jetzt außerdem: Das Loch ist direkt
+  bei dir – einfach einen Block drauflegen!
 - Die Zauber-Rettung! 🕳️✨ Die Welt hat versteckte tiefe Höhlen-
   Schächte, in die man reinfallen konnte – und landete dann im
   Dunkeln oder wurde zum Start-Strand teleportiert. Jetzt merkt

@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 131 &middot; Reparatur füllt NUR noch das eine Loch! 🔧✅</p>
+    Version 132 &middot; Zauber-Rettung überall - nie mehr Strand! ✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 131;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 132;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2428,21 +2428,17 @@ function physics(dt) {
     }
   }
 
-  // Sicheren Stand merken - und tiefe Schacht-Stürze sofort zurückzaubern!
+  // Sicheren Stand merken - und tiefe Stürze sofort zurückzaubern!
   if (player.onGround) {
     const gefallen = fallStartY - player.y;
-    if (gefallen > 22) {                // ein RICHTIG tiefer Sturz ...
-      const px3=Math.floor(player.x), py3=Math.floor(player.y), pz3=Math.floor(player.z);
-      let waende=0;
-      for (const [qx,qz] of [[1,0],[-1,0],[0,1],[0,-1]])
-        if (isSolid(px3+qx,py3,pz3+qz) && isSolid(px3+qx,py3+1,pz3+qz)) waende++;
-      if (waende>=3 && letzterBoden) { retteZurueck(); return; }   // ... in einen engen Schacht!
+    // Über 22 Blöcke gestürzt und tief unter der Oberfläche gelandet?
+    // Egal ob enger Schacht oder große Höhle: Zauber-Rettung!
+    if (gefallen > 22 && letzterBoden &&
+        player.y < terrainHeight(Math.floor(player.x), Math.floor(player.z)) - 12) {
+      retteZurueck(); return;
     }
     fallStartY = player.y;
-    if (!swim && !inLava) {
-      bodenMerkT -= dt;
-      if (bodenMerkT<=0) { bodenMerkT=0.25; letzterBoden={x:player.x, y:player.y, z:player.z}; }
-    }
+    if (!swim && !inLava) merkeBoden(dt, player.x, player.y, player.z);
   } else if (player.vy >= 0) fallStartY = Math.max(fallStartY, player.y);
   if (player.y < CH_MIN - 12) retteZurueck();   // unter den Weltboden fällt niemand
 }
@@ -2899,8 +2895,12 @@ function retteZurueck() {
   player.x = letzterBoden.x; player.y = letzterBoden.y + 0.2; player.z = letzterBoden.z;
   player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
   player.onGround = true;
-  toast('🕳️✨ Zauber-Rettung! Du bist wieder oben - genau da, wo du reingefallen bist.', 3500);
+  toast('🕳️✨ Zauber-Rettung! Das Loch ist direkt bei dir - leg einen Block drauf, dann fällst du nie wieder rein!', 4200);
   blip(400,0.08); blip(600,0.1); blip(800,0.12);
+}
+function merkeBoden(dt, x, y, z) {      // sicheren Stand merken (auch beim Fahren!)
+  bodenMerkT -= dt;
+  if (bodenMerkT<=0) { bodenMerkT=0.25; letzterBoden={x, y, z}; }
 }
 let wfSoundT = 0;                       // Wasserfall-Rauschen-Takt
 let downHeld = false;
@@ -6681,9 +6681,14 @@ function carPhysics(dt) {
   if (stuck || !collideBox(a.x,ny,a.z,0.55,0.95)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
   if (ml>0.05 && Math.random()<dt*0.5) blip(90+Math.random()*20,0.06);   // Motor-Brummeln
+  if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
   player.x=a.x; player.z=a.z; player.y=a.y+0.35;
   player.vx=player.vy=player.vz=0;
-  if (a.y<-12) { exitCar(); spawn(); }
+  if (a.y<CH_MIN+2) {                   // tief gefallen? Zauber-Rettung - MIT Auto!
+    exitCar();
+    retteZurueck();
+    a.x=player.x+1.5; a.z=player.z; a.y=player.y+0.5; a.vy=0;
+  }
 }
 
 // --------------------------- Riesen-Bagger 🚜 -------------------------------
@@ -6827,10 +6832,15 @@ function baggerPhysics(dt) {
   if (stuck || !collideBox(a.x,ny,a.z,1.4,2.6)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
   if (ml>0.05 && Math.random()<dt*0.7) blip(55+Math.random()*15,0.1);   // Diesel-Brummen
+  if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
   // Der Fahrer sitzt hoch oben AUF der Kabine - freie Sicht über das Schneidwerk!
   player.x=a.x; player.z=a.z; player.y=a.y+2.6;
   player.vx=player.vy=player.vz=0;
-  if (a.y<CH_MIN+2) { exitBagger(); spawn(); }
+  if (a.y<CH_MIN+2) {                   // tief gefallen? Zauber-Rettung - MIT Mähdrescher!
+    exitBagger();
+    retteZurueck();
+    a.x=player.x+2.5; a.z=player.z; a.y=player.y+0.5; a.vy=0;
+  }
 }
 
 // ------------------------------ Boote ----------------------------------------
@@ -7468,9 +7478,14 @@ function ridePhysics(dt) {
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
 
   // Spieler sitzt im Sattel
+  if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
   player.x=a.x; player.z=a.z; player.y=a.y+0.9;
   player.vx=player.vy=player.vz=0;
-  if (a.y<-12) { dismount(); spawn(); }
+  if (a.y<CH_MIN+2) {                   // tief gefallen? Zauber-Rettung - MIT Pferd!
+    dismount();
+    retteZurueck();
+    a.x=player.x+1.5; a.z=player.z; a.y=player.y+0.5; a.vy=0;
+  }
 }
 function doBreak(dir) {
   const e=eyePos();
