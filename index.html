@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 124 &middot; Auch Lava erlischt von allein! 🌋💨</p>
+    Version 125 &middot; Der Bagger klettert aus Löchern! 🚜🪜</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 124;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 125;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6617,7 +6617,7 @@ function enterBagger(a) {
   baggerRiding = a;
   const rb = document.getElementById('rideBtn');
   rb.style.display='flex'; rb.textContent='🅿️';
-  toast('🚜 RIESEN-BAGGER! Fahr einfach los – die Walze frisst ALLES weg! (🅿️ = parken)', 3800);
+  toast('🚜 RIESEN-BAGGER! Fahr los – die Walze frisst ALLES! (⬆ halten = bergauf fressen, 🅿️ = parken)', 4200);
   blip(80,0.2); blip(110,0.15); blip(140,0.12);
 }
 function exitBagger() {
@@ -6646,7 +6646,31 @@ function baggerPhysics(dt) {
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
   if (ml>0.05) { a.yaw=Math.atan2(vx,-vz); a.ph+=dt*8; }
+  const jump = jumpHeld || keys['Space'];
   a.vy = Math.max(a.vy-25*dt, -40);
+  if (jump && a.onGround) { a.vy = 9; a.onGround = false; }   // Hüpf-Knopf geht jetzt auch!
+  // Loch-Alarm: kommt der Bagger nicht mehr voran, klettert er von allein raus!
+  if (ml>0.05) {
+    a.stuckT = (a.stuckT||0) + dt;
+    a.movedD = (a.movedD||0) + Math.hypot(a.x-(a.lastX??a.x), a.z-(a.lastZ??a.z));
+    a.lastX = a.x; a.lastZ = a.z;
+    if (a.stuckT > 2.2) {
+      if (a.movedD < 1.2) {             // er steckt in einem Loch fest!
+        a.escN = (a.escN||0) + 1;
+        if (a.escN >= 3) {              // tiefes Loch: ein RIESEN-Satz an die Oberfläche
+          a.y = Math.max(a.y, terrainHeight(Math.floor(a.x), Math.floor(a.z))) + 2;
+          a.vy = 0; a.escN = 0;
+          toast('🚜💪 Der Bagger krabbelt aus dem Loch heraus!', 2800);
+          blip(120,0.15); blip(200,0.12); blip(300,0.1);
+        } else {                        // erst mal kräftig springen
+          a.vy = 12; a.onGround = false;
+          toast('🚜 Hoppla, ein Loch! Der Bagger klettert...', 1500);
+          blip(150,0.1);
+        }
+      } else a.escN = 0;
+      a.stuckT = 0; a.movedD = 0;
+    }
+  } else { a.stuckT = 0; a.movedD = 0; a.escN = 0; }
   // Das FRESS-MAUL: alles vor der Walze wird weggeknabbert!
   // Aber NUR mit den Ketten am Boden - sonst frisst es im Hüpfen
   // versehentlich Gräben in den Boden, die man gar nicht sieht!
@@ -6655,7 +6679,9 @@ function baggerPhysics(dt) {
     a.fressT = 0.12;
     const bfx=Math.sin(a.yaw), bfz=-Math.cos(a.yaw);
     const brx=Math.cos(a.yaw), brz=Math.sin(a.yaw);
-    const wCtr={v:10}, by0=Math.floor(a.y + 0.45);   // Maul sauber auf Ketten-Höhe
+    // Sprung-Knopf gedrückt? Dann frisst das Maul eine Reihe HÖHER und lässt
+    // eine Stufe stehen - so gräbt sich der Bagger eine Treppe bergauf!
+    const wCtr={v:10}, by0=Math.floor(a.y + 0.45) + (jump?1:0);
     let n=0;
     for (let tiefe=1; tiefe<=3; tiefe++)
       for (let seite=-2; seite<=2; seite++)
@@ -6696,7 +6722,7 @@ function baggerPhysics(dt) {
   if (stuck || !collideBox(nx,a.y,a.z,1.1,2.0)) a.x=nx; else blocked=true;
   const nz=a.z+vz*dt;
   if (stuck || !collideBox(a.x,a.y,nz,1.1,2.0)) a.z=nz; else blocked=true;
-  if (blocked && a.onGround) a.vy=6;    // klettert Stufen hoch
+  if (blocked && a.onGround && !jump) a.vy=6;   // klettert Stufen hoch
   const ny=a.y+a.vy*dt;
   a.onGround=false;
   if (stuck || !collideBox(a.x,ny,a.z,1.1,2.0)) a.y=ny;
