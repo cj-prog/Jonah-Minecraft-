@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Bagger klettert aus Löchern! 🪜 In ein Loch gefallen? Kein
+  Problem mehr: Sprung-Knopf ⬆ gedrückt halten und losfahren – dann
+  frisst die Walze eine Reihe höher, lässt Stufen stehen, und der
+  Bagger gräbt sich selbst eine Treppe nach oben, bis er wieder
+  draußen ist! Der ⬆-Knopf lässt ihn jetzt auch normal hüpfen, und
+  wenn er wirklich mal komplett feststeckt, krabbelt er nach ein
+  paar Versuchen von allein heraus.
 - Bagger-Maul repariert! ✅ Der Bagger hat beim Fahren manchmal
   heimlich Gräben in den Boden gefressen (wenn er leicht eingesunken
   war oder mitten im Hüpfen zubiss) – und fiel dann selbst in diese
