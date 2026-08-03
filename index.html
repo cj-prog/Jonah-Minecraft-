@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 130 &middot; Zauber-Rettung aus tiefen Löchern! 🕳️✨</p>
+    Version 131 &middot; Reparatur füllt NUR noch das eine Loch! 🔧✅</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 130;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 131;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1432,24 +1432,28 @@ function _pureAt(wx, wy, wz) {
   if (!pure) { pure = genChunkData(rcx, rcz, true); _pureCache.set(key, pure); }
   return pure[bidx(wx&15, wy, wz&15)];
 }
-function _istBauLoch(wx, wy, wz) {      // fehlt hier ein Gebäude-Block?
-  if (getBlock(wx,wy,wz)!==AIR) return false;
+function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
+  if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
-  if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) return true;
-  if (b===GRASS || b===DIRT || b===STONE || b===SAND) return true;   // Erd-Löcher zuschütten!
-  if (b!==WOOD) return false;
+  if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) return 'bau';
+  if (b===GRASS || b===DIRT || b===STONE || b===SAND) return 'erde';
+  if (b!==WOOD) return null;
   // Haus-Holz reparieren, aber KEINE Bäume: ein Baumstamm wächst aus
   // Gras oder Erde, ein Haus nicht.
   let uy = wy;
   while (uy-1>CH_MIN && _pureAt(wx,uy-1,wz)===WOOD) uy--;
   const unter = _pureAt(wx,uy-1,wz);
-  return !(unter===GRASS || unter===DIRT || unter===SAND);
+  return (unter===GRASS || unter===DIRT || unter===SAND) ? null : 'bau';
 }
 function repariereLoch(sx, sy, sz) {    // EIN Loch flicken: nur die eine Lücke!
+  // WICHTIG: Erd-Löcher werden nur GANZ NAH am Tipp-Punkt gefüllt (Umkreis 3,
+  // höchstens 40 Blöcke) - damit niemals Jonahs eigene Gruben, Tunnel und
+  // Abbauten wieder zugeschüttet werden. Gebäude-Lücken wie bisher.
   _pureCache.clear();
-  if (!_istBauLoch(sx,sy,sz)) return 0;
+  if (!_lochArt(sx,sy,sz)) return 0;
   const offen=[[sx,sy,sz]], gesehen=new Set([sx+','+sy+','+sz]);
   const zellen=[];
+  let erdZahl = _lochArt(sx,sy,sz)==='erde' ? 1 : 0;
   while (offen.length && zellen.length<250) {   // zusammenhängende Lücke absuchen
     const [wx,wy,wz] = offen.shift();
     zellen.push([wx,wy,wz]);
@@ -1457,8 +1461,12 @@ function repariereLoch(sx, sy, sz) {    // EIN Loch flicken: nur die eine Lücke
       const qx=wx+dx, qy=wy+dy, qz=wz+dz, qk=qx+','+qy+','+qz;
       if (gesehen.has(qk)) continue;
       gesehen.add(qk);
-      if (Math.abs(qx-sx)>12 || Math.abs(qy-sy)>12 || Math.abs(qz-sz)>12) continue;
-      if (_istBauLoch(qx,qy,qz)) offen.push([qx,qy,qz]);
+      const art = _lochArt(qx,qy,qz);
+      if (!art) continue;
+      const grenze = art==='erde' ? 3 : 12;     // Erde: nur direkt am Loch!
+      if (Math.abs(qx-sx)>grenze || Math.abs(qy-sy)>grenze || Math.abs(qz-sz)>grenze) continue;
+      if (art==='erde') { if (erdZahl>=40) continue; erdZahl++; }
+      offen.push([qx,qy,qz]);
     }
   }
   let anzahl = 0;
