@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 127 &middot; Der RIESEN-MÄHDRESCHER ist da! 🌾🚜</p>
+    Version 128 &middot; Freie Sicht vom Mähdrescher-Dach! 👀</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 127;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 128;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6761,7 +6761,8 @@ function baggerPhysics(dt) {
   if (stuck || !collideBox(a.x,ny,a.z,1.4,2.6)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
   if (ml>0.05 && Math.random()<dt*0.7) blip(55+Math.random()*15,0.1);   // Diesel-Brummen
-  player.x=a.x; player.z=a.z; player.y=a.y+1.8;
+  // Der Fahrer sitzt hoch oben AUF der Kabine - freie Sicht über das Schneidwerk!
+  player.x=a.x; player.z=a.z; player.y=a.y+2.6;
   player.vx=player.vy=player.vz=0;
   if (a.y<CH_MIN+2) { exitBagger(); spawn(); }
 }
