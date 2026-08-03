@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die Zauber-Rettung! 🕳️✨ Die Welt hat versteckte tiefe Höhlen-
+  Schächte, in die man reinfallen konnte – und landete dann im
+  Dunkeln oder wurde zum Start-Strand teleportiert. Jetzt merkt
+  sich das Spiel immer, wo Jonah zuletzt sicher stand: Wer in einen
+  tiefen engen Schacht stürzt (oder unten in Lava landet), wird
+  sofort GENAU DORTHIN zurückgezaubert, wo er reingefallen ist.
+  Kein Strand-Teleport mehr!
 - Nie mehr durch den Boden fallen! 🕳️✅ Ein großer Physik-Fehler ist
   behoben: Wer sehr schnell fiel, konnte durch dünne Böden einfach
   HINDURCHSAUSEN und landete in Höhlen darunter – das waren die
