@@ -236,7 +236,10 @@ Leertaste springen · Tasten 1–8 Block wählen
   Boden unter dem Spieler wird immer sofort erzeugt. Dazu zwei
   Rettungen: In engen Löchern bekommt der Sprung SUPER-KRAFT
   („Huuup!"), und der 🔧-Reparaturknopf kann jetzt auch Erd-Löcher
-  im Boden zuschütten.
+  im Boden zuschütten. Wichtig (seit v131): Erd-Löcher werden nur
+  GANZ NAH am Tipp-Punkt gefüllt (Umkreis 3, höchstens 40 Blöcke) –
+  Jonahs eigene Gruben, Tunnel und Abbauten bleiben offen und
+  kommen nie von allein zurück!
 - Aus dem Bagger wird der RIESEN-MÄHDRESCHER! 🌾🚜 Noch größer als
   vorher: grüner Riesen-Rumpf, gewaltige schwarze Räder mit gelben
   Felgen, hohe Glaskabine, Korntank und Auswurfrohr – und vorne ein
