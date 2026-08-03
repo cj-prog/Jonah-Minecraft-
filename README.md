@@ -221,6 +221,11 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Bagger kann schwimmen! 🌊 Wie ein Amphibien-Fahrzeug: Im
+  Wasser treibt er oben, die Ketten paddeln los (mit Platsch-Wellen
+  und Blubber-Geräuschen), und auch geparkt schwimmt er an der
+  Oberfläche statt zu versinken. An Land frisst die Walze wie
+  gewohnt weiter – nur unter Wasser hält sie Pause.
 - Der Bagger klettert aus Löchern! 🪜 In ein Loch gefallen? Kein
   Problem mehr: Sprung-Knopf ⬆ gedrückt halten und losfahren – dann
   frisst die Walze eine Reihe höher, lässt Stufen stehen, und der
