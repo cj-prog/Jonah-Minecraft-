@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Aus dem Bagger wird der RIESEN-MÄHDRESCHER! 🌾🚜 Noch größer als
+  vorher: grüner Riesen-Rumpf, gewaltige schwarze Räder mit gelben
+  Felgen, hohe Glaskabine, Korntank und Auswurfrohr – und vorne ein
+  extra-breites Schneidwerk mit rotierender Haspel. Das Maul frisst
+  jetzt eine Schneise von 7 Blöcken Breite und 5 Blöcken Höhe. Und
+  das Beste: Ein Mähdrescher ERNTET natürlich – reifer Weizen,
+  Karotten und Tomaten auf dem Weg landen automatisch im Beutel!
 - Der Bagger kann schwimmen! 🌊 Wie ein Amphibien-Fahrzeug: Im
   Wasser treibt er oben, die Ketten paddeln los (mit Platsch-Wellen
   und Blubber-Geräuschen), und auch geparkt schwimmt er an der

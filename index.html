@@ -234,7 +234,7 @@
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine ganze Welt</h3>
   <canvas id="mapCanvas" width="320" height="320"></canvas>
-  <div id="mapLegend">🔺 Du &middot; 🏠 Dorf &middot; 🏰 Festung &middot; 🕹️ Spielhalle &middot; 🚜 Bagger &middot; 📍 Ziel</div>
+  <div id="mapLegend">🔺 Du &middot; 🏠 Dorf &middot; 🏰 Festung &middot; 🕹️ Spielhalle &middot; 🚜 Mähdrescher &middot; 📍 Ziel</div>
   <p>Tippe irgendwo auf die Karte &ndash; dann zeigt dir der Kompass-Pfeil den Weg dorthin!</p>
   <button id="mapClose">Fertig</button>
 </div>
@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 126 &middot; Der Bagger kann schwimmen! 🚜🌊</p>
+    Version 127 &middot; Der RIESEN-MÄHDRESCHER ist da! 🌾🚜</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 126;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 127;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2419,7 +2419,7 @@ const ANIMAL_KIND = {
   slime:    { speed:1.4, half:0.35, height:0.7,  tile:53, face:54 },
   jet:      { speed:0,   half:1.4,  height:1.3,  tile:49, face:49 },
   car:      { speed:3.2, half:0.6,  height:1.0,  tile:25, face:25 },
-  bagger:   { speed:0,   half:1.2,  height:2.2,  tile:73, face:73 },
+  bagger:   { speed:0,   half:1.5,  height:2.8,  tile:53, face:53 },
   heli:     { speed:0,   half:0.9,  height:1.6,  tile:25, face:25 },
   dragon:   { speed:0,   half:0.95, height:1.8,  tile:53, face:53 },
   zombie:   { speed:1.5, half:0.32, height:1.8,  tile:18, face:19 },
@@ -3315,11 +3315,11 @@ function updateAnimals(dt) {
         a.walking=false;
         // ... und tuckert hinterher, wenn Jonah zu weit weg ist (wie der Heli!)
         const dpB = Math.hypot(a.x-player.x, a.z-player.z);
-        if (dpB > 48 && !a.ferry) { a.ferry = true; toast('🚜 Dein Bagger kommt hinter dir angetuckert!', 2500); }
+        if (dpB > 48 && !a.ferry) { a.ferry = true; toast('🚜 Dein Mähdrescher kommt hinter dir angetuckert!', 2500); }
         if (a.ferry) {
           if (dpB < 10) {
             a.ferry = false;
-            toast('🚜 Dein Bagger ist da und parkt neben dir!', 2500);
+            toast('🚜 Dein Mähdrescher ist da und parkt neben dir!', 2500);
             blip(70,0.15); blip(90,0.1);
           } else {
             const dirB = Math.atan2(player.x-a.x, -(player.z-a.z));
@@ -3340,13 +3340,13 @@ function updateAnimals(dt) {
           else
             a.vy = Math.max(a.vy-25*dt, -20);
           const nyb2=a.y+a.vy*dt;
-          if (!collideBox(a.x,nyb2,a.z,1.1,2.0)) a.y=nyb2; else a.vy=0;
+          if (!collideBox(a.x,nyb2,a.z,1.4,2.6)) a.y=nyb2; else a.vy=0;
         } else a.vy = 0;
         if (a.y <= CH_MIN+3) {          // in die Tiefe gerutscht? Rettung nach oben!
           a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 2;
           a.vy = 0;
           if (Math.hypot(a.x-player.x, a.z-player.z) < 40)
-            toast('🚜 Dein Bagger ist wieder aufgetaucht! Er war in die Tiefe gerutscht.', 3500);
+            toast('🚜 Dein Mähdrescher ist wieder aufgetaucht! Er war in die Tiefe gerutscht.', 3500);
         }
       }
       continue;
@@ -3760,19 +3760,28 @@ function drawAnimals() {
       pushBox(arr,a,  0.52,0.24, 0.6, 0.14,0.42,0.42, 55);
       pushBox(arr,a, -0.3,0.5,-0.98, 0.2,0.14,0.08, 37);           // Scheinwerfer
       pushBox(arr,a,  0.3,0.5,-0.98, 0.2,0.14,0.08, 37);
-    } else if (a.type==='bagger') {                                // der RIESEN-BAGGER! 🚜
+    } else if (a.type==='bagger') {                                // der RIESEN-MÄHDRESCHER! 🌾🚜
       const dreh = performance.now() * (a===baggerRiding ? 0.012 : 0.002);
-      pushBox(arr,a, -1.0,0.35,0.2, 0.45,0.7,2.9, 55);             // schwarze Ketten
-      pushBox(arr,a,  1.0,0.35,0.2, 0.45,0.7,2.9, 55);
-      pushBox(arr,a, 0,0.95,0.5, 1.9,0.8,2.2, 73);                 // gelber Rumpf
-      pushBox(arr,a, 0,1.75,0.9, 1.1,0.9,1.0, 73);                 // Kabine
-      pushBox(arr,a, 0,1.8,0.38, 0.95,0.6,0.08, 48);               // Kabinen-Fenster
-      pushBox(arr,a, 0,2.3,0.9, 0.3,0.18,0.3, 25);                 // rotes Blinklicht
-      pushBox(arr,a, 0,1.2,-1.0, 0.5,0.5,1.4, 73);                 // Arm nach vorn
-      pushBox(arr,a, 0,0.9,-2.0, 2.3,1.1,0.8, 3);                  // die riesige Fräs-Walze
-      for (let t2=0; t2<4; t2++) {                                 // rotierende Zähne!
+      pushBox(arr,a, -1.45,0.8,-0.9, 0.6,1.6,1.6, 55);             // RIESIGE Vorderräder
+      pushBox(arr,a,  1.45,0.8,-0.9, 0.6,1.6,1.6, 55);
+      pushBox(arr,a, -1.47,0.8,-0.9, 0.62,0.6,0.6, 73);            // gelbe Felgen
+      pushBox(arr,a,  1.47,0.8,-0.9, 0.62,0.6,0.6, 73);
+      pushBox(arr,a, -1.35,0.55,1.1, 0.5,1.1,1.1, 55);             // Hinterräder
+      pushBox(arr,a,  1.35,0.55,1.1, 0.5,1.1,1.1, 55);
+      pushBox(arr,a, 0,1.7,0.3, 2.3,1.4,3.6, 53);                  // grüner Riesen-Rumpf
+      pushBox(arr,a, 0,2.65,1.1, 2.0,0.9,1.7, 53);                 // Korntank hinten oben
+      pushBox(arr,a, 0,2.6,1.1, 1.4,1.1,1.1, 73);                  // gelber Korn-Deckel
+      pushBox(arr,a, 0,2.75,-0.7, 1.35,1.2,1.25, 53);              // hohe Fahrer-Kabine
+      pushBox(arr,a, 0,2.8,-1.36, 1.15,0.9,0.07, 48);              // Panorama-Fenster vorn
+      pushBox(arr,a, -0.71,2.8,-0.7, 0.07,0.7,1.0, 48);            // Seitenfenster
+      pushBox(arr,a,  0.71,2.8,-0.7, 0.07,0.7,1.0, 48);
+      pushBox(arr,a, 0,3.5,-0.7, 0.34,0.2,0.34, 25);               // rotes Blinklicht
+      pushBox(arr,a, 1.5,2.7,1.6, 0.38,0.38,2.0, 73);              // gelbes Auswurfrohr
+      pushBox(arr,a, 0,0.95,-2.4, 0.7,0.7,1.0, 73);                // Zufuhr-Schacht
+      pushBox(arr,a, 0,0.8,-3.2, 3.4,1.25,0.95, 3);                // das BREITE Schneidwerk
+      for (let t2=0; t2<4; t2++) {                                 // rotierende Haspel-Zähne!
         const wa = dreh + t2*Math.PI/2;
-        pushBox(arr,a, 0, 0.9+Math.sin(wa)*0.62, -2.0+Math.cos(wa)*0.45, 2.4,0.16,0.16, 10);
+        pushBox(arr,a, 0, 0.8+Math.sin(wa)*0.72, -3.2+Math.cos(wa)*0.52, 3.5,0.18,0.18, 10);
       }
     } else if (a.type==='boat') {
       pushBox(arr,a, 0,0.15,0, 1.0,0.14,2.0, 8);                   // Boden
@@ -6620,7 +6629,7 @@ function enterBagger(a) {
   baggerRiding = a;
   const rb = document.getElementById('rideBtn');
   rb.style.display='flex'; rb.textContent='🅿️';
-  toast('🚜 RIESEN-BAGGER! Fahr los – die Walze frisst ALLES! (⬆ halten = bergauf fressen, 🅿️ = parken)', 4200);
+  toast('🌾🚜 RIESEN-MÄHDRESCHER! Das Schneidwerk frisst ALLES und erntet Beete! (⬆ halten = bergauf, 🅿️ = parken)', 4500);
   blip(80,0.2); blip(110,0.15); blip(140,0.12);
 }
 function exitBagger() {
@@ -6629,10 +6638,10 @@ function exitBagger() {
   const rb = document.getElementById('rideBtn');
   rb.style.display='none'; rb.textContent='🐴';
   if (a) {
-    if (!collide(a.x+2, a.y, a.z)) { player.x=a.x+2; player.z=a.z; }
+    if (!collide(a.x+2.6, a.y, a.z)) { player.x=a.x+2.6; player.z=a.z; }
     player.y = a.y; player.vx=player.vy=player.vz=0;
   }
-  toast('🅿️ Bagger geparkt!', 1500);
+  toast('🅿️ Mähdrescher geparkt!', 1500);
   blip(300,0.08);
 }
 function baggerPhysics(dt) {
@@ -6673,11 +6682,11 @@ function baggerPhysics(dt) {
         if (a.escN >= 3) {              // tiefes Loch: ein RIESEN-Satz an die Oberfläche
           a.y = Math.max(a.y, terrainHeight(Math.floor(a.x), Math.floor(a.z))) + 2;
           a.vy = 0; a.escN = 0;
-          toast('🚜💪 Der Bagger krabbelt aus dem Loch heraus!', 2800);
+          toast('🚜💪 Der Mähdrescher krabbelt aus dem Loch heraus!', 2800);
           blip(120,0.15); blip(200,0.12); blip(300,0.1);
         } else {                        // erst mal kräftig springen
           a.vy = 12; a.onGround = false;
-          toast('🚜 Hoppla, ein Loch! Der Bagger klettert...', 1500);
+          toast('🚜 Hoppla, ein Loch! Der Mähdrescher klettert...', 1500);
           blip(150,0.1);
         }
       } else a.escN = 0;
@@ -6694,18 +6703,24 @@ function baggerPhysics(dt) {
     const brx=Math.cos(a.yaw), brz=Math.sin(a.yaw);
     // Sprung-Knopf gedrückt? Dann frisst das Maul eine Reihe HÖHER und lässt
     // eine Stufe stehen - so gräbt sich der Bagger eine Treppe bergauf!
-    const wCtr={v:10}, by0=Math.floor(a.y + 0.45) + (jump?1:0);
-    let n=0;
-    for (let tiefe=1; tiefe<=3; tiefe++)
-      for (let seite=-2; seite<=2; seite++)
-        for (let hoch=0; hoch<4; hoch++) {
+    const wCtr={v:14}, by0=Math.floor(a.y + 0.45) + (jump?1:0);
+    let n=0, geerntet=0;
+    for (let tiefe=1; tiefe<=4; tiefe++)
+      for (let seite=-3; seite<=3; seite++)
+        for (let hoch=0; hoch<5; hoch++) {
           const qx=Math.floor(a.x+bfx*tiefe+brx*seite);
           const qz=Math.floor(a.z+bfz*tiefe+brz*seite);
           const qy=by0+hoch;
           if (qy<=CH_MIN||qy>=CH) continue;
           const b=getBlock(qx,qy,qz);
-          // Wasser, Lava, TNT und Schutz-Blöcke lässt sogar der Bagger in Ruhe
+          // Wasser, Lava, TNT und Schutz-Blöcke lässt sogar der Mähdrescher in Ruhe
           if (b===AIR||b===WATER||b===LAVA||b===SCHUTZ||b===TNT||b===TNT_LIT) continue;
+          if (b>=CARROT0 && b<=WHEAT2) {           // ein Mähdrescher ERNTET natürlich!
+            if (b===WHEAT2) { wheat+=2; geerntet++; }
+            else if (b===CARROT2) { carrots+=2; geerntet++; }
+            else if (b===TOMATO2) { tomatoes+=2; geerntet++; }
+            cropSet.delete(qx+','+qy+','+qz);
+          }
           if (b===SIGN) removeSign(qx,qy,qz);
           if (b===CABINET) removeCabinet(qx,qy,qz);
           if (b>=PIC&&b<=PIC_W) removePainting(qx,qy,qz);
@@ -6717,10 +6732,15 @@ function baggerPhysics(dt) {
             tile:(BLOCKS[b]&&BLOCKS[b].tiles)?BLOCKS[b].tiles[1]:3, t:0.5});
         }
     if (n>0) { blip(60+Math.random()*40,0.09); blip(150,0.05); }   // Knirsch, mampf!
-    // Monster im Weg? Die Walze schaufelt sie gleich mit weg!
-    const wx=a.x+bfx*2, wz=a.z+bfz*2;   // Mitte der Fräs-Walze
+    if (geerntet>0) {
+      updateFoodHUD(); scheduleSave();
+      toast('🌾 Der Mähdrescher hat im Vorbeifahren geerntet!', 1600);
+      blip(500,0.06); blip(650,0.07);
+    }
+    // Monster im Weg? Das Schneidwerk schaufelt sie gleich mit weg!
+    const wx=a.x+bfx*2.6, wz=a.z+bfz*2.6;   // Mitte des Schneidwerks
     for (const m of [...animals]) {
-      if (Math.hypot(m.x-wx, m.z-wz) > 2.8 || Math.abs(m.y-a.y) > 3) continue;
+      if (Math.hypot(m.x-wx, m.z-wz) > 3.2 || Math.abs(m.y-a.y) > 3.5) continue;
       if (m.type==='statue') {          // Statuen zerbröseln mit ihrer Beute!
         hitEntity(m, [bfx, 0, bfz]);
       } else if (m.type==='slime' || m.type==='zombie' || m.type==='boss' || m.type==='raeuber') {
@@ -6730,18 +6750,18 @@ function baggerPhysics(dt) {
     }
   }
   let blocked=false;
-  const stuck = collideBox(a.x,a.y,a.z,1.1,2.0);
+  const stuck = collideBox(a.x,a.y,a.z,1.4,2.6);
   const nx=a.x+vx*dt;
-  if (stuck || !collideBox(nx,a.y,a.z,1.1,2.0)) a.x=nx; else blocked=true;
+  if (stuck || !collideBox(nx,a.y,a.z,1.4,2.6)) a.x=nx; else blocked=true;
   const nz=a.z+vz*dt;
-  if (stuck || !collideBox(a.x,a.y,nz,1.1,2.0)) a.z=nz; else blocked=true;
+  if (stuck || !collideBox(a.x,a.y,nz,1.4,2.6)) a.z=nz; else blocked=true;
   if (blocked && a.onGround && !jump) a.vy=6;   // klettert Stufen hoch
   const ny=a.y+a.vy*dt;
   a.onGround=false;
-  if (stuck || !collideBox(a.x,ny,a.z,1.1,2.0)) a.y=ny;
+  if (stuck || !collideBox(a.x,ny,a.z,1.4,2.6)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
   if (ml>0.05 && Math.random()<dt*0.7) blip(55+Math.random()*15,0.1);   // Diesel-Brummen
-  player.x=a.x; player.z=a.z; player.y=a.y+1.4;
+  player.x=a.x; player.z=a.z; player.y=a.y+1.8;
   player.vx=player.vy=player.vz=0;
   if (a.y<CH_MIN+2) { exitBagger(); spawn(); }
 }
@@ -6913,7 +6933,7 @@ function exitDragon() {
   const rb = document.getElementById('rideBtn');
   rb.style.display='none'; rb.textContent='🐴';
   if (a) {
-    if (!collide(a.x+2, a.y, a.z)) { player.x=a.x+2; player.z=a.z; }
+    if (!collide(a.x+2.6, a.y, a.z)) { player.x=a.x+2.6; player.z=a.z; }
     player.y = a.y; player.vx=player.vy=player.vz=0;
     sagen(a, 'Das war schön! Bis gleich! 🐉', 3);
   }
@@ -8796,7 +8816,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     }
     animals.push({type:'bagger', x:bx2+0.5, y:terrainHeight(bx2,bz2)+2.5, z:bz2+0.5,
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
-    setTimeout(()=>toast('🚜 Ein RIESEN-BAGGER ist für dich angeliefert worden! Tippe ihn an und bagger los!', 5000), 6000);
+    setTimeout(()=>toast('🌾🚜 Ein RIESEN-MÄHDRESCHER ist für dich angeliefert worden! Tippe ihn an und fahr los!', 5000), 6000);
   }
   // Ein paar Tiere gleich in der Nähe – und garantiert Pferd, Hund und Katze!
   for (let i=0; i<24 && animals.length<5; i++) trySpawnAnimal(6,18);
