@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 125 &middot; Der Bagger klettert aus Löchern! 🚜🪜</p>
+    Version 126 &middot; Der Bagger kann schwimmen! 🚜🌊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 125;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 126;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3335,7 +3335,10 @@ function updateAnimals(dt) {
         }
         const chB = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
         if (chB && chB.data) {          // Schwerkraft nur in geladener Welt!
-          a.vy = Math.max(a.vy-25*dt, -20);
+          if (getBlock(Math.floor(a.x), Math.floor(a.y+0.4), Math.floor(a.z))===WATER)
+            a.vy = Math.min(a.vy+30*dt, 1.5);   // geparkt im Wasser: er schwimmt oben!
+          else
+            a.vy = Math.max(a.vy-25*dt, -20);
           const nyb2=a.y+a.vy*dt;
           if (!collideBox(a.x,nyb2,a.z,1.1,2.0)) a.y=nyb2; else a.vy=0;
         } else a.vy = 0;
@@ -6642,13 +6645,23 @@ function baggerPhysics(dt) {
   mf += joy.fwd; ms += joy.strafe;
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
-  const speed = 5;                      // schwer und gemütlich
+  const swim = getBlock(Math.floor(a.x), Math.floor(a.y+0.6), Math.floor(a.z))===WATER;
+  const speed = swim ? 2.6 : 5;         // im Wasser paddelt er gemütlich
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
   if (ml>0.05) { a.yaw=Math.atan2(vx,-vz); a.ph+=dt*8; }
   const jump = jumpHeld || keys['Space'];
-  a.vy = Math.max(a.vy-25*dt, -40);
-  if (jump && a.onGround) { a.vy = 9; a.onGround = false; }   // Hüpf-Knopf geht jetzt auch!
+  if (swim) {                           // die Ketten paddeln: der Bagger SCHWIMMT!
+    a.vy = Math.min(a.vy+40*dt, 2.2);
+    if (jump) a.vy = 3;
+    if (ml>0.05 && Math.random()<dt*2)  // Platsch-Wellen um die Ketten
+      fireworks.push({x:a.x+(Math.random()-0.5)*2.2, y:a.y+0.3, z:a.z+(Math.random()-0.5)*2.2,
+        vx:(Math.random()-0.5)*1.5, vy:1+Math.random(), vz:(Math.random()-0.5)*1.5, tile:9, t:0.4});
+    if (ml>0.05 && Math.random()<dt*0.3) { blip(300,0.06); blip(250,0.05); }   // blubb!
+  } else {
+    a.vy = Math.max(a.vy-25*dt, -40);
+    if (jump && a.onGround) { a.vy = 9; a.onGround = false; }   // Hüpf-Knopf geht auch!
+  }
   // Loch-Alarm: kommt der Bagger nicht mehr voran, klettert er von allein raus!
   if (ml>0.05) {
     a.stuckT = (a.stuckT||0) + dt;
