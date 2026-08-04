@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 133 &middot; Graben erlaubt + Traktor-Brücken-Ketten! ⛏️🌉</p>
+    Version 134 &middot; Traktor-Loch-Bremse: stoppt vor Abgründen! 🛑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 133;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 134;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6814,10 +6814,36 @@ function baggerPhysics(dt) {
   }
   let blocked=false;
   const stuck = collideBox(a.x,a.y,a.z,1.4,2.6);
+  // LOCH-BREMSE 🛑: Vor RIESEN-Löchern und Abgründen (tiefer als 4 Blöcke)
+  // hält der Traktor von allein an. ⬆ gedrückt halten = absichtlich runterfahren.
+  let abgrund=false;
+  if (ml>0.05 && a.onGround && !swim && !jump) {
+    const ll=Math.hypot(vx,vz)||1, mvx=vx/ll, mvz=vz/ll;
+    const qrx=-mvz, qrz=mvx;            // quer zur Fahrtrichtung
+    const byT=Math.floor(a.y-0.2);
+    for (const [ox,oz] of [[mvx*2.0,mvz*2.0],
+                           [mvx*2.0+qrx*1.2,mvz*2.0+qrz*1.2],
+                           [mvx*2.0-qrx*1.2,mvz*2.0-qrz*1.2]]) {
+      let boden=false;
+      for (let d2=1; d2<=4 && !boden; d2++)
+        if (haeltFest(getBlock(Math.floor(a.x+ox), byT-d2, Math.floor(a.z+oz)))) boden=true;
+      if (!boden) { abgrund=true; break; }
+    }
+    if (abgrund) {
+      a.warnT=(a.warnT||0)-dt;
+      if (a.warnT<=0) {
+        a.warnT=2.5;
+        toast('🚜🛑 STOPP! Tiefes Loch voraus! (⬆ halten = absichtlich runterfahren)', 2500);
+        blip(220,0.12); blip(180,0.1);
+      }
+    }
+  }
   const nx=a.x+vx*dt;
-  if (stuck || !collideBox(nx,a.y,a.z,1.4,2.6)) a.x=nx; else blocked=true;
-  const nz=a.z+vz*dt;
-  if (stuck || !collideBox(a.x,a.y,nz,1.4,2.6)) a.z=nz; else blocked=true;
+  if (!abgrund) {
+    if (stuck || !collideBox(nx,a.y,a.z,1.4,2.6)) a.x=nx; else blocked=true;
+    const nz=a.z+vz*dt;
+    if (stuck || !collideBox(a.x,a.y,nz,1.4,2.6)) a.z=nz; else blocked=true;
+  }
   if (blocked && a.onGround && !jump) a.vy=6;   // klettert Stufen hoch
   // BRÜCKEN-KETTEN 🌉: die riesigen Ketten überspannen kleine Löcher!
   // Nur wenn unter dem GANZEN Fahrzeug nichts Festes ist, kann er fallen -

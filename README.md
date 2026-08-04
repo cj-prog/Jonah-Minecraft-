@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die Traktor-LOCH-BREMSE (v134)! 🛑 Auch RIESIGE unsichtbare Löcher
+  sind kein Problem mehr: Geht es vor dem Traktor tiefer als 4
+  Blöcke runter, bremst er automatisch und ruft „STOPP! Tiefes Loch
+  voraus!". Wer absichtlich hineinfahren will, hält einfach den
+  ⬆-Knopf gedrückt. Sanfte Hügel und kleine Absätze fährt er
+  weiterhin ganz normal.
 - Graben wieder frei + Brücken-Ketten (v133)! ⛏️🌉 Zu Fuß darf
   Jonah jetzt wieder überall ungestört in die Tiefe fallen und
   graben – die Zauber-Rettung greift nur noch ganz unten am
