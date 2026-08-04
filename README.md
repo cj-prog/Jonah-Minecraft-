@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der FLUG-TRAKTOR (v136)! 🚜✈️ Beim Fahren den ✈️-Knopf drücken:
+  Ein Rotor klappt über dem Korntank aus und der Mähdrescher hebt
+  ab! ⬆ = steigen, ⬇ = sinken, und vorwärts saust er schneller als
+  am Boden (mit Wub-wub-Rotor-Sound und Wirbel-Wölkchen). Nochmal
+  ✈️ drücken = Rotor aus und sanft landen. In der Luft macht das
+  Schneidwerk Pause - gefressen wird nur am Boden.
 - Die unsichtbaren RIESEN-Löcher sind besiegt (v135)! 🕳️🎉 Das
   Rätsel ist gelöst: Die riesigen Löcher ohne Wände und ohne Boden
   waren Stücke der Welt, die noch gar nicht geladen waren – da war
