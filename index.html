@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 132 &middot; Zauber-Rettung überall - nie mehr Strand! ✨</p>
+    Version 133 &middot; Graben erlaubt + Traktor-Brücken-Ketten! ⛏️🌉</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 132;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 133;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2428,18 +2428,10 @@ function physics(dt) {
     }
   }
 
-  // Sicheren Stand merken - und tiefe Stürze sofort zurückzaubern!
-  if (player.onGround) {
-    const gefallen = fallStartY - player.y;
-    // Über 22 Blöcke gestürzt und tief unter der Oberfläche gelandet?
-    // Egal ob enger Schacht oder große Höhle: Zauber-Rettung!
-    if (gefallen > 22 && letzterBoden &&
-        player.y < terrainHeight(Math.floor(player.x), Math.floor(player.z)) - 12) {
-      retteZurueck(); return;
-    }
-    fallStartY = player.y;
-    if (!swim && !inLava) merkeBoden(dt, player.x, player.y, player.z);
-  } else if (player.vy >= 0) fallStartY = Math.max(fallStartY, player.y);
+  // Sicheren Stand merken. Zu Fuß darf Jonah in jedes Loch fallen und
+  // ungestört tief graben - die Zauber-Rettung greift nur noch ganz unten
+  // am Weltboden oder tief in der Lava.
+  if (player.onGround && !swim && !inLava) merkeBoden(dt, player.x, player.y, player.z);
   if (player.y < CH_MIN - 12) retteZurueck();   // unter den Weltboden fällt niemand
 }
 
@@ -6827,10 +6819,21 @@ function baggerPhysics(dt) {
   const nz=a.z+vz*dt;
   if (stuck || !collideBox(a.x,a.y,nz,1.4,2.6)) a.z=nz; else blocked=true;
   if (blocked && a.onGround && !jump) a.vy=6;   // klettert Stufen hoch
+  // BRÜCKEN-KETTEN 🌉: die riesigen Ketten überspannen kleine Löcher!
+  // Nur wenn unter dem GANZEN Fahrzeug nichts Festes ist, kann er fallen -
+  // in unsichtbare 1-2-Block-Löcher fällt der Traktor also NIE wieder.
+  let brueckenHalt=false;
+  if (!swim && a.vy<=0) {
+    const by=Math.floor(a.y-0.5);
+    for (const [ox,oz] of [[0,0],[1.2,0],[-1.2,0],[0,1.2],[0,-1.2],[1.2,1.2],[-1.2,1.2],[1.2,-1.2],[-1.2,-1.2]])
+      if (haeltFest(getBlock(Math.floor(a.x+ox), by, Math.floor(a.z+oz)))) { brueckenHalt=true; break; }
+    if (brueckenHalt) a.vy=0;
+  }
   const ny=a.y+Math.max(a.vy*dt,-0.9);   // nie durch Böden hindurchsausen
   a.onGround=false;
   if (stuck || !collideBox(a.x,ny,a.z,1.4,2.6)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
+  if (brueckenHalt) a.onGround=true;     // die Ketten tragen ihn sicher
   if (ml>0.05 && Math.random()<dt*0.7) blip(55+Math.random()*15,0.1);   // Diesel-Brummen
   if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
   // Der Fahrer sitzt hoch oben AUF der Kabine - freie Sicht über das Schneidwerk!
