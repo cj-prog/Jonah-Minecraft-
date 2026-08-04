@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 134 &middot; Traktor-Loch-Bremse: stoppt vor Abgründen! 🛑</p>
+    Version 135 &middot; Die unsichtbaren Riesen-Löcher sind besiegt! 🕳️🎉</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 134;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 135;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2250,8 +2250,15 @@ function collideBox(px,py,pz,half,height) { // steht diese AABB in einem festen 
   const x0=Math.floor(px-half), x1=Math.floor(px+half);
   const y0=Math.floor(py), y1=Math.floor(py+height-0.001);
   const z0=Math.floor(pz-half), z1=Math.floor(pz+half);
-  for (let x=x0;x<=x1;x++) for (let y=y0;y<=y1;y++) for (let z=z0;z<=z1;z++)
-    if (isSolid(x,y,z)) return true;
+  for (let x=x0;x<=x1;x++) for (let z=z0;z<=z1;z++) {
+    // NOCH nicht geladene Welt ist wie fester Fels: da fällt NIEMAND
+    // durch - das waren die riesigen "unsichtbaren Löcher"!
+    if (y0 < CH) {
+      const chC = getChunk(x>>4, z>>4);
+      if (!chC || !chC.data) return true;
+    }
+    for (let y=y0;y<=y1;y++) if (isSolid(x,y,z)) return true;
+  }
   return false;
 }
 function collide(px,py,pz) { return collideBox(px,py,pz,P_HALF,P_HEIGHT); }
@@ -6814,6 +6821,17 @@ function baggerPhysics(dt) {
   }
   let blocked=false;
   const stuck = collideBox(a.x,a.y,a.z,1.4,2.6);
+  // Fest ODER noch nicht geladene Welt - beides trägt den Traktor sicher
+  const traegt = (x,y,z) => {
+    const chT = getChunk(x>>4, z>>4);
+    if (!chT || !chT.data) return true;
+    return haeltFest(getBlock(x,y,z));
+  };
+  // Beim Fahren die Welt in Fahrtrichtung schon mal vorausladen
+  if (ml>0.05) {
+    const llV=Math.hypot(vx,vz)||1;
+    ensureData(Math.floor(a.x+vx/llV*12)>>4, Math.floor(a.z+vz/llV*12)>>4);
+  }
   // LOCH-BREMSE 🛑: Vor RIESEN-Löchern und Abgründen (tiefer als 4 Blöcke)
   // hält der Traktor von allein an. ⬆ gedrückt halten = absichtlich runterfahren.
   let abgrund=false;
@@ -6826,7 +6844,7 @@ function baggerPhysics(dt) {
                            [mvx*2.0-qrx*1.2,mvz*2.0-qrz*1.2]]) {
       let boden=false;
       for (let d2=1; d2<=4 && !boden; d2++)
-        if (haeltFest(getBlock(Math.floor(a.x+ox), byT-d2, Math.floor(a.z+oz)))) boden=true;
+        if (traegt(Math.floor(a.x+ox), byT-d2, Math.floor(a.z+oz))) boden=true;
       if (!boden) { abgrund=true; break; }
     }
     if (abgrund) {
@@ -6852,7 +6870,7 @@ function baggerPhysics(dt) {
   if (!swim && a.vy<=0) {
     const by=Math.floor(a.y-0.5);
     for (const [ox,oz] of [[0,0],[1.2,0],[-1.2,0],[0,1.2],[0,-1.2],[1.2,1.2],[-1.2,1.2],[1.2,-1.2],[-1.2,-1.2]])
-      if (haeltFest(getBlock(Math.floor(a.x+ox), by, Math.floor(a.z+oz)))) { brueckenHalt=true; break; }
+      if (traegt(Math.floor(a.x+ox), by, Math.floor(a.z+oz))) { brueckenHalt=true; break; }
     if (brueckenHalt) a.vy=0;
   }
   const ny=a.y+Math.max(a.vy*dt,-0.9);   // nie durch Böden hindurchsausen
@@ -8612,7 +8630,7 @@ spiral.sort((a,b)=>(a[0]*a[0]+a[1]*a[1])-(b[0]*b[0]+b[1]*b[1]));
 
 function streamChunks() {
   const pcx=Math.floor(player.x)>>4, pcz=Math.floor(player.z)>>4;
-  let genBudget=3, meshBudget=2;
+  let genBudget=6, meshBudget=4;        // flott nachladen - keine Löcher in der Welt!
   for (const [dx,dz] of spiral) {
     const cx=pcx+dx, cz=pcz+dz;
     let ch=getChunk(cx,cz);

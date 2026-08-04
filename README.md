@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die unsichtbaren RIESEN-Löcher sind besiegt (v135)! 🕳️🎉 Das
+  Rätsel ist gelöst: Die riesigen Löcher ohne Wände und ohne Boden
+  waren Stücke der Welt, die noch gar nicht geladen waren – da war
+  wirklich „nichts", und man fiel einfach hindurch. Jetzt gilt:
+  Noch nicht geladene Welt ist wie fester Fels – NIEMAND kann je
+  hineinfallen (auch Fahrzeuge und Tiere nicht). Dazu lädt die Welt
+  doppelt so schnell nach und der Traktor lädt sie sich beim Fahren
+  in Fahrtrichtung schon voraus.
 - Die Traktor-LOCH-BREMSE (v134)! 🛑 Auch RIESIGE unsichtbare Löcher
   sind kein Problem mehr: Geht es vor dem Traktor tiefer als 4
   Blöcke runter, bremst er automatisch und ruft „STOPP! Tiefes Loch
