@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Graben wieder frei + Brücken-Ketten (v133)! ⛏️🌉 Zu Fuß darf
+  Jonah jetzt wieder überall ungestört in die Tiefe fallen und
+  graben – die Zauber-Rettung greift nur noch ganz unten am
+  Weltboden oder tief in der Lava. Dafür ist der Traktor jetzt
+  loch-sicher: Seine riesigen Ketten ÜBERSPANNEN kleine Löcher
+  (1-2 Blöcke) einfach – nur in Gruben, die breiter sind als das
+  ganze Fahrzeug, kann er noch hineinfahren.
 - Zauber-Rettung ÜBERALL (v132)! ✨ Der Strand-Teleport ist endgültig
   abgeschafft: Auch Stürze in große offene Höhlen werden zurück-
   gezaubert, und wer mit Auto, Pferd oder Mähdrescher in die Tiefe
