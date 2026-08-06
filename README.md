@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die MEGA-BURG – Jonahs eigenes Königreich (v137)! 👑 Weit draußen
+  (weit weg von allen Dörfern) steht jetzt eine riesige Königsburg
+  aus unzerstörbaren Schutz-Blöcken auf einer 51x51-Fläche: hohe
+  Außenmauer mit Zinnen und vier Ecktürmen, großes Südtor mit
+  Schild „👑 Jonahs Königreich", ein zweistöckiges Schloss mit
+  THRONSAAL (Thron, rotem Teppich, Fackeln), Küche und Esszimmer,
+  Badezimmer, Schlafzimmer mit zwei Betten, einer Schatzkammer
+  voller Truhen und Pokale, Treppe ins Obergeschoss, dazu ein
+  🅿️-Parkplatz für alle Fahrzeuge, ein Blumengarten und bis zu
+  fünf Ritter-Wächter auf Posten. Auf der Karte als 👑 zu finden –
+  antippen und der Kompass führt hin!
 - Der FLUG-TRAKTOR (v136)! 🚜✈️ Beim Fahren den ✈️-Knopf drücken:
   Ein Rotor klappt über dem Korntank aus und der Mähdrescher hebt
   ab! ⬆ = steigen, ⬇ = sinken, und vorwärts saust er schneller als
