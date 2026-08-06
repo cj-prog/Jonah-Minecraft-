@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 137 &middot; Deine MEGA-BURG: ein eigenes Königreich! 👑</p>
+    Version 138 &middot; Das Spiel meldet neue Versionen von allein! 🆕</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 137;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 138;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -8984,6 +8984,39 @@ function frame(now) {
   gl.enable(gl.CULL_FACE);
   gl.depthMask(true);
   gl.disable(gl.BLEND);
+}
+
+// ------------------------------ Auto-Update ----------------------------------
+// Das Spiel merkt von allein, wenn eine neue Version online ist:
+//  - Direkt nach dem Laden: gibt es online schon eine neuere Version?
+//    Dann einmal automatisch neu laden (frisch vom Server, ohne Cache).
+//  - Danach alle 60 Sekunden nachschauen und Bescheid sagen.
+if (location.protocol === 'http:' || location.protocol === 'https:') {
+  let updateGemeldet = 0;
+  const pruefeUpdate = async (sofort) => {
+    try {
+      const r = await fetch(location.href, {cache:'no-store'});
+      if (!r.ok) return;
+      const m = (await r.text()).match(/GAME_VERSION = (\d+)/);
+      if (!m) return;
+      const online = +m[1];
+      if (online > GAME_VERSION) {
+        if (sofort && !sessionStorage.getItem('upTry')) {
+          sessionStorage.setItem('upTry', '1');   // nur EIN automatischer Neustart
+          location.reload();
+          return;
+        }
+        if (online !== updateGemeldet) {
+          updateGemeldet = online;
+          toast('🆕 Version '+online+' ist fertig! Schließe die Seite ganz und öffne sie neu.', 8000);
+        }
+      } else {
+        sessionStorage.removeItem('upTry');       // alles aktuell -> Neustart-Sperre lösen
+      }
+    } catch(e) {}
+  };
+  setTimeout(()=>pruefeUpdate(true), 4000);
+  setInterval(()=>pruefeUpdate(false), 60000);
 }
 
 // ------------------------------ Start ----------------------------------------
