@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der AUTO-UPDATE-Melder (v138)! 🆕 Nie wieder rätseln, ob die neue
+  Version schon da ist: Das Spiel schaut nach dem Start (und dann
+  jede Minute) selbst beim Server nach, ob es online eine neuere
+  Version gibt. Wenn ja, lädt es sich beim Start einmal automatisch
+  frisch (am Cache vorbei) – und mitten im Spiel sagt es per
+  Nachricht Bescheid: „🆕 Version X ist fertig!". Wichtig zu wissen:
+  Nach jedem Push braucht GitHub Pages 1–5 Minuten zum Verteilen,
+  und der Handy-Browser hebt die alte Seite bis zu ~10 Minuten auf –
+  ab jetzt merkt das Spiel das von allein
 - Die MEGA-BURG – Jonahs eigenes Königreich (v137)! 👑 Weit draußen
   (weit weg von allen Dörfern) steht jetzt eine riesige Königsburg
   aus unzerstörbaren Schutz-Blöcken auf einer 51x51-Fläche: hohe
