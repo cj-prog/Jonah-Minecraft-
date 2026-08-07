@@ -234,7 +234,7 @@
 <div class="hud" id="mapBox">
   <h3>🗺️ Deine ganze Welt</h3>
   <canvas id="mapCanvas" width="320" height="320"></canvas>
-  <div id="mapLegend">🔺 Du &middot; 👑 Mega-Burg &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚜 Mähdrescher &middot; 📍 Ziel</div>
+  <div id="mapLegend">🔺 Du &middot; 👑 Riesen-Festung &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚜 Mähdrescher &middot; 📍 Ziel</div>
   <p>Tippe irgendwo auf die Karte &ndash; dann zeigt dir der Kompass-Pfeil den Weg dorthin!</p>
   <button id="mapClose">Fertig</button>
 </div>
@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 138 &middot; Das Spiel meldet neue Versionen von allein! 🆕</p>
+    Version 139 &middot; Die RIESEN-FESTUNG: 3 Etagen, über 20 Räume! 👑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 138;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 139;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -798,27 +798,28 @@ function arcadePos() {                  // eine große Spielhalle pro Welt
   return _arc;
 }
 
-// --------------------- Jonahs MEGA-BURG 👑 (ein Königreich!) ----------------
+// --------------------- Jonahs RIESEN-FESTUNG 👑 -----------------------------
 let _burg = null, _burgSeed = null;
-function burgPos() {                    // eine riesige Königsburg pro Welt
+function burgPos() {                    // eine riesige Festung pro Welt
   if (_burg && _burgSeed===seed) return _burg;
   const ang = hash2(77,77,9911)*Math.PI*2;
-  const d = 130 + hash2(78,78,9912)*40; // richtig weit draußen
-  let bx = Math.round(Math.cos(ang)*d), bz = Math.round(Math.sin(ang)*d);
-  for (let i=0;i<400;i++) {             // festes Land, WEIT weg von allen Dörfern
+  let bx = 0, bz = 0;
+  for (let i=0;i<600;i++) {             // festes Land, GANZ weit weg von allen Dörfern:
+    const a = ang + i*2.39996;          // viele Kandidaten rundherum (immer 200-280 entfernt)
+    const d = 200 + ((i*53)%81);
+    bx = Math.round(Math.cos(a)*d); bz = Math.round(Math.sin(a)*d);
     let ok = true;
-    for (const [qx,qz] of [[0,0],[-24,-24],[24,-24],[-24,24],[24,24],[0,30]])
+    for (const [qx,qz] of [[0,0],[-32,-24],[32,-24],[-32,24],[32,24],[0,30]])
       if (terrainHeight(bx+qx,bz+qz)<=SEA+1) ok=false;
-    for (let vz=Math.floor((bz-60)/VCELL); vz<=Math.floor((bz+60)/VCELL) && ok; vz++)
-      for (let vx=Math.floor((bx-60)/VCELL); vx<=Math.floor((bx+60)/VCELL) && ok; vx++) {
+    for (let vz=Math.floor((bz-100)/VCELL); vz<=Math.floor((bz+100)/VCELL) && ok; vz++)
+      for (let vx=Math.floor((bx-100)/VCELL); vx<=Math.floor((bx+100)/VCELL) && ok; vx++) {
         const v = villageAt(vx,vz);
-        if (v && Math.hypot(v.vx-bx, v.vz-bz) < 55) ok = false;
+        if (v && Math.hypot(v.vx-bx, v.vz-bz) < 80) ok = false;
       }
     if (ok) break;
-    bx += 7; bz += 3;
   }
   let base = 0;
-  for (const [qx,qz] of [[0,0],[-24,-24],[24,-24],[-24,24],[24,24],[0,-24],[0,24],[-24,0],[24,0]])
+  for (const [qx,qz] of [[0,0],[-30,-22],[30,-22],[-30,22],[30,22],[0,-22],[0,22],[-30,0],[30,0]])
     base = Math.max(base, terrainHeight(bx+qx,bz+qz));
   _burg = { bx, bz, base };
   _burgSeed = seed;
@@ -1426,118 +1427,118 @@ function genChunkData(cx, cz, ohneEdits) {
       if (!signTexts.has(tkey)) signTexts.set(tkey,'König Jonahs Thron');
     }
   }
-  // Jonahs MEGA-BURG bauen 👑: ein Königreich aus unzerstörbaren Schutz-Blöcken!
+  // Jonahs RIESEN-FESTUNG bauen 👑: 3 Etagen, über 20 Räume,
+  // KOMPLETT aus unzerstörbaren Schutz-Blöcken (Wände, Böden, Decken, Dach)!
   {
     const B = burgPos();
-    if (!(B.bx+26<x0 || B.bx-26>x0+CS-1 || B.bz+31<z0 || B.bz-26>z0+CS-1)) {
+    if (!(B.bx+33<x0 || B.bx-33>x0+CS-1 || B.bz+30<z0 || B.bz-25>z0+CS-1)) {
       const by = B.base, S_ = SCHUTZ;
-      // 1) Riesen-Fläche: Fundament, Schutz-Boden, alles darüber frei
-      for (let dx=-25; dx<=25; dx++) for (let dz=-25; dz<=25; dz++) {
+      const P = (dx,y,dz,b) => put(B.bx+dx, y, B.bz+dz, b, false);
+      // 1) Riesen-Plattform 65x49: Fundament, Schutz-Boden, alles darüber frei
+      for (let dx=-32; dx<=32; dx++) for (let dz=-24; dz<=24; dz++) {
         const wx=B.bx+dx, wz=B.bz+dz;
         const th=terrainHeight(wx,wz);
         for (let y=Math.min(th,by)-1; y<by; y++) put(wx,y,wz,DIRT,false);
         put(wx,by,wz,S_,false);
-        for (let y=by+1; y<=by+16; y++) put(wx,y,wz,AIR,false);
+        for (let y=by+1; y<=by+20; y++) put(wx,y,wz,AIR,false);
       }
-      // 2) Außenmauer mit Zinnen
-      for (let dx=-25; dx<=25; dx++) for (let dz=-25; dz<=25; dz++) {
-        if (Math.abs(dx)!==25 && Math.abs(dz)!==25) continue;
-        const wx=B.bx+dx, wz=B.bz+dz;
-        for (let y=by+1; y<=by+5; y++) put(wx,y,wz,S_,false);
-        if ((dx+dz)%2===0) put(wx,by+6,wz,S_,false);
+      // 2) die Hülle 61x45: Außenwände hoch bis unters Dach, Decken, Dach - alles Schutz
+      for (let dx=-30; dx<=30; dx++) for (let dz=-22; dz<=22; dz++) {
+        const wand = Math.abs(dx)===30 || Math.abs(dz)===22;
+        if (wand) { for (let y=by+1; y<=by+14; y++) P(dx,y,dz,S_); }
+        else { P(dx,by+5,dz,S_); P(dx,by+10,dz,S_); }   // Zwischendecken
+        P(dx,by+15,dz,S_);                              // das Dach
       }
-      // 3) vier Ecktürme mit Fackeln obendrauf
-      for (const [ctx2,ctz2] of [[-23,-23],[23,-23],[-23,23],[23,23]]) {
-        for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
-          const wx=B.bx+ctx2+dx, wz=B.bz+ctz2+dz;
-          const wand = Math.abs(dx)===2 || Math.abs(dz)===2;
-          for (let y=by+1; y<=by+12; y++) put(wx,y,wz, wand?S_:AIR, false);
-          put(wx,by+13,wz, (dx+dz)%2===0?S_:AIR, false);
-        }
-        put(B.bx+ctx2, by+13, B.bz+ctz2, TORCH, false);
-      }
-      // 4) das große Tor (Süden) mit Weg und Schild
-      for (let gx=-2; gx<=2; gx++) for (let y=by+1; y<=by+4; y++) put(B.bx+gx,y,B.bz+25,AIR,false);
-      put(B.bx-3,by+3,B.bz+24,TORCH,true); put(B.bx+3,by+3,B.bz+24,TORCH,true);
-      for (let gx=-2; gx<=2; gx++) for (let pz=26; pz<=30; pz++) {
+      // 3) Fenster-Schlitze (offene Luken - kein zerbrechliches Glas!)
+      for (let dx=-30; dx<=30; dx+=5) if (Math.abs(dx)>=5 && Math.abs(dx)<30)
+        for (const dz of [-22,22]) for (const f0 of [by+1,by+6,by+11])
+          { P(dx,f0+1,dz,AIR); P(dx,f0+2,dz,AIR); }
+      for (let dz=-20; dz<=20; dz+=5) if (Math.abs(dz)>=5)
+        for (const dx of [-30,30]) for (const f0 of [by+1,by+6,by+11])
+          { P(dx,f0+1,dz,AIR); P(dx,f0+2,dz,AIR); }
+      // 4) Eingang (Süden) + Garagen-Tor (Osten) + Weg + Schild
+      for (let gx=-1; gx<=1; gx++) for (let y=by+1; y<=by+3; y++) P(gx,y,22,AIR);
+      P(-2,by+3,21,TORCH); P(2,by+3,21,TORCH);
+      for (let dz=8; dz<=12; dz++) for (let y=by+1; y<=by+4; y++) P(30,y,dz,AIR);
+      for (let gx=-2; gx<=2; gx++) for (let pz=25; pz<=29; pz++) {
         const wx=B.bx+gx, wz=B.bz+pz, th=terrainHeight(wx,wz);
         for (let y=Math.min(th,by)-1; y<by; y++) put(wx,y,wz,DIRT,false);
         put(wx,by,wz,STONE,false);
         for (let y=by+1; y<=by+4; y++) put(wx,y,wz,AIR,false);
       }
-      put(B.bx-3,by+1,B.bz+27,SIGN,true);
-      const bsig=(B.bx-3)+','+(by+1)+','+(B.bz+27);
-      if (!signTexts.has(bsig)) signTexts.set(bsig,'👑 Jonahs Königreich');
-      // 5) das Schloss: 29x21, zwei Etagen, Zinnen-Dach
-      for (let dx=-14; dx<=14; dx++) for (let dz=-23; dz<=-3; dz++) {
-        const wx=B.bx+dx, wz=B.bz+dz;
-        const wand = Math.abs(dx)===14 || dz===-23 || dz===-3;
-        if (wand) {
-          for (let y=by+1; y<=by+11; y++) {
-            const fenster = (y===by+3||y===by+4||y===by+8||y===by+9) &&
-                            ((dz===-3 || dz===-23) ? (Math.abs(dx)%4===2) : (Math.abs(dz+13)%4===2));
-            put(wx,y,wz, fenster?GLASS:S_, false);
-          }
-        } else {
-          put(wx,by+6,wz,S_,false);       // Zwischendecke (Boden der 2. Etage)
-        }
-        put(wx,by+12,wz,S_,false);        // Dach
-        if (wand && (dx+dz)%2===0) put(wx,by+13,wz,S_,false);   // Dach-Zinnen
+      put(B.bx-3,by+1,B.bz+26,SIGN,true);
+      const bsig=(B.bx-3)+','+(by+1)+','+(B.bz+26);
+      if (!signTexts.has(bsig)) signTexts.set(bsig,'👑 Jonahs Riesen-Festung');
+      // 5) Innenwände auf allen 3 Etagen: Flur in der Mitte, Zimmer links und rechts
+      for (const f0 of [by+1, by+6, by+11]) {
+        for (let dx=-29; dx<=29; dx++) for (const dz of [-4,4])
+          for (let y=f0; y<=f0+3; y++) P(dx,y,dz,S_);   // Flur-Wände
+        for (let dz=-21; dz<=-5; dz++) for (const dx of [-13,13])
+          for (let y=f0; y<=f0+3; y++) P(dx,y,dz,S_);   // Zimmer-Wände Nord
+        for (let dz=5; dz<=21; dz++) for (const dx of [-13,13])
+          for (let y=f0; y<=f0+3; y++) P(dx,y,dz,S_);   // Zimmer-Wände Süd
+        for (const dx of [-18,-17,0,1,17,18]) for (const dz of [-4,4])
+          for (let y=f0; y<=f0+1; y++) P(dx,y,dz,AIR);  // Türen zum Flur
+        for (const dz of [-13,-12,12,13]) for (const dx of [-13,13])
+          for (let y=f0; y<=f0+1; y++) P(dx,y,dz,AIR);  // Türen zwischen Zimmern
+        for (const dx of [-26,-10,8,26]) { P(dx,f0+2,-5,TORCH); P(dx,f0+2,5,TORCH); }   // Flur-Licht
       }
-      for (let gx=-1; gx<=1; gx++) for (let y=by+1; y<=by+3; y++)   // Schloss-Portal
-        put(B.bx+gx,y,B.bz-3,AIR,false);
-      // 6) DER THRONSAAL: Podest, Thron, roter Läufer, Fackeln
-      for (let dx=-2; dx<=2; dx++) for (let dz=-22; dz<=-20; dz++) put(B.bx+dx,by+1,B.bz+dz,S_,false);
-      put(B.bx,by+2,B.bz-21,CHAIR,false);                         // der Thron!
-      put(B.bx-2,by+2,B.bz-21,TORCH,false); put(B.bx+2,by+2,B.bz-21,TORCH,false);
-      put(B.bx-2,by+2,B.bz-20,SIGN,false);
-      const tsig=(B.bx-2)+','+(by+2)+','+(B.bz-20);
+      // 6) Treppen aus Schutz-Stufen: hoch in Etage 2 (West) und Etage 3 (Ost)
+      for (const dx of [-26,-25]) for (const dz of [-2,-1]) P(dx,by+5,dz,AIR);   // Deckenloch West
+      for (const dx of [25,26]) for (const dz of [-2,-1]) P(dx,by+10,dz,AIR);    // Deckenloch Ost
+      for (let i=0; i<5; i++) for (const dz of [-2,-1]) {
+        for (let y=by+1; y<=by+i; y++) P(-23-i,y,dz,S_);
+        P(-23-i,by+1+i,dz,TREP_W);      // letzte Stufe ersetzt genau die Decke
+        for (let y=by+6; y<=by+5+i; y++) P(23+i,y,dz,S_);
+        P(23+i,by+6+i,dz,TREP_E);
+      }
+      P(-28,by+7,-3,TORCH); P(28,by+12,-3,TORCH);
+      // 7) ERDGESCHOSS: Thronsaal, Küche, Bäder, Wohnzimmer, Garage
+      for (let dx=-2; dx<=2; dx++) for (let dz=-20; dz<=-18; dz++) P(dx,by+1,dz,S_);
+      P(0,by+2,-19,CHAIR);                              // DER THRON!
+      P(-2,by+2,-19,TORCH); P(2,by+2,-19,TORCH);
+      P(-2,by+2,-18,SIGN);
+      const tsig=(B.bx-2)+','+(by+2)+','+(B.bz-18);
       if (!signTexts.has(tsig)) signTexts.set(tsig,'👑 König Jonahs Thron');
-      for (let dz=-19; dz<=-4; dz++) for (let gx=-1; gx<=1; gx++)
-        put(B.bx+gx,by,B.bz+dz,BRICK,false);                      // roter Teppich-Läufer
-      for (const [tx2,tz2] of [[-13,-6],[-13,-12],[-13,-19],[6,-6],[6,-19],[-4,-22],[4,-22]])
-        put(B.bx+tx2,by+3,B.bz+tz2,TORCH,false);
-      // 7) Trennwand + Küche und Esszimmer (Osten, Erdgeschoss)
-      for (let dz=-23; dz<=-3; dz++) for (let y=by+1; y<=by+5; y++) put(B.bx+7,y,B.bz+dz,S_,false);
-      for (let y=by+1; y<=by+2; y++) put(B.bx+7,y,B.bz-13,AIR,false);   // Durchgang
-      put(B.bx+10,by+1,B.bz-9,TABLE,false);
-      put(B.bx+9,by+1,B.bz-9,CHAIR,false);  put(B.bx+11,by+1,B.bz-9,CHAIR,false);
-      put(B.bx+10,by+1,B.bz-8,CHAIR,false); put(B.bx+10,by+1,B.bz-10,CHAIR,false);
-      put(B.bx+9,by+1,B.bz-22,CABINET,false); put(B.bx+11,by+1,B.bz-22,CABINET,false);
-      put(B.bx+13,by+1,B.bz-20,SINK,false);
-      put(B.bx+13,by+1,B.bz-5,TOILET,false);                      // Badezimmer-Ecke
-      put(B.bx+12,by+1,B.bz-4,SINK,false);
-      // 8) Treppe nach oben (Westen): echte Stufen zum Drauflaufen
-      for (let i=0; i<6; i++) {
-        for (const tx3 of [-13,-12]) {
-          for (let y=by+1; y<=by+i; y++) put(B.bx+tx3,y,B.bz-4-i,S_,false);
-          put(B.bx+tx3,by+1+i,B.bz-4-i,TREP_N,false);
-        }
-      }
-      for (let dx=-13; dx<=-11; dx++) for (let dz=-12; dz<=-10; dz++)
-        put(B.bx+dx,by+6,B.bz+dz,AIR,false);                      // Deckenloch
-      // 9) Obergeschoss: Schlafzimmer (West) + Schatzkammer (Ost)
-      put(B.bx-8,by+7,B.bz-21,BED,false); put(B.bx-5,by+7,B.bz-21,BED,false);
-      put(B.bx-11,by+7,B.bz-22,CABINET,false);
-      put(B.bx-2,by+7,B.bz-4,TOILET,false); put(B.bx-1,by+7,B.bz-4,SINK,false);
-      for (let dz=-23; dz<=-3; dz++) for (let y=by+7; y<=by+11; y++) put(B.bx+7,y,B.bz+dz,S_,false);
-      for (let y=by+7; y<=by+8; y++) put(B.bx+7,y,B.bz-13,AIR,false);
-      for (const [cx3,cz3] of [[9,-22],[11,-22],[13,-22],[9,-20],[11,-20],[13,-20]])
-        put(B.bx+cx3,by+7,B.bz+cz3,CHEST,false);                  // die Schatzkammer!
-      put(B.bx+10,by+7,B.bz-16,POKAL,false); put(B.bx+12,by+7,B.bz-16,POKAL,false);
-      for (const [tx4,tz4] of [[-13,-6],[6,-6],[-13,-20],[6,-20],[9,-4],[13,-13]])
-        put(B.bx+tx4,by+9,B.bz+tz4,TORCH,false);
-      // 10) der PARKPLATZ für alle Fahrzeuge (Hof, Osten)
-      for (let dx=8; dx<=22; dx++) for (let dz=8; dz<=22; dz++)
-        if (dx===8 || dx===15 || dx===22) put(B.bx+dx,by,B.bz+dz,WOOL,false);   // weiße Linien
-      put(B.bx+8,by+1,B.bz+6,SIGN,true);
-      const psig=(B.bx+8)+','+(by+1)+','+(B.bz+6);
-      if (!signTexts.has(psig)) signTexts.set(psig,'🅿️ Parkplatz');
-      // 11) Blumen-Garten im Hof (Westen)
-      for (const [gx2,gz2] of [[-18,8],[-15,11],[-20,14],[-13,16],[-17,19],[-11,10],[-21,20]])
-        put(B.bx+gx2,by+1,B.bz+gz2,BLUME,true);
-      for (const [fx3,fz3] of [[-24,0],[24,0],[0,24],[-24,-24+48],[10,24]])
-        put(B.bx+fx3,by+6,B.bz+fz3,TORCH,true);                   // Fackeln auf der Mauer
+      P(-12,by+3,-14,TORCH); P(12,by+3,-14,TORCH); P(0,by+3,-21,TORCH);
+      P(21,by+1,-13,TABLE);                             // die Küche
+      P(20,by+1,-13,CHAIR); P(22,by+1,-13,CHAIR); P(21,by+1,-12,CHAIR); P(21,by+1,-14,CHAIR);
+      P(16,by+1,-20,CABINET); P(18,by+1,-20,CABINET); P(20,by+1,-20,CABINET); P(24,by+1,-20,SINK);
+      P(-27,by+1,-20,TOILET); P(-25,by+1,-20,SINK);     // Bad West
+      P(-27,by+1,-6,TOILET);  P(-25,by+1,-6,SINK);      // noch ein Bad
+      P(-21,by+1,13,TABLE);                             // das Wohnzimmer
+      P(-22,by+1,13,CHAIR); P(-20,by+1,13,CHAIR); P(-21,by+1,12,CHAIR); P(-21,by+1,14,CHAIR);
+      P(-28,by+1,20,CABINET);
+      P(16,by+1,6,SIGN);                                // die Garage (Tor im Osten!)
+      const gsig=(B.bx+16)+','+(by+1)+','+(B.bz+6);
+      if (!signTexts.has(gsig)) signTexts.set(gsig,'🅿️ Jonahs Garage');
+      // 8) ETAGE 2: Schlafzimmer, Spielzimmer, Sportraum, Bibliothek, Kinderzimmer, Bad
+      P(-27,by+6,-19,BED); P(-24,by+6,-19,BED); P(-21,by+6,-19,BED); P(-28,by+6,-6,CABINET);
+      for (const [sx,scr] of [[-3,SCREEN_RACE],[0,SCREEN_SNAKE],[3,SCREEN_PONG]])
+        { P(sx,by+6,-20,S_); P(sx,by+7,-20,scr); }      // das Spielzimmer!
+      P(0,by+6,-10,TRAMPOLIN);
+      P(17,by+6,-18,HANTEL); P(20,by+6,-18,LAUFBAND); P(25,by+6,-14,TRAMPOLIN);   // Sportraum
+      for (const bx2 of [-28,-26,-24,-22,-20]) P(bx2,by+6,20,CABINET);   // die Bibliothek
+      P(-24,by+6,12,TABLE); P(-24,by+6,13,CHAIR);
+      P(-2,by+6,19,BED); P(2,by+6,19,BED); P(-8,by+6,20,CABINET);   // Kinderzimmer
+      P(27,by+6,20,TOILET); P(25,by+6,20,SINK);
+      // 9) ETAGE 3: Schatzkammer, Gästezimmer, Lager, Festsaal, Bad
+      for (const cx3 of [-6,-3,0,3,6]) { P(cx3,by+11,-19,CHEST); P(cx3,by+11,-17,CHEST); }
+      P(-2,by+11,-12,POKAL); P(2,by+11,-12,POKAL);
+      P(-2,by+11,-11,SIGN);
+      const ssig=(B.bx-2)+','+(by+11)+','+(B.bz-11);
+      if (!signTexts.has(ssig)) signTexts.set(ssig,'👑 Schatzkammer');
+      P(-27,by+11,-19,BED); P(-24,by+11,-19,BED);       // Gästezimmer
+      for (const lx of [17,19,21,23,25]) P(lx,by+11,-20,CABINET);   // das Lager
+      for (const fx4 of [-4,-2,0,2,4]) { P(fx4,by+11,12,TABLE); P(fx4,by+11,11,CHAIR); P(fx4,by+11,13,CHAIR); }   // der Festsaal!
+      P(-21,by+11,13,TABLE); P(-21,by+11,12,CHAIR); P(-21,by+11,14,CHAIR);
+      P(27,by+11,20,TOILET); P(25,by+11,20,SINK);
+      // 10) Licht in allen Zimmern + Fackeln auf dem Dach
+      for (const f0 of [by+1, by+6, by+11])
+        for (const [tx5,tz5] of [[-20,-14],[0,-7],[20,-14],[-20,14],[0,18],[20,14]])
+          P(tx5,f0+2,tz5,TORCH);
+      for (const [rx2,rz2] of [[-28,-20],[28,-20],[-28,20],[28,20],[0,-20],[0,20]])
+        P(rx2,by+16,rz2,TORCH);
     }
   }
   // gespeicherte Änderungen des Spielers anwenden.
@@ -3195,11 +3196,11 @@ function spawnTick() {
       }
     if (frei && spawnMob('zombie', zx, zz, {hp:2})) blip(80,0.2);
   }
-  { // die WÄCHTER der Mega-Burg: Ritter auf Posten! 🛡️
+  { // die WÄCHTER der Riesen-Festung: Ritter auf Posten! 🛡️
     const MB = burgPos();
     if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 80 &&
         countType(a=>a.type==='knight' && a.home==='megaburg') < 5 && Math.random() < 0.5) {
-      const POSTEN = [[0,28],[-28,0],[28,0],[0,-28],[14,28]];
+      const POSTEN = [[0,27],[-34,0],[34,0],[0,-27],[16,27]];
       const p = POSTEN[Math.floor(Math.random()*POSTEN.length)];
       spawnMob('knight', MB.bx+p[0], MB.bz+p[1],
         {home:'megaburg', hx:MB.bx+p[0], hz:MB.bz+p[1], hp:5});
