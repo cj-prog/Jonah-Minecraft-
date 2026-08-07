@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die RIESEN-FESTUNG (v139)! 👑 Die Mega-Burg wurde komplett neu
+  gebaut, genau nach Jonahs Wünschen: keine Ritterburg mehr, sondern
+  eine riesige Festung wie ein gigantisches Haus - 61x45 Blöcke groß,
+  3 Etagen, über 20 Räume! KOMPLETT aus unzerstörbaren Schutz-Blöcken
+  (Wände, Böden, Decken, Dach, sogar die Treppenstufen) - statt Glas
+  gibt es offene Fenster-Luken. Und sie steht jetzt GANZ weit draußen
+  (über 200 Blöcke vom Start, mindestens 80 von jedem Dorf).
+  Drinnen: Thronsaal, Küche, Wohnzimmer, Festsaal mit langer Tafel,
+  Schatzkammer voller Truhen, Spielzimmer mit Arcade-Bildschirmen,
+  Sportraum (Hantel, Laufband, Trampolin), Bibliothek, Kinderzimmer,
+  Gästezimmer, mehrere Schlafzimmer und Bäder, eine Garage mit
+  eigenem Tor im Osten für die Fahrzeuge - und Ritter-Wächter auf
+  Posten. Auf der Karte weiter als 👑 zu finden
 - Der AUTO-UPDATE-Melder (v138)! 🆕 Nie wieder rätseln, ob die neue
   Version schon da ist: Das Spiel schaut nach dem Start (und dann
   jede Minute) selbst beim Server nach, ob es online eine neuere
