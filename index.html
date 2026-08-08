@@ -359,7 +359,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 143 &middot; Burgplan, Kunstgalerie, Geheimtür &amp; König Jonah! 👑</p>
+    Version 144 &middot; RUTSCHEN zum Sausen + ALLES ist drehbar! 🛝🔄</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -405,7 +405,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 143;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 144;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -430,7 +430,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
-      SCHUTZ=67, BURGPLAN=68;
+      SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -527,6 +527,15 @@ const BLOCKS = {
   [LAVA]: { name:'Lava 🌋 (heiß! bloß nicht reinfallen!)', tiles:[72,72,72], solid:false },
   [SCHUTZ]: { name:'Schutz-Block 🛡️ (unkaputtbar – nur DU kannst ihn wegnehmen!)', tiles:[80,80,80], solid:true },
   [BURGPLAN]: { name:'Burgplan 🗺️ (antippen und nie mehr verlaufen!)', tiles:[83,83,83], solid:true },
+  // Rutschen 🛝: der Pfeil zeigt bergab - verbinde viele und saus hinunter!
+  [RUTSCHE_N]: { name:'Rutsche 🛝 (verbinde viele - und saus hinunter!)', tiles:[84,84,84], solid:true, model:[
+    [0,0,0, 1,0.22,1, 84], [0,0.22,0.4, 1,0.5,1, 84], [0,0.5,0.72, 1,0.78,1, 84]] },
+  [RUTSCHE_S]: { name:'Rutsche 🛝', tiles:[84,84,84], solid:true, model:[
+    [0,0,0, 1,0.22,1, 84], [0,0.22,0, 1,0.5,0.6, 84], [0,0.5,0, 1,0.78,0.28, 84]] },
+  [RUTSCHE_E]: { name:'Rutsche 🛝', tiles:[84,84,84], solid:true, model:[
+    [0,0,0, 1,0.22,1, 84], [0,0.22,0, 0.6,0.5,1, 84], [0,0.5,0, 0.28,0.78,1, 84]] },
+  [RUTSCHE_W]: { name:'Rutsche 🛝', tiles:[84,84,84], solid:true, model:[
+    [0,0,0, 1,0.22,1, 84], [0.4,0.22,0, 1,0.5,1, 84], [0.72,0.5,0, 1,0.78,1, 84]] },
   [POKAL]: { name:'Jubiläums-Pokal 🏆 (100 Versionen JonahCraft!)', tiles:[30,30,30], solid:false, model:[
     [0.2,0,0.2, 0.8,0.12,0.8, 30, 1.3],                 // Sockel
     [0.42,0.12,0.42, 0.58,0.4,0.58, 30, 1.3],           // Stiel
@@ -653,7 +662,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -2141,6 +2150,11 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x>=7&&x<=8&&y>=9&&y<=10) return 'rgb(214,58,58)';           // roter Punkt: „Du bist hier!"
     return vary(232,214,168,14);                                    // Pergament
   });
+  tile(84,(x,y)=>{                                                  // Rutsche 🛝: rotes Plastik
+    if (x>=6&&x<=9) return vary(255,228,88,14);                     // gelbe Rutsch-Bahn
+    if (x===5||x===10) return vary(255,255,240,8);                  // weißer Rand
+    return vary(226,62,74,16);
+  });
   tile(72,(x,y)=>{                                                  // Lava: glühend heiß!
     const n = vnoise(x*0.4, y*0.4, 933);
     if (n>0.55 || rnd()<0.06) return vary(255,214,66,20);           // gelb glühende Adern
@@ -2350,6 +2364,7 @@ function buildMesh(ch) {
       }
       continue;
     }
+    const drehC = rotations.get(wx+','+y+','+wz) || 0;   // Dreh-Modus auch für ganze Blöcke!
     for (let f=0;f<6;f++) {
       const F=FACES[f];
       const nb = getBlock(wx+F.d[0], y+F.d[1], wz+F.d[2]);
@@ -2364,7 +2379,9 @@ function buildMesh(ch) {
       const sh2 = b===LAVA ? 1.5 : F.s;   // Lava glüht von selbst, auch im Dunkeln!
       for (let k=0;k<6;k++) {
         const c = F.c[TRI[k]];
-        const uv = tileUV(tile, c[3], c[4]);
+        let cu=c[3], cv=c[4];             // das Muster dreht sich mit (je 90 Grad)
+        for (let r3=0; r3<drehC; r3++) { const q3=cu; cu=cv; cv=1-q3; }
+        const uv = tileUV(tile, cu, cv);
         arr.push(wx+c[0], y+c[1], wz+c[2], uv[0], uv[1], sh2);
       }
     }
@@ -2587,6 +2604,19 @@ function physics(dt) {
   player.vz = (fz*mf + rz*ms) * speed + player.kz;
   const kd = Math.max(0, 1-6*dt);
   player.kx *= kd; player.kz *= kd;
+
+  // 🛝 RUTSCHEN: Wer draufsteht, saust in Pfeilrichtung davon - wiiih!
+  const rSt = getBlock(Math.floor(player.x), Math.floor(player.y-0.3), Math.floor(player.z));
+  if (rSt>=RUTSCHE_N && rSt<=RUTSCHE_W) {
+    const rd = rSt-RUTSCHE_N;           // 0 Nord, 1 Ost, 2 Süd, 3 West
+    rutschV = Math.min(rutschV + 28*dt, 11);
+    player.kx = [0,1,0,-1][rd]*rutschV;
+    player.kz = [-1,0,1,0][rd]*rutschV;
+    player.vx = player.kx + (fx*mf + rx*ms)*1.2;   // nur noch ein bisschen lenken
+    player.vz = player.kz + (fz*mf + rz*ms)*1.2;
+    rutschT -= dt;
+    if (rutschT<=0) { rutschT=0.15; blip(320+rutschV*45, 0.05); }   // Wiiii-Sound!
+  } else rutschV = Math.max(0, rutschV - 24*dt);
 
   if (swim) {
     player.vy -= 9*dt;
@@ -4632,6 +4662,7 @@ const cropSet = new Set();              // wachsende Beete ("x,y,z")
 let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0, cakes = 0;
 let money = 5;                          // dein Geldbeutel: 5 Euro Startgeld! 💶
 let boostT = 0, jumpT = 0, cropT = 0, balloonT = 0;
+let rutschV = 0, rutschT = 0;           // 🛝 wie schnell rutscht Jonah gerade?
 
 function updateFoodHUD() {
   const set=(id,emoji,n)=>{ const el=document.getElementById(id);
@@ -6009,8 +6040,8 @@ let rotMode = false;
 function toggleRot() {
   rotMode = !rotMode;
   document.getElementById('rotBtn').classList.toggle('on', rotMode);
-  toast(rotMode ? '🔄 Dreh-Modus! Tippe Möbel, Treppen oder Bilder an – sie drehen sich. (Knopf nochmal = fertig)'
-                : '🔄 Dreh-Modus aus.', 3200);
+  toast(rotMode ? '🔄 Dreh-Modus! Tippe IRGENDETWAS an – ALLES dreht sich: Möbel, Treppen, Rutschen, jeden Block! (Knopf nochmal = fertig)'
+                : '🔄 Dreh-Modus aus.', 3400);
   blip(rotMode?600:350, 0.07);
 }
 function tryRotate(hit) {
@@ -6019,20 +6050,24 @@ function tryRotate(hit) {
   if (b>=TREP_N && b<=TREP_W) {         // Treppen haben echte Richtungs-Varianten
     const seq=[TREP_N,TREP_E,TREP_S,TREP_W];
     setBlock(hit.x,hit.y,hit.z, seq[(seq.indexOf(b)+1)%4]);
+  } else if (b>=RUTSCHE_N && b<=RUTSCHE_W) {   // Rutschen genauso!
+    const seq=[RUTSCHE_N,RUTSCHE_E,RUTSCHE_S,RUTSCHE_W];
+    setBlock(hit.x,hit.y,hit.z, seq[(seq.indexOf(b)+1)%4]);
   } else if (b>=PIC && b<=PIC_W) {      // Bilder auch
     const seq=[PIC,PIC_W,PIC_N,PIC_E];
     setBlock(hit.x,hit.y,hit.z, seq[(seq.indexOf(b)+1)%4]);
   } else if (b===RAIL) {
     toast('🎢 Schienen drehen sich von ganz allein zu ihren Nachbarn!', 2500);
     return;
-  } else if (BLOCKS[b] && BLOCKS[b].model && !DOOR_PARTS.includes(b) && b!==GATE && b!==GATE_OPEN) {
+  } else if (BLOCKS[b] && !DOOR_PARTS.includes(b) && b!==GATE && b!==GATE_OPEN &&
+             b!==WATER && b!==LAVA) {   // ALLES andere dreht sich auch - jeder Block!
     rotations.set(key, ((rotations.get(key)||0)+1)%4);
     if (!rotations.get(key)) rotations.delete(key);
     const ch=getChunk(hit.x>>4, hit.z>>4);
     if (ch) ch.dirty = true;            // neu zeichnen
     scheduleSave();
   } else {
-    toast('🔄 Das lässt sich nicht drehen. Tippe Möbel, Treppen oder Bilder an!', 2500);
+    toast('🔄 Das dreht sich lieber nicht: Türen und Tore öffnen sich, Wasser und Lava zerfließen!', 2800);
     return;
   }
   toast('🔄 Gedreht!', 1000);
@@ -6529,6 +6564,7 @@ const MAP_BLOCK_COL = {
   [GATE]:'#9aa0a8', [GATE_OPEN]:'#9aa0a8', [SNOWMAN]:'#f0f4f8', [LAVA]:'#e85a1e', [SCHUTZ]:'#46c8dc',
   [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
+  [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -8249,6 +8285,14 @@ function doPlace(dir) {
     blip(330,0.06);
     return;
   }
+  if (b===RUTSCHE_N) {                  // Rutsche: saust von dir weg nach unten!
+    const fx3=Math.sin(yaw), fz3=-Math.cos(yaw);
+    const rb2 = Math.abs(fx3)>Math.abs(fz3) ? (fx3>0?RUTSCHE_E:RUTSCHE_W) : (fz3>0?RUTSCHE_S:RUTSCHE_N);
+    setBlock(px,py,pz,rb2);
+    toast('🛝 Rutsche gebaut! Verbinde viele (jede eins tiefer) und stell dich drauf - wiiih!', 3200);
+    blip(520,0.06); blip(420,0.06);
+    return;
+  }
   if (b===PIC) {                        // Bilder hängen an Wänden!
     if (hit.face[1]!==0) {
       toast('🖼️ Bilder hängt man an die Wand! Tippe seitlich auf eine Wand.', 2800);
@@ -8597,6 +8641,9 @@ const ICONS = {
   [TREP_N]: iconURL(g=>{ g.fillStyle='#b08a58';
     g.fillRect(1,11,14,4); g.fillRect(6,6,9,5); g.fillRect(11,1,4,5);
     g.fillStyle='#8a6a3c'; g.fillRect(1,11,14,1); g.fillRect(6,6,9,1); g.fillRect(11,1,4,1); }),
+  [RUTSCHE_N]: iconURL(g=>{ g.fillStyle='#e23e4a';
+    g.fillRect(1,11,14,4); g.fillRect(6,6,9,5); g.fillRect(11,1,4,5);
+    g.fillStyle='#ffe458'; g.fillRect(1,12,14,2); g.fillRect(7,7,8,2); g.fillRect(12,2,3,2); }),
   [BLUME]: iconURL(g=>{ g.fillStyle='#3f8f2e'; g.fillRect(7,8,2,7); g.fillRect(4,10,3,2);
     g.fillStyle='#e04848'; g.fillRect(5,2,6,6); g.fillRect(3,4,10,2); g.fillRect(7,0,2,10);
     g.fillStyle='#f5d93c'; g.fillRect(6,3,4,4); }),
