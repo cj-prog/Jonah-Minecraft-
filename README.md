@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Burgplan, Kunstgalerie, Geheimtür & „König Jonah" (v143)! 👑
+  Vier Königs-Wünsche auf einmal: 1. In der Eingangshalle und in
+  jedem Etagen-Flur hängt jetzt ein BURGPLAN 🗺️ - antippen und die
+  ganze Festung erscheint als bunte Karte mit allen Zimmern, Treppen
+  und Geheimnissen. 2. Die Festungs-Ritter nennen Jonah jetzt
+  „KÖNIG JONAH" - beim Antippen und im Vorbeigehen („Lang lebe König
+  Jonah!"). 3. Die KUNSTGALERIE 🖼️ (Etage 3): acht Bilder hängen an
+  den Wänden, und jedes lässt sich antippen und SELBST ausmalen!
+  4. Eine GEHEIMTÜR 🤫: an der Nordwand versteckt ein Busch eine
+  geheime Tür direkt in die Küche - psst, nicht weitersagen!
 - Die DACH-TERRASSE (v142)! 🌞 Ganz oben auf der Riesen-Festung ist
   jetzt eine große offene Terrasse: keine Wände, nur ein Zaun einmal
   komplett rundherum, damit niemand runterfällt. Eine dritte Treppe
