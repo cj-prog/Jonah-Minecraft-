@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RUTSCHEN + ALLES drehbar (v144)! 🛝🔄 Der neue Rutschen-Block
+  (rot-gelb, in der Blockleiste): Beim Hinstellen zeigt die Rutsche
+  von dir weg - baue viele hintereinander, jede eins tiefer, und sie
+  verbinden sich zu einer langen Rutschbahn! Draufstellen und du
+  saust von ganz allein hinunter, mit Wiiih-Sound und nur noch ganz
+  wenig Lenkung. Und der Dreh-Modus 🔄 kann jetzt ALLES drehen:
+  nicht nur Möbel, Treppen und Bilder, sondern jeden einzelnen Block
+  (das Muster dreht sich sichtbar mit) - und natürlich auch die
+  neuen Rutschen
 - Burgplan, Kunstgalerie, Geheimtür & „König Jonah" (v143)! 👑
   Vier Königs-Wünsche auf einmal: 1. In der Eingangshalle und in
   jedem Etagen-Flur hängt jetzt ein BURGPLAN 🗺️ - antippen und die
