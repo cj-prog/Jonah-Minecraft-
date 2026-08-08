@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Garagen-Parken + Zimmer-Schilder (v140)! 🅿️ Sobald Jonah in seiner
+  Riesen-Festung ist, fährt kein Gefährt mehr draußen herum: Mähdrescher,
+  Jet, Hubschrauber und Drache rollen automatisch auf ihren festen
+  Platz in der Garage und parken dort mucksmäuschenstill, bis Jonah
+  wieder losfährt oder die Festung verlässt. Und vor JEDER Zimmertür
+  steht jetzt ein Schild, das sagt, welches Zimmer dahinter liegt
+  (👑 Thronsaal, 🍳 Küche, 🕹️ Spielzimmer, 🎉 Festsaal, 🚽 Bad ...) -
+  einfach antippen und vorlesen lassen
 - Die RIESEN-FESTUNG (v139)! 👑 Die Mega-Burg wurde komplett neu
   gebaut, genau nach Jonahs Wünschen: keine Ritterburg mehr, sondern
   eine riesige Festung wie ein gigantisches Haus - 61x45 Blöcke groß,
