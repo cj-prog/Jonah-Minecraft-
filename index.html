@@ -135,6 +135,14 @@
   #paintBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:8px; background:rgba(35,30,50,.96); padding:12px 16px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; }
+  #planBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:8px; background:rgba(35,30,50,.96); padding:12px 16px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; }
+  #planBox h3 { font-size:18px; }
+  #planCanvas { border:3px solid #8a6a3c; border-radius:6px; background:#efe0b8;
+    max-width:92vw; max-height:62vh; }
+  #planClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   #paintBox h3 { font-size:18px; }
   #paintCanvas { border:3px solid #8a6a3c; border-radius:6px; background:#fff; touch-action:none; }
   #paintPal { display:grid; grid-template-columns:repeat(6,34px); gap:5px; }
@@ -333,6 +341,11 @@
   <canvas id="frgCanvas" width="320" height="440"></canvas>
   <button id="frgClose">✖ Raus</button>
 </div>
+<div class="hud" id="planBox">
+  <h3>🗺️ Plan der Riesen-Festung</h3>
+  <canvas id="planCanvas" width="740" height="205"></canvas>
+  <button id="planClose">✔ Fertig</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -346,7 +359,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 142 &middot; Die DACH-TERRASSE mit Zaun und Treppe! 🌞</p>
+    Version 143 &middot; Burgplan, Kunstgalerie, Geheimtür &amp; König Jonah! 👑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +405,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 142;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 143;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -417,7 +430,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
-      SCHUTZ=67;
+      SCHUTZ=67, BURGPLAN=68;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -513,6 +526,7 @@ const BLOCKS = {
     [0.1,0.12,0.08, 0.9,0.88,0.14, 71, 1.6]] },
   [LAVA]: { name:'Lava 🌋 (heiß! bloß nicht reinfallen!)', tiles:[72,72,72], solid:false },
   [SCHUTZ]: { name:'Schutz-Block 🛡️ (unkaputtbar – nur DU kannst ihn wegnehmen!)', tiles:[80,80,80], solid:true },
+  [BURGPLAN]: { name:'Burgplan 🗺️ (antippen und nie mehr verlaufen!)', tiles:[83,83,83], solid:true },
   [POKAL]: { name:'Jubiläums-Pokal 🏆 (100 Versionen JonahCraft!)', tiles:[30,30,30], solid:false, model:[
     [0.2,0,0.2, 0.8,0.12,0.8, 30, 1.3],                 // Sockel
     [0.42,0.12,0.42, 0.58,0.4,0.58, 30, 1.3],           // Stiel
@@ -1488,7 +1502,7 @@ function genChunkData(cx, cz, ohneEdits) {
       const RAUM_NAMEN = [   // pro Etage: [NW, Nord-Mitte, NO, SW, Süd-Mitte, SO]
         ['🚽 Bad','👑 Thronsaal','🍳 Küche','🛋️ Wohnzimmer','🚪 Eingangshalle','🅿️ Garage'],
         ['🛏️ Schlafzimmer','🕹️ Spielzimmer','🏋️ Sportraum','📚 Bibliothek','🧸 Kinderzimmer','🚽 Bad'],
-        ['🛏️ Gästezimmer','👑 Schatzkammer','📦 Lager','🪑 Esszimmer','🎉 Festsaal','🚽 Bad'],
+        ['🛏️ Gästezimmer','👑 Schatzkammer','🖼️ Kunstgalerie','🪑 Esszimmer','🎉 Festsaal','🚽 Bad'],
       ];
       [by+1,by+6,by+11].forEach((f0,ei) => {
         const [NW,NM,NO,SW,SM,SO] = RAUM_NAMEN[ei];
@@ -1568,10 +1582,27 @@ function genChunkData(cx, cz, ohneEdits) {
       const ssig=(B.bx-2)+','+(by+11)+','+(B.bz-11);
       if (!signTexts.has(ssig)) signTexts.set(ssig,'👑 Schatzkammer');
       P(-27,by+11,-19,BED); P(-24,by+11,-19,BED);       // Gästezimmer
-      for (const lx of [17,19,21,23,25]) P(lx,by+11,-20,CABINET);   // das Lager
+      // die KUNSTGALERIE 🖼️: fertige Bilder + freie Leinwände zum Selbermalen
+      for (const gx3 of [16,19,22,25,28]) P(gx3,by+12,-21,PIC);     // Nordwand
+      for (const gz3 of [-9,-13,-17]) P(29,by+12,gz3,PIC_W);        // Ostwand
+      P(28,by+11,-6,CABINET);
+      P(16,by+11,-19,SIGN);
+      const ksig=(B.bx+16)+','+(by+11)+','+(B.bz-19);
+      if (!signTexts.has(ksig)) signTexts.set(ksig,'🖼️ Deine Kunstgalerie - tippe ein Bild an und mal es selber aus!');
       for (const fx4 of [-4,-2,0,2,4]) { P(fx4,by+11,12,TABLE); P(fx4,by+11,11,CHAIR); P(fx4,by+11,13,CHAIR); }   // der Festsaal!
       P(-21,by+11,13,TABLE); P(-21,by+11,12,CHAIR); P(-21,by+11,14,CHAIR);
       P(27,by+11,20,TOILET); P(25,by+11,20,SINK);
+      // 9b) BURGPLÄNE 🗺️: einer in der Eingangshalle, einer pro Etage im Flur
+      P(-5,by+1,7,S_);  P(-5,by+2,7,BURGPLAN);
+      P(-21,by+6,2,S_); P(-21,by+7,2,BURGPLAN);
+      P(-21,by+11,2,S_); P(-21,by+12,2,BURGPLAN);
+      // 9c) die GEHEIMTÜR 🤫: hinter dem Busch an der Nordwand!
+      P(22,by+1,-22,DOOR); P(22,by+2,-22,DOOR_TOP);
+      for (let y=by+1; y<=by+3; y++) { P(21,y,-23,LEAF); P(23,y,-23,LEAF); }
+      P(22,by+3,-23,LEAF); P(20,by+1,-23,LEAF); P(24,by+1,-23,LEAF);
+      P(21,by+1,-21,SIGN);
+      const gh=(B.bx+21)+','+(by+1)+','+(B.bz-21);
+      if (!signTexts.has(gh)) signTexts.set(gh,'🤫 Psst! Das ist die Geheimtür - draußen versteckt sie ein Busch!');
       // 10) Licht in allen Zimmern + Fackeln auf dem Dach
       for (const f0 of [by+1, by+6, by+11])
         for (const [tx5,tz5] of [[-20,-14],[0,-7],[20,-14],[-20,14],[0,18],[20,14]])
@@ -2102,6 +2133,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (d<2) return 'rgb(210,250,255)';                             // funkelnder Kern
     if (d<4.5) return vary(70,205,235,18);                          // leuchtender Diamant
     return vary(66,72,86,12);                                       // dunkles Eisen
+  });
+  tile(83,(x,y)=>{                                                  // Burgplan 🗺️
+    if (x<1||x>14||y<1||y>14) return vary(120,84,44,12);            // Holzrahmen
+    if ((x===4||x===11)&&y>=3&&y<=12) return vary(130,100,64,10);   // Flur-Linien
+    if (y===7&&x>=2&&x<=13) return vary(130,100,64,10);
+    if (x>=7&&x<=8&&y>=9&&y<=10) return 'rgb(214,58,58)';           // roter Punkt: „Du bist hier!"
+    return vary(232,214,168,14);                                    // Pergament
   });
   tile(72,(x,y)=>{                                                  // Lava: glühend heiß!
     const n = vnoise(x*0.4, y*0.4, 933);
@@ -3779,6 +3817,12 @@ function updateAnimals(dt) {
         }
         if (a.type==='knight' && Math.hypot(a.hx-a.x, a.hz-a.z) > 9)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
+        // Festungs-Wächter grüßen ihren König, wenn er vorbeikommt!
+        if (a.type==='knight' && a.home==='megaburg' &&
+            Math.hypot(a.x-player.x, a.z-player.z) < 7 && Math.random() < 0.25) {
+          sagen(a, ['König Jonah! 👑','Seid gegrüßt, König Jonah!','Lang lebe der König! 👑',
+                    'Alles sicher, König Jonah!'][Math.floor(Math.random()*4)], 3);
+        }
         // der Händler bleibt an seiner Theke – aber wenn sie abgebaut wurde,
         // schnappt er sich seinen Bauchladen und läuft frei durchs Dorf!
         if (a.type==='trader') {
@@ -4478,6 +4522,48 @@ function closePainter(save) {
 }
 document.getElementById('paintDone').addEventListener('click', ()=>closePainter(true));
 document.getElementById('paintClear').addEventListener('click', ()=>{ paintData.fill('0'); renderPaint(); });
+
+// ------------------------------ der Burgplan 🗺️ ------------------------------
+// Hängt in der Festung: antippen und die ganze Festung auf einen Blick sehen!
+function openBurgplan() {
+  const cv=document.getElementById('planCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const ET=[
+    ['Erdgeschoss',    [['🚽','Bad'],['👑','Thronsaal'],['🍳','Küche'],['🛋️','Wohnzimmer'],['🚪','Eingang'],['🅿️','Garage']]],
+    ['Etage 2',        [['🛏️','Schlafen'],['🕹️','Spielzimmer'],['🏋️','Sport'],['📚','Bücherei'],['🧸','Kinderzimmer'],['🚽','Bad']]],
+    ['Etage 3 (+Dach)',[['🛏️','Gäste'],['💰','Schatzkammer'],['🖼️','Galerie'],['🪑','Esszimmer'],['🎉','Festsaal'],['🚽','Bad']]],
+  ];
+  const s=3.6, W=61*s, H=45*s;
+  const farben=['#cfe5ff','#ffe2b8','#ffd3d3','#d8f5c8','#f0d8ff','#fff3b0'];
+  const R=[[-29,-14,-21,-5],[-13,13,-21,-5],[14,29,-21,-5],
+           [-29,-14,5,21],[-13,13,5,21],[14,29,5,21]];
+  ET.forEach(([titel,raeume],i)=>{
+    const ox=12+i*(W+24), oy=30;
+    const X=dx=>ox+(dx+30)*s, Z=dz=>oy+(dz+22)*s;
+    g.fillStyle='#efe0b8'; g.fillRect(ox,oy,W,H);
+    g.textAlign='center'; g.textBaseline='middle';
+    R.forEach((r,ri)=>{ g.fillStyle=farben[ri];
+      g.fillRect(X(r[0]),Z(r[2]),(r[1]-r[0]+1)*s,(r[3]-r[2]+1)*s); });
+    g.fillStyle='#e8d49a'; g.fillRect(X(-29),Z(-3),59*s,7*s);      // der Flur
+    g.strokeStyle='#5a4630'; g.lineWidth=3; g.strokeRect(ox,oy,W,H);
+    g.font='13px sans-serif'; g.fillStyle='#333';
+    g.fillText('🪜', X(-25), Z(0));                                // Treppe West
+    if (i>=1) g.fillText('🪜', X(25), Z(0));                       // Treppe Ost
+    if (i===0) { g.fillText('🚪', X(0), Z(20)); g.fillText('🤫', X(22), Z(-19)); }
+    raeume.forEach((rm,ri)=>{ const r=R[ri];
+      const mx=X((r[0]+r[1])/2), mz=Z((r[2]+r[3])/2);
+      g.font='15px sans-serif'; g.fillStyle='#333'; g.fillText(rm[0], mx, mz-7);
+      g.font='bold 9px sans-serif'; g.fillStyle='#4a3a22'; g.fillText(rm[1], mx, mz+8);
+    });
+    g.font='bold 13px sans-serif'; g.fillStyle='#fff'; g.fillText(titel, ox+W/2, oy-13);
+  });
+  document.getElementById('planBox').style.display='flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(500,0.06); blip(640,0.07);
+}
+document.getElementById('planClose').addEventListener('click', ()=>{
+  document.getElementById('planBox').style.display='none'; blip(400,0.06);
+});
 
 function makePaintTexture(key) {
   const data = paintings.get(key);
@@ -6442,7 +6528,7 @@ const MAP_BLOCK_COL = {
   [DOOR_OPEN]:'#a8845c', [DOOR_TOP_OPEN]:'#a8845c', [FENCE]:'#9a7a4e',
   [GATE]:'#9aa0a8', [GATE_OPEN]:'#9aa0a8', [SNOWMAN]:'#f0f4f8', [LAVA]:'#e85a1e', [SCHUTZ]:'#46c8dc',
   [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
-  [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58',
+  [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -7602,7 +7688,14 @@ function hitEntity(a, dir) {
   if (a.type==='knight') {              // mit dem Ritter sprechen!
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3;
-    const RITTER_TALK = [
+    const RITTER_TALK = a.home==='megaburg' ? [   // die Festungs-Wächter kennen ihren König!
+      'Willkommen zurück, KÖNIG JONAH! 👑',
+      'Alles ruhig in deiner Festung, König Jonah!',
+      'Wir bewachen dein Reich bei Tag und bei Nacht, König Jonah! 🛡️',
+      'Zu Diensten, König Jonah! Befiehl, und es geschieht!',
+      'Lang lebe König Jonah! Hipp, hipp, hurra! 👑',
+      'Dein Thron wartet schon auf dich, König Jonah!',
+    ] : [
       'Halt! Wer da? ... Ach, DU bist es! 😄',
       'Ich bewache diese Burg – bei Tag und bei Nacht!',
       'Ein echter Ritter fürchtet sich vor gar nichts!',
@@ -8016,6 +8109,10 @@ function doPlace(dir) {
   }
   if (hit.block>=PIC && hit.block<=PIC_W) {   // Bild antippen = selber malen!
     openPainter(hit.x+','+hit.y+','+hit.z);
+    return;
+  }
+  if (hit.block===BURGPLAN) {           // der Plan der Riesen-Festung!
+    openBurgplan();
     return;
   }
   if ((hit.block===GATE || hit.block===GATE_OPEN) && HOTBAR_ITEMS[selSlot]!==GATE) {
