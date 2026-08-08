@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Schilder an BEIDEN Tür-Seiten (v141)! 🪧 Jede Tür in der
+  Riesen-Festung hat jetzt auf jeder Seite ein Schild, und jedes
+  Schild verrät, welches Zimmer auf der ANDEREN Seite liegt: Im
+  Spielzimmer steht am Durchgang „🏋️ Sportraum", drüben im Sportraum
+  steht „🕹️ Spielzimmer", und in jedem Zimmer zeigt ein „🚪 Flur"-Schild
+  den Weg zurück zum Gang - so verläuft sich niemand mehr!
 - Garagen-Parken + Zimmer-Schilder (v140)! 🅿️ Sobald Jonah in seiner
   Riesen-Festung ist, fährt kein Gefährt mehr draußen herum: Mähdrescher,
   Jet, Hubschrauber und Drache rollen automatisch auf ihren festen

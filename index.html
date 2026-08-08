@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 140 &middot; Auto-Parken in der Garage + Zimmer-Schilder! 🅿️</p>
+    Version 141 &middot; Schilder an BEIDEN Seiten jeder Tür! 🪧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 140;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 141;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1483,21 +1483,31 @@ function genChunkData(cx, cz, ohneEdits) {
           for (let y=f0; y<=f0+1; y++) P(dx,y,dz,AIR);  // Türen zwischen Zimmern
         for (const dx of [-26,-10,8,26]) { P(dx,f0+2,-5,TORCH); P(dx,f0+2,5,TORCH); }   // Flur-Licht
       }
-      // 5b) SCHILDER: vor jeder Zimmertür steht, welches Zimmer dahinter liegt!
-      const ETAGEN_SCHILDER = [
-        [['🚽 Bad',-16,-3],['👑 Thronsaal',2,-3],['🍳 Küche',19,-3],
-         ['🛋️ Wohnzimmer',-16,3],['🚪 Eingangshalle',2,3],['🅿️ Garage',19,3]],
-        [['🛏️ Schlafzimmer',-16,-3],['🕹️ Spielzimmer',2,-3],['🏋️ Sportraum',19,-3],
-         ['📚 Bibliothek',-16,3],['🧸 Kinderzimmer',2,3],['🚽 Bad',19,3]],
-        [['🛏️ Gästezimmer',-16,-3],['👑 Schatzkammer',2,-3],['📦 Lager',19,-3],
-         ['🪑 Esszimmer',-16,3],['🎉 Festsaal',2,3],['🚽 Bad',19,3]],
+      // 5b) SCHILDER an BEIDEN Seiten jeder Tür: jedes Schild verrät,
+      // welches Zimmer auf der ANDEREN Seite der Tür liegt!
+      const RAUM_NAMEN = [   // pro Etage: [NW, Nord-Mitte, NO, SW, Süd-Mitte, SO]
+        ['🚽 Bad','👑 Thronsaal','🍳 Küche','🛋️ Wohnzimmer','🚪 Eingangshalle','🅿️ Garage'],
+        ['🛏️ Schlafzimmer','🕹️ Spielzimmer','🏋️ Sportraum','📚 Bibliothek','🧸 Kinderzimmer','🚽 Bad'],
+        ['🛏️ Gästezimmer','👑 Schatzkammer','📦 Lager','🪑 Esszimmer','🎉 Festsaal','🚽 Bad'],
       ];
       [by+1,by+6,by+11].forEach((f0,ei) => {
-        for (const [txt,dx,dz] of ETAGEN_SCHILDER[ei]) {
+        const [NW,NM,NO,SW,SM,SO] = RAUM_NAMEN[ei];
+        const schild = (dx,dz,txt) => {
           P(dx,f0,dz,SIGN);
           const sk=(B.bx+dx)+','+f0+','+(B.bz+dz);
           if (!signTexts.has(sk)) signTexts.set(sk,txt);
-        }
+        };
+        // Flur-Seite: welches Zimmer liegt hinter der Tür?
+        schild(-16,-3,NW); schild(2,-3,NM); schild(19,-3,NO);
+        schild(-16,3,SW);  schild(2,3,SM);  schild(19,3,SO);
+        // Zimmer-Seite derselben Türen: da geht's zurück zum Flur
+        schild(-16,-5,'🚪 Flur'); schild(2,-5,'🚪 Flur'); schild(19,-5,'🚪 Flur');
+        schild(-16,5,'🚪 Flur');  schild(2,5,'🚪 Flur');  schild(19,5,'🚪 Flur');
+        // Türen ZWISCHEN den Zimmern: auf jeder Seite steht das Zimmer gegenüber
+        schild(-14,-11,NM); schild(-12,-11,NW);   // Nord-West-Tür
+        schild(12,-11,NO);  schild(14,-11,NM);    // Nord-Ost-Tür
+        schild(-14,14,SM);  schild(-12,14,SW);    // Süd-West-Tür
+        schild(12,14,SO);   schild(14,14,SM);     // Süd-Ost-Tür
       });
       // 6) Treppen aus Schutz-Stufen: hoch in Etage 2 (West) und Etage 3 (Ost)
       for (const dx of [-26,-25]) for (const dz of [-2,-1]) P(dx,by+5,dz,AIR);   // Deckenloch West
