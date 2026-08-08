@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 141 &middot; Schilder an BEIDEN Seiten jeder Tür! 🪧</p>
+    Version 142 &middot; Die DACH-TERRASSE mit Zaun und Treppe! 🌞</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 141;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 142;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1509,16 +1509,29 @@ function genChunkData(cx, cz, ohneEdits) {
         schild(-14,14,SM);  schild(-12,14,SW);    // Süd-West-Tür
         schild(12,14,SO);   schild(14,14,SM);     // Süd-Ost-Tür
       });
-      // 6) Treppen aus Schutz-Stufen: hoch in Etage 2 (West) und Etage 3 (Ost)
-      for (const dx of [-26,-25]) for (const dz of [-2,-1]) P(dx,by+5,dz,AIR);   // Deckenloch West
-      for (const dx of [25,26]) for (const dz of [-2,-1]) P(dx,by+10,dz,AIR);    // Deckenloch Ost
+      // 6) Treppen aus Schutz-Stufen: Etage 2 (West), Etage 3 (Ost), DACH (West)
+      for (const dx of [-26,-25,-24]) for (const dz of [-2,-1]) P(dx,by+5,dz,AIR);   // Deckenloch West
+      for (const dx of [24,25,26]) for (const dz of [-2,-1]) P(dx,by+10,dz,AIR);     // Deckenloch Ost
+      for (const dx of [-26,-25,-24]) for (const dz of [-2,-1]) P(dx,by+15,dz,AIR);  // Dachloch West
       for (let i=0; i<5; i++) for (const dz of [-2,-1]) {
         for (let y=by+1; y<=by+i; y++) P(-23-i,y,dz,S_);
         P(-23-i,by+1+i,dz,TREP_W);      // letzte Stufe ersetzt genau die Decke
         for (let y=by+6; y<=by+5+i; y++) P(23+i,y,dz,S_);
         P(23+i,by+6+i,dz,TREP_E);
+        for (let y=by+11; y<=by+10+i; y++) P(-23-i,y,dz,S_);   // rauf auf die Terrasse!
+        P(-23-i,by+11+i,dz,TREP_W);
       }
       P(-28,by+7,-3,TORCH); P(28,by+12,-3,TORCH);
+      // 6b) die DACH-TERRASSE 🌞: Zaun rundherum (nicht runterfallen!),
+      // keine Wände - nur Aussicht, Bänke, Blumen und ein Schild
+      for (let dx=-30; dx<=30; dx++) for (let dz=-22; dz<=22; dz++)
+        if (Math.abs(dx)===30 || Math.abs(dz)===22) P(dx,by+16,dz,FENCE);
+      P(0,by+16,0,TABLE); P(-1,by+16,0,CHAIR); P(1,by+16,0,CHAIR); P(0,by+16,1,CHAIR);
+      for (const [bx3,bz3] of [[-15,-10],[15,-10],[-15,10],[15,10],[-24,14],[24,-14]])
+        P(bx3,by+16,bz3,BLUME);
+      P(-23,by+16,-1,SIGN);
+      const dsig=(B.bx-23)+','+(by+16)+','+(B.bz-1);
+      if (!signTexts.has(dsig)) signTexts.set(dsig,'🌞 Jonahs Dach-Terrasse');
       // 7) ERDGESCHOSS: Thronsaal, Küche, Bäder, Wohnzimmer, Garage
       for (let dx=-2; dx<=2; dx++) for (let dz=-20; dz<=-18; dz++) P(dx,by+1,dz,S_);
       P(0,by+2,-19,CHAIR);                              // DER THRON!

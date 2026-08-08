@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die DACH-TERRASSE (v142)! 🌞 Ganz oben auf der Riesen-Festung ist
+  jetzt eine große offene Terrasse: keine Wände, nur ein Zaun einmal
+  komplett rundherum, damit niemand runterfällt. Eine dritte Treppe
+  führt vom 3. Stock direkt hinauf (einfach hochlaufen, ohne
+  Springen - die Treppen-Durchgänge sind jetzt extra breit, damit
+  man sich nirgends den Kopf stößt). Oben warten eine Sitzecke mit
+  Tisch und Stühlen, Blumen, Fackeln und das Schild
+  „🌞 Jonahs Dach-Terrasse" - mit Riesen-Aussicht über die ganze Welt!
 - Schilder an BEIDEN Tür-Seiten (v141)! 🪧 Jede Tür in der
   Riesen-Festung hat jetzt auf jeder Seite ein Schild, und jedes
   Schild verrät, welches Zimmer auf der ANDEREN Seite liegt: Im
