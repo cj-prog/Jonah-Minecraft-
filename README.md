@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- TUNNEL-Rutschen + OHNE Internet spielen (v145)! 🛝📴 Die Rutschen
+  sind jetzt echte Tunnel-Röhren: Boden, Wände und Dach - und sie
+  verbinden sich von ganz allein mit ihren Nachbarn (wie der Zaun):
+  in der Bahn sind sie offen zueinander, an den Seiten zu, und in
+  Kurven öffnen sie sich genau zum nächsten Rohr. Reinstellen und
+  durchsausen! Außerdem wohnt das Spiel jetzt im Handy: EINMAL mit
+  Internet öffnen - danach startet es auch komplett OHNE Internet
+  (der Spielstand war ja schon immer im Handy gespeichert)
 - RUTSCHEN + ALLES drehbar (v144)! 🛝🔄 Der neue Rutschen-Block
   (rot-gelb, in der Blockleiste): Beim Hinstellen zeigt die Rutsche
   von dir weg - baue viele hintereinander, jede eins tiefer, und sie
