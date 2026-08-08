@@ -346,7 +346,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 139 &middot; Die RIESEN-FESTUNG: 3 Etagen, über 20 Räume! 👑</p>
+    Version 140 &middot; Auto-Parken in der Garage + Zimmer-Schilder! 🅿️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -392,7 +392,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 139;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 140;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1483,6 +1483,22 @@ function genChunkData(cx, cz, ohneEdits) {
           for (let y=f0; y<=f0+1; y++) P(dx,y,dz,AIR);  // Türen zwischen Zimmern
         for (const dx of [-26,-10,8,26]) { P(dx,f0+2,-5,TORCH); P(dx,f0+2,5,TORCH); }   // Flur-Licht
       }
+      // 5b) SCHILDER: vor jeder Zimmertür steht, welches Zimmer dahinter liegt!
+      const ETAGEN_SCHILDER = [
+        [['🚽 Bad',-16,-3],['👑 Thronsaal',2,-3],['🍳 Küche',19,-3],
+         ['🛋️ Wohnzimmer',-16,3],['🚪 Eingangshalle',2,3],['🅿️ Garage',19,3]],
+        [['🛏️ Schlafzimmer',-16,-3],['🕹️ Spielzimmer',2,-3],['🏋️ Sportraum',19,-3],
+         ['📚 Bibliothek',-16,3],['🧸 Kinderzimmer',2,3],['🚽 Bad',19,3]],
+        [['🛏️ Gästezimmer',-16,-3],['👑 Schatzkammer',2,-3],['📦 Lager',19,-3],
+         ['🪑 Esszimmer',-16,3],['🎉 Festsaal',2,3],['🚽 Bad',19,3]],
+      ];
+      [by+1,by+6,by+11].forEach((f0,ei) => {
+        for (const [txt,dx,dz] of ETAGEN_SCHILDER[ei]) {
+          P(dx,f0,dz,SIGN);
+          const sk=(B.bx+dx)+','+f0+','+(B.bz+dz);
+          if (!signTexts.has(sk)) signTexts.set(sk,txt);
+        }
+      });
       // 6) Treppen aus Schutz-Stufen: hoch in Etage 2 (West) und Etage 3 (Ost)
       for (const dx of [-26,-25]) for (const dz of [-2,-1]) P(dx,by+5,dz,AIR);   // Deckenloch West
       for (const dx of [25,26]) for (const dz of [-2,-1]) P(dx,by+10,dz,AIR);    // Deckenloch Ost
@@ -3404,6 +3420,38 @@ function spawnTick() {
   }
 }
 
+// 🅿️ Die Festungs-Garage: Ist Jonah in seiner Riesen-Festung, fährt kein
+// Gefährt mehr draußen herum - jedes rollt automatisch auf seinen Platz
+// in der Garage und parkt dort, bis Jonah wieder losfährt oder weggeht.
+const GARAGEN_PLATZ = { bagger:[25,9], jet:[18,9], heli:[18,16], dragon:[24,16] };
+const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hubschrauber', dragon:'Dein Drache' };
+function parkeInGarage(a, dt) {
+  const p = GARAGEN_PLATZ[a.type];
+  if (!p) return false;
+  const B = burgPos();
+  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 40) { a.garage=false; return false; }
+  const gx = B.bx+p[0]+0.5, gz = B.bz+p[1]+0.5;
+  const d = Math.hypot(a.x-gx, a.z-gz);
+  if (d < 1.2) {                        // angekommen: ordentlich einparken und stillstehen
+    a.x=gx; a.z=gz; a.y=B.base+1.05;
+    a.vy=0; a.yaw=Math.PI/2; a.ferry=false; a.walking=false;
+    if (!a.garage) {
+      a.garage=true;
+      toast('🅿️ '+GARAGEN_NAME[a.type]+' parkt brav in der Garage!', 2500);
+      blip(90,0.1); blip(70,0.12);
+    }
+    return true;
+  }
+  const dir = Math.atan2(gx-a.x, -(gz-a.z));    // hinrollen zur Garage
+  a.yaw = dir;
+  const sp = a.type==='bagger' ? 8 : 12;
+  a.x += Math.sin(dir)*sp*dt;
+  a.z += -Math.cos(dir)*sp*dt;
+  a.y += Math.max(-8*dt, Math.min(8*dt, (B.base+1.05) - a.y));
+  a.vy = 0;
+  if (a.type==='bagger') { a.ph += dt*8; }
+  return true;
+}
 function updateAnimals(dt) {
   animalSpawnT -= dt;
   if (animalSpawnT<=0) { animalSpawnT=1.5; spawnTick(); }
@@ -3448,6 +3496,7 @@ function updateAnimals(dt) {
     }
     if (a.type==='dragon') {            // der liebe Drache bleibt immer bei Jonah!
       if (a!==dragonRiding) {
+        if (parkeInGarage(a, dt)) continue;
         const dp = Math.hypot(a.x-player.x, a.z-player.z);
         if (dp > 48 && !a.ferry) { a.ferry = true; sagen(a, 'Warte, ich komme! 🐉', 2.5); }
         if (a.ferry) {
@@ -3479,6 +3528,7 @@ function updateAnimals(dt) {
     }
     if (a.type==='heli') {              // der Hubschrauber bleibt auch in der Nähe
       if (a!==heliRiding) {
+        if (parkeInGarage(a, dt)) continue;
         const dp = Math.hypot(a.x-player.x, a.z-player.z);
         if (dp > 48 && !a.ferry) { a.ferry = true; toast('🚁 Dein Hubschrauber kommt nachgeflogen!', 2500); }
         if (a.ferry) {
@@ -3507,6 +3557,7 @@ function updateAnimals(dt) {
     }
     if (a.type==='jet') {               // Paul passt auf, dass der Jet in der Nähe bleibt!
       if (a!==jetRiding) {
+        if (parkeInGarage(a, dt)) continue;
         const dp = Math.hypot(a.x-player.x, a.z-player.z);
         if (dp > 48 && !a.ferry) {
           a.ferry = true;               // Paul fliegt den Jet nach
@@ -3539,6 +3590,7 @@ function updateAnimals(dt) {
     if (a.type==='bagger') {            // der Riesen-Bagger parkt brav und sinkt sanft
       if (a!==baggerRiding) {
         a.walking=false;
+        if (parkeInGarage(a, dt)) continue;
         // ... und tuckert hinterher, wenn Jonah zu weit weg ist (wie der Heli!)
         const dpB = Math.hypot(a.x-player.x, a.z-player.z);
         if (dpB > 48 && !a.ferry) { a.ferry = true; toast('🚜 Dein Mähdrescher kommt hinter dir angetuckert!', 2500); }
