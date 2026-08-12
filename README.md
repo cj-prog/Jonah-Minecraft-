@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Keller, Gefängnis, Freunde-Haus & Tier-Gehege (v146)! 🚔🏠🐾
+  Vier Wünsche auf einmal: 1. Unter der Festung liegt jetzt ein
+  RIESEN-KELLER (61x45, eine einzige große Halle mit Stützpfeilern
+  und Fackeln) - die Treppe hinunter ist am Ost-Ende des Flurs.
+  2. Im Keller wartet das KÖNIGS-GEFÄNGNIS: drei Zellen hinter den
+  neuen GITTERSTÄBEN 🚔 - der Gitter-Block ist auch in der
+  Blockleiste, für eigene Gefängnisse (Räuber reinschubsen!).
+  3. Neben der Festung steht das FREUNDE-HAUS: Ist Jonah in seiner
+  Festung, ziehen seine Abenteuer-Freunde dort ein (Betten, Tisch,
+  Fenster) und warten gemütlich auf ihn. 4. Daneben das TIER-GEHEGE
+  mit Zaun, Tor, Tränke und Blitzmaus-Ecke: Alle zahmen Tiere
+  machen es sich dort bequem, solange Jonah in der Festung ist -
+  und kommen sofort wieder mit, wenn er weiterzieht. Der Burgplan
+  🗺️ zeigt jetzt auch den Keller
 - TUNNEL-Rutschen + OHNE Internet spielen (v145)! 🛝📴 Die Rutschen
   sind jetzt echte Tunnel-Röhren: Boden, Wände und Dach - und sie
   verbinden sich von ganz allein mit ihren Nachbarn (wie der Zaun):
