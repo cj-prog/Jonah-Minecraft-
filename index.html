@@ -343,7 +343,7 @@
 </div>
 <div class="hud" id="planBox">
   <h3>🗺️ Plan der Riesen-Festung</h3>
-  <canvas id="planCanvas" width="740" height="205"></canvas>
+  <canvas id="planCanvas" width="880" height="200"></canvas>
   <button id="planClose">✔ Fertig</button>
 </div>
 <div class="hud" id="paintBox">
@@ -359,7 +359,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 145 &middot; TUNNEL-Rutschen: geschlossene Röhren! 🛝</p>
+    Version 146 &middot; Keller, Gefängnis, Freunde-Haus &amp; Gehege! 🚔🏠🐾</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -405,7 +405,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 145;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 146;                // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -430,7 +430,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RAIL=51, BLUME=52, TREP_N=53, TREP_S=54, TREP_E=55, TREP_W=56,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
-      SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72;
+      SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
+      GITTER=73;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -537,6 +538,10 @@ const BLOCKS = {
     [0,0,0, 1,1,1, 84]] },
   [RUTSCHE_W]: { name:'Tunnel-Rutsche 🛝', tiles:[84,84,84], solid:true, model:[
     [0,0,0, 1,1,1, 84]] },
+  [GITTER]: { name:'Gitterstäbe 🚔 (perfekt für dein Gefängnis!)', tiles:[85,85,85], solid:true, model:[
+    [0.06,0,0.42, 0.18,1,0.58, 85], [0.32,0,0.42, 0.44,1,0.58, 85],
+    [0.56,0,0.42, 0.68,1,0.58, 85], [0.82,0,0.42, 0.94,1,0.58, 85],
+    [0,0.88,0.44, 1,0.98,0.56, 85], [0,0.02,0.44, 1,0.12,0.56, 85]] },
   [POKAL]: { name:'Jubiläums-Pokal 🏆 (100 Versionen JonahCraft!)', tiles:[30,30,30], solid:false, model:[
     [0.2,0,0.2, 0.8,0.12,0.8, 30, 1.3],                 // Sockel
     [0.42,0.12,0.42, 0.58,0.4,0.58, 30, 1.3],           // Stiel
@@ -663,7 +668,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1455,7 +1460,7 @@ function genChunkData(cx, cz, ohneEdits) {
   // KOMPLETT aus unzerstörbaren Schutz-Blöcken (Wände, Böden, Decken, Dach)!
   {
     const B = burgPos();
-    if (!(B.bx+33<x0 || B.bx-33>x0+CS-1 || B.bz+30<z0 || B.bz-25>z0+CS-1)) {
+    if (!(B.bx+54<x0 || B.bx-33>x0+CS-1 || B.bz+30<z0 || B.bz-25>z0+CS-1)) {
       const by = B.base, S_ = SCHUTZ;
       const P = (dx,y,dz,b) => put(B.bx+dx, y, B.bz+dz, b, false);
       // 1) Riesen-Plattform 65x49: Fundament, Schutz-Boden, alles darüber frei
@@ -1619,6 +1624,72 @@ function genChunkData(cx, cz, ohneEdits) {
           P(tx5,f0+2,tz5,TORCH);
       for (const [rx2,rz2] of [[-28,-20],[28,-20],[-28,20],[28,20],[0,-20],[0,20]])
         P(rx2,by+16,rz2,TORCH);
+      // 11) der RIESEN-KELLER unter der Festung ⬇️ + das Königs-Gefängnis 🚔
+      for (let dx=-30; dx<=30; dx++) for (let dz=-22; dz<=22; dz++) {
+        P(dx,by-5,dz,S_);                              // Kellerboden
+        const kw = Math.abs(dx)===30 || Math.abs(dz)===22;
+        for (let y=by-4; y<=by-1; y++) P(dx,y,dz, kw?S_:AIR);
+      }
+      for (const [px2,pz2] of [[-15,-10],[0,-10],[15,-10],[-15,10],[0,10],[15,10]]) {
+        for (let y=by-4; y<=by-1; y++) P(px2,y,pz2,S_);   // Stützpfeiler
+        P(px2+1,by-2,pz2,TORCH); P(px2-1,by-2,pz2,TORCH);
+      }
+      for (const dx of [24,25,26]) for (const dz of [-2,-1]) P(dx,by,dz,AIR);   // Kellerloch (Ost-Flur)
+      for (let i=0; i<5; i++) for (const dz of [-2,-1]) {
+        for (let y=by-4; y<=by-5+i; y++) P(23+i,y,dz,S_);
+        P(23+i,by-4+i,dz,TREP_E);                      // Treppe rauf/runter
+      }
+      P(22,by+2,-3,TORCH);
+      P(21,by+1,3,SIGN);
+      const kks=(B.bx+21)+','+(by+1)+','+(B.bz+3);
+      if (!signTexts.has(kks)) signTexts.set(kks,'⬇️ Hier geht es in den RIESEN-KELLER!');
+      // das Gefängnis (Keller-Westen): 3 Zellen hinter Gitterstäben
+      for (let dz=-20; dz<=-6; dz++) for (let y=by-4; y<=by-1; y++) P(-24,y,dz,GITTER);
+      for (const dz of [-18,-13,-8]) for (let y=by-4; y<=by-3; y++) P(-24,y,dz,AIR);   // Zellen-Türen
+      for (const dz of [-16,-11]) for (let dx=-29; dx<=-25; dx++)
+        for (let y=by-4; y<=by-1; y++) P(dx,y,dz,S_);  // Trennwände
+      P(-23,by-4,-12,SIGN);
+      const gfs=(B.bx-23)+','+(by-4)+','+(B.bz-12);
+      if (!signTexts.has(gfs)) signTexts.set(gfs,'🚔 Königs-Gefängnis - hier kommen freche Räuber rein!');
+      P(-23,by-2,-19,TORCH); P(-23,by-2,-7,TORCH); P(23,by-2,15,TORCH); P(-10,by-2,18,TORCH);
+      P(27,by-4,-20,CHEST); P(25,by-4,-20,CHEST); P(27,by-4,18,CABINET);   // Keller-Lager
+      // 12) das FREUNDE-HAUS neben der Festung 🏠 (auf ebener Wiese)
+      for (let dx=38; dx<=53; dx++) for (let dz=-8; dz<=22; dz++) {
+        const wx=B.bx+dx, wz=B.bz+dz, th=terrainHeight(wx,wz);
+        for (let y=Math.min(th,by)-1; y<by; y++) put(wx,y,wz,DIRT,false);
+        put(wx,by,wz,GRASS,false);
+        for (let y=by+1; y<=by+9; y++) put(wx,y,wz,AIR,false);
+      }
+      for (let dx=40; dx<=50; dx++) for (let dz=-6; dz<=2; dz++) {
+        P(dx,by,dz,PLANK);                             // Holzfußboden
+        const hw = dx===40||dx===50||dz===-6||dz===2;
+        if (hw) for (let y=by+1; y<=by+4; y++) P(dx,y,dz,PLANK);
+        P(dx,by+5,dz,WOOD);                            // Holzdach
+      }
+      for (const [wx2,wz2] of [[42,-6],[46,-6],[42,2],[48,2],[40,-2],[50,-2]])
+        P(wx2,by+2,wz2,GLASS);                         // Fenster
+      P(45,by+1,2,AIR); P(45,by+2,2,AIR);
+      P(45,by+1,2,DOOR); P(45,by+2,2,DOOR_TOP);        // die Haustür
+      P(41,by+1,-5,BED); P(43,by+1,-5,BED); P(47,by+1,-5,BED);
+      P(49,by+1,-5,CABINET);
+      P(48,by+1,-1,TABLE); P(47,by+1,-1,CHAIR); P(49,by+1,-1,CHAIR);
+      P(41,by+3,-1,TORCH); P(48,by+3,1,TORCH);
+      P(43,by+1,3,SIGN);
+      const fhs=(B.bx+43)+','+(by+1)+','+(B.bz+3);
+      if (!signTexts.has(fhs)) signTexts.set(fhs,'🏠 Freunde-Haus - hier wohnen Jonahs Freunde!');
+      // 13) das TIER-GEHEGE 🐾 mit Zaun, Tor und Blitzmaus-Ecke
+      for (let dx=40; dx<=52; dx++) { P(dx,by+1,8,FENCE); P(dx,by+1,20,FENCE); }
+      for (let dz=8; dz<=20; dz++) { P(40,by+1,dz,FENCE); P(52,by+1,dz,FENCE); }
+      P(46,by+1,8,GATE);                               // das Tor
+      P(41,by+1,9,SINK);                               // die Tränke
+      P(44,by+1,19,BLUME); P(49,by+1,12,BLUME); P(42,by+1,15,BLUME);
+      P(50,by+1,18,WOOD); P(51,by+2,18,TORCH);         // Blitzmaus-Eckchen
+      P(51,by+1,19,SIGN);
+      const bms=(B.bx+51)+','+(by+1)+','+(B.bz+19);
+      if (!signTexts.has(bms)) signTexts.set(bms,'🐭 Hier schläft die Blitzmaus!');
+      P(48,by+1,6,SIGN);
+      const ghs=(B.bx+48)+','+(by+1)+','+(B.bz+6);
+      if (!signTexts.has(ghs)) signTexts.set(ghs,'🐾 Jonahs Tier-Gehege');
     }
   }
   // gespeicherte Änderungen des Spielers anwenden.
@@ -2155,6 +2226,10 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x>=6&&x<=9) return vary(255,228,88,14);                     // gelbe Rutsch-Bahn
     if (x===5||x===10) return vary(255,255,240,8);                  // weißer Rand
     return vary(226,62,74,16);
+  });
+  tile(85,(x,y)=>{                                                  // Gitterstäbe 🚔: dunkles Eisen
+    if (x===2||x===7||x===12) return vary(180,186,198,14);          // glänzende Stab-Kanten
+    return vary(74,80,92,14);
   });
   tile(72,(x,y)=>{                                                  // Lava: glühend heiß!
     const n = vnoise(x*0.4, y*0.4, 933);
@@ -3556,6 +3631,14 @@ function parkeInGarage(a, dt) {
   if (a.type==='bagger') { a.ph += dt*8; }
   return true;
 }
+// 🏠🐾 Ist Jonah in seiner Festung, gehen Freunde ins Freunde-Haus und
+// Tiere ins Gehege - jeder sucht sich dort seinen Lieblingsplatz aus.
+function heimPlatz(a, x0, xr, z0, zr) {
+  const B = burgPos();
+  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 40) { a.heimX = undefined; return null; }
+  if (a.heimX === undefined) { a.heimX = x0 + Math.random()*xr; a.heimZ = z0 + Math.random()*zr; }
+  return [B.bx + a.heimX, B.bz + a.heimZ];
+}
 function updateAnimals(dt) {
   animalSpawnT -= dt;
   if (animalSpawnT<=0) { animalSpawnT=1.5; spawnTick(); }
@@ -3759,18 +3842,21 @@ function updateAnimals(dt) {
     const k = ANIMAL_KIND[a.type];
 
     // Gezähmte Haustiere folgen ihrem Menschen
+    // (außer Jonah ist in seiner Festung - dann ab ins Gehege! 🐾)
     if (a.tame) {
-      const dx=player.x-a.x, dz=player.z-a.z, dp=Math.hypot(dx,dz);
+      const ziel = (a===schulterMaus) ? null : heimPlatz(a, 43, 6, 11, 6);
+      const zx = ziel ? ziel[0] : player.x, zz = ziel ? ziel[1] : player.z;
+      const dx=zx-a.x, dz=zz-a.z, dp=Math.hypot(dx,dz);
       a.t = 9; a.spd = 0;
-      if (dp > 25) {                    // zu weit weg? Herteleportieren!
-        a.x = player.x + (Math.random()*2-1);
-        a.z = player.z + (Math.random()*2-1);
-        a.y = player.y + 1; a.vy = 0;
-      } else if (a.sit || dp < 3) {
+      if (dp > (ziel ? 3 : 25)) {       // zu weit weg? Hinflitzen! (ins Gehege gehts direkt)
+        a.x = zx + (Math.random()*2-1);
+        a.z = zz + (Math.random()*2-1);
+        a.y = (ziel ? burgPos().base : player.y) + 1; a.vy = 0;
+      } else if (a.sit || dp < (ziel ? 1 : 3)) {
         a.walking = false;
       } else {
         a.yaw = Math.atan2(dx,-dz);
-        a.walking = true; a.spd = 3.5;
+        a.walking = true; a.spd = ziel ? 2.6 : 3.5;
       }
     }
 
@@ -3778,18 +3864,26 @@ function updateAnimals(dt) {
     if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
       const dp = Math.hypot(player.x-a.x, player.z-a.z);
       if (a.follow) {                   // Abenteuer-Begleiter!
+        // Ist Jonah in seiner Festung, machen es sich die Freunde
+        // im Freunde-Haus nebenan gemütlich 🏠
+        const heim = heimPlatz(a, 42.5, 6, -4, 4);
+        const zx = heim ? heim[0] : player.x, zz = heim ? heim[1] : player.z;
+        const dpz = Math.hypot(zx-a.x, zz-a.z);
         a.t = 9; a.spd = 0;
-        if (dp > 25) {                  // zu weit zurückgefallen? Herteleportieren
-          a.x = player.x + (Math.random()*2-1);
-          a.z = player.z + (Math.random()*2-1);
-          a.y = player.y + 1; a.vy = 0;
-        } else if (dp > 3) {
-          a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
-          a.walking = true; a.spd = 3.4;
+        if (dpz > (heim ? 3 : 25)) {    // zu weit zurückgefallen? Herteleportieren
+          a.x = zx + (Math.random()*2-1);
+          a.z = zz + (Math.random()*2-1);
+          a.y = (heim ? burgPos().base : player.y) + 1; a.vy = 0;
+        } else if (dpz > (heim ? 1 : 3)) {
+          a.yaw = Math.atan2(zx-a.x, -(zz-a.z));
+          a.walking = true; a.spd = heim ? 2.4 : 3.4;
         } else a.walking = false;
-        if (Math.random() < dt*0.012) { // erzählt unterwegs ab und zu etwas
+        if (!heim && Math.random() < dt*0.012) {   // erzählt unterwegs ab und zu etwas
           const talk = a.type==='kid' ? FRIEND_TALK_KID : FRIEND_TALK;
           toast('❤️ '+a.name+': „'+talk[Math.floor(Math.random()*talk.length)]+'"', 3000);
+        } else if (heim && Math.random() < dt*0.006) {
+          sagen(a, ['Unser Haus ist so gemütlich! 🏠','Wir warten hier auf dich, Jonah!',
+                    'Komm uns besuchen! 😄'][Math.floor(Math.random()*3)], 3);
         }
       } else if (dp<10 && dp>2.2) {
         a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
@@ -4572,27 +4666,41 @@ function openBurgplan() {
   const cv=document.getElementById('planCanvas'), g=cv.getContext('2d');
   g.clearRect(0,0,cv.width,cv.height);
   const ET=[
+    ['Keller',         null],
     ['Erdgeschoss',    [['🚽','Bad'],['👑','Thronsaal'],['🍳','Küche'],['🛋️','Wohnzimmer'],['🚪','Eingang'],['🅿️','Garage']]],
     ['Etage 2',        [['🛏️','Schlafen'],['🕹️','Spielzimmer'],['🏋️','Sport'],['📚','Bücherei'],['🧸','Kinderzimmer'],['🚽','Bad']]],
     ['Etage 3 (+Dach)',[['🛏️','Gäste'],['💰','Schatzkammer'],['🖼️','Galerie'],['🪑','Esszimmer'],['🎉','Festsaal'],['🚽','Bad']]],
   ];
-  const s=3.6, W=61*s, H=45*s;
+  const s=3.3, W=61*s, H=45*s;
   const farben=['#cfe5ff','#ffe2b8','#ffd3d3','#d8f5c8','#f0d8ff','#fff3b0'];
   const R=[[-29,-14,-21,-5],[-13,13,-21,-5],[14,29,-21,-5],
            [-29,-14,5,21],[-13,13,5,21],[14,29,5,21]];
   ET.forEach(([titel,raeume],i)=>{
-    const ox=12+i*(W+24), oy=30;
+    const ox=10+i*(W+16), oy=30;
     const X=dx=>ox+(dx+30)*s, Z=dz=>oy+(dz+22)*s;
     g.fillStyle='#efe0b8'; g.fillRect(ox,oy,W,H);
     g.textAlign='center'; g.textBaseline='middle';
+    if (!raeume) {                      // der Keller: eine Riesen-Halle!
+      g.fillStyle='#d8d2c2'; g.fillRect(ox,oy,W,H);
+      g.strokeStyle='#5a4630'; g.lineWidth=3; g.strokeRect(ox,oy,W,H);
+      g.font='15px sans-serif'; g.fillStyle='#333';
+      g.fillText('🚔', X(-26), Z(-13));
+      g.fillText('🪜', X(25), Z(0));
+      g.fillText('📦', X(26), Z(-19));
+      g.font='bold 10px sans-serif'; g.fillStyle='#4a3a22';
+      g.fillText('Gefängnis', X(-22), Z(-6));
+      g.fillText('Riesen-Halle', X(0), Z(5));
+      g.font='bold 13px sans-serif'; g.fillStyle='#fff'; g.fillText(titel, ox+W/2, oy-13);
+      return;
+    }
     R.forEach((r,ri)=>{ g.fillStyle=farben[ri];
       g.fillRect(X(r[0]),Z(r[2]),(r[1]-r[0]+1)*s,(r[3]-r[2]+1)*s); });
     g.fillStyle='#e8d49a'; g.fillRect(X(-29),Z(-3),59*s,7*s);      // der Flur
     g.strokeStyle='#5a4630'; g.lineWidth=3; g.strokeRect(ox,oy,W,H);
     g.font='13px sans-serif'; g.fillStyle='#333';
     g.fillText('🪜', X(-25), Z(0));                                // Treppe West
-    if (i>=1) g.fillText('🪜', X(25), Z(0));                       // Treppe Ost
-    if (i===0) { g.fillText('🚪', X(0), Z(20)); g.fillText('🤫', X(22), Z(-19)); }
+    g.fillText('🪜', X(25), Z(0));                                 // Treppe Ost
+    if (i===1) { g.fillText('🚪', X(0), Z(20)); g.fillText('🤫', X(22), Z(-19)); }
     raeume.forEach((rm,ri)=>{ const r=R[ri];
       const mx=X((r[0]+r[1])/2), mz=Z((r[2]+r[3])/2);
       g.font='15px sans-serif'; g.fillStyle='#333'; g.fillText(rm[0], mx, mz-7);
@@ -6578,6 +6686,7 @@ const MAP_BLOCK_COL = {
   [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
+  [GITTER]:'#5a6070',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -8657,6 +8766,10 @@ const ICONS = {
   [RUTSCHE_N]: iconURL(g=>{ g.fillStyle='#e23e4a'; g.fillRect(1,1,14,14);   // Tunnel-Röhre
     g.fillStyle='#7a1e26'; g.fillRect(4,4,8,9);                             // dunkles Tunnel-Loch
     g.fillStyle='#ffe458'; g.fillRect(4,12,8,1); g.fillRect(1,1,14,2); }),
+  [GITTER]: iconURL(g=>{ g.fillStyle='#4a505c';
+    g.fillRect(0,1,16,2); g.fillRect(0,13,16,2);                            // Rahmen oben/unten
+    for (const gx of [2,6,10,14]) g.fillRect(gx,1,2,14);                    // die Stäbe
+    g.fillStyle='#9aa2b0'; for (const gx of [2,6,10,14]) g.fillRect(gx,1,1,14); }),
   [BLUME]: iconURL(g=>{ g.fillStyle='#3f8f2e'; g.fillRect(7,8,2,7); g.fillRect(4,10,3,2);
     g.fillStyle='#e04848'; g.fillRect(5,2,6,6); g.fillRect(3,4,10,2); g.fillRect(7,0,2,10);
     g.fillStyle='#f5d93c'; g.fillRect(6,3,4,4); }),
