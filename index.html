@@ -362,7 +362,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 147 &middot; Schwebe-Modus, Riesen-Turm &amp; Wendeltreppe! 🎈🗼</p>
+    Version 148 &middot; Schwebe-Sachen kommen mit dir mit! 🎈🚶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -408,7 +408,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 147;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 148;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6277,14 +6277,17 @@ function toggleSchweb() {
   schwebMode = !schwebMode;
   if (!schwebMode) schwebZiel = null;
   document.getElementById('schwebBtn').classList.toggle('on', schwebMode);
-  toast(schwebMode ? '🎈 Schwebe-Modus! Halte auf irgendetwas GEDRÜCKT - es schwebt nach oben: Blöcke, Tiere, sogar Menschen! Loslassen = plumps.'
+  toast(schwebMode ? '🎈 Schwebe-Modus! Halte auf irgendetwas GEDRÜCKT - es schwebt: Blöcke, Tiere, sogar Menschen! Lauf dabei los - es kommt mit dir mit! Loslassen = plumps.'
                    : '🎈 Schwebe-Modus aus.', 3800);
   blip(schwebMode?750:350, 0.08);
 }
+let schwebPrev = null, schwebAcc = null;
 function schwebStart(dir) {             // was hat Jonah erwischt?
   const e = eyePos();
   const hit = raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH*2,false);
   const eHit = rayEntity(e, dir, hit ? hit.t+0.5 : REACH*2);
+  schwebPrev = [player.x, player.y, player.z];
+  schwebAcc = {x:0, y:0, z:0};
   if (eHit) { schwebZiel = { ent: eHit.a }; blip(700,0.06); return true; }
   if (hit && hit.block!==WATER && hit.block!==LAVA && hit.y>CH_MIN) {
     schwebZiel = { x:hit.x, y:hit.y, z:hit.z, block:getBlock(hit.x,hit.y,hit.z) };
@@ -6292,29 +6295,59 @@ function schwebStart(dir) {             // was hat Jonah erwischt?
   }
   return false;
 }
+// der gehaltene Block wandert eine Zelle weiter (wenn dort Platz ist)
+function schwebMoveBlock(nx, ny, nz) {
+  const {x,y,z,block} = schwebZiel;
+  if (getBlock(x,y,z)!==block) return;              // Block ist weg? Dann nichts tun
+  if (ny <= CH_MIN || ny >= CH-1) return;
+  if (getBlock(nx,ny,nz)!==AIR) return;
+  if (nx+1 > player.x-0.35 && nx < player.x+0.35 && // nie in Jonah hineinschieben!
+      nz+1 > player.z-0.35 && nz < player.z+0.35 &&
+      ny+1 > player.y && ny < player.y+1.8) return;
+  setBlock(x,y,z,AIR); setBlock(nx,ny,nz,block);
+  const k0=x+','+y+','+z, k1=nx+','+ny+','+nz;      // Schilder & Co. wandern mit
+  for (const M of [signTexts, paintings, rotations, cabinets])
+    if (M.has(k0)) { M.set(k1, M.get(k0)); M.delete(k0); }
+  pruefeNachbarn(x,y,z);
+  schwebZiel.x=nx; schwebZiel.y=ny; schwebZiel.z=nz;
+  blip(320 + (ny%24)*14, 0.04);
+}
 function schwebTick(dt) {               // jeden Frame, solange gedrückt gehalten
   if (!schwebZiel) return;
+  // Jonahs eigene Bewegung nimmt das Schwebe-Ding mit:
+  // läuft er nach vorne oder fliegt er runter, kommt es einfach mit!
+  const dpx = player.x-schwebPrev[0], dpy = player.y-schwebPrev[1],
+        dpz = player.z-schwebPrev[2];
+  schwebPrev = [player.x, player.y, player.z];
   if (schwebZiel.ent) {                 // Tiere und Menschen schweben sanft hoch
     const a = schwebZiel.ent;
     if (!animals.includes(a)) { schwebZiel = null; return; }
     const k = ANIMAL_KIND[a.type] || {};
-    if (!collideBox(a.x, a.y + 2.6*dt, a.z, k.half||0.4, k.height||1.6))
-      a.y += 2.6*dt;
+    const h = k.half||0.4, hh = k.height||1.6;
+    if (dpx && !collideBox(a.x+dpx, a.y, a.z, h, hh)) a.x += dpx;
+    if (dpz && !collideBox(a.x, a.y, a.z+dpz, h, hh)) a.z += dpz;
+    const dy = dpy + 2.6*dt;            // dazu steigt es wie ein Ballon
+    if (!collideBox(a.x, a.y+dy, a.z, h, hh)) a.y += dy;
     a.vy = 0; a.onGround = false;
     return;
   }
-  schwebBlockT -= dt;                   // Blöcke steigen Stufe für Stufe
-  if (schwebBlockT > 0) return;
-  schwebBlockT = 0.3;
-  const {x,y,z} = schwebZiel;
-  if (getBlock(x,y,z)!==schwebZiel.block || y+1>=CH-1 || getBlock(x,y+1,z)!==AIR) return;
-  setBlock(x,y,z,AIR); setBlock(x,y+1,z,schwebZiel.block);
-  const k0=x+','+y+','+z, k1=x+','+(y+1)+','+z;   // Schilder & Co. schweben mit
-  for (const M of [signTexts, paintings, rotations, cabinets])
-    if (M.has(k0)) { M.set(k1, M.get(k0)); M.delete(k0); }
-  pruefeNachbarn(x,y,z);
-  schwebZiel.y = y+1;
-  blip(320 + (schwebZiel.y%24)*14, 0.04);
+  schwebAcc.x += dpx; schwebAcc.y += dpy; schwebAcc.z += dpz;
+  schwebBlockT -= dt;                   // Blöcke steigen Stufe für Stufe...
+  if (schwebBlockT <= 0) { schwebBlockT = 0.3; schwebAcc.y += 1; }
+  let runden = 0;                       // ...und folgen Jonah Zelle für Zelle
+  while (runden++ < 6) {
+    let bewegt = false;
+    for (const ax of ['x','y','z']) {
+      if (Math.abs(schwebAcc[ax]) < 1) continue;
+      const s = schwebAcc[ax] > 0 ? 1 : -1;
+      schwebAcc[ax] -= s;
+      schwebMoveBlock(schwebZiel.x + (ax==='x'?s:0),
+                      schwebZiel.y + (ax==='y'?s:0),
+                      schwebZiel.z + (ax==='z'?s:0));
+      bewegt = true;
+    }
+    if (!bewegt) break;
+  }
 }
 
 // Selfie-Ansicht 🤳: die Kamera schaut dich von vorne an!

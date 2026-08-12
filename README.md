@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Schwebe-Sachen kommen MIT (v148)! 🎈🚶 Der Schwebe-Modus kann
+  jetzt richtig tragen: Während Jonah etwas gedrückt hält und
+  losläuft (oder fliegt), kommt das schwebende Ding einfach mit -
+  nach vorne, zur Seite, nach oben und nach unten! Blöcke wandern
+  dabei Zelle für Zelle hinterher (Schilder nehmen ihren Text mit),
+  Tiere und Menschen schweben ganz weich - und steigen nebenbei
+  weiter wie ein Ballon. Loslassen = plumps, wie immer
 - Schwebe-Modus, Riesen-Turm & Wendeltreppe (v147)! 🎈🗼 Wieder
   vier Wünsche: 1. Räuber versteinern NICHT mehr - sie bleiben
   freche Räuber, die man fangen und ins Gefängnis stecken kann.
