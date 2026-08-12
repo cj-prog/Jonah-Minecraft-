@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Schwebe-Modus, Riesen-Turm & Wendeltreppe (v147)! 🎈🗼 Wieder
+  vier Wünsche: 1. Räuber versteinern NICHT mehr - sie bleiben
+  freche Räuber, die man fangen und ins Gefängnis stecken kann.
+  2. ALLE Freunde (auch die, die gerade nicht mit auf Reisen sind)
+  kommen ins Freunde-Haus, sobald Jonah in seiner Festung ist.
+  3. Der SCHWEBE-MODUS 🎈: Knopf antippen, dann auf irgendetwas
+  GEDRÜCKT HALTEN - Blöcke, Tiere, sogar Menschen schweben langsam
+  nach oben! Loslassen = plumps. 4. Der KÖNIGS-TURM 🗼: direkt
+  neben der Festung steht jetzt ein 10x12-Blöcke-Turm, der vom
+  tiefsten Weltboden bis fast ganz in den Himmel reicht (über 250
+  Blöcke!). Innen führt eine WENDELTREPPE mit Fackeln einmal ganz
+  hoch (Aussichts-Plattform mit Zaun) und ganz runter (Schatz-
+  Truhen am tiefsten Punkt der Welt!)
 - Keller, Gefängnis, Freunde-Haus & Tier-Gehege (v146)! 🚔🏠🐾
   Vier Wünsche auf einmal: 1. Unter der Festung liegt jetzt ein
   RIESEN-KELLER (61x45, eine einzige große Halle mit Stützpfeilern
