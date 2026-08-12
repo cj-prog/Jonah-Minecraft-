@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Schweben: antippen, wischen, hinterherfliegen (v149)! 🎈✨ Der
+  Schwebe-Modus ist jetzt viel schlauer: Einmal ANTIPPEN - und das
+  Ding (Block, Tier oder Mensch) schwebt los und fliegt Jonah
+  überall hinterher, wie ein Ballon an der Schnur. Umdrehen und
+  weiterlaufen geht dabei ganz normal! Auf dem Bildschirm HOCH und
+  RUNTER WISCHEN hebt und senkt das schwebende Ding (die Kamera
+  bleibt dabei ruhig). Steht ein Hügel im Weg, schwebt es einfach
+  drüber. Nochmal antippen = plumps: Tiere landen weich, lose
+  Blöcke sausen zu Boden. So kann man Sachen richtig umziehen!
 - Schwebe-Sachen kommen MIT (v148)! 🎈🚶 Der Schwebe-Modus kann
   jetzt richtig tragen: Während Jonah etwas gedrückt hält und
   losläuft (oder fliegt), kommt das schwebende Ding einfach mit -

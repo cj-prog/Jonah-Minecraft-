@@ -362,7 +362,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 148 &middot; Schwebe-Sachen kommen mit dir mit! 🎈🚶</p>
+    Version 149 &middot; Schweben: antippen, wischen, hinterherfliegen! 🎈✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -408,7 +408,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 148;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 149;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6275,25 +6275,39 @@ function tryRotate(hit) {
 let schwebMode = false, schwebZiel = null, schwebBlockT = 0;
 function toggleSchweb() {
   schwebMode = !schwebMode;
-  if (!schwebMode) schwebZiel = null;
+  if (!schwebMode) schwebDrop();
   document.getElementById('schwebBtn').classList.toggle('on', schwebMode);
-  toast(schwebMode ? '🎈 Schwebe-Modus! Halte auf irgendetwas GEDRÜCKT - es schwebt: Blöcke, Tiere, sogar Menschen! Lauf dabei los - es kommt mit dir mit! Loslassen = plumps.'
+  toast(schwebMode ? '🎈 Schwebe-Modus! Tippe etwas an - es schwebt und folgt dir überall hin! Hoch/runter WISCHEN = heben und senken. Nochmal antippen = plumps.'
                    : '🎈 Schwebe-Modus aus.', 3800);
   blip(schwebMode?750:350, 0.08);
 }
-let schwebPrev = null, schwebAcc = null;
-function schwebStart(dir) {             // was hat Jonah erwischt?
+let schwebHoehe = 0;                    // Wunsch-Höhe (mit Wischen steuerbar)
+function schwebGrab(dir) {              // einmal antippen = es schwebt los!
   const e = eyePos();
   const hit = raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH*2,false);
   const eHit = rayEntity(e, dir, hit ? hit.t+0.5 : REACH*2);
-  schwebPrev = [player.x, player.y, player.z];
-  schwebAcc = {x:0, y:0, z:0};
-  if (eHit) { schwebZiel = { ent: eHit.a }; blip(700,0.06); return true; }
+  if (eHit) {
+    schwebZiel = { ent: eHit.a };
+    schwebHoehe = eHit.a.y + 1.6;       // erstmal ein Stück hochheben
+    blip(700,0.06); return true;
+  }
   if (hit && hit.block!==WATER && hit.block!==LAVA && hit.y>CH_MIN) {
     schwebZiel = { x:hit.x, y:hit.y, z:hit.z, block:getBlock(hit.x,hit.y,hit.z) };
+    schwebHoehe = hit.y + 2;
     schwebBlockT = 0; blip(650,0.06); return true;
   }
   return false;
+}
+function schwebDrop() {                 // nochmal antippen = plumps!
+  if (!schwebZiel) return;
+  const z = schwebZiel;
+  schwebZiel = null;
+  if (!z.ent && FALLBAR.has(z.block)) starteFall(z.x, z.y, z.z);
+  blip(240,0.08);
+}
+function schwebWisch(dy) {              // hoch/runter wischen = heben und senken
+  if (!schwebZiel) return;
+  schwebHoehe = Math.max(CH_MIN+2, Math.min(CH-2, schwebHoehe - dy*0.02));
 }
 // der gehaltene Block wandert eine Zelle weiter (wenn dort Platz ist)
 function schwebMoveBlock(nx, ny, nz) {
@@ -6312,41 +6326,58 @@ function schwebMoveBlock(nx, ny, nz) {
   schwebZiel.x=nx; schwebZiel.y=ny; schwebZiel.z=nz;
   blip(320 + (ny%24)*14, 0.04);
 }
-function schwebTick(dt) {               // jeden Frame, solange gedrückt gehalten
+function schwebTick(dt) {               // das Schwebe-Ding folgt Jonah wie ein Ballon
   if (!schwebZiel) return;
-  // Jonahs eigene Bewegung nimmt das Schwebe-Ding mit:
-  // läuft er nach vorne oder fliegt er runter, kommt es einfach mit!
-  const dpx = player.x-schwebPrev[0], dpy = player.y-schwebPrev[1],
-        dpz = player.z-schwebPrev[2];
-  schwebPrev = [player.x, player.y, player.z];
-  if (schwebZiel.ent) {                 // Tiere und Menschen schweben sanft hoch
+  if (schwebZiel.ent) {                 // Tiere und Menschen schweben hinterher
     const a = schwebZiel.ent;
     if (!animals.includes(a)) { schwebZiel = null; return; }
     const k = ANIMAL_KIND[a.type] || {};
     const h = k.half||0.4, hh = k.height||1.6;
-    if (dpx && !collideBox(a.x+dpx, a.y, a.z, h, hh)) a.x += dpx;
-    if (dpz && !collideBox(a.x, a.y, a.z+dpz, h, hh)) a.z += dpz;
-    const dy = dpy + 2.6*dt;            // dazu steigt es wie ein Ballon
-    if (!collideBox(a.x, a.y+dy, a.z, h, hh)) a.y += dy;
-    a.vy = 0; a.onGround = false;
+    const dx = player.x-a.x, dz = player.z-a.z, dist = Math.hypot(dx,dz);
+    if (dist > 3.2) {                   // zu weit weg? Hinterherschweben!
+      const spd = Math.min(9, (dist-3.2)*3 + 2) * dt;
+      const mx = dx/dist*spd, mz = dz/dist*spd;
+      const okX = !collideBox(a.x+mx, a.y, a.z, h, hh);
+      const okZ = !collideBox(a.x, a.y, a.z+mz, h, hh);
+      if (okX) a.x += mx;
+      if (okZ) a.z += mz;
+      if (!okX && !okZ)                 // Hindernis? Einfach drüberschweben!
+        schwebHoehe = Math.max(schwebHoehe, a.y + 1.5);
+      a.yaw = Math.atan2(dx, -dz);      // es schaut zu Jonah
+    }
+    let dy = schwebHoehe - a.y;         // sanft zur Wunsch-Höhe
+    dy = Math.max(-4*dt, Math.min(4*dt, dy));
+    if (dy && !collideBox(a.x, a.y+dy, a.z, h, hh)) a.y += dy;
+    else if (dy) schwebHoehe = a.y;     // Decke oder Boden im Weg? Höhe merken
+    a.vy = 0; a.onGround = false; a.walking = false; a.kx = a.kz = 0;
     return;
   }
-  schwebAcc.x += dpx; schwebAcc.y += dpy; schwebAcc.z += dpz;
-  schwebBlockT -= dt;                   // Blöcke steigen Stufe für Stufe...
-  if (schwebBlockT <= 0) { schwebBlockT = 0.3; schwebAcc.y += 1; }
-  let runden = 0;                       // ...und folgen Jonah Zelle für Zelle
-  while (runden++ < 6) {
-    let bewegt = false;
-    for (const ax of ['x','y','z']) {
-      if (Math.abs(schwebAcc[ax]) < 1) continue;
-      const s = schwebAcc[ax] > 0 ? 1 : -1;
-      schwebAcc[ax] -= s;
-      schwebMoveBlock(schwebZiel.x + (ax==='x'?s:0),
-                      schwebZiel.y + (ax==='y'?s:0),
-                      schwebZiel.z + (ax==='z'?s:0));
-      bewegt = true;
+  schwebBlockT -= dt;                   // Blöcke wandern Zelle für Zelle
+  if (schwebBlockT > 0) return;
+  schwebBlockT = 0.12;
+  const {x,y,z} = schwebZiel;
+  const bx = x+0.5, bz = z+0.5;
+  const vx = bx-player.x, vz = bz-player.z, L = Math.hypot(vx,vz);
+  let tx = x, tz = z;                   // Ziel: 3 Blöcke hinter Jonah bleiben
+  if (L > 3.6) { tx = Math.floor(player.x + vx/L*3); tz = Math.floor(player.z + vz/L*3); }
+  const ty = Math.max(CH_MIN+1, Math.min(CH-2, Math.round(schwebHoehe)));
+  const deltas = [ ['x', tx-x], ['y', ty-y], ['z', tz-z] ]
+    .filter(d=>d[1]!==0)
+    .sort((a2,b2)=>Math.abs(b2[1])-Math.abs(a2[1]));
+  let bewegt = false;
+  for (const [ax,d] of deltas) {        // die wichtigste Richtung zuerst
+    const s = d>0?1:-1;
+    const alt = {x:schwebZiel.x, y:schwebZiel.y, z:schwebZiel.z};
+    schwebMoveBlock(schwebZiel.x + (ax==='x'?s:0),
+                    schwebZiel.y + (ax==='y'?s:0),
+                    schwebZiel.z + (ax==='z'?s:0));
+    if (schwebZiel.x!==alt.x || schwebZiel.y!==alt.y || schwebZiel.z!==alt.z) {
+      bewegt = true; break;
     }
-    if (!bewegt) break;
+  }
+  if (!bewegt && (tx!==x || tz!==z)) {  // Hügel im Weg? Einfach drüberschweben!
+    schwebMoveBlock(x, y+1, z);
+    if (schwebZiel.y === y+1) schwebHoehe = Math.max(schwebHoehe, y+1.2);
   }
 }
 
@@ -9168,7 +9199,6 @@ canvas.addEventListener('touchstart',e=>{
     } else if (look.id===null) {
       look.id=t.identifier; look.lx=look.sx=t.clientX; look.ly=look.sy=t.clientY;
       look.t0=performance.now(); look.moved=0;
-      if (schwebMode) schwebStart(screenRay(t.clientX,t.clientY));   // 🎈 festhalten!
     }
   }
 },{passive:false});
@@ -9185,10 +9215,9 @@ canvas.addEventListener('touchmove',e=>{
     } else if (t.identifier===look.id) {
       const dx=t.clientX-look.lx, dy=t.clientY-look.ly;
       look.moved+=Math.abs(dx)+Math.abs(dy);
-      if (!schwebZiel) {                // beim Schweben bleibt die Kamera ruhig
-        yaw += dx*0.0045;
-        pitch = Math.max(-1.55, Math.min(1.55, pitch + dy*0.0045));
-      }
+      yaw += dx*0.0045;                 // umdrehen geht immer!
+      if (schwebMode && schwebZiel) schwebWisch(dy);   // 🎈 wischen = heben/senken
+      else pitch = Math.max(-1.55, Math.min(1.55, pitch + dy*0.0045));
       look.lx=t.clientX; look.ly=t.clientY;
     }
   }
@@ -9202,8 +9231,11 @@ function touchEnd(e){
       joyBase.style.display='none'; joyKnob.style.display='none';
     } else if (t.identifier===look.id) {
       const dt=performance.now()-look.t0;
-      if (schwebMode) {                        // 🎈 loslassen = Ziel fallen lassen
-        schwebZiel = null;
+      if (schwebMode) {                        // 🎈 tippen = schweben ODER plumps
+        if (dt<350 && look.moved<14) {
+          if (schwebZiel) schwebDrop();
+          else schwebGrab(screenRay(t.clientX,t.clientY));
+        }
         look.id=null;
         continue;
       }
@@ -9303,10 +9335,8 @@ canvas.addEventListener('mousedown',e=>{
   if (!isTouch && document.pointerLockElement!==canvas) { canvas.requestPointerLock(); return; }
   if (document.pointerLockElement===canvas) {
     const dir=forwardVec();
-    if (schwebMode && e.button===0) {   // 🎈 Maus gedrückt halten = schweben
-      schwebStart(dir);
-      const up=()=>{ schwebZiel=null; window.removeEventListener('mouseup',up); };
-      window.addEventListener('mouseup',up);
+    if (schwebMode && e.button===0) {   // 🎈 Klick = schweben, nochmal = plumps
+      if (schwebZiel) schwebDrop(); else schwebGrab(dir);
       return;
     }
     if (e.button===0 && e.shiftKey) { tryRelease(dir); return; }   // Shift+Klick = freilassen
@@ -9317,7 +9347,8 @@ canvas.addEventListener('mousedown',e=>{
 addEventListener('mousemove',e=>{
   if (document.pointerLockElement===canvas) {
     yaw += e.movementX*0.0026;
-    pitch = Math.max(-1.55, Math.min(1.55, pitch + e.movementY*0.0026));
+    if (schwebMode && schwebZiel) schwebWisch(e.movementY);   // 🎈 heben/senken
+    else pitch = Math.max(-1.55, Math.min(1.55, pitch + e.movementY*0.0026));
   }
 });
 addEventListener('contextmenu',e=>e.preventDefault());
