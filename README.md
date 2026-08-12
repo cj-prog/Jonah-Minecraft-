@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Burg-Mauer mit Wach-Türmen + WIRKLICH alles drehbar (v150)! 🧱🔄
+  Zwei Wünsche: 1. Um ALLES, was zur Riesen-Festung gehört (Festung,
+  Königs-Turm, Freunde-Haus, Tier-Gehege), läuft jetzt eine große
+  Schutz-Mauer mit Zinnen - und an jeder der 4 Ecken steht ein
+  Wach-Turm (innen hohl, mit Tür, Fackel und Guck-Fenstern oben).
+  Auf jeder Seite gibt es einen offenen Torbogen zum Durchgehen.
+  2. Der Dreh-Modus 🔄 dreht jetzt WIRKLICH alles: auch Türen
+  (beide Hälften zusammen!), Garagentore - und sogar die
+  Monster-Statuen und andere Figuren: einfach im Dreh-Modus
+  antippen. Nur Wasser und Lava zerfließen weiter ungedreht
 - Schweben: antippen, wischen, hinterherfliegen (v149)! 🎈✨ Der
   Schwebe-Modus ist jetzt viel schlauer: Einmal ANTIPPEN - und das
   Ding (Block, Tier oder Mensch) schwebt los und fliegt Jonah

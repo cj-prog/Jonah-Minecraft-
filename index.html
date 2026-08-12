@@ -362,7 +362,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 149 &middot; Schweben: antippen, wischen, hinterherfliegen! 🎈✨</p>
+    Version 150 &middot; Burg-Mauer mit Wach-Türmen &amp; ALLES drehbar! 🧱🔄</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -408,7 +408,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 149;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 150;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1463,7 +1463,7 @@ function genChunkData(cx, cz, ohneEdits) {
   // KOMPLETT aus unzerstörbaren Schutz-Blöcken (Wände, Böden, Decken, Dach)!
   {
     const B = burgPos();
-    if (!(B.bx+54<x0 || B.bx-52>x0+CS-1 || B.bz+30<z0 || B.bz-25>z0+CS-1)) {
+    if (!(B.bx+66<x0 || B.bx-64>x0+CS-1 || B.bz+36<z0 || B.bz-36>z0+CS-1)) {
       const by = B.base, S_ = SCHUTZ;
       const P = (dx,y,dz,b) => put(B.bx+dx, y, B.bz+dz, b, false);
       // 1) Riesen-Plattform 65x49: Fundament, Schutz-Boden, alles darüber frei
@@ -1747,6 +1747,60 @@ function genChunkData(cx, cz, ohneEdits) {
         P(-41,by+1,2,SIGN);
         const tos=(B.bx-41)+','+(by+1)+','+(B.bz+2);
         if (!signTexts.has(tos)) signTexts.set(tos,'🗼 Königs-Turm: Wendeltreppe bis in den Himmel - und bis ganz nach unten!');
+      }
+      // 15) die GROSSE BURG-MAUER 🧱: einmal rund um ALLES (Festung, Königs-Turm,
+      // Freunde-Haus und Gehege) - mit Zinnen, 4 Torbögen und 4 Wach-Türmen!
+      {
+        const M0x=-60, M1x=62, M0z=-32, M1z=32;
+        // jede Seite bekommt ihr Tor auf der Höhe des Bodens dort
+        const torB = {};
+        for (const [seite,fx,fz,lx] of [['N',0,M0z,1],['S',0,M1z,1],['W',M0x,0,0],['O',M1x,0,0]]) {
+          let t2 = CH_MIN;
+          for (let o=-2; o<=2; o++)
+            t2 = Math.max(t2, terrainHeight(B.bx+(lx?o:fx), B.bz+(lx?fz:o)));
+          torB[seite] = Math.min(Math.max(t2, by), by+1);
+        }
+        const saeule = (dx,dz) => {
+          const wx=B.bx+dx, wz=B.bz+dz;
+          const seite = dz===M0z&&Math.abs(dx)<=2 ? 'N' : dz===M1z&&Math.abs(dx)<=2 ? 'S'
+                      : dx===M0x&&Math.abs(dz)<=2 ? 'W' : dx===M1x&&Math.abs(dz)<=2 ? 'O' : null;
+          const g = Math.min(terrainHeight(wx,wz), by);
+          for (let y=g; y<=by+6; y++) {
+            const imTor = seite && y>=torB[seite]+1 && y<=torB[seite]+4;
+            put(wx, y, wz, imTor ? AIR : S_, false);
+          }
+          if (((dx+dz)&1)===0) put(wx, by+7, wz, S_, false);   // Zinnen!
+        };
+        for (let dx=M0x; dx<=M1x; dx++) { saeule(dx,M0z); saeule(dx,M1z); }
+        for (let dz=M0z+1; dz<=M1z-1; dz++) { saeule(M0x,dz); saeule(M1x,dz); }
+        // 4 Wach-Türme an den Ecken (7x7, innen hohl, mit Tür und Fackel)
+        for (const [cx2,cz2] of [[M0x,M0z],[M0x,M1z],[M1x,M0z],[M1x,M1z]]) {
+          const wx0=B.bx+cx2, wz0=B.bz+cz2;
+          let gmin=by, gmax=CH_MIN;
+          for (let ax=-3; ax<=3; ax++) for (let az=-3; az<=3; az++) {
+            const t3=terrainHeight(wx0+ax, wz0+az);
+            gmin=Math.min(gmin,t3); gmax=Math.max(gmax,t3);
+          }
+          gmax = Math.min(gmax, by+3);            // falls ein Hügel drunter liegt
+          for (let ax=-3; ax<=3; ax++) for (let az=-3; az<=3; az++) {
+            const rand = Math.abs(ax)===3 || Math.abs(az)===3;
+            for (let y=gmin-1; y<=by+11; y++)
+              put(wx0+ax, y, wz0+az,
+                  y===by+11 ? S_ :                 // das Dach
+                  y<=gmax   ? S_ :                 // fester Sockel und Fußboden
+                  rand      ? S_ : AIR, false);    // Wände - innen hohl!
+            if (rand && !(Math.abs(ax)===3 && Math.abs(az)===3) && (((ax+az)&1)===0))
+              put(wx0+ax, by+12, wz0+az, S_, false);   // Zinnen obendrauf
+          }
+          const sx2 = cx2<0 ? 3 : -3, sz2 = cz2<0 ? 2 : -2;
+          for (let y=gmax+1; y<=gmax+2; y++)       // die Tür zeigt zur Festung
+            put(wx0+sx2, y, wz0+sz2, AIR, false);
+          put(wx0, gmax+1, wz0, TORCH, false);     // gemütliches Fackel-Licht
+          for (let y=by+8; y<=by+9; y++) {         // Guck-Fenster oben
+            put(wx0+3, y, wz0, AIR, false); put(wx0-3, y, wz0, AIR, false);
+            put(wx0, y, wz0+3, AIR, false); put(wx0, y, wz0-3, AIR, false);
+          }
+        }
       }
     }
   }
@@ -6236,7 +6290,7 @@ let rotMode = false;
 function toggleRot() {
   rotMode = !rotMode;
   document.getElementById('rotBtn').classList.toggle('on', rotMode);
-  toast(rotMode ? '🔄 Dreh-Modus! Tippe IRGENDETWAS an – ALLES dreht sich: Möbel, Treppen, Rutschen, jeden Block! (Knopf nochmal = fertig)'
+  toast(rotMode ? '🔄 Dreh-Modus! Tippe IRGENDETWAS an – ALLES dreht sich: Türen, Tore, Statuen, Möbel, jeden Block! (Knopf nochmal = fertig)'
                 : '🔄 Dreh-Modus aus.', 3400);
   blip(rotMode?600:350, 0.07);
 }
@@ -6255,17 +6309,28 @@ function tryRotate(hit) {
   } else if (b===RAIL) {
     toast('🎢 Schienen drehen sich von ganz allein zu ihren Nachbarn!', 2500);
     return;
-  } else if (BLOCKS[b] && !DOOR_PARTS.includes(b) && b!==GATE && b!==GATE_OPEN &&
-             b!==WATER && b!==LAVA) {   // ALLES andere dreht sich auch - jeder Block!
-    rotations.set(key, ((rotations.get(key)||0)+1)%4);
-    if (!rotations.get(key)) rotations.delete(key);
+  } else if (BLOCKS[b] && b!==WATER && b!==LAVA) {
+    // WIRKLICH alles dreht sich - auch Türen und Garagentore!
+    const r = ((rotations.get(key)||0)+1)%4;
+    const setR = kk => { if (r) rotations.set(kk, r); else rotations.delete(kk); };
+    setR(key);
+    if (DOOR_PARTS.includes(b)) {       // die andere Tür-Hälfte dreht sich mit!
+      const oben = (b===DOOR_TOP || b===DOOR_TOP_OPEN);
+      setR(hit.x+','+(hit.y+(oben?-1:1))+','+hit.z);
+    }
     const ch=getChunk(hit.x>>4, hit.z>>4);
     if (ch) ch.dirty = true;            // neu zeichnen
     scheduleSave();
   } else {
-    toast('🔄 Das dreht sich lieber nicht: Türen und Tore öffnen sich, Wasser und Lava zerfließen!', 2800);
+    toast('🔄 Nur Wasser und Lava drehen sich nicht - die zerfließen ja sofort!', 2500);
     return;
   }
+  toast('🔄 Gedreht!', 1000);
+  blip(520,0.05); blip(640,0.05);
+}
+function dreheEntity(a) {               // Statuen (und wer sonst stillhält) drehen!
+  a.yaw = (a.yaw + Math.PI/2) % (Math.PI*2);
+  if (a.type==='statue') scheduleSave();
   toast('🔄 Gedreht!', 1000);
   blip(520,0.05); blip(640,0.05);
 }
@@ -8234,7 +8299,12 @@ function doBreak(dir) {
   const scoop = HOTBAR_ITEMS[selSlot]===WATER;
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH,scoop);
   if (repMode) { if (hit) tryRepair(hit); return; }
-  if (rotMode) { if (hit) tryRotate(hit); return; }
+  if (rotMode) {                        // 🔄 auch Statuen und Figuren drehen!
+    const eRot=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
+    if (eRot) dreheEntity(eRot.a);
+    else if (hit) tryRotate(hit);
+    return;
+  }
   const eHit=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
   if (eHit) { hitEntity(eHit.a, dir); return; }
   if (!hit) return;
@@ -8401,7 +8471,11 @@ function doPlace(dir) {
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
   if (!hit) return;
   if (repMode) { tryRepair(hit); return; }
-  if (rotMode) { tryRotate(hit); return; }
+  if (rotMode) {                        // 🔄 auch Statuen und Figuren drehen!
+    const eRot=rayEntity(e, dir, hit.t+0.5);
+    if (eRot) dreheEntity(eRot.a); else tryRotate(hit);
+    return;
+  }
   if (hit.block===SCREEN_BOWL && HOTBAR_ITEMS[selSlot]!==SCREEN_BOWL) {   // Bowling spielen!
     openBowling();
     return;
