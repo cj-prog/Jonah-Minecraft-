@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der ZAUBER-FAHRSTUHL (v151)! 🛗 Neben dem Flur der Riesen-Festung
+  steht jetzt ein echter Fahrstuhl: Er geht vom KELLER bis hoch auf
+  die DACH-TERRASSE und hält auf allen 5 Etagen. Einfach reingehen
+  (auf jeder Etage ist eine offene Tür), die Fahrstuhl-Wand antippen
+  und die Etage aussuchen - dann fährt man ganz von allein hin,
+  mit Fahrstuhl-Summen und "Pling!" beim Ankommen. Drinnen schwebt
+  man wie von Zauberhand und fällt NIE nach unten; mit dem Sprung-
+  und dem Runter-Knopf kann man auch selber steuern. Und das Beste:
+  Der Fahrstuhl-Block ist in der Blockleiste - Jonah kann sich
+  überall eigene Fahrstühle bauen (Schacht aus Fahrstuhl-Wänden,
+  wo eine Lücke ist, hält er an)!
 - Burg-Mauer mit Wach-Türmen + WIRKLICH alles drehbar (v150)! 🧱🔄
   Zwei Wünsche: 1. Um ALLES, was zur Riesen-Festung gehört (Festung,
   Königs-Turm, Freunde-Haus, Tier-Gehege), läuft jetzt eine große
