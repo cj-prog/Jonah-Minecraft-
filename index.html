@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 157 &middot; Die Wolken fangen dich auf! ☁️✨</p>
+    Version 158 &middot; Deine Festung ist wieder da! 🏰🔧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 157;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 158;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -733,12 +733,18 @@ function zauberHoehe(x, z) {            // die Wolken-Ebene schwebt hoch oben
   const h = vnoise(x*0.06+90, z*0.06+40, 611)*0.35;
   return Math.max(70, Math.min(CH-30, Math.floor(104 + b*20 + h*9)));
 }
-function terrainHeight(x, z) {
-  if (weltDim === 1) return zauberHoehe(x, z);
+// Die Höhe in Jonahs NORMALER Welt - egal, in welcher Welt man gerade steht.
+// Alle Landschafts-Sachen (Wälder, Ritterburgen, Berge, die Riesen-Festung)
+// merken sich ihre Plätze; sie müssen immer mit DIESER Höhe rechnen, sonst
+// stünden sie plötzlich auf Wolkenhöhe, wenn man sie aus der Wolkenwelt fragt!
+function terrainHeight0(x, z) {
   const base = fbm(x*0.013, z*0.013);
   const hills = vnoise(x*0.05, z*0.05, 51)*0.3;
-  let h = Math.floor(31 + base*15 + hills*5);
-  return Math.max(2, Math.min(CH-10, h));
+  return Math.max(2, Math.min(CH-10, Math.floor(31 + base*15 + hills*5)));
+}
+function terrainHeight(x, z) {
+  if (weltDim === 1) return zauberHoehe(x, z);
+  return terrainHeight0(x, z);
 }
 // Wälder mit Wasserfall in der Mitte! 🌲💦
 const WFCELL = 144;
@@ -750,7 +756,7 @@ function forestAt(cellX, cellZ) {
   if (hash2(cellX,cellZ,8800) < 0.55) {
     const fx = cellX*WFCELL + 30 + Math.floor(hash2(cellX,cellZ,8801)*84);
     const fz = cellZ*WFCELL + 30 + Math.floor(hash2(cellX,cellZ,8802)*84);
-    const base = terrainHeight(fx,fz);
+    const base = terrainHeight0(fx,fz);
     if (base > SEA+2) {
       const r = 16 + Math.floor(hash2(cellX,cellZ,8803)*7);
       const hoehe = 7 + Math.floor(hash2(cellX,cellZ,8804)*4);
@@ -769,7 +775,7 @@ function inForest(x, z) {
   return null;
 }
 function isTree(x, z) {
-  if (terrainHeight(x,z) <= SEA+1) return false;
+  if (terrainHeight0(x,z) <= SEA+1) return false;
   const f = inForest(x, z);
   if (f && Math.hypot(x-f.fx, z-f.fz) > 6) return hash2(x,z,7777) < 0.06;   // dichter Wald!
   return hash2(x, z, 7777) < 0.007;
@@ -781,11 +787,11 @@ function caveAt(cellX, cellZ) {
   if (hash2(cellX, cellZ, 31337) >= 0.5) return null;
   const ex = cellX*CAVE_CELL + 16 + Math.floor(hash2(cellX,cellZ,31338)*64);
   const ez = cellZ*CAVE_CELL + 16 + Math.floor(hash2(cellX,cellZ,31339)*64);
-  if (terrainHeight(ex,ez) <= SEA+2) return null;
+  if (terrainHeight0(ex,ez) <= SEA+2) return null;
   return { ex, ez, dir: hash2(cellX,cellZ,31340)*Math.PI*2 };
 }
 function cavePath(c) {                  // Tunnel-Kugeln vom Eingang zur Schatzkammer
-  const h = terrainHeight(c.ex, c.ez);
+  const h = terrainHeight0(c.ex, c.ez);
   const pts = [];
   for (let i=0; i<=11; i++) {
     const t = i/11;
@@ -809,7 +815,7 @@ function castleAt(cellX, cellZ) {
   if (hash2(cellX,cellZ,9900) < 0.5) {
     const kx = cellX*KCELL + 40 + Math.floor(hash2(cellX,cellZ,9901)*112);
     const kz = cellZ*KCELL + 40 + Math.floor(hash2(cellX,cellZ,9902)*112);
-    const base = terrainHeight(kx,kz);
+    const base = terrainHeight0(kx,kz);
     if (base > SEA+1) {
       let ok = true;                    // Abstand zu Dörfern halten
       for (let vz=Math.floor((kz-45)/VCELL); vz<=Math.floor((kz+45)/VCELL) && ok; vz++)
@@ -819,7 +825,7 @@ function castleAt(cellX, cellZ) {
         }
       let hmin=999, hmax=-999;          // halbwegs flach?
       for (const [qx,qz] of [[kx-8,kz-8],[kx+8,kz-8],[kx-8,kz+8],[kx+8,kz+8],[kx,kz]]) {
-        const h=terrainHeight(qx,qz); hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
+        const h=terrainHeight0(qx,qz); hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
       }
       if (ok && hmax-hmin<=4) c = { kx, kz, base:hmax };
     }
@@ -836,7 +842,7 @@ function fortressPos() {                // eine geheime Festung pro Welt
   const d = 150 + hash2(8,8,4712)*80;
   let fx = Math.round(Math.cos(ang)*d), fz = Math.round(Math.sin(ang)*d);
   for (let i=0;i<300;i++) {             // auf festes Land schieben
-    if (terrainHeight(fx,fz)>SEA+2 && terrainHeight(fx,fz-26)>SEA+2) break;
+    if (terrainHeight0(fx,fz)>SEA+2 && terrainHeight0(fx,fz-26)>SEA+2) break;
     fx += 5;
   }
   _fort = { fx, fz, gz: fz-26 };        // gz = Tor an der Oberfläche
@@ -852,9 +858,9 @@ function arcadePos() {                  // eine große Spielhalle pro Welt
   const d = 55 + hash2(10,10,8182)*35;
   let ax = Math.round(Math.cos(ang)*d), az = Math.round(Math.sin(ang)*d);
   for (let i=0;i<300;i++) {             // festes Land suchen, Dörfern ausweichen
-    let ok = terrainHeight(ax,az)>SEA+1 && terrainHeight(ax-8,az-6)>SEA+1 &&
-             terrainHeight(ax+8,az+6)>SEA+1 && terrainHeight(ax-8,az+6)>SEA+1 &&
-             terrainHeight(ax+8,az-6)>SEA+1;
+    let ok = terrainHeight0(ax,az)>SEA+1 && terrainHeight0(ax-8,az-6)>SEA+1 &&
+             terrainHeight0(ax+8,az+6)>SEA+1 && terrainHeight0(ax-8,az+6)>SEA+1 &&
+             terrainHeight0(ax+8,az-6)>SEA+1;
     for (let vz=Math.floor((az-30)/VCELL); vz<=Math.floor((az+30)/VCELL) && ok; vz++)
       for (let vx=Math.floor((ax-30)/VCELL); vx<=Math.floor((ax+30)/VCELL) && ok; vx++) {
         const v = villageAt(vx,vz);
@@ -865,7 +871,7 @@ function arcadePos() {                  // eine große Spielhalle pro Welt
   }
   let base = 0;
   for (const [qx,qz] of [[ax,az],[ax-8,az-6],[ax+8,az-6],[ax-8,az+6],[ax+8,az+6]])
-    base = Math.max(base, terrainHeight(qx,qz));
+    base = Math.max(base, terrainHeight0(qx,qz));
   _arc = { ax, az, base };
   _arcSeed = seed;
   return _arc;
@@ -875,6 +881,10 @@ function arcadePos() {                  // eine große Spielhalle pro Welt
 let _burg = null, _burgSeed = null;
 function burgPos() {                    // eine riesige Festung pro Welt
   if (_burg && _burgSeed===seed) return _burg;
+  // WICHTIG: Die Festung steht IMMER in Jonahs normaler Welt. Ohne diese Zeile
+  // würde sie, wenn man sie aus der Wolkenwelt heraus nachschlägt, plötzlich
+  // auf Wolkenhöhe berechnet - und die ganze Burg wäre am falschen Platz!
+  const merkDim = weltDim; weltDim = 0;
   const ang = hash2(77,77,9911)*Math.PI*2;
   let bx = 0, bz = 0;
   for (let i=0;i<600;i++) {             // festes Land, GANZ weit weg von allen Dörfern:
@@ -883,7 +893,7 @@ function burgPos() {                    // eine riesige Festung pro Welt
     bx = Math.round(Math.cos(a)*d); bz = Math.round(Math.sin(a)*d);
     let ok = true;
     for (const [qx,qz] of [[0,0],[-32,-24],[32,-24],[-32,24],[32,24],[0,30]])
-      if (terrainHeight(bx+qx,bz+qz)<=SEA+1) ok=false;
+      if (terrainHeight0(bx+qx,bz+qz)<=SEA+1) ok=false;
     for (let vz=Math.floor((bz-100)/VCELL); vz<=Math.floor((bz+100)/VCELL) && ok; vz++)
       for (let vx=Math.floor((bx-100)/VCELL); vx<=Math.floor((bx+100)/VCELL) && ok; vx++) {
         const v = villageAt(vx,vz);
@@ -893,9 +903,10 @@ function burgPos() {                    // eine riesige Festung pro Welt
   }
   let base = 0;
   for (const [qx,qz] of [[0,0],[-30,-22],[30,-22],[-30,22],[30,22],[0,-22],[0,22],[-30,0],[30,0]])
-    base = Math.max(base, terrainHeight(bx+qx,bz+qz));
+    base = Math.max(base, terrainHeight0(bx+qx,bz+qz));
   _burg = { bx, bz, base };
   _burgSeed = seed;
+  weltDim = merkDim;                    // ... und zurück in die Welt, in der wir sind
   return _burg;
 }
 
@@ -3938,6 +3949,7 @@ function spawnTick() {
 const GARAGEN_PLATZ = { bagger:[25,9], jet:[18,9], heli:[18,16], dragon:[24,16] };
 const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hubschrauber', dragon:'Dein Drache' };
 function parkeInGarage(a, dt) {
+  if (weltDim !== 0) return false;      // in der Wolkenwelt gibt es keine Garage
   const p = GARAGEN_PLATZ[a.type];
   if (!p) return false;
   const B = burgPos();
@@ -3967,6 +3979,7 @@ function parkeInGarage(a, dt) {
 // 🏠🐾 Ist Jonah in seiner Festung, gehen Freunde ins Freunde-Haus und
 // Tiere ins Gehege - jeder sucht sich dort seinen Lieblingsplatz aus.
 function heimPlatz(a, x0, xr, z0, zr) {
+  if (weltDim !== 0) { a.heimX = undefined; return null; }   // die Festung gibt es nur daheim!
   const B = burgPos();
   if (Math.hypot(player.x-B.bx, player.z-B.bz) > 40) { a.heimX = undefined; return null; }
   if (a.heimX === undefined) { a.heimX = x0 + Math.random()*xr; a.heimZ = z0 + Math.random()*zr; }
@@ -7267,6 +7280,21 @@ function portalNutzen() {
     player.y = terrainHeight(Math.floor(player.x), Math.floor(player.z)) + 1.05;
   }
   player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
+  // erst die Umgebung laden - sonst weiß das Spiel gar nicht, was hier steht!
+  for (let x2=Math.floor(player.x)-6; x2<=Math.floor(player.x)+6; x2+=5)
+    for (let z2=Math.floor(player.z)-6; z2<=Math.floor(player.z)+6; z2+=5)
+      ensureData(x2>>4, z2>>4);
+  // NIE direkt im Portal stehen bleiben - sonst wird man sofort wieder zurückgesaugt!
+  const imPortal = () => getBlock(Math.floor(player.x), Math.floor(player.y+0.2), Math.floor(player.z))===PORTAL ||
+                         getBlock(Math.floor(player.x), Math.floor(player.y+1.2), Math.floor(player.z))===PORTAL;
+  if (imPortal()) {
+    for (const [ox,oz] of [[1.3,0],[-1.3,0],[0,1.3],[0,-1.3],[2.3,0],[0,2.3],[-2.3,0],[0,-2.3]]) {
+      const nx = player.x+ox, nz = player.z+oz;
+      if (getBlock(Math.floor(nx), Math.floor(player.y+0.2), Math.floor(nz))!==PORTAL &&
+          getBlock(Math.floor(nx), Math.floor(player.y+1.2), Math.floor(nz))!==PORTAL &&
+          !collide(nx, player.y, nz)) { player.x = nx; player.z = nz; break; }
+    }
+  }
   // frei machen und ein Rück-Portal daneben stellen
   const px = Math.floor(player.x), pz = Math.floor(player.z);
   let py = Math.floor(player.y);
@@ -10576,6 +10604,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   for (let dz=-1;dz<=1;dz++) for (let dx=-1;dx<=1;dx++) ensureData(pcx+dx,pcz+dz);
   document.getElementById('start').style.display='none';
   started=true;
+  portalKuehl = 3;                      // beim Start nicht sofort ins Portal gesaugt werden
   updateFoodHUD();
   document.getElementById('miniMap').style.display='block';
   if (bow) document.getElementById('bowBtn').style.display='flex';
