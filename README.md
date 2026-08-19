@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- HAUSMEISTER & BUTLER in der Festung (v154)! 🔧🤵 König Jonah hat
+  jetzt zwei Angestellte, die immer da sind, wenn er in seiner
+  Festung ist: 1. HAUSMEISTER KURT (gelbe Mütze, blaue Latzhose,
+  roter Werkzeugkasten) läuft herum und flickt ALLES, was kaputt
+  geht - schlägt Jonah aus Versehen ein Loch in eine Wand, kommt
+  Kurt angelaufen und baut es wieder zusammen, mit Funkeln und
+  einem Spruch. Tippt man ihn an, macht er Pause (und beim nächsten
+  Antippen arbeitet er weiter). 2. BUTLER JAMES (schwarzer Anzug,
+  Fliege, Zylinder, Tablett) macht, was Jonah sagt: antippen, und
+  ein Menü geht auf - 🚶 Komm mit (dann folgt er überallhin),
+  🛑 Warte hier, 🥕 Bring mir einen Snack (Karotten-Power!),
+  🕯️ Mach Licht (er stellt Fackeln auf), 🧹 Räum auf (er flickt
+  Löcher) und 💃 Tanz mal. Außerdem repariert der 🔧-Modus jetzt
+  viel mehr Sachen: Zäune, Türen, Möbel, Fackeln, Treppen und mehr
 - Der Fahrstuhl hat jetzt eine echte KABINE (v153)! 🛗 Vorher ist
   man im Schacht selber hochgeschwebt - das war ja gar kein richtiger
   Fahrstuhl. Jetzt steht im Schacht eine echte Kabine mit Boden,
