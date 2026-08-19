@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 156 &middot; Das Zauber-Portal in die Wolkenwelt! ✨☁️</p>
+    Version 157 &middot; Die Wolken fangen dich auf! ☁️✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 156;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 157;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -984,6 +984,7 @@ function genZauberChunk(cx, cz, ohneEdits) {
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
     const wx = x0+lx, wz = z0+lz;
     const h = zauberHoehe(wx, wz);
+    setz(lx, CH_MIN+1, lz, SCHUTZ);     // ganz unten ein Netz, damit niemand ins Nichts fällt
     for (let y=h-6; y<=h; y++) setz(lx, y, lz, y>h-2 ? WOOL : (y>h-4 ? WOOL : GLASS));
     const r = hash2(wx, wz, 7001);
     if (r < 0.0015) {                   // ein RIESIGER Kristall-Turm 💎
@@ -3044,6 +3045,13 @@ function physics(dt) {
     }
   }
 
+  // ☁️ In der Wolkenwelt fängt dich die Wolke wieder auf, wenn du durchfällst -
+  // dort unten ist nämlich nichts als Luft, da käme man nie wieder raus!
+  if (weltDim===1 && !flying &&
+      player.y < zauberHoehe(Math.floor(player.x), Math.floor(player.z)) - 22) {
+    wolkenRettung();
+  }
+
   // Sicheren Stand merken. Zu Fuß darf Jonah in jedes Loch fallen und
   // ungestört tief graben - die Zauber-Rettung greift nur noch ganz unten
   // am Weltboden oder tief in der Lava.
@@ -3501,6 +3509,29 @@ let lavaHurtT = 0;                      // kurze Schonzeit nach dem Lava-Aua
 // Fällt er in einen tiefen dunklen Schacht, kommt er GENAU DORTHIN zurück -
 // nicht mehr an den Strand zum Startpunkt!
 let letzterBoden = null, bodenMerkT = 0, fallStartY = 0;
+function wolkenRettung() {              // ☁️ sanft zurück auf die nächste Wolke
+  const px = Math.floor(player.x), pz = Math.floor(player.z);
+  for (let r=0; r<=7; r++) {
+    for (let dx=-r; dx<=r; dx++) for (let dz=-r; dz<=r; dz++) {
+      if (Math.max(Math.abs(dx),Math.abs(dz)) !== r) continue;
+      const x=px+dx, z=pz+dz, h=zauberHoehe(x,z);
+      if (getBlock(x,h,z)!==AIR && getBlock(x,h+1,z)===AIR && getBlock(x,h+2,z)===AIR) {
+        player.x=x+0.5; player.z=z+0.5; player.y=h+1.05;
+        player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
+        letzterBoden = {x:player.x, y:player.y, z:player.z};
+        toast('☁️✨ Puh! Die Wolken haben dich aufgefangen - hier ist wieder fester Boden!', 4200);
+        blip(700,0.08); blip(900,0.08); blip(1150,0.12);
+        return;
+      }
+    }
+  }
+  const h = zauberHoehe(px,pz);         // nichts gefunden? Dann bauen wir eine Wolke!
+  for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++) setBlock(px+dx,h,pz+dz,WOOL);
+  player.y = h+1.05; player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
+  letzterBoden = {x:player.x, y:player.y, z:player.z};
+  toast('☁️✨ Eine neue Wolke ist unter dir gewachsen - gerettet!', 4200);
+  blip(700,0.08); blip(900,0.12);
+}
 function retteZurueck() {
   if (!letzterBoden) { spawn(); return; }
   player.x = letzterBoden.x; player.y = letzterBoden.y + 0.2; player.z = letzterBoden.z;
