@@ -377,7 +377,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 151 &middot; Der Zauber-Fahrstuhl in der Festung! 🛗</p>
+    Version 152 &middot; Fahrstuhl jetzt auch im Königs-Turm! 🛗🗼</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -423,7 +423,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 151;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 152;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1756,14 +1756,32 @@ function genChunkData(cx, cz, ohneEdits) {
           const [hx3,hz3]=RINGT[((start+kTop-h2)%N+N)%N];
           put(B.bx+hx3, yO, B.bz+hz3, AIR, false);
         }
-        P(-46,yT,0,CHEST); P(-47,yT,0,CHEST);            // der Tiefen-Schatz!
+        P(-49,yT,2,CHEST); P(-49,yT,3,CHEST);            // der Tiefen-Schatz!
         P(-45,yT+2,-4,TORCH); P(-48,yT+2,4,TORCH);
-        P(-45,yT,0,SIGN);
-        const tts=(B.bx-45)+','+yT+','+(B.bz+0);
+        P(-49,yT,1,SIGN);
+        const tts=(B.bx-49)+','+yT+','+(B.bz+1);
         if (!signTexts.has(tts)) signTexts.set(tts,'⬇️ GANZ UNTEN! Tiefer geht es in der ganzen Welt nicht!');
         P(-41,by+1,2,SIGN);
         const tos=(B.bx-41)+','+(by+1)+','+(B.bz+2);
-        if (!signTexts.has(tos)) signTexts.set(tos,'🗼 Königs-Turm: Wendeltreppe bis in den Himmel - und bis ganz nach unten!');
+        if (!signTexts.has(tos)) signTexts.set(tos,'🗼 Königs-Turm: Wendeltreppe ODER Fahrstuhl - beides bis in den Himmel!');
+        // der TURM-FAHRSTUHL 🛗: mitten im Turm, damit man die 250 Stufen
+        // auch mal überspringen kann - unten am Schatz, an der Turm-Tür
+        // und ganz oben auf der Aussichts-Plattform hält er an!
+        const F0=-48, F1=-45, G0=-2, G1=1;               // Schacht-Wände (innen 2x2)
+        for (let dx=F0; dx<=F1; dx++) for (let dz=G0; dz<=G1; dz++) {
+          const wand = dx===F0 || dx===F1 || dz===G0 || dz===G1;
+          for (let y=yT-1; y<=yO+3; y++)
+            P(dx, y, dz, wand ? FAHRSTUHL : (y===yT-1 ? S_ : AIR));
+        }
+        for (const hy of [yT, by+1, yO+1])               // die 3 Haltestellen (Ost-Seite)
+          for (const dz2 of [-1,0]) { P(F1,hy,dz2,AIR); P(F1,hy+1,dz2,AIR); }
+        for (const dz2 of [-1,0]) {                      // Brücke zur Wendeltreppe
+          P(F1,by,dz2,FAHRSTUHL); P(-44,by,dz2,S_);
+        }
+        P(-47,by+4,-1,TORCH);            // Licht INNEN (in der Wand gäbe es einen falschen Halt)
+        P(-44,by+1,-1,SIGN);
+        const tfs=(B.bx-44)+','+(by+1)+','+(B.bz-1);
+        if (!signTexts.has(tfs)) signTexts.set(tfs,'🛗 Turm-Fahrstuhl: rein, Wand antippen - ganz nach oben oder ganz nach unten!');
       }
       // 14b) der ZAUBER-FAHRSTUHL 🛗: gleich neben dem Flur, vom Keller bis
       // hoch auf die Dach-Terrasse - drinnen schwebt man und fällt nie!
@@ -6520,9 +6538,14 @@ function liftHalte(x, z, y0) {          // alle Etagen des Schachts, von unten n
   // eine 2 Blöcke hohe Tür ist EINE Etage: nur die unterste Höhe zählt
   return offen.filter(y => !offen.includes(y-1));
 }
-function liftName(y) {                  // hübsche Namen für die Festungs-Etagen
+function liftName(y) {                  // hübsche Namen statt nackter Zahlen
   const B = burgPos();
-  if (Math.hypot(player.x-B.bx, player.z-B.bz) < 70) {
+  if (Math.hypot(player.x-B.bx, player.z-B.bz) < 80) {
+    if (player.x < B.bx-38) {           // im Königs-Turm 🗼
+      if (y <= CH_MIN+3) return '💰 Schatzkammer ganz unten';
+      if (y >= CH-4)     return '🗼 Turm-Spitze mit Aussicht';
+      return '🚪 Turm-Eingang';
+    }
     const N = {'-4':'🕯️ Keller', '1':'🚪 Erdgeschoss', '6':'🕹️ Etage 2',
                '11':'👑 Etage 3', '16':'🌞 Dach-Terrasse'};
     const n = N[String(y - B.base)];

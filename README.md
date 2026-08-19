@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Fahrstuhl auch im KÖNIGS-TURM (v152)! 🛗🗼 Mitten im Riesen-Turm
+  steht jetzt ein zweiter Fahrstuhl - er fährt über 250 Blöcke am
+  Stück, von der Schatzkammer ganz unten bis zur Turm-Spitze mit
+  Aussicht! Er hält an drei Stellen: 💰 Schatzkammer ganz unten,
+  🚪 Turm-Eingang (da führt eine kleine Brücke rüber zur
+  Wendeltreppe) und 🗼 Turm-Spitze. Wer will, läuft weiter die 250
+  Stufen - wer es eilig hat, fährt! Die Wendeltreppe ist dabei
+  komplett heil geblieben, und der Schatz unten ist ein Stück zur
+  Seite gerückt
 - Der ZAUBER-FAHRSTUHL (v151)! 🛗 Neben dem Flur der Riesen-Festung
   steht jetzt ein echter Fahrstuhl: Er geht vom KELLER bis hoch auf
   die DACH-TERRASSE und hält auf allen 5 Etagen. Einfach reingehen
