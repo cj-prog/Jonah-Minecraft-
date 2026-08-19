@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die Wolken fangen dich auf (v157)! ☁️✨ Wichtige Rettung: Wer in
+  der Wolkenwelt ein Loch durch die Wolke gräbt (oder von der Kante
+  fällt), ist bisher endlos ins Nichts gefallen und kam nie wieder
+  raus. Jetzt fangen die Wolken dich auf: Fällst du mehr als 22
+  Blöcke unter die Wolkendecke, setzt dich das Spiel sanft auf die
+  nächste feste Wolke - und wenn dort gerade keine ist, wächst extra
+  für dich eine neue! Das klappt auch, wenn du mitten in der Leere
+  gespeichert hast: einfach neu laden, und du stehst wieder oben.
+  Ganz unten in der Wolkenwelt liegt außerdem ein unsichtbares
+  Sicherheitsnetz. Beim Fliegen darfst du weiter frei herumschweben
 - Das ZAUBER-PORTAL in die Wolkenwelt (v156)! ✨☁️ In der Blockleiste
   gibt es jetzt den PORTAL-Block: Einfach irgendwo hinstellen, kurz
   hineinstellen (oder hindurchlaufen) - und schwupp, du bist in einer
