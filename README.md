@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die Festung ist wieder da (v158)! 🏰🔧 Ein böser Fehler ist
+  repariert: Wer durchs Portal in die Wolkenwelt ging, bei dem hat
+  sich das Spiel dort die Festungs-Höhe gemerkt - und beim Zurück-
+  kommen stand die Riesen-Festung plötzlich woanders, auf einem
+  Riesenberg aus Erde und mit viel zu hohen Mauern. Jetzt rechnen
+  alle Landschafts-Sachen (Festung, Ritterburgen, Wälder, Berge)
+  immer mit der normalen Welt - egal, wo Jonah gerade ist. Nach
+  einem Neustart steht die Festung wieder genau da, wo sie hin-
+  gehört, mit allem, was Jonah hineingebaut hat. Außerdem landet
+  man beim Zurückkommen jetzt NEBEN dem Portal statt mitten drin
+  (sonst wurde man gleich wieder zurückgesaugt), und direkt nach
+  dem Start hat man ein paar Sekunden Ruhe vor dem Portal
 - Die Wolken fangen dich auf (v157)! ☁️✨ Wichtige Rettung: Wer in
   der Wolkenwelt ein Loch durch die Wolke gräbt (oder von der Kante
   fällt), ist bisher endlos ins Nichts gefallen und kam nie wieder
