@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 154 &middot; Hausmeister &amp; Butler in deiner Festung! 🔧🤵</p>
+    Version 155 &middot; Gib dem Butler eigene Aufgaben! ✏️🤵</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 154;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 155;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6795,6 +6795,42 @@ const BUTLER_TALK = [
 function butlerTick(a, dt) {
   const B = burgPos();
   const dp = Math.hypot(player.x-a.x, player.z-a.z);
+  if (a.bauPlan && a.bauPlan.length) {  // 🔨 er arbeitet einen Auftrag ab!
+    const [bx,by2,bz] = a.bauPlan[0];
+    const dp = Math.hypot(bx+0.5-a.x, bz+0.5-a.z);
+    a.t = 9;
+    if (dp > 4) {                       // erst zur Baustelle laufen
+      a.bauWeg = (a.bauWeg||0) + dt;
+      if (a.bauWeg > 5) {               // Mauer im Weg? Dann eben außenrum!
+        a.x = bx+0.5+(Math.random()-0.5); a.z = bz+0.5+(Math.random()-0.5);
+        a.y = by2+1; a.vy = 0; a.bauWeg = 0;
+      } else {
+        a.yaw = Math.atan2(bx+0.5-a.x, -(bz+0.5-a.z));
+        a.walking = true; a.spd = 3.4;
+      }
+      return;
+    }
+    a.bauWeg = 0;
+    a.walking = false;
+    a.yaw = Math.atan2(bx+0.5-a.x, -(bz+0.5-a.z));
+    a.bauT = (a.bauT||0) - dt;
+    if (a.bauT > 0) return;
+    a.bauT = 0.09;                      // Block für Block - schön zum Zuschauen
+    const [x,y,z,b] = a.bauPlan.shift();
+    const alt = getBlock(x,y,z);
+    if (b===AIR ? alt!==AIR : alt===AIR || alt===GRASS || alt===SNOW || alt===BLUME)
+      setBlock(x,y,z,b);
+    if (Math.random()<0.5) blip(300+Math.random()*300, 0.03);
+    if (!a.bauPlan.length) {
+      sagen(a, 'Fertig, mein König! Gefällt es Ihnen? ✨', 5);
+      toast('🤵✨ Der Butler ist fertig!', 3000);
+      blip(523,0.07); blip(659,0.07); blip(784,0.12);
+      for (let s=0;s<10;s++)
+        fireworks.push({x:a.x, y:a.y+1.4, z:a.z, vx:(Math.random()-0.5)*2.4,
+          vy:1.4+Math.random()*2, vz:(Math.random()-0.5)*2.4, tile:73, t:0.7});
+    }
+    return;
+  }
   if (a.tanzT > 0) {                    // 💃 er tanzt gerade für dich!
     a.tanzT -= dt;
     a.walking = false; a.t = 9;
@@ -6845,6 +6881,7 @@ function openButler(a) {
       sagen(a,'Ich mache das gleich sauber!',3);
       toast(n ? '🤵🔧 Der Butler hat '+n+' Blöcke geflickt!'
               : '🤵 Butler: „Hier ist alles tipptopp in Ordnung!"', 3400); }],
+    ['✏️ Eigene Aufgabe!',      () => openButlerAuftrag(a)],
     ['💃 Tanz mal!',            () => { a.tanzT = 6;
       sagen(a,'Sehr gerne! Tra-la-la! 💃',4);
       toast('🤵💃 Der Butler tanzt für dich!',3000);
@@ -6862,6 +6899,189 @@ function openButler(a) {
   }
   document.getElementById('butlerBox').style.display = 'flex';
   blip(700,0.05); blip(880,0.05);
+}
+// ✏️ EIGENE AUFGABEN: Jonah schreibt dem Butler, was er tun soll -
+// der Butler versteht ganz viele Wörter und legt einfach los!
+let butlerTarget = null;
+function openButlerAuftrag(a) {
+  butlerTarget = a;
+  chatInput.value = '';
+  chatInput.placeholder = 'Was soll ich tun, mein König?';
+  document.getElementById('chatSend').textContent = '🤵 Auftrag!';
+  openChat();
+  toast('🤵 Schreib mir auf, was ich tun soll! Zum Beispiel: „bau einen Turm", „bau ein Haus aus Stein", „hol mir Holz", „mach eine Brücke", „grab ein Loch", „mach Licht", „pflanz Blumen"', 7000);
+}
+function bauPlatz(dist) {               // freier Platz vor Jonah zum Bauen
+  const fx = Math.sin(yaw), fz = -Math.cos(yaw);
+  const x = Math.floor(player.x + fx*dist), z = Math.floor(player.z + fz*dist);
+  let y = Math.floor(player.y), n = 0;
+  while (y > CH_MIN+2 && getBlock(x,y-1,z)===AIR && n++ < 8) y--;   // bis auf den Boden
+  n = 0;
+  while (y < CH-4 && getBlock(x,y,z)!==AIR && n++ < 8) y++;         // und wieder frei
+  return [x,y,z];
+}
+function materialAus(t) {               // "bau einen Turm aus STEIN"
+  if (t.includes('stein')) return STONE;
+  if (t.includes('ziegel')) return BRICK;
+  if (t.includes('glas')) return GLASS;
+  if (t.includes('woll')) return WOOL;
+  if (t.includes('sand')) return SAND;
+  if (t.includes('erde')) return DIRT;
+  if (t.includes('schutz') || t.includes('unkaputt')) return SCHUTZ;
+  return null;
+}
+const BAUTEN = {
+  turm(x,y,z,m) { const p=[];
+    for (let h=0; h<10; h++) for (const [dx,dz] of [[0,0],[1,0],[0,1],[1,1]])
+      p.push([x+dx,y+h,z+dz,m]);
+    p.push([x,y+10,z,TORCH]); p.push([x+1,y+10,z+1,TORCH]);
+    return p; },
+  haus(x,y,z,m) { const p=[];
+    for (let dx=0; dx<5; dx++) for (let dz=0; dz<5; dz++) {
+      p.push([x+dx,y-1,z+dz,m]);                            // Fußboden
+      const wand = dx===0||dx===4||dz===0||dz===4;
+      for (let h=0; h<3; h++) if (wand) p.push([x+dx,y+h,z+dz,m]);
+      p.push([x+dx,y+3,z+dz,WOOD]);                         // Dach
+    }
+    p.push([x+2,y,z,DOOR]); p.push([x+2,y+1,z,DOOR_TOP]);   // Tür
+    for (const [fx2,fz2] of [[0,2],[4,2],[2,4]]) p.push([x+fx2,y+1,z+fz2,GLASS]);
+    p.push([x+1,y+2,z+1,TORCH]); p.push([x+3,y,z+3,BED]); p.push([x+1,y,z+3,TABLE]);
+    return p; },
+  bruecke(x,y,z,m) { const p=[];
+    const fx=Math.sin(yaw), fz=-Math.cos(yaw);
+    const sx = Math.abs(fx)>Math.abs(fz) ? Math.sign(fx) : 0;
+    const sz = sx ? 0 : Math.sign(fz)||1;
+    for (let i=0; i<14; i++) for (let q=-1; q<=1; q++) {
+      const bx = x + sx*i + (sx?0:q), bz = z + sz*i + (sz?q:0);
+      p.push([bx,y-1,bz,m]);
+      if (Math.abs(q)===1) p.push([bx,y,bz,FENCE]);         // Geländer
+    }
+    return p; },
+  treppe(x,y,z,m) { const p=[];
+    const fx=Math.sin(yaw), fz=-Math.cos(yaw);
+    const sx = Math.abs(fx)>Math.abs(fz) ? Math.sign(fx) : 0;
+    const sz = sx ? 0 : Math.sign(fz)||1;
+    const trep = sx>0?TREP_E : sx<0?TREP_W : sz>0?TREP_S : TREP_N;
+    for (let i=0; i<9; i++) for (let q=0; q<=1; q++) {
+      const bx = x + sx*i + (sx?0:q), bz = z + sz*i + (sz?q:0);
+      for (let h=0; h<i; h++) p.push([bx,y+h,bz,m]);
+      p.push([bx,y+i,bz,trep]);
+    }
+    return p; },
+  mauer(x,y,z,m) { const p=[];
+    const fx=Math.sin(yaw), fz=-Math.cos(yaw);
+    const sx = Math.abs(fx)>Math.abs(fz) ? 0 : 1;           // quer zur Blickrichtung
+    for (let i=-5; i<=5; i++) for (let h=0; h<4; h++)
+      p.push([x+(sx?i:0), y+h, z+(sx?0:i), m]);
+    return p; },
+  pool(x,y,z) { const p=[];
+    for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+      const rand = Math.abs(dx)===2 || Math.abs(dz)===2;
+      p.push([x+dx,y-1,z+dz, rand?STONE:WATER]);
+      p.push([x+dx,y-2,z+dz,STONE]);
+      if (rand) p.push([x+dx,y,z+dz,STONE]);
+      else p.push([x+dx,y,z+dz,AIR]);
+    }
+    return p; },
+  loch(x,y,z) { const p=[];
+    for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++)
+      for (let h=1; h<=5; h++) p.push([x+dx,y-h,z+dz,AIR]);
+    return p; },
+  garten(x,y,z) { const p=[];
+    for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+      p.push([x+dx,y-1,z+dz,GRASS]);
+      if ((dx+dz)%2===0) p.push([x+dx,y,z+dz,BLUME]);
+    }
+    return p; },
+  schneemann(x,y,z) { return [[x,y,z,SNOWMAN]]; },
+  beet(x,y,z) { const p=[];
+    for (let dx=-2; dx<=2; dx++) for (let dz=-1; dz<=1; dz++) {
+      p.push([x+dx,y-1,z+dz,DIRT]);
+      p.push([x+dx,y,z+dz, dz===0?CARROT0 : dz<0?TOMATO0:WHEAT0]);
+    }
+    return p; },
+};
+function butlerBauen(a, art, m) {
+  const [x,y,z] = bauPlatz(6);
+  const plan = BAUTEN[art](x, y, z, m || (art==='haus' ? PLANK : art==='turm' ? BRICK : STONE));
+  a.bauPlan = plan; a.bauT = 0; a.bauArt = art;
+  return plan.length;
+}
+function butlerBringen(a, block, name) { // einen Stapel hinlegen
+  const [x,y,z] = bauPlatz(3);
+  const p = [];
+  for (let i=0; i<8; i++) p.push([x + (i%4) - 1, y + ((i/4)|0), z, block]);
+  a.bauPlan = p; a.bauT = 0; a.bauArt = 'bringen';
+  sagen(a, 'Ich hole Ihnen ' + name + ', mein König!', 4);
+  return p.length;
+}
+const BUTLER_WITZE = [
+  'Warum ging der Zombie ins Bett? Er war zum Umfallen müde! 😄',
+  'Was macht ein Keks unter einem Baum? Krümel-n! 🍪',
+  'Was sagt ein Stein zum anderen? Nichts, Steine reden nicht!',
+  'Warum haben Ritter kein Handy? Weil sie schon eine Rüstung mit Empfang haben! 🛡️',
+  'Wie nennt man einen Bagger ohne Räder? Einen Sitzenbleiber! 🚜',
+];
+function butlerAuftrag(a, text) {
+  if (!text) return;
+  const t = text.toLowerCase();
+  toast('🙂 Du zum Butler: „'+text+'"', 2600);
+  a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+  a.walking = false; a.t = 4;
+  const hat = (...w) => w.some(x => t.includes(x));
+  const m = materialAus(t);
+  const fertig = (txt) => { sagen(a, txt, 4); toast('🤵 Butler: „'+txt+'"', 4000);
+                            blip(600,0.06); blip(760,0.08); };
+  // ---- bauen ----
+  if (hat('turm','tower')) { const n=butlerBauen(a,'turm',m);
+    return fertig('Ein Turm? Sehr gerne! Ich baue ihn sofort ('+n+' Blöcke)! 🗼'); }
+  if (hat('haus','hütte','hutte','villa'))  { const n=butlerBauen(a,'haus',m);
+    return fertig('Ein Haus für Sie, mein König - ich fange an! 🏠'); }
+  if (hat('brücke','bruecke','brueke','steg')) { butlerBauen(a,'bruecke',m);
+    return fertig('Eine Brücke! Ich lege gleich los! 🌉'); }
+  if (hat('treppe','stufen')) { butlerBauen(a,'treppe',m);
+    return fertig('Eine schöne Treppe kommt sofort! 🪜'); }
+  if (hat('mauer','wand','zaun')) { butlerBauen(a,'mauer',m);
+    return fertig('Eine Mauer wird gebaut, mein König! 🧱'); }
+  if (hat('pool','schwimm','see','teich','wasserbecken')) { butlerBauen(a,'pool');
+    return fertig('Ein Schwimmbecken! Wie luxuriös! 🏊'); }
+  if (hat('loch','grab','graben','tunnel')) { butlerBauen(a,'loch');
+    return fertig('Ich grabe ein Loch für Sie! ⛏️'); }
+  if (hat('blume','garten','pflanz')) { butlerBauen(a,'garten');
+    return fertig('Ein Blumengarten - wie hübsch! 🌸'); }
+  if (hat('beet','gemüse','gemuese','karotte','tomate','weizen')) { butlerBauen(a,'beet');
+    return fertig('Ich lege ein Gemüsebeet an! 🥕'); }
+  if (hat('schneemann')) { butlerBauen(a,'schneemann');
+    return fertig('Ein Schneemann! Sehr winterlich! ⛄'); }
+  // ---- holen ----
+  if (hat('holz','bretter')) { butlerBringen(a,PLANK,'Holz');       return; }
+  if (hat('stein') && hat('hol','bring')) { butlerBringen(a,STONE,'Stein'); return; }
+  if (hat('ziegel') && hat('hol','bring')) { butlerBringen(a,BRICK,'Ziegel'); return; }
+  if (hat('glas') && hat('hol','bring')) { butlerBringen(a,GLASS,'Glas'); return; }
+  if (hat('wolle') && hat('hol','bring')) { butlerBringen(a,WOOL,'Wolle'); return; }
+  if (hat('erde','dreck') && hat('hol','bring')) { butlerBringen(a,DIRT,'Erde'); return; }
+  if (hat('sand') && hat('hol','bring')) { butlerBringen(a,SAND,'Sand'); return; }
+  if (hat('truhe','kiste')) { butlerBringen(a,CHEST,'eine Truhe');    return; }
+  if (hat('essen','hunger','snack','karotte','apfel','brot')) { boostT = 22;
+    return fertig('Ein Snack für Sie - jetzt sind Sie blitzschnell! 🥕'); }
+  // ---- machen ----
+  if (hat('licht','fackel','hell','dunkel','lampe')) { const n=butlerLicht();
+    return fertig(n ? 'Sofort heller! Ich stelle '+n+' Fackeln auf. 🕯️' : 'Hier ist es schon hell genug!'); }
+  if (hat('reparier','heil','kaputt','flick','aufräum','aufraeum','sauber','räum','raeum')) {
+    const n=butlerFlicken();
+    return fertig(n ? 'Erledigt - ich habe '+n+' Blöcke geflickt! 🔧' : 'Hier ist alles tipptopp!'); }
+  if (hat('folg','komm mit','hinterher','begleit')) { a.befehl='folgen';
+    return fertig('Sehr wohl, ich folge Ihnen überallhin! 🚶'); }
+  if (hat('warte','bleib','steh','halt')) { a.befehl='warten';
+    return fertig('Ich warte genau hier auf Sie!'); }
+  if (hat('tanz','sing','spring','quatsch','lustig')) { a.tanzT = 6;
+    return fertig('Sehr gerne! Tra-la-la! 💃'); }
+  if (hat('witz','lach')) {
+    return fertig(BUTLER_WITZE[Math.floor(Math.random()*BUTLER_WITZE.length)]); }
+  if (hat('hallo','hi','guten tag','moin','servus')) {
+    return fertig('Guten Tag, König Jonah! Was darf ich für Sie tun? 🤵'); }
+  if (hat('danke')) { return fertig('Sehr gerne, mein König! Immer zu Diensten.'); }
+  return fertig('Das habe ich leider nicht verstanden. Sagen Sie zum Beispiel: „bau einen Turm", „bau ein Haus aus Stein", „hol mir Holz", „mach eine Brücke", „grab ein Loch", „mach Licht", „pflanz Blumen" oder „erzähl einen Witz"!');
 }
 function butlerLicht() {                // Fackeln rund um Jonah aufstellen
   let n = 0;
@@ -9599,7 +9819,7 @@ function openSignEditor(key) {
   openChat();
 }
 function closeChat() {
-  chatOpen=false; signTarget=null;
+  chatOpen=false; signTarget=null; butlerTarget=null;
   chatBox.style.display='none'; chatInput.blur();
   chatInput.placeholder='Sag etwas...';
   document.getElementById('chatSend').textContent='Sagen';
@@ -9642,8 +9862,13 @@ document.getElementById('chatNav').addEventListener('click',()=>{
 function submitChat() {
   const msg=chatInput.value.trim();
   const target=signTarget;
+  const butler=butlerTarget;
   chatInput.value='';
   closeChat();
+  if (butler) {                          // 🤵 ein Auftrag für den Butler!
+    if (animals.includes(butler)) butlerAuftrag(butler, msg);
+    return;
+  }
   if (target) {                          // Schild beschriften
     setSignText(target, msg);
     if (msg) { toast('📜 Schild beschrieben!'); blip(500,0.06); }

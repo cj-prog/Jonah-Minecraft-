@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- EIGENE AUFGABEN für den Butler (v155)! ✏️🤵 Im Butler-Menü gibt
+  es jetzt „✏️ Eigene Aufgabe!" - dann kannst du ihm SELBST
+  aufschreiben, was er tun soll, und er versteht ganz viele Wünsche:
+  „bau einen Turm", „bau ein Haus aus Stein", „mach eine Brücke",
+  „bau eine Treppe", „bau eine Mauer", „grab ein Loch", „mach mir
+  einen Pool", „pflanz Blumen", „leg ein Beet an", „bau einen
+  Schneemann", „hol mir Holz" (oder Stein, Ziegel, Glas, Wolle,
+  Sand, Erde, eine Truhe), „mach Licht", „räum auf", „folg mir",
+  „warte hier", „tanz mal", „erzähl einen Witz" und mehr. Beim
+  Bauen sagst du sogar das Material dazu („aus Stein", „aus
+  Ziegel", „aus Glas"). Der Butler läuft dann zur Baustelle und
+  setzt Block für Block - beim Zuschauen! Zum Schluss gibt es
+  Funkeln und „Fertig, mein König!"
 - HAUSMEISTER & BUTLER in der Festung (v154)! 🔧🤵 König Jonah hat
   jetzt zwei Angestellte, die immer da sind, wenn er in seiner
   Festung ist: 1. HAUSMEISTER KURT (gelbe Mütze, blaue Latzhose,
