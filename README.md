@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Das ZAUBER-PORTAL in die Wolkenwelt (v156)! ✨☁️ In der Blockleiste
+  gibt es jetzt den PORTAL-Block: Einfach irgendwo hinstellen, kurz
+  hineinstellen (oder hindurchlaufen) - und schwupp, du bist in einer
+  ganz anderen Welt, in die man sonst NIE kommt! Dort oben schweben
+  weiche Wolkenberge, riesige Kristall-Türme aus Glas, Zauberbäume,
+  bunte Blumen, Schatztruhen - und noch weiter oben schweben kleine
+  Wolken-Inseln. Neben deinem Ankunftsplatz steht sofort ein
+  Rück-Portal mit Torbogen, damit du immer wieder heimkommst. Beide
+  Welten merken sich getrennt, was du gebaut hast: Dein Haus in der
+  Wolkenwelt ist beim nächsten Besuch noch genau da, und deine
+  Festung in der normalen Welt sowieso. Haustiere und Begleiter
+  nimmt das Portal mit!
 - EIGENE AUFGABEN für den Butler (v155)! ✏️🤵 Im Butler-Menü gibt
   es jetzt „✏️ Eigene Aufgabe!" - dann kannst du ihm SELBST
   aufschreiben, was er tun soll, und er versteht ganz viele Wünsche:

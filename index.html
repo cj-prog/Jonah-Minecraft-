@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 155 &middot; Gib dem Butler eigene Aufgaben! ✏️🤵</p>
+    Version 156 &middot; Das Zauber-Portal in die Wolkenwelt! ✨☁️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 155;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 156;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -462,7 +462,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
-      GITTER=73, FAHRSTUHL=74;
+      GITTER=73, FAHRSTUHL=74, PORTAL=75;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -575,6 +575,9 @@ const BLOCKS = {
     [0,0.88,0.44, 1,0.98,0.56, 85], [0,0.02,0.44, 1,0.12,0.56, 85]] },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
+  [PORTAL]: { name:'ZAUBER-PORTAL ✨ (stell dich rein - ab in die Wolkenwelt!)',
+    tiles:[87,87,87], solid:false, model:[
+    [0.04,0,0.04, 0.96,1.9,0.96, 87]] },
   [POKAL]: { name:'Jubiläums-Pokal 🏆 (100 Versionen JonahCraft!)', tiles:[30,30,30], solid:false, model:[
     [0.2,0,0.2, 0.8,0.12,0.8, 30, 1.3],                 // Sockel
     [0.42,0.12,0.42, 0.58,0.4,0.58, 30, 1.3],           // Stiel
@@ -701,7 +704,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -723,7 +726,15 @@ function vnoise(x, z, salt) {
 function fbm(x, z) {
   return (vnoise(x,z,0) + 0.5*vnoise(x*2,z*2,11) + 0.25*vnoise(x*4,z*4,23) + 0.125*vnoise(x*8,z*8,37)) / 1.875;
 }
+// ✨ Es gibt ZWEI Welten: 0 = Jonahs Welt, 1 = die Wolken-Zauberwelt hinterm Portal
+let weltDim = 0;
+function zauberHoehe(x, z) {            // die Wolken-Ebene schwebt hoch oben
+  const b = fbm(x*0.017+520, z*0.017-380);
+  const h = vnoise(x*0.06+90, z*0.06+40, 611)*0.35;
+  return Math.max(70, Math.min(CH-30, Math.floor(104 + b*20 + h*9)));
+}
 function terrainHeight(x, z) {
+  if (weltDim === 1) return zauberHoehe(x, z);
   const base = fbm(x*0.013, z*0.013);
   const hills = vnoise(x*0.05, z*0.05, 51)*0.3;
   let h = Math.floor(31 + base*15 + hills*5);
@@ -964,7 +975,45 @@ const edits = new Map();                // "cx,cz" -> Map(idx -> blockId)
 const ckey = (cx,cz)=>cx+','+cz;
 const bidx = (lx,y,lz)=>((y-CH_MIN)<<8)|(lz<<4)|lx;
 
+// ✨ DIE WOLKEN-ZAUBERWELT hinterm Portal: weiche Wolkenberge hoch über allem,
+// Kristall-Türme aus Glas, Zauberbäume, Blumen und versteckte Schatztruhen.
+function genZauberChunk(cx, cz, ohneEdits) {
+  const data = new Uint8Array(CS*CS*CH_TOT);
+  const x0 = cx*CS, z0 = cz*CS;
+  const setz = (lx,y,lz,b) => { if (y>CH_MIN && y<CH) data[bidx(lx,y,lz)] = b; };
+  for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
+    const wx = x0+lx, wz = z0+lz;
+    const h = zauberHoehe(wx, wz);
+    for (let y=h-6; y<=h; y++) setz(lx, y, lz, y>h-2 ? WOOL : (y>h-4 ? WOOL : GLASS));
+    const r = hash2(wx, wz, 7001);
+    if (r < 0.0015) {                   // ein RIESIGER Kristall-Turm 💎
+      const hoch = 14 + Math.floor(hash2(wx,wz,7002)*16);
+      for (let y=h+1; y<=h+hoch; y++) setz(lx, y, lz, GLASS);
+      setz(lx, h+hoch+1, lz, TORCH);
+    } else if (r < 0.012) {             // Zauberbaum 🌳
+      for (let y=h+1; y<=h+4; y++) setz(lx, y, lz, WOOD);
+      for (let dy=3; dy<=5; dy++) for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+        const nx=lx+dx, nz=lz+dz;
+        if (nx<0||nx>15||nz<0||nz>15) continue;
+        if (Math.abs(dx)+Math.abs(dz)+Math.abs(dy-4) <= 3) setz(nx, h+dy, nz, LEAF);
+      }
+    } else if (r < 0.05) setz(lx, h+1, lz, BLUME);        // bunte Zauberblumen
+    else if (r < 0.056) setz(lx, h+1, lz, CHEST);         // Schatz auf der Wolke!
+    // ... und ganz oben schweben noch kleine Wolken-Inseln
+    const inselN = vnoise(wx*0.045+300, wz*0.045-200, 7104);
+    if (inselN > 0.72) {
+      const iy = h + 16 + Math.floor(vnoise(wx*0.02, wz*0.02, 7105)*20);
+      const dick = 1 + Math.round((inselN-0.72)*7);
+      for (let y=iy; y<iy+dick; y++) setz(lx, y, lz, WOOL);
+      if (hash2(wx,wz,7106) < 0.03) setz(lx, iy+dick, lz, BLUME);
+    }
+  }
+  const e = ohneEdits ? null : edits.get(ckey(cx,cz));
+  if (e) for (const [i,v] of e) data[i] = v;
+  return data;
+}
 function genChunkData(cx, cz, ohneEdits) {
+  if (weltDim === 1) return genZauberChunk(cx, cz, ohneEdits);
   const data = new Uint8Array(CS*CS*CH_TOT);
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
@@ -2059,6 +2108,11 @@ function saveGame() {
        a.home||'welt', a.hx||0, a.hz||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
+      dim: weltDim,                     // ✨ in welcher Welt ist Jonah gerade?
+      edits2: (()=>{ const o={};        // ... und die Änderungen der anderen Welt
+        for (const [k,m] of editsLager[weltDim===1?0:1]) { const a=[]; for (const [i,v] of m) a.push(i,v); o[k]=a; }
+        return o; })(),
+      heim: portalHeim,
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
       rots: Object.fromEntries(rotations),
@@ -2097,6 +2151,13 @@ function loadGame() {
       for (let i=0;i<a.length;i+=2) m.set(a[i]+shift, a[i+1]);
       edits.set(k,m);
     }
+    if (typeof s.dim === 'number') weltDim = s.dim;        // ✨ welche Welt?
+    for (const k in (s.edits2||{})) {                      // die andere Welt
+      const a=s.edits2[k], m=new Map();
+      for (let i=0;i<a.length;i+=2) m.set(a[i]+shift, a[i+1]);
+      editsLager[weltDim===1?0:1].set(k,m);
+    }
+    if (Array.isArray(s.heim)) { portalHeim[0]=s.heim[0]||null; portalHeim[1]=s.heim[1]||null; }
     if (typeof s.dayTime==='number') dayTime = s.dayTime;
     if (Array.isArray(s.pets)) savedPets = s.pets;
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
@@ -2411,6 +2472,14 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(85,(x,y)=>{                                                  // Gitterstäbe 🚔: dunkles Eisen
     if (x===2||x===7||x===12) return vary(180,186,198,14);          // glänzende Stab-Kanten
     return vary(74,80,92,14);
+  });
+  tile(87,(x,y)=>{                                                  // Zauber-Portal ✨: lila Wirbel
+    const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
+    const wirbel = Math.sin(r*1.1 - Math.atan2(dy,dx)*2.2);
+    if (r > 7.2) return vary(48,20,78,10);                          // dunkler Rand
+    if (wirbel > 0.55) return vary(232,196,255,22);                 // helle Sternchen
+    if (wirbel > 0.05) return vary(168,86,232,20);
+    return vary(104,36,168,18);                                     // tiefes Lila
   });
   tile(86,(x,y)=>{                                                  // Fahrstuhl-Wand 🛗: helles Metall
     if (x===0||x===15||y===0||y===15) return vary(96,104,120,10);   // dunkler Rahmen
@@ -3597,7 +3666,7 @@ function spawnTick() {
       }
     if (frei && spawnMob('zombie', zx, zz, {hp:2})) blip(80,0.2);
   }
-  { // die WÄCHTER der Riesen-Festung: Ritter auf Posten! 🛡️
+  if (weltDim===0) { // die WÄCHTER der Riesen-Festung: Ritter auf Posten! 🛡️
     const MB = burgPos();
     if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 80 &&
         countType(a=>a.type==='knight' && a.home==='megaburg') < 5 && Math.random() < 0.5) {
@@ -7116,6 +7185,92 @@ function butlerFlicken() {              // wie der Hausmeister, nur auf Zuruf
   return n;
 }
 
+// ✨ DAS ZAUBER-PORTAL: Stell dich hinein und du landest in der Wolkenwelt -
+// dort steht sofort ein Rück-Portal, damit du immer wieder heimkommst!
+const editsLager = [new Map(), new Map()];   // die Änderungen der jeweils anderen Welt
+const portalHeim = [null, null];             // wo Jonah in jeder Welt zuletzt stand
+let portalT = 0, portalKuehl = 0;
+function weltWechsel(neu) {
+  editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
+  edits.clear();
+  for (const [k,v] of editsLager[neu]) edits.set(k, v);
+  weltDim = neu;
+  for (const ch of [...chunks.values()]) freeChunk(ch);   // alles neu zeichnen
+  cropSet.clear(); snowSet.clear();
+  fallende.length = 0; flowQ.length = 0; fallQ.length = 0;
+  for (let i=animals.length-1; i>=0; i--) {  // nur Haustiere und Begleiter kommen mit!
+    const a = animals[i];
+    if (!(a.tame || a.follow)) animals.splice(i,1);
+  }
+}
+function portalBauen(x, y, z) {         // ein Portal mit Torbogen - vorne offen!
+  for (const dx of [-1,1]) {            // die zwei Glas-Pfosten
+    for (let dy=-1; dy<=2; dy++) setBlock(x+dx, y+dy, z, GLASS);
+  }
+  setBlock(x, y+2, z, GLASS);           // Bogen oben drüber
+  if (getBlock(x, y-1, z)===AIR) setBlock(x, y-1, z, GLASS);   // fester Stand
+  for (let dz=-3; dz<=3; dz++)          // ein freier Vorplatz zum Hineinlaufen
+    for (let dx=-1; dx<=1; dx++) {
+      if (!dz) continue;
+      for (let dy=0; dy<=2; dy++)
+        if (getBlock(x+dx, y+dy, z+dz)!==AIR) setBlock(x+dx, y+dy, z+dz, AIR);
+      if (getBlock(x+dx, y-1, z+dz)===AIR) setBlock(x+dx, y-1, z+dz, GLASS);
+    }
+  setBlock(x, y, z, PORTAL);
+  setBlock(x, y+1, z, PORTAL);
+}
+function portalNutzen() {
+  const neu = weltDim === 1 ? 0 : 1;
+  portalHeim[weltDim] = { x:player.x, y:player.y, z:player.z };
+  const fx3 = document.getElementById('lavaFx');
+  if (fx3) { fx3.style.display='block'; setTimeout(()=>fx3.style.display='none', 500); }
+  for (let s=0;s<26;s++)                // ein Wirbel aus Funken ✨
+    fireworks.push({x:player.x, y:player.y+1, z:player.z, vx:(Math.random()-0.5)*4,
+      vy:1+Math.random()*4, vz:(Math.random()-0.5)*4, tile:87, t:0.9});
+  blip(300,0.1); blip(500,0.1); blip(750,0.12); blip(1000,0.16);
+  weltWechsel(neu);
+  const heim = portalHeim[neu];
+  if (heim && getBlock(Math.floor(heim.x), Math.floor(heim.y), Math.floor(heim.z))!==undefined) {
+    player.x = heim.x; player.y = heim.y; player.z = heim.z;
+  } else {                              // das erste Mal: mitten auf die Wolke
+    player.y = terrainHeight(Math.floor(player.x), Math.floor(player.z)) + 1.05;
+  }
+  player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
+  // frei machen und ein Rück-Portal daneben stellen
+  const px = Math.floor(player.x), pz = Math.floor(player.z);
+  let py = Math.floor(player.y);
+  for (let x2=px-6; x2<=px+6; x2+=5) for (let z2=pz-6; z2<=pz+6; z2+=5)
+    ensureData(x2>>4, z2>>4);           // auch die Nachbar-Chunks, sonst baut man ins Leere
+  if (!heim) {                          // Landeplatz sauber machen
+    for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++)
+      for (let dy=0; dy<=2; dy++)
+        if (getBlock(px+dx,py+dy,pz+dz)!==AIR) setBlock(px+dx,py+dy,pz+dz,AIR);
+    for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++)
+      if (getBlock(px+dx,py-1,pz+dz)===AIR) setBlock(px+dx,py-1,pz+dz, weltDim===1?WOOL:STONE);
+  }
+  if (getBlock(px+2, py, pz)!==PORTAL) portalBauen(px+2, py, pz);
+  portalKuehl = 2.5;                    // nicht sofort wieder zurückgesaugt werden
+  letzterBoden = {x:player.x, y:player.y, z:player.z};
+  scheduleSave();
+  toast(weltDim===1
+    ? '✨☁️ WOW! Du bist in der WOLKEN-ZAUBERWELT! Hier oben schweben Wolkenberge, Kristall-Türme und Schätze. Das Portal neben dir bringt dich wieder heim!'
+    : '✨🏠 Zurück in deiner Welt! Geh einfach wieder ins Portal, wenn du nochmal in die Wolkenwelt möchtest.', 6500);
+}
+function portalTick(dt) {
+  if (portalKuehl > 0) { portalKuehl -= dt; portalT = 0; return; }
+  // großzügig prüfen: Jonah soll auch im Vorbeilaufen ins Portal kommen
+  const drin = [[0,0],[0.32,0],[-0.32,0],[0,0.32],[0,-0.32]].some(([ox,oz]) =>
+    [-0.4, 0.2, 1.0, 1.7].some(dy =>
+      getBlock(Math.floor(player.x+ox), Math.floor(player.y+dy), Math.floor(player.z+oz))===PORTAL));
+  if (!drin) { portalT = 0; return; }
+  portalT += dt;
+  if (portalT > 0.1) { portalT = 0; portalNutzen(); return; }
+  if (Math.random() < dt*9)             // es kribbelt und funkelt schon mal
+    fireworks.push({x:player.x+(Math.random()-0.5), y:player.y+Math.random()*1.8,
+      z:player.z+(Math.random()-0.5), vx:0, vy:1.5, vz:0, tile:87, t:0.5});
+  if (Math.random() < dt*6) blip(600+Math.random()*500, 0.03);
+}
+
 // Selfie-Ansicht 🤳: die Kamera schaut dich von vorne an!
 let selfie = false;
 function toggleSelfie() {
@@ -9727,6 +9882,10 @@ const ICONS = {
   [RUTSCHE_N]: iconURL(g=>{ g.fillStyle='#e23e4a'; g.fillRect(1,1,14,14);   // Tunnel-Röhre
     g.fillStyle='#7a1e26'; g.fillRect(4,4,8,9);                             // dunkles Tunnel-Loch
     g.fillStyle='#ffe458'; g.fillRect(4,12,8,1); g.fillRect(1,1,14,2); }),
+  [PORTAL]: iconURL(g=>{ g.fillStyle='#301450'; g.fillRect(0,0,16,16);
+    g.fillStyle='#a856e8'; g.beginPath(); g.arc(8,8,6,0,7); g.fill();
+    g.fillStyle='#e8c4ff'; g.beginPath(); g.arc(8,8,3,0,7); g.fill();
+    g.fillStyle='#fff'; g.fillRect(4,3,1,1); g.fillRect(12,6,1,1); g.fillRect(6,12,1,1); }),
   [FAHRSTUHL]: iconURL(g=>{ g.fillStyle='#a8b0be'; g.fillRect(0,0,16,16);        // Metall-Wand
     g.fillStyle='#6a7080'; g.fillRect(0,0,16,1); g.fillRect(0,15,16,1);
     g.fillStyle='#3c4250'; g.fillRect(6,2,4,12);                                 // Pfeil-Leiste
@@ -10180,6 +10339,7 @@ function frame(now) {
 
   streamChunks();
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
+  portalTick(dt);                       // ✨ ab in die andere Welt?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
