@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Fahrstuhl hat jetzt eine echte KABINE (v153)! 🛗 Vorher ist
+  man im Schacht selber hochgeschwebt - das war ja gar kein richtiger
+  Fahrstuhl. Jetzt steht im Schacht eine echte Kabine mit Boden,
+  vier Eck-Pfosten, Dach und Deckenlampe: Du stellst dich einfach
+  drauf (sie ist immer da, wenn du reingehst), tippst die Wand an,
+  suchst die Etage aus - und die Kabine fährt dich hin, mit dir
+  obendrauf! Lange Strecken fährt sie schneller (die 250 Blöcke im
+  Königs-Turm schafft sie in etwa 11 Sekunden). Geschwebt wird
+  nirgends mehr - man steht die ganze Zeit auf festem Boden
 - Fahrstuhl auch im KÖNIGS-TURM (v152)! 🛗🗼 Mitten im Riesen-Turm
   steht jetzt ein zweiter Fahrstuhl - er fährt über 250 Blöcke am
   Stück, von der Schatzkammer ganz unten bis zur Turm-Spitze mit
