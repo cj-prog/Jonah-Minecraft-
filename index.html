@@ -145,6 +145,14 @@
     max-width:92vw; max-height:62vh; }
   #planClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  #butlerBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:10px; background:rgba(30,32,44,.96); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; }
+  #butlerBox h3 { font-size:17px; }
+  #butlerList { display:flex; flex-direction:column; gap:5px; max-height:62vh; overflow-y:auto; }
+  #butlerList .liftBtn { padding:8px 18px; font-size:16px; }
+  #butlerClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#8a4030; color:#fff; }
   #liftBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:10px; background:rgba(35,40,55,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; }
@@ -364,6 +372,11 @@
   <div id="liftList"></div>
   <button id="liftClose">✔ Doch nicht</button>
 </div>
+<div class="hud" id="butlerBox">
+  <h3>🤵 Was soll ich tun, König Jonah?</h3>
+  <div id="butlerList"></div>
+  <button id="butlerClose">✔ Nichts, danke</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -377,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 153 &middot; Der Fahrstuhl hat jetzt eine echte Kabine! 🛗</p>
+    Version 154 &middot; Hausmeister &amp; Butler in deiner Festung! 🔧🤵</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -423,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 153;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 154;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1888,10 +1901,15 @@ function _pureAt(wx, wy, wz) {
   if (!pure) { pure = genChunkData(rcx, rcz, true); _pureCache.set(key, pure); }
   return pure[bidx(wx&15, wy, wz&15)];
 }
+// Alles, was zu einem Gebäude gehört - das flickt der 🔧-Modus und der Hausmeister
+const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
+  DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
+  SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
-  if (b===PLANK || b===GLASS || b===WOOL || b===BRICK) return 'bau';
+  if (BAU_BLOCK.has(b)) return 'bau';
   if (b===GRASS || b===DIRT || b===STONE || b===SAND) return 'erde';
   if (b!==WOOD) return null;
   // Haus-Holz reparieren, aber KEINE Bäume: ein Baumstamm wächst aus
@@ -3000,6 +3018,8 @@ const ANIMAL_KIND = {
   boss:     { speed:1.3, half:0.75, height:1.7,  tile:53, face:54 },
   boat:     { speed:0,   half:0.7,  height:0.9,  tile:8,  face:8 },
   kabine:   { speed:0,   half:1.0,  height:0.3,  tile:86, face:86 },
+  hausmeister:{speed:1.2, half:0.3, height:1.8,  tile:40, face:21 },
+  butler:   { speed:1.3, half:0.3,  height:1.8,  tile:55, face:21 },
   dog:      { speed:1.3, half:0.28, height:0.7,  tile:31, face:32 },
   cat:      { speed:1.5, half:0.2,  height:0.5,  tile:33, face:34 },
   bird:     { speed:4.0, half:0.18, height:0.35, tile:35, face:35 },
@@ -3586,6 +3606,16 @@ function spawnTick() {
       spawnMob('knight', MB.bx+p[0], MB.bz+p[1],
         {home:'megaburg', hx:MB.bx+p[0], hz:MB.bz+p[1], hp:5});
     }
+    // 🔧🤵 Hausmeister und Butler wohnen in der Festung und sind immer da!
+    if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 70) {
+      for (const [typ, nm, dx3, dz3] of [['hausmeister','Kurt',7,3], ['butler','James',-6,3]]) {
+        if (animals.some(x => x.type===typ)) continue;
+        animals.push({ type: typ, name: nm, friend: 3,
+          x: MB.bx+dx3, y: MB.base+1.5, z: MB.bz+dz3,
+          yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:5,
+          walking:false, t:2, ph:0, onGround:false });
+      }
+    }
     // 🏠 ALLE Freunde kommen ins Freunde-Haus, wenn Jonah in seiner Festung ist -
     // auch die, die gerade NICHT mit auf Reisen sind!
     if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 60) {
@@ -4021,6 +4051,7 @@ function updateAnimals(dt) {
       continue;
     }
     if (!a.tame && !a.follow && a.type!=='dragon' && a.type!=='statue' &&
+        !(a.type==='butler' && a.befehl==='folgen') &&      // der Butler kommt überall mit!
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.type==='statue') {            // Stein-Statuen stehen einfach still da
       a.walking = false; a.kx = a.kz = 0;
@@ -4063,6 +4094,9 @@ function updateAnimals(dt) {
         a.walking = true; a.spd = ziel ? 2.6 : 3.5;
       }
     }
+
+    if (a.type==='hausmeister') hausmeisterTick(a, dt);   // 🔧 flickt, was kaputt ist
+    if (a.type==='butler') butlerTick(a, dt);             // 🤵 macht, was Jonah sagt
 
     // Freunde freuen sich und kommen angelaufen, wenn sie dich sehen
     if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
@@ -4318,7 +4352,8 @@ function updateAnimals(dt) {
     a.kx *= akd; a.kz *= akd;
 
     const inWater = getBlock(Math.floor(a.x),Math.floor(a.y+0.3),Math.floor(a.z))===WATER;
-    const mensch = a.type==='villager'||a.type==='kid'||a.type==='trader'||a.type==='knight';
+    const mensch = a.type==='villager'||a.type==='kid'||a.type==='trader'||a.type==='knight'||
+                   a.type==='hausmeister'||a.type==='butler';
     if (inWater) {
       if (mensch) {                     // Menschen tauchen erst unter - wie Jonah!
         if (!a.warImWasser && (a.trockenT===undefined || a.trockenT>0.5)) {
@@ -4662,6 +4697,20 @@ function drawAnimals() {
         pushBox(arr,a, 0,1.94,0, 0.6,0.08,0.6, 25);
         pushBox(arr,a, 0,2.04,0, 0.36,0.18,0.36, 25);
       }
+      if (a.type==='hausmeister') {                                // 🔧 Mütze + Werkzeugkasten
+        pushBox(arr,a, 0,1.93,0, 0.56,0.12,0.56, 73);              // gelbe Schirmmütze
+        pushBox(arr,a, 0,2.01,0, 0.34,0.1,0.34, 73);
+        pushBox(arr,a, 0,1.9,-0.3, 0.36,0.07,0.12, 73);            // Schirm
+        pushBox(arr,a, 0.36,1.02,0.06, 0.24,0.22,0.32, 25);        // roter Werkzeugkasten
+        pushBox(arr,a, 0.36,1.16,0.06, 0.08,0.1,0.14, 3);          // Kasten-Griff
+      }
+      if (a.type==='butler') {                                     // 🤵 Hemd, Fliege, Tablett
+        pushBox(arr,a, 0,1.14,-0.16, 0.22,0.52,0.02, 49);          // weißes Hemd
+        pushBox(arr,a, 0,1.36,-0.17, 0.16,0.08,0.04, 25);          // rote Fliege
+        pushBox(arr,a, 0,1.9,0, 0.5,0.09,0.5, 55);                 // Zylinder
+        pushBox(arr,a, 0,2.02,0, 0.3,0.22,0.3, 55);
+        pushBox(arr,a, 0.34,1.24,-0.28, 0.34,0.04,0.28, 49);       // silbernes Tablett
+      }
       if (a.type==='knight') {                                     // Helm, Federbusch, Schwert
         pushBox(arr,a, 0,1.95,0, 0.52,0.16,0.52, 3);
         pushBox(arr,a, 0,2.1,0, 0.12,0.24,0.12, 25);
@@ -4928,6 +4977,9 @@ document.getElementById('planClose').addEventListener('click', ()=>{
 });
 document.getElementById('liftClose').addEventListener('click', ()=>{
   document.getElementById('liftBox').style.display='none'; blip(400,0.06);
+});
+document.getElementById('butlerClose').addEventListener('click', ()=>{
+  document.getElementById('butlerBox').style.display='none'; blip(400,0.06);
 });
 
 function makePaintTexture(key) {
@@ -6679,6 +6731,171 @@ function liftFahr(y) {
   blip(520,0.06); blip(660,0.07);
 }
 
+// 🔧 DER HAUSMEISTER und 🤵 DER BUTLER: die zwei Angestellten von König Jonah!
+// Der Hausmeister läuft durch die Festung und flickt alles, was kaputt ist.
+// Der Butler folgt Jonah und macht, was er sagt.
+const HAUSMEISTER_TALK = [
+  'Keine Sorge, König Jonah - ich flicke das!',
+  'Ordnung muss sein! 🔧',
+  'Das kriegen wir wieder hin!',
+  'Ich hab hier ein Loch entdeckt... schon weg!',
+  'Deine Festung ist bei mir in guten Händen!',
+];
+function sucheLoch(mx, my, mz, r) {     // fehlt irgendwo in der Nähe ein Block?
+  for (let y=my+4; y>=my-3; y--)
+    for (let dx=-r; dx<=r; dx++)
+      for (let dz=-r; dz<=r; dz++) {
+        const x=mx+dx, z=mz+dz;
+        if (getBlock(x,y,z)!==AIR) continue;
+        if (_lochArt(x,y,z)==='bau') return [x,y,z];
+      }
+  return null;
+}
+function hausmeisterTick(a, dt) {
+  const B = burgPos();
+  a.heim = a.heim || [B.bx+6, B.base+1, B.bz+2];
+  if (a.pause) return;                  // Jonah hat ihm Pause gegeben
+  a.repT = (a.repT===undefined ? 1.5 : a.repT-dt);
+  if (a.ziel) {                         // er ist auf dem Weg zu einem Loch
+    const dx=a.ziel[0]+0.5-a.x, dz=a.ziel[2]+0.5-a.z, dp=Math.hypot(dx,dz);
+    a.yaw = Math.atan2(dx,-dz); a.t = 9;
+    if (dp > 2.2) { a.walking = true; a.spd = 3.0; }
+    else {                              // angekommen: zack, geflickt!
+      a.walking = false;
+      const n = repariereLoch(a.ziel[0], a.ziel[1], a.ziel[2]);
+      a.ziel = null; a.repT = 3;
+      if (n > 0) {
+        for (let s=0;s<8;s++)           // Funkeln beim Reparieren ✨
+          fireworks.push({x:a.x, y:a.y+1.2, z:a.z, vx:(Math.random()-0.5)*2,
+            vy:1+Math.random()*2, vz:(Math.random()-0.5)*2, tile:73, t:0.6});
+        sagen(a, HAUSMEISTER_TALK[Math.floor(Math.random()*HAUSMEISTER_TALK.length)], 3);
+        blip(523,0.07); blip(659,0.07); blip(784,0.1);
+      }
+    }
+    return;
+  }
+  if (a.repT > 0) return;
+  a.repT = 2.5;
+  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 70) return;    // nur in der Festung
+  const loch = sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7);
+  if (loch) { a.ziel = loch; return; }
+  // nichts kaputt: gemütlich beim Eingang patrouillieren
+  if (Math.hypot(a.x-a.heim[0], a.z-a.heim[2]) > 14) {
+    a.yaw = Math.atan2(a.heim[0]-a.x, -(a.heim[2]-a.z));
+    a.walking = true; a.spd = 2.2; a.t = 4;
+  }
+}
+const BUTLER_TALK = [
+  'Sehr wohl, König Jonah! 🤵',
+  'Wie Sie wünschen!',
+  'Sofort, mein König!',
+  'Darf es sonst noch etwas sein?',
+  'Ich stehe zu Diensten!',
+];
+function butlerTick(a, dt) {
+  const B = burgPos();
+  const dp = Math.hypot(player.x-a.x, player.z-a.z);
+  if (a.tanzT > 0) {                    // 💃 er tanzt gerade für dich!
+    a.tanzT -= dt;
+    a.walking = false; a.t = 9;
+    a.yaw += dt*7;                      // dreht sich im Kreis
+    if (a.onGround) { a.vy = 5.2; if (Math.random()<0.4) blip(400+Math.random()*400,0.05); }
+    return;
+  }
+  if (a.befehl==='folgen') {
+    a.t = 9; a.spd = 0;
+    if (dp > 28) {                      // abgehängt? Er nimmt die Abkürzung
+      a.x = player.x + (Math.random()*2-1); a.z = player.z + (Math.random()*2-1);
+      a.y = player.y + 1; a.vy = 0;
+    } else if (dp > 2.6) {
+      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+      a.walking = true; a.spd = 3.4;
+    } else { a.walking = false; a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z)); }
+    if (Math.random() < dt*0.01) sagen(a, BUTLER_TALK[Math.floor(Math.random()*BUTLER_TALK.length)], 3);
+  } else if (a.befehl==='warten') {
+    a.walking = false; a.t = 9;
+    if (dp < 12) a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));   // schaut dich an
+  } else {                              // ohne Auftrag: er bleibt in der Festung
+    if (Math.hypot(a.x-B.bx, a.z-B.bz) > 26) {
+      a.yaw = Math.atan2(B.bx-a.x, -(B.bz-a.z));
+      a.walking = true; a.spd = 2.4; a.t = 4;
+    }
+  }
+}
+// Das Befehls-Menü: Jonah tippt den Butler an und sagt ihm, was er tun soll
+let butlerAktiv = null;
+function openButler(a) {
+  butlerAktiv = a;
+  const list = document.getElementById('butlerList');
+  list.innerHTML = '';
+  const BEFEHLE = [
+    ['🚶 Komm mit!',            () => { a.befehl='folgen';
+      sagen(a,'Sehr wohl - ich folge Ihnen, König Jonah! 🤵',3); toast('🤵 Butler: „Sehr wohl, ich komme mit!"',3000); }],
+    ['🛑 Warte hier!',          () => { a.befehl='warten';
+      sagen(a,'Ich warte hier auf Sie!',3); toast('🤵 Butler: „Ich warte genau hier auf Sie!"',3000); }],
+    ['🥕 Bring mir einen Snack!', () => { boostT = 22;
+      sagen(a,'Eine frische Karotte, mein König! 🥕',3);
+      toast('🤵🥕 Der Butler serviert dir eine Riesen-Karotte - jetzt bist du blitzschnell!',3600);
+      blip(660,0.07); blip(880,0.09); }],
+    ['🕯️ Mach Licht!',          () => { const n = butlerLicht();
+      sagen(a,'Sofort etwas heller, mein König!',3);
+      toast(n ? '🤵🕯️ Der Butler stellt '+n+' Fackeln auf - jetzt ist es schön hell!'
+              : '🤵 Butler: „Hier ist es schon hell genug!"', 3400); }],
+    ['🧹 Räum auf!',            () => { const n = butlerFlicken();
+      sagen(a,'Ich mache das gleich sauber!',3);
+      toast(n ? '🤵🔧 Der Butler hat '+n+' Blöcke geflickt!'
+              : '🤵 Butler: „Hier ist alles tipptopp in Ordnung!"', 3400); }],
+    ['💃 Tanz mal!',            () => { a.tanzT = 6;
+      sagen(a,'Sehr gerne! Tra-la-la! 💃',4);
+      toast('🤵💃 Der Butler tanzt für dich!',3000);
+      for (const f of [523,659,784,1047]) blip(f,0.09); }],
+  ];
+  for (const [txt, fn] of BEFEHLE) {
+    const b = document.createElement('button');
+    b.className = 'liftBtn';
+    b.textContent = txt;
+    b.addEventListener('click', () => {
+      document.getElementById('butlerBox').style.display='none';
+      fn(); blip(600,0.05);
+    });
+    list.appendChild(b);
+  }
+  document.getElementById('butlerBox').style.display = 'flex';
+  blip(700,0.05); blip(880,0.05);
+}
+function butlerLicht() {                // Fackeln rund um Jonah aufstellen
+  let n = 0;
+  const px=Math.floor(player.x), py=Math.floor(player.y), pz=Math.floor(player.z);
+  for (let dx=-5; dx<=5 && n<6; dx++) for (let dz=-5; dz<=5 && n<6; dz++) {
+    if (Math.abs(dx)<2 && Math.abs(dz)<2) continue;
+    for (let dy=0; dy<=1; dy++) {
+      const x=px+dx, y=py+dy, z=pz+dz;
+      if (getBlock(x,y,z)!==AIR) continue;
+      const u = getBlock(x,y-1,z);
+      if (u===AIR || u===WATER || u===LAVA || u===TORCH) continue;
+      let schonHell = false;            // nicht direkt neben eine Fackel stellen
+      for (let qx=-3; qx<=3 && !schonHell; qx++)
+        for (let qz=-3; qz<=3 && !schonHell; qz++)
+          for (let qy=-1; qy<=1 && !schonHell; qy++)
+            if (getBlock(x+qx,y+qy,z+qz)===TORCH) schonHell = true;
+      if (schonHell) continue;
+      setBlock(x,y,z,TORCH); n++; blip(500+n*60,0.05);
+      break;
+    }
+  }
+  return n;
+}
+function butlerFlicken() {              // wie der Hausmeister, nur auf Zuruf
+  let n = 0;
+  for (let i=0; i<3; i++) {
+    const loch = sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 6);
+    if (!loch) break;
+    n += repariereLoch(loch[0], loch[1], loch[2]);
+  }
+  if (n) { blip(523,0.07); blip(659,0.07); blip(784,0.1); }
+  return n;
+}
+
 // Selfie-Ansicht 🤳: die Kamera schaut dich von vorne an!
 let selfie = false;
 function toggleSelfie() {
@@ -8327,6 +8544,28 @@ function hitEntity(a, dir) {
   }
   if (a.type==='trader') {              // beim Händler einkaufen!
     openShop(a);
+    return;
+  }
+  if (a.type==='butler') {              // 🤵 Befehle für den Butler!
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = false; a.t = 3;
+    openButler(a);
+    return;
+  }
+  if (a.type==='hausmeister') {         // 🔧 Hausmeister: arbeiten oder Pause?
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = false; a.t = 3;
+    a.pause = !a.pause;
+    if (a.pause) {
+      a.ziel = null;
+      sagen(a, 'Alles klar, ich mache Pause! ☕', 4);
+      toast('🔧 Hausmeister: „Alles klar, ich repariere erst mal nichts mehr. Tipp mich wieder an, wenn ich weitermachen soll!"', 4200);
+      blip(392,0.1);
+    } else {
+      sagen(a, 'Ich flicke wieder alles! 🔧', 4);
+      toast('🔧 Hausmeister: „Ich bin zurück! Alles, was kaputtgeht, mache ich sofort wieder heil!"', 4000);
+      blip(523,0.08); blip(659,0.1);
+    }
     return;
   }
   if (a.type==='knight') {              // mit dem Ritter sprechen!
