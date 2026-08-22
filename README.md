@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die WUNDERWELT hinterm Portal (v161)! ✨🌈 Statt nur Wolken
+  wartet hinter dem Portal jetzt eine Welt, in der ALLES möglich
+  ist: Acht ganz verschiedene Länder liegen dort nebeneinander, und
+  man weiß nie, was hinter dem nächsten Hügel kommt - ☁️ Wolken-Land
+  mit Kristalltürmen, 🌋 Feuer-Land mit Lava-Seen und Feuer-Säulen,
+  💎 Kristall-Land (ein ganzer Wald aus Glas), 🍭 Bonbon-Land mit
+  Zuckerstangen und Lutschern, 🌈 Regenbogen-Berge aus bunten
+  Schichten, 🍄 Pilz-Land mit RIESEN-Pilzen, 🌊 Insel-Meer und
+  👑 Gold-Land voller Schätze und Pokale. Über allen Ländern
+  schweben Wunder-Inseln, und wenn Jonah ein neues Land betritt,
+  sagt das Spiel ihm, wo er gerade ist
 - WASSERGRABEN & ZUGBRÜCKE + Hausmeister im ganzen Gelände (v160)!
   💧🌉 Rund um das Festungs-Haus liegt jetzt ein echter Wassergraben
   (innerhalb der großen Mauer, 3 Blöcke breit und 4 tief). Am
