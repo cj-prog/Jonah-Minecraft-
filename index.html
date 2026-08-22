@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 158 &middot; Deine Festung ist wieder da! 🏰🔧</p>
+    Version 159 &middot; Hausmeister spürt jeden Schaden &amp; alle warten hinter der Mauer! 🔧🧱</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 158;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 159;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2083,7 +2083,10 @@ function setBlock(wx,wy,wz,v) {
   const lx=wx&15, lz=wz&15, i=bidx(lx,wy,lz);
   if (ch.data[i]===v) return;
   ch.data[i]=v;
-  if (v===AIR) rotations.delete(wx+','+wy+','+wz);   // Drehung mit wegräumen
+  if (v===AIR) {
+    rotations.delete(wx+','+wy+','+wz);              // Drehung mit wegräumen
+    meldeSchaden(wx,wy,wz);            // 🔧 der Hausmeister spürt jedes Loch sofort!
+  }
   let e = edits.get(ckey(cx,cz));
   if (!e) { e=new Map(); edits.set(ckey(cx,cz),e); }
   e.set(i,v);
@@ -3718,7 +3721,7 @@ function spawnTick() {
         {home:'megaburg', hx:MB.bx+p[0], hz:MB.bz+p[1], hp:5});
     }
     // 🔧🤵 Hausmeister und Butler wohnen in der Festung und sind immer da!
-    if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 70) {
+    if (imBurghof()) {
       for (const [typ, nm, dx3, dz3] of [['hausmeister','Kurt',7,3], ['butler','James',-6,3]]) {
         if (animals.some(x => x.type===typ)) continue;
         animals.push({ type: typ, name: nm, friend: 3,
@@ -3729,7 +3732,7 @@ function spawnTick() {
     }
     // 🏠 ALLE Freunde kommen ins Freunde-Haus, wenn Jonah in seiner Festung ist -
     // auch die, die gerade NICHT mit auf Reisen sind!
-    if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 60) {
+    if (imBurghof()) {                  // erst hinter der Mauer kommen alle heraus!
       let gaeste = 0;
       for (const hk in savedFriends) {
         for (const [nm, isKid] of (savedFriends[hk]||[])) {
@@ -3949,7 +3952,7 @@ function spawnTick() {
 const GARAGEN_PLATZ = { bagger:[25,9], jet:[18,9], heli:[18,16], dragon:[24,16] };
 const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hubschrauber', dragon:'Dein Drache' };
 function parkeInGarage(a, dt) {
-  if (weltDim !== 0) return false;      // in der Wolkenwelt gibt es keine Garage
+  if (!imBurghof()) return false;       // erst hinter der Mauer fahren sie in die Garage
   const p = GARAGEN_PLATZ[a.type];
   if (!p) return false;
   const B = burgPos();
@@ -3979,9 +3982,10 @@ function parkeInGarage(a, dt) {
 // 🏠🐾 Ist Jonah in seiner Festung, gehen Freunde ins Freunde-Haus und
 // Tiere ins Gehege - jeder sucht sich dort seinen Lieblingsplatz aus.
 function heimPlatz(a, x0, xr, z0, zr) {
-  if (weltDim !== 0) { a.heimX = undefined; return null; }   // die Festung gibt es nur daheim!
+  // Erst wenn Jonah HINTER der großen Mauer ist, machen es sich alle gemütlich -
+  // draußen bleiben Freunde und Tiere schön bei ihm!
+  if (!imBurghof()) { a.heimX = undefined; return null; }
   const B = burgPos();
-  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 40) { a.heimX = undefined; return null; }
   if (a.heimX === undefined) { a.heimX = x0 + Math.random()*xr; a.heimZ = z0 + Math.random()*zr; }
   return [B.bx + a.heimX, B.bz + a.heimZ];
 }
@@ -6854,6 +6858,26 @@ const HAUSMEISTER_TALK = [
   'Ich hab hier ein Loch entdeckt... schon weg!',
   'Deine Festung ist bei mir in guten Händen!',
 ];
+// 🔧 Der Hausmeister SPÜRT jeden Schaden: Immer wenn irgendwo im Burggelände
+// ein Block verschwindet, wird die Stelle gemeldet - er läuft sofort hin.
+const schadenListe = [];
+let keinSchaden = false;                // während er selbst arbeitet: nicht melden
+function imBurgGelaende(x, z) {
+  if (weltDim !== 0) return false;
+  const B = burgPos();
+  return x > B.bx-64 && x < B.bx+66 && z > B.bz-36 && z < B.bz+36;
+}
+function imBurghof() {                  // ist Jonah HINTER der großen Mauer?
+  if (weltDim !== 0) return false;
+  const B = burgPos();
+  return player.x > B.bx-60 && player.x < B.bx+62 &&
+         player.z > B.bz-32 && player.z < B.bz+32;
+}
+function meldeSchaden(x, y, z) {
+  if (keinSchaden || schadenListe.length > 60) return;
+  if (typeof _burg === 'undefined' || !imBurgGelaende(x, z)) return;
+  schadenListe.push([x,y,z]);
+}
 function sucheLoch(mx, my, mz, r) {     // fehlt irgendwo in der Nähe ein Block?
   for (let y=my+4; y>=my-3; y--)
     for (let dx=-r; dx<=r; dx++)
@@ -6872,11 +6896,19 @@ function hausmeisterTick(a, dt) {
   if (a.ziel) {                         // er ist auf dem Weg zu einem Loch
     const dx=a.ziel[0]+0.5-a.x, dz=a.ziel[2]+0.5-a.z, dp=Math.hypot(dx,dz);
     a.yaw = Math.atan2(dx,-dz); a.t = 9;
-    if (dp > 2.2) { a.walking = true; a.spd = 3.0; }
-    else {                              // angekommen: zack, geflickt!
-      a.walking = false;
+    if (dp > 2.2) {
+      a.walking = true; a.spd = 3.6;    // er hat es eilig!
+      a.wegT = (a.wegT||0) + dt;        // Mauer oder Wand im Weg? Dann außenrum
+      if (a.wegT > 8) {
+        a.x = a.ziel[0]+0.5+(Math.random()-0.5); a.z = a.ziel[2]+0.5+(Math.random()-0.5);
+        a.y = a.ziel[1]+1; a.vy = 0; a.wegT = 0;
+      }
+    } else {                            // angekommen: zack, geflickt!
+      a.walking = false; a.wegT = 0;
+      keinSchaden = true;               // sein eigenes Werkeln meldet er nicht
       const n = repariereLoch(a.ziel[0], a.ziel[1], a.ziel[2]);
-      a.ziel = null; a.repT = 3;
+      keinSchaden = false;
+      a.ziel = null; a.repT = 0.6;      // gleich weiter zum nächsten Loch!
       if (n > 0) {
         for (let s=0;s<8;s++)           // Funkeln beim Reparieren ✨
           fireworks.push({x:a.x, y:a.y+1.2, z:a.z, vx:(Math.random()-0.5)*2,
@@ -6888,10 +6920,23 @@ function hausmeisterTick(a, dt) {
     return;
   }
   if (a.repT > 0) return;
-  a.repT = 2.5;
-  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 70) return;    // nur in der Festung
-  const loch = sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7);
-  if (loch) { a.ziel = loch; return; }
+  a.repT = 0.7;
+  if (weltDim !== 0) return;
+  // 1) Gemeldete Schäden zuerst - egal wo im ganzen Burggelände sie sind!
+  let versuche = 0;
+  while (schadenListe.length && versuche++ < 12) {
+    const [sx,sy,sz] = schadenListe.shift();
+    if (_lochArt(sx,sy,sz) === 'bau') {
+      a.ziel = [sx,sy,sz]; a.wegT = 0;
+      if (Math.hypot(a.x-sx, a.z-sz) > 12) sagen(a, 'Da ist etwas kaputt - ich komme! 🔧', 3);
+      return;
+    }
+  }
+  // 2) Sonst schaut er selbst nach: erst um sich herum, dann bei Jonah
+  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 90) return;
+  const loch = sucheLoch(Math.floor(a.x), Math.floor(a.y), Math.floor(a.z), 6) ||
+               sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7);
+  if (loch) { a.ziel = loch; a.wegT = 0; return; }
   // nichts kaputt: gemütlich beim Eingang patrouillieren
   if (Math.hypot(a.x-a.heim[0], a.z-a.heim[2]) > 14) {
     a.yaw = Math.atan2(a.heim[0]-a.x, -(a.heim[2]-a.z));
