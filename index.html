@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 160 &middot; Wassergraben &amp; Zugbrücke! 💧🌉</p>
+    Version 161 &middot; Die WUNDERWELT hinterm Portal - hier ist alles möglich! ✨🌈</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 160;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 161;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -576,7 +576,7 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
-  [PORTAL]: { name:'ZAUBER-PORTAL ✨ (stell dich rein - ab in die Wolkenwelt!)',
+  [PORTAL]: { name:'ZAUBER-PORTAL ✨ (stell dich rein - ab in die WUNDERWELT!)',
     tiles:[87,87,87], solid:false, model:[
     [0.04,0,0.04, 0.96,1.9,0.96, 87]] },
   [POKAL]: { name:'Jubiläums-Pokal 🏆 (100 Versionen JonahCraft!)', tiles:[30,30,30], solid:false, model:[
@@ -729,10 +729,20 @@ function fbm(x, z) {
 }
 // ✨ Es gibt ZWEI Welten: 0 = Jonahs Welt, 1 = die Wolken-Zauberwelt hinterm Portal
 let weltDim = 0;
-function zauberHoehe(x, z) {            // die Wolken-Ebene schwebt hoch oben
+// ✨ DIE WUNDERWELT hinterm Portal: Hier ist ALLES möglich! Sie besteht aus
+// vielen verrückten Ländern, die aneinandergrenzen - man weiß nie, was hinter
+// dem nächsten Hügel kommt: Wolken, Lava, Kristalle, Bonbons, Pilze, Gold...
+const WUNDER_LAND = ['☁️ Wolken-Land','🌋 Feuer-Land','💎 Kristall-Land','🍭 Bonbon-Land',
+                     '🌈 Regenbogen-Berge','🍄 Pilz-Land','🌊 Insel-Meer','👑 Gold-Land'];
+function wunderZone(x, z) {             // in welchem verrückten Land ist man hier?
+  return Math.floor(hash2(Math.floor(x/72), Math.floor(z/72), 3131) * 8) % 8;
+}
+function zauberHoehe(x, z) {            // die Wunderwelt schwebt hoch über allem
   const b = fbm(x*0.017+520, z*0.017-380);
   const h = vnoise(x*0.06+90, z*0.06+40, 611)*0.35;
-  return Math.max(70, Math.min(CH-30, Math.floor(104 + b*20 + h*9)));
+  const zn = wunderZone(x,z);
+  const extra = zn===4 ? 15 : zn===1 ? -10 : zn===6 ? -6 : zn===2 ? 6 : 0;
+  return Math.max(70, Math.min(CH-30, Math.floor(104 + b*20 + h*9 + extra)));
 }
 // Die Höhe in Jonahs NORMALER Welt - egal, in welcher Welt man gerade steht.
 // Alle Landschafts-Sachen (Wälder, Ritterburgen, Berge, die Riesen-Festung)
@@ -987,8 +997,7 @@ const edits = new Map();                // "cx,cz" -> Map(idx -> blockId)
 const ckey = (cx,cz)=>cx+','+cz;
 const bidx = (lx,y,lz)=>((y-CH_MIN)<<8)|(lz<<4)|lx;
 
-// ✨ DIE WOLKEN-ZAUBERWELT hinterm Portal: weiche Wolkenberge hoch über allem,
-// Kristall-Türme aus Glas, Zauberbäume, Blumen und versteckte Schatztruhen.
+// Jedes Land der Wunderwelt hat eigene Blöcke und eigene Überraschungen!
 function genZauberChunk(cx, cz, ohneEdits) {
   const data = new Uint8Array(CS*CS*CH_TOT);
   const x0 = cx*CS, z0 = cz*CS;
@@ -996,29 +1005,79 @@ function genZauberChunk(cx, cz, ohneEdits) {
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
     const wx = x0+lx, wz = z0+lz;
     const h = zauberHoehe(wx, wz);
+    const zn = wunderZone(wx, wz);
     setz(lx, CH_MIN+1, lz, SCHUTZ);     // ganz unten ein Netz, damit niemand ins Nichts fällt
-    for (let y=h-6; y<=h; y++) setz(lx, y, lz, y>h-2 ? WOOL : (y>h-4 ? WOOL : GLASS));
+    // --- der Boden, je nach Land ---
+    let oben = WOOL, unten = GLASS;
+    if (zn===1) { oben = STONE; unten = STONE; }                     // 🌋 Feuer-Land
+    else if (zn===2) { oben = GLASS; unten = STONE; }                // 💎 Kristall-Land
+    else if (zn===3) { oben = WOOL; unten = BRICK; }                 // 🍭 Bonbon-Land
+    else if (zn===4) { oben = BRICK; unten = STONE; }                // 🌈 Regenbogen-Berge
+    else if (zn===5) { oben = GRASS; unten = DIRT; }                 // 🍄 Pilz-Land
+    else if (zn===6) { oben = SAND; unten = SAND; }                  // 🌊 Insel-Meer
+    else if (zn===7) { oben = SAND; unten = STONE; }                 // 👑 Gold-Land
+    for (let y=h-6; y<=h; y++) setz(lx, y, lz, y>h-3 ? oben : unten);
     const r = hash2(wx, wz, 7001);
-    if (r < 0.0015) {                   // ein RIESIGER Kristall-Turm 💎
-      const hoch = 14 + Math.floor(hash2(wx,wz,7002)*16);
-      for (let y=h+1; y<=h+hoch; y++) setz(lx, y, lz, GLASS);
-      setz(lx, h+hoch+1, lz, TORCH);
-    } else if (r < 0.012) {             // Zauberbaum 🌳
-      for (let y=h+1; y<=h+4; y++) setz(lx, y, lz, WOOD);
-      for (let dy=3; dy<=5; dy++) for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
-        const nx=lx+dx, nz=lz+dz;
-        if (nx<0||nx>15||nz<0||nz>15) continue;
-        if (Math.abs(dx)+Math.abs(dz)+Math.abs(dy-4) <= 3) setz(nx, h+dy, nz, LEAF);
-      }
-    } else if (r < 0.05) setz(lx, h+1, lz, BLUME);        // bunte Zauberblumen
-    else if (r < 0.056) setz(lx, h+1, lz, CHEST);         // Schatz auf der Wolke!
-    // ... und ganz oben schweben noch kleine Wolken-Inseln
+    // --- was in diesem Land alles wächst und steht ---
+    if (zn===0) {                        // ☁️ Wolken-Land: Kristalltürme und Zauberbäume
+      if (r < 0.0015) { const hoch=14+Math.floor(hash2(wx,wz,7002)*16);
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,GLASS); setz(lx,h+hoch+1,lz,TORCH); }
+      else if (r < 0.012) { for (let y=h+1; y<=h+4; y++) setz(lx,y,lz,WOOD);
+        for (let dy=3; dy<=5; dy++) for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+          const nx=lx+dx, nz=lz+dz; if (nx<0||nx>15||nz<0||nz>15) continue;
+          if (Math.abs(dx)+Math.abs(dz)+Math.abs(dy-4) <= 3) setz(nx,h+dy,nz,LEAF); } }
+      else if (r < 0.05) setz(lx,h+1,lz,BLUME);
+    } else if (zn===1) {                 // 🌋 Feuer-Land: Lava-Seen und Feuer-Säulen
+      const lv = vnoise(wx*0.08, wz*0.08, 4711);
+      if (lv > 0.62) { setz(lx,h,lz,LAVA); setz(lx,h-1,lz,LAVA); }
+      else if (r < 0.004) { const hoch=5+Math.floor(hash2(wx,wz,7003)*9);
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,STONE); setz(lx,h+hoch+1,lz,LAVA); }
+      else if (r < 0.03) setz(lx,h+1,lz,TORCH);
+    } else if (zn===2) {                 // 💎 Kristall-Land: ein ganzer Wald aus Glas
+      if (r < 0.05) { const hoch=4+Math.floor(hash2(wx,wz,7004)*14);
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,GLASS);
+        if (hash2(wx,wz,7009)<0.3) setz(lx,h+hoch+1,lz,TORCH); }
+      else if (r < 0.056) setz(lx,h+1,lz,CHEST);
+    } else if (zn===3) {                 // 🍭 Bonbon-Land: Zuckerstangen und Lutscher
+      if (r < 0.03) { const hoch=3+Math.floor(hash2(wx,wz,7005)*7);
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz, y%2 ? WOOL : BRICK);
+        for (const [dx,dz] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) {
+          const nx=lx+dx, nz=lz+dz; if (nx<0||nx>15||nz<0||nz>15) continue;
+          setz(nx,h+hoch+1,nz,WOOL); } }
+      else if (r < 0.08) setz(lx,h+1,lz,BLUME);
+    } else if (zn===4) {                 // 🌈 Regenbogen-Berge: bunte Schichten
+      for (let y=h-6; y<=h; y++) setz(lx,y,lz, [BRICK,WOOL,SAND,GRASS,GLASS][(y+64)%5]);
+      if (r < 0.02) setz(lx,h+1,lz,BLUME);
+      else if (r < 0.024) setz(lx,h+1,lz,POKAL);
+    } else if (zn===5) {                 // 🍄 Pilz-Land: RIESEN-Pilze
+      if (r < 0.02) { const st=3+Math.floor(hash2(wx,wz,7006)*4);
+        for (let y=h+1; y<=h+st; y++) setz(lx,y,lz,WOOD);
+        for (let dx=-3; dx<=3; dx++) for (let dz=-3; dz<=3; dz++) {
+          const nx=lx+dx, nz=lz+dz; if (nx<0||nx>15||nz<0||nz>15) continue;
+          if (dx*dx+dz*dz <= 9) { setz(nx,h+st+1,nz,BRICK); setz(nx,h+st+2,nz,BRICK); } } }
+      else if (r < 0.06) setz(lx,h+1,lz,BLUME);
+      else if (r < 0.09) setz(lx,h+1,lz,LEAF);
+    } else if (zn===6) {                 // 🌊 Insel-Meer: Wasser mit kleinen Inseln
+      const w = vnoise(wx*0.05, wz*0.05, 5150);
+      if (w < 0.52) { for (let y=h-2; y<=h+2; y++) setz(lx,y,lz, y<=h ? WATER : AIR); }
+      else if (r < 0.02) { for (let y=h+1; y<=h+4; y++) setz(lx,y,lz,WOOD);
+        for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+          const nx=lx+dx, nz=lz+dz; if (nx<0||nx>15||nz<0||nz>15) continue;
+          if (Math.abs(dx)+Math.abs(dz)<=2) setz(nx,h+5,nz,LEAF); } }
+    } else {                             // 👑 Gold-Land: Schätze und Pokale überall
+      if (r < 0.03) setz(lx,h+1,lz,CHEST);
+      else if (r < 0.05) setz(lx,h+1,lz,POKAL);
+      else if (r < 0.07) setz(lx,h+1,lz,TORCH);
+      if (r > 0.97) { for (let y=h+1; y<=h+6; y++) setz(lx,y,lz,BRICK); }
+    }
+    // ... und über allen Ländern schweben Wunder-Inseln!
     const inselN = vnoise(wx*0.045+300, wz*0.045-200, 7104);
     if (inselN > 0.72) {
       const iy = h + 16 + Math.floor(vnoise(wx*0.02, wz*0.02, 7105)*20);
       const dick = 1 + Math.round((inselN-0.72)*7);
-      for (let y=iy; y<iy+dick; y++) setz(lx, y, lz, WOOL);
+      for (let y=iy; y<iy+dick; y++) setz(lx, y, lz, oben);
       if (hash2(wx,wz,7106) < 0.03) setz(lx, iy+dick, lz, BLUME);
+      if (hash2(wx,wz,7107) < 0.01) setz(lx, iy+dick, lz, CHEST);
     }
   }
   const e = ohneEdits ? null : edits.get(ckey(cx,cz));
@@ -3565,7 +3624,7 @@ function wolkenRettung() {              // ☁️ sanft zurück auf die nächste
         player.x=x+0.5; player.z=z+0.5; player.y=h+1.05;
         player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
         letzterBoden = {x:player.x, y:player.y, z:player.z};
-        toast('☁️✨ Puh! Die Wolken haben dich aufgefangen - hier ist wieder fester Boden!', 4200);
+        toast('✨ Puh! Die Wunderwelt hat dich aufgefangen - hier ist wieder fester Boden!', 4200);
         blip(700,0.08); blip(900,0.08); blip(1150,0.12);
         return;
       }
@@ -3575,7 +3634,7 @@ function wolkenRettung() {              // ☁️ sanft zurück auf die nächste
   for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++) setBlock(px+dx,h,pz+dz,WOOL);
   player.y = h+1.05; player.vx=player.vy=player.vz=0; player.kx=player.kz=0;
   letzterBoden = {x:player.x, y:player.y, z:player.z};
-  toast('☁️✨ Eine neue Wolke ist unter dir gewachsen - gerettet!', 4200);
+  toast('✨ Eine neue Wunder-Insel ist unter dir gewachsen - gerettet!', 4200);
   blip(700,0.08); blip(900,0.12);
 }
 function retteZurueck() {
@@ -7420,10 +7479,21 @@ function portalNutzen() {
   letzterBoden = {x:player.x, y:player.y, z:player.z};
   scheduleSave();
   toast(weltDim===1
-    ? '✨☁️ WOW! Du bist in der WOLKEN-ZAUBERWELT! Hier oben schweben Wolkenberge, Kristall-Türme und Schätze. Das Portal neben dir bringt dich wieder heim!'
-    : '✨🏠 Zurück in deiner Welt! Geh einfach wieder ins Portal, wenn du nochmal in die Wolkenwelt möchtest.', 6500);
+    ? '✨🌈 WOW! Du bist in der WUNDERWELT - hier ist ALLES möglich! Wolken-Land, Feuer-Land, Kristall-Wälder, Bonbon-Land, Regenbogen-Berge, Riesen-Pilze, Insel-Meere und Gold-Land liegen alle nebeneinander. Lauf los und schau, was hinter dem nächsten Hügel kommt! Das Portal neben dir bringt dich wieder heim.'
+    : '✨🏠 Zurück in deiner Welt! Geh einfach wieder ins Portal, wenn du nochmal in die Wunderwelt möchtest.', 7000);
 }
+let letzteZone = -1;
 function portalTick(dt) {
+  if (weltDim === 1) {                  // in welchem Wunder-Land ist Jonah gerade?
+    const zn = wunderZone(Math.floor(player.x), Math.floor(player.z));
+    if (zn !== letzteZone) {
+      if (letzteZone >= 0) {
+        toast('✨ Du bist jetzt im ' + WUNDER_LAND[zn] + '!', 3600);
+        blip(600,0.06); blip(800,0.07);
+      }
+      letzteZone = zn;
+    }
+  } else letzteZone = -1;
   if (portalKuehl > 0) { portalKuehl -= dt; portalT = 0; return; }
   // großzügig prüfen: Jonah soll auch im Vorbeilaufen ins Portal kommen
   const drin = [[0,0],[0.32,0],[-0.32,0],[0,0.32],[0,-0.32]].some(([ox,oz]) =>
