@@ -397,7 +397,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 163 &middot; BONBON-LAND: alles zum Aufessen! 🍬🍭🍫</p>
+    Version 164 &middot; Bau mit deinem GELD! 💶🏗️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -443,7 +443,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 163;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 164;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -470,7 +470,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
-      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80;
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81;
 // 🍬 alles, was man im Bonbon-Land wirklich naschen darf (Block -> wie viele Bonbons)
 const NASCH = { [BONBON]:1, [ZUCKERSTANGE]:2, [SCHOKO]:2, [LUTSCHER]:3 };
 
@@ -586,6 +586,8 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
+  // 💶 dein verdientes Geld als Baustein: hinstellen kostet 1 €, abbauen gibt 1 € zurück
+  [GELD]: { name:'Geld-Block 💶 (kostet 1 € – abbauen = 1 € zurück!)', tiles:[93,93,93], solid:true },
   // 🍬 Naschkram aus dem Bonbon-Land: abbauen = einsammeln, dann unten antippen = ESSEN!
   [BONBON]: { name:'Bonbon-Block 🍬 (abbauen = naschen!)', tiles:[89,89,89], solid:true },
   [SCHOKO]: { name:'Schokolade 🍫 (abbauen = naschen!)', tiles:[92,92,92], solid:true },
@@ -724,7 +726,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -2606,6 +2608,16 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y===3||y===12) return vary(96,100,110,14);                  // Metall-Bänder quer
     if (y%4===0) return vary(104,74,44,12);                         // Bohlen-Fugen
     return vary(150,110,66,16);                                     // helles Holz
+  });
+  tile(93,(x,y)=>{                                                  // Geld-Block 💶: Goldbarren mit €
+    if (x===0||x===15||y===0||y===15) return vary(150,108,20,10);   // dunkler Rand
+    // ein großes € in die Mitte stempeln
+    const eu = (y>=3 && y<=12 && x>=5 && x<=11 &&
+                ((x===5 && y>=5 && y<=10) || (x===6 && (y===4||y===11)) ||
+                 (x>=7 && (y===3||y===12)) || (y===6&&x<=10) || (y===9&&x<=10)));
+    if (eu) return vary(96,66,10,8);                                // eingeprägtes Euro-Zeichen
+    if (x+y < 7) return vary(255,244,180,10);                       // heller Glanz oben links
+    return vary(238,196,58,12);                                     // glänzendes Gold
   });
   tile(89,(x,y)=>{                                                  // Bonbon-Block 🍬: rosa mit Streuseln
     const s = (x*7 + y*11) % 23;                                    // nur ein paar wenige Streusel
@@ -5374,7 +5386,7 @@ function eatFood(kind) {
     toast('💎 Deine Schatz-Sammlung: '+gems+' Diamanten! Der Händler im Laden tauscht sie in Euro um!', 3200);
     return;
   } else if (kind==='m') {
-    toast('💶 Dein Geldbeutel: '+money+' Euro! Verdiene mehr beim Händler im Laden. 🏪', 3000);
+    toast('💶 Dein Geldbeutel: '+money+' Euro! Verdiene mehr beim Händler 🏪 – oder wähle den Geld-Block in der Bau-Leiste und bau damit! (1 Block = 1 €, abbauen = Geld zurück)', 4500);
     return;
   } else return;
   updateFoodHUD(); scheduleSave();
@@ -7790,6 +7802,7 @@ function finishLasso() {
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
       if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
+      if (b2===GELD) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,lCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -8151,6 +8164,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
+  [GELD]:'#eec43a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -9599,6 +9613,14 @@ function doBreak(dir) {
     blip(200,0.07);
     return;
   }
+  if (hit.block===GELD) {               // 💶 Geld-Block abbauen = der Euro kommt zurück
+    money++; updateFoodHUD(); scheduleSave();
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    pruefeNachbarn(hit.x,hit.y,hit.z);
+    toast('💶 Kling! 1 Euro zurück in deinen Geldbeutel (jetzt '+money+' €).', 2600);
+    blip(1170,0.05); blip(880,0.06);
+    return;
+  }
   if (NASCH[hit.block]) {               // 🍬 Naschkram abbauen = in den Naschbeutel!
     const n = NASCH[hit.block];
     bonbons += n; updateFoodHUD(); scheduleSave();
@@ -9675,6 +9697,7 @@ function doBreak(dir) {
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
       if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
+      if (b2===GELD) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,wCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -9713,7 +9736,7 @@ function toggleGate(x, y, z) {          // alle verbundenen Tor-Blöcke zusammen
   toast(opening ? '🎚️ Rrrrr... Tor auf! ('+cells.length+' Blöcke)' : '🎚️ Rrrrr... Tor zu!', 2000);
   blip(160,0.1); blip(200,0.1); blip(240,0.12);
 }
-let lavaTipp = false, wasserTipp = false;   // Erklärung nur beim ersten Setzen
+let lavaTipp = false, wasserTipp = false, geldTipp = false;   // Erklärung nur beim ersten Setzen
 function doPlace(dir) {
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
@@ -9961,6 +9984,19 @@ function doPlace(dir) {
       return;
     }
     snowCnt -= 3; updateFoodHUD(); scheduleSave();
+  }
+  if (b===GELD) {                       // 💶 mit dem eigenen Geld bauen: jeder Block kostet 1 €
+    if (money <= 0) {
+      toast('💶 Du hast kein Geld mehr! Verkauf dem Händler 🥕 Gemüse, 🧶 Wolle oder 💎 Diamanten. 🏪', 3600);
+      blip(180,0.15);
+      return;
+    }
+    money--; updateFoodHUD(); scheduleSave();
+    blip(880,0.05); blip(1170,0.06);     // Kling! wie eine Münze
+    if (!geldTipp) {
+      geldTipp = true;
+      toast('💶 Dein Geld als Baustein! Jeder Block kostet 1 € – und wenn du ihn wieder abbaust, bekommst du den Euro zurück. Bau dir einen Geld-Turm! 🏆', 5000);
+    }
   }
   if (b===WOOL) {                       // Wolle bauen kostet Wolle vom Schaf!
     if (wool <= 0) {
