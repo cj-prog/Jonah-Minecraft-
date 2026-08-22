@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Hausmeister spürt jeden Schaden + alle warten hinter der Mauer (v159)!
+  🔧🧱 Zwei Wünsche: 1. Hausmeister Kurt SPÜRT jetzt jedes Loch:
+  Sobald irgendwo im ganzen Burggelände ein Block verschwindet -
+  auch weit weg von Jonah, in einem anderen Zimmer oder hinter der
+  Mauer - wird ihm die Stelle sofort gemeldet. Er ruft „Da ist etwas
+  kaputt - ich komme!", flitzt hin (jetzt schneller) und flickt es.
+  Danach macht er sofort mit dem nächsten Loch weiter, bis alles
+  wieder heil ist. Steht eine Wand im Weg, nimmt er die Abkürzung.
+  2. Erst wenn Jonah HINTER DER MAUER ist, kommen alle heraus:
+  Fahrzeuge fahren dann in die Garage, Freunde ziehen ins
+  Freunde-Haus, Tiere gehen ins Gehege. Draußen vor der Mauer
+  bleiben alle brav bei Jonah - so kann er mit dem ganzen Trupp
+  losziehen, ohne dass sie schon von weitem nach Hause laufen
 - Die Festung ist wieder da (v158)! 🏰🔧 Ein böser Fehler ist
   repariert: Wer durchs Portal in die Wolkenwelt ging, bei dem hat
   sich das Spiel dort die Festungs-Höhe gemerkt - und beim Zurück-
