@@ -319,6 +319,7 @@
   <div class="foodChip" id="foodS"></div>
   <div class="foodChip" id="foodG"></div>
   <div class="foodChip" id="foodK"></div>
+  <div class="foodChip" id="foodBo"></div>
   <div class="foodChip" id="foodM"></div>
 </div>
 
@@ -327,6 +328,7 @@
   <div id="shopGems">💶 0</div>
   <div class="shopRow" data-buy="cake">🍰 Kuchen kaufen &mdash; 2 €</div>
   <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 €</div>
+  <div class="shopRow" data-buy="bonbon">🍬 Bonbon-Tüte (5 Stück) &mdash; 2 €</div>
   <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 €</div>
   <div class="shopRow" data-buy="ball">⚽ Fußball &mdash; 2 €</div>
   <div class="shopRow" data-buy="sword">⚔️ Schwert &mdash; 5 €</div>
@@ -395,7 +397,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 162 &middot; MISSIONEN! 13 Aufgaben warten auf dich 📜🏆</p>
+    Version 163 &middot; BONBON-LAND: alles zum Aufessen! 🍬🍭🍫</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -441,7 +443,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 162;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 163;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -467,7 +469,10 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
-      GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76;
+      GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80;
+// 🍬 alles, was man im Bonbon-Land wirklich naschen darf (Block -> wie viele Bonbons)
+const NASCH = { [BONBON]:1, [ZUCKERSTANGE]:2, [SCHOKO]:2, [LUTSCHER]:3 };
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -581,6 +586,15 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
+  // 🍬 Naschkram aus dem Bonbon-Land: abbauen = einsammeln, dann unten antippen = ESSEN!
+  [BONBON]: { name:'Bonbon-Block 🍬 (abbauen = naschen!)', tiles:[89,89,89], solid:true },
+  [SCHOKO]: { name:'Schokolade 🍫 (abbauen = naschen!)', tiles:[92,92,92], solid:true },
+  [ZUCKERSTANGE]: { name:'Zuckerstange 🍭 (abbauen = naschen!)', tiles:[90,90,90], solid:true, model:[
+    [0.18,0,0.18, 0.82,1,0.82, 90]] },
+  [LUTSCHER]: { name:'Lutscher 🍭 (abbauen = naschen!)', tiles:[91,91,91], solid:false, model:[
+    [0.45,0,0.45, 0.55,0.55,0.55, 49],                  // weißer Stiel
+    [0.16,0.55,0.44, 0.84,1.25,0.56, 91, 1.3],          // die große runde Scheibe
+    [0.44,0.55,0.16, 0.56,1.25,0.84, 91, 1.15]] },
   [PORTAL]: { name:'ZAUBER-PORTAL ✨ (stell dich rein - ab in die WUNDERWELT!)',
     tiles:[87,87,87], solid:false, model:[
     [0.04,0,0.04, 0.96,1.9,0.96, 87]] },
@@ -710,7 +724,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1016,7 +1030,7 @@ function genZauberChunk(cx, cz, ohneEdits) {
     let oben = WOOL, unten = GLASS;
     if (zn===1) { oben = STONE; unten = STONE; }                     // 🌋 Feuer-Land
     else if (zn===2) { oben = GLASS; unten = STONE; }                // 💎 Kristall-Land
-    else if (zn===3) { oben = WOOL; unten = BRICK; }                 // 🍭 Bonbon-Land
+    else if (zn===3) { oben = BONBON; unten = SCHOKO; }              // 🍭 Bonbon-Land: ALLES essbar!
     else if (zn===4) { oben = BRICK; unten = STONE; }                // 🌈 Regenbogen-Berge
     else if (zn===5) { oben = GRASS; unten = DIRT; }                 // 🍄 Pilz-Land
     else if (zn===6) { oben = SAND; unten = SAND; }                  // 🌊 Insel-Meer
@@ -1043,13 +1057,16 @@ function genZauberChunk(cx, cz, ohneEdits) {
         for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,GLASS);
         if (hash2(wx,wz,7009)<0.3) setz(lx,h+hoch+1,lz,TORCH); }
       else if (r < 0.056) setz(lx,h+1,lz,CHEST);
-    } else if (zn===3) {                 // 🍭 Bonbon-Land: Zuckerstangen und Lutscher
+    } else if (zn===3) {                 // 🍭 Bonbon-Land: Zuckerstangen und Riesen-Lutscher
       if (r < 0.03) { const hoch=3+Math.floor(hash2(wx,wz,7005)*7);
-        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz, y%2 ? WOOL : BRICK);
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,ZUCKERSTANGE);   // der gestreifte Stiel
         for (const [dx,dz] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) {
           const nx=lx+dx, nz=lz+dz; if (nx<0||nx>15||nz<0||nz>15) continue;
-          setz(nx,h+hoch+1,nz,WOOL); } }
-      else if (r < 0.08) setz(lx,h+1,lz,BLUME);
+          setz(nx,h+hoch+1,nz,BONBON); }                              // Bonbon-Krone obendrauf
+        setz(lx,h+hoch+2,lz,LUTSCHER); }                              // und ein Lutscher als Spitze
+      else if (r < 0.06) setz(lx,h+1,lz,LUTSCHER);                    // Lutscher-Wiese
+      else if (r < 0.09) setz(lx,h+1,lz,BONBON);                      // einzelne Bonbons zum Aufsammeln
+      else if (r < 0.11) setz(lx,h+1,lz,BLUME);
     } else if (zn===4) {                 // 🌈 Regenbogen-Berge: bunte Schichten
       for (let y=h-6; y<=h; y++) setz(lx,y,lz, [BRICK,WOOL,SAND,GRASS,GLASS][(y+64)%5]);
       if (r < 0.02) setz(lx,h+1,lz,BLUME);
@@ -2234,6 +2251,7 @@ function saveGame() {
       bagger: bagSave,
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
+      bonbons, naschZahl,
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -2292,6 +2310,8 @@ function loadGame() {
     if (typeof s.gems==='number') gems = s.gems;
     if (typeof s.cakes==='number') cakes = s.cakes;
     if (typeof s.money==='number') money = s.money;
+    if (typeof s.bonbons==='number') bonbons = s.bonbons;       // 🍬 der Naschbeutel
+    if (typeof s.naschZahl==='number') naschZahl = s.naschZahl;
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
     if (typeof s.brkBest==='number') brkBest = s.brkBest;
     if (typeof s.racBest==='number') racBest = s.racBest;
@@ -2586,6 +2606,31 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y===3||y===12) return vary(96,100,110,14);                  // Metall-Bänder quer
     if (y%4===0) return vary(104,74,44,12);                         // Bohlen-Fugen
     return vary(150,110,66,16);                                     // helles Holz
+  });
+  tile(89,(x,y)=>{                                                  // Bonbon-Block 🍬: rosa mit Streuseln
+    const s = (x*7 + y*11) % 23;                                    // nur ein paar wenige Streusel
+    if (s === 0) return vary(120,220,235,10);                       // türkise Streusel
+    if (s === 7) return vary(255,228,96,10);                        // gelbe Streusel
+    if (s === 14) return vary(255,255,255,8);                       // Zucker-Kristall
+    if (s === 19) return vary(150,238,140,10);                      // grüne Streusel
+    return vary(250,150,196,8);                                     // rosa Bonbon-Masse
+  });
+  tile(90,(x,y)=>{                                                  // Zuckerstange 🍭: rot-weiß gedreht
+    return ((x+y) % 8) < 4 ? vary(248,248,252,10) : vary(230,52,72,14);
+  });
+  tile(91,(x,y)=>{                                                  // Lutscher 🍭: runde Scheibe mit Ringen
+    const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
+    if (r > 7.6) return vary(214,226,236,8);                        // Ecken: heller Hintergrund
+    if (r > 6.8) return vary(252,252,255,6);                        // weißer Rand rundherum
+    const ring = Math.floor(r + Math.atan2(dy,dx)*0.6 + 8) % 3;     // leicht gedrehte Ringe
+    if (ring === 0) return vary(240,64,104,8);                      // pink
+    if (ring === 1) return vary(255,238,130,8);                     // gelb
+    return vary(118,206,250,8);                                     // hellblau
+  });
+  tile(92,(x,y)=>{                                                  // Schokolade 🍫: Tafel mit Rillen
+    if (x % 8 === 0 || y % 8 === 0) return vary(62,38,22,8);        // die Bruch-Rillen
+    if (x % 8 === 1 || y % 8 === 1) return vary(138,92,54,10);      // heller Glanz
+    return vary(104,64,36,12);
   });
   tile(87,(x,y)=>{                                                  // Zauber-Portal ✨: lila Wirbel
     const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
@@ -5263,6 +5308,7 @@ function drawPaintings() {
 // ------------------------------ Essen ---------------------------------------
 const cropSet = new Set();              // wachsende Beete ("x,y,z")
 let carrots = 0, tomatoes = 0, apples = 0, wheat = 0, bread = 0, wool = 0, gems = 0, cakes = 0;
+let bonbons = 0, naschZahl = 0;         // 🍬 dein Naschbeutel (und wie viel du schon genascht hast)
 let money = 5;                          // dein Geldbeutel: 5 Euro Startgeld! 💶
 let boostT = 0, jumpT = 0, cropT = 0, balloonT = 0;
 let rutschV = 0, rutschT = 0;           // 🛝 wie schnell rutscht Jonah gerade?
@@ -5273,7 +5319,7 @@ function updateFoodHUD() {
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
   set('foodS','❄️',snowCnt); set('foodG','💎',gems); set('foodK','🍰',cakes);
-  set('foodM','💶',money);
+  set('foodBo','🍬',bonbons); set('foodM','💶',money);
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -5301,6 +5347,23 @@ function eatFood(kind) {
   } else if (kind==='k' && cakes>0) {
     cakes--; boostT = 30; jumpT = 30;
     toast('Mmmh! 🍰 Kuchen-Power – superschnell UND riesige Sprünge für 30 Sekunden!', 3000);
+  } else if (kind==='bo' && bonbons>0) {         // 🍬 naschen! Zucker-Rausch!
+    bonbons--; naschZahl++;
+    boostT = Math.max(boostT, 18); jumpT = Math.max(jumpT, 18);
+    missEvent('nasch');
+    const spruch = ['🍬 Mmmh, zuckersüß! Zucker-Rausch – schnell UND hoch!',
+                    '🍭 Schleck! Voll lecker! Du flitzt und springst wie verrückt!',
+                    '🍫 Njam njam, Schokolade! Zucker im Blut – los geht\'s!',
+                    '🍬 Süüüß! Jetzt hast du Bonbon-Power für 18 Sekunden!'][naschZahl % 4];
+    toast(spruch, 3000);
+    for (let i=0; i<6; i++)                      // bunte Zucker-Funken um dich herum
+      fireworks.push({x:player.x+(Math.random()-0.5)*1.6, y:player.y+1+Math.random(),
+        z:player.z+(Math.random()-0.5)*1.6, vx:(Math.random()-0.5)*2.5,
+        vy:1.5+Math.random()*1.5, vz:(Math.random()-0.5)*2.5, tile:89, t:0.7});
+    if (naschZahl % 10 === 0) {                  // jedes 10. Bonbon: Zucker-Rakete!
+      launchFirework();
+      toast('🍬🎆 '+naschZahl+' Bonbons genascht! Zucker-Feuerwerk für dich!', 3500);
+    }
   } else if (kind==='wo') {
     toast('🧶 Wolle isst man nicht! 😄 Wähle den Woll-Block in der Leiste und bau damit!', 3000);
     return;
@@ -5317,7 +5380,7 @@ function eatFood(kind) {
   updateFoodHUD(); scheduleSave();
   blip(500,0.05); blip(420,0.05); blip(540,0.05);
 }
-for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g'],['foodK','k'],['foodM','m']]) {
+for (const [id,kind] of [['foodC','c'],['foodT','t'],['foodA','a'],['foodW','w'],['foodB','b'],['foodWo','wo'],['foodS','s'],['foodG','g'],['foodK','k'],['foodBo','bo'],['foodM','m']]) {
   const el=document.getElementById(id);
   el.addEventListener('click', ()=>eatFood(kind));
   el.addEventListener('touchstart', e=>{ e.preventDefault(); eatFood(kind); }, {passive:false});
@@ -6528,7 +6591,7 @@ function updateShopUI() {
 function shopBuy(what) {
   if (what==='sword' && sword) { toast('⚔️ Du hast schon ein Schwert! 😄', 2500); return; }
   if (what==='bow' && bow) { toast('🏹 Du hast schon einen Bogen! 😄', 2500); return; }
-  const cost = what==='cake' ? 2 : what==='balloon' ? 3 : what==='ball' ? 2
+  const cost = what==='cake' ? 2 : what==='bonbon' ? 2 : what==='balloon' ? 3 : what==='ball' ? 2
              : what==='sword' ? 5 : what==='bow' ? 8 : 1;
   if (money < cost) {
     toast('Zu wenig Geld! 💶 Verkaufe dem Händler Gemüse, Wolle oder Diamanten!', 3200);
@@ -6537,6 +6600,7 @@ function shopBuy(what) {
   }
   money -= cost;
   if (what==='cake') { cakes++; toast('🍰 Ein Kuchen! Tippe ihn unten in der Leiste an zum Essen!', 3000); }
+  if (what==='bonbon') { bonbons += 5; toast('🍬 Eine ganze Bonbon-Tüte! Tippe unten das 🍬 an zum Naschen!', 3200); }
   if (what==='balloon') { balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800); }
   if (what==='fw') { launchFirework(); toast('🎆 Feuerwerk! Schau in den Himmel!', 3000); }
   if (what==='ball') {
@@ -7489,7 +7553,7 @@ function portalNutzen() {
   letzterBoden = {x:player.x, y:player.y, z:player.z};
   scheduleSave();
   toast(weltDim===1
-    ? '✨🌈 WOW! Du bist in der WUNDERWELT - hier ist ALLES möglich! Wolken-Land, Feuer-Land, Kristall-Wälder, Bonbon-Land, Regenbogen-Berge, Riesen-Pilze, Insel-Meere und Gold-Land liegen alle nebeneinander. Lauf los und schau, was hinter dem nächsten Hügel kommt! Das Portal neben dir bringt dich wieder heim.'
+    ? '✨🌈 WOW! Du bist in der WUNDERWELT - hier ist ALLES möglich! Wolken-Land, Feuer-Land, Kristall-Wälder, Bonbon-Land (da kannst du ALLES aufessen! 🍬), Regenbogen-Berge, Riesen-Pilze, Insel-Meere und Gold-Land liegen alle nebeneinander. Lauf los und schau, was hinter dem nächsten Hügel kommt! Das Portal neben dir bringt dich wieder heim.'
     : '✨🏠 Zurück in deiner Welt! Geh einfach wieder ins Portal, wenn du nochmal in die Wunderwelt möchtest.', 7000);
 }
 let letzteZone = -1;
@@ -7498,7 +7562,9 @@ function portalTick(dt) {
     const zn = wunderZone(Math.floor(player.x), Math.floor(player.z));
     if (zn !== letzteZone) {
       if (letzteZone >= 0) {
-        toast('✨ Du bist jetzt im ' + WUNDER_LAND[zn] + '!', 3600);
+        toast('✨ Du bist jetzt im ' + WUNDER_LAND[zn] + '!' + (zn===3
+          ? ' Hier ist ALLES echtes Naschzeug: hau Bonbons, Lutscher, Zuckerstangen und Schokolade ab und tippe unten das 🍬 an – dann isst du sie! 🍬🍭🍫'
+          : ''), zn===3 ? 6500 : 3600);
         blip(600,0.06); blip(800,0.07);
       }
       letzteZone = zn;
@@ -7541,6 +7607,8 @@ const MISSIONEN = [
       weltDim===1 && wunderZone(Math.floor(player.x), Math.floor(player.z))===5 },
   { t:'👑 Gold-Jäger',      txt:'Finde das Gold-Land in der Wunderwelt',  ort:()=>
       weltDim===1 && wunderZone(Math.floor(player.x), Math.floor(player.z))===7 },
+  { t:'🍬 Naschkatze',      txt:'Nasch 15 Bonbons (im 🍭 Bonbon-Land wächst alles zum Essen!)',
+      ev:'nasch', ziel:15 },
 ];
 let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
@@ -7721,6 +7789,7 @@ function finishLasso() {
       if (b2===CABINET) removeCabinet(qx,qy,qz);
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
+      if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,lCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -8081,6 +8150,7 @@ const MAP_BLOCK_COL = {
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
+  [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -9529,6 +9599,17 @@ function doBreak(dir) {
     blip(200,0.07);
     return;
   }
+  if (NASCH[hit.block]) {               // 🍬 Naschkram abbauen = in den Naschbeutel!
+    const n = NASCH[hit.block];
+    bonbons += n; updateFoodHUD(); scheduleSave();
+    setBlock(hit.x,hit.y,hit.z,AIR);
+    pruefeNachbarn(hit.x,hit.y,hit.z);
+    const wie = hit.block===SCHOKO ? '🍫 Schokolade' : hit.block===LUTSCHER ? '🍭 Lutscher'
+              : hit.block===ZUCKERSTANGE ? '🍭 Zuckerstange' : '🍬 Bonbon';
+    toast(wie+' eingesammelt (+'+n+' 🍬)! Tippe unten das 🍬 an – dann isst du es!', 3200);
+    blip(700,0.05); blip(880,0.06);
+    return;
+  }
   if (hit.block===SNOW) {               // Schnee aufsammeln!
     snowCnt++; updateFoodHUD(); scheduleSave();
     setBlock(hit.x,hit.y,hit.z,AIR);
@@ -9593,6 +9674,7 @@ function doBreak(dir) {
       if (b2===CABINET) removeCabinet(qx,qy,qz);
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
+      if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,wCtr);
       pruefeNachbarn(qx,qy,qz);

@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- BONBON-LAND zum AUFESSEN (v163)! 🍬🍭🍫 Im Bonbon-Land der
+  Wunderwelt ist ab jetzt wirklich alles Naschzeug: Der Boden
+  besteht aus rosa Bonbon-Blöcken mit bunten Streuseln, darunter
+  liegt eine dicke Schicht Schokolade, überall stehen rot-weiße
+  Zuckerstangen mit Bonbon-Krone, und obendrauf sowie auf den
+  Wiesen sitzen bunte Lutscher. Und das Beste: Man kann es
+  aufessen! Jedes Stück Naschzeug, das du abbaust, wandert in
+  deinen Naschbeutel (🍬 unten in der Leiste) – ein Bonbon zählt
+  1, eine Zuckerstange 2, Schokolade 2 und ein Lutscher sogar 3.
+  Tippst du das 🍬 an, isst du eins: Es funkelt in Zucker-Farben,
+  und du bist 18 Sekunden lang superschnell UND springst riesig
+  hoch. Jedes 10. Bonbon gibt ein Zucker-Feuerwerk! Beim Händler
+  gibt es außerdem eine Bonbon-Tüte (5 Stück) für 2 €, alle vier
+  Süßigkeiten stehen in der Bau-Leiste (bau dir ein Bonbon-Haus!)
+  und die neue Mission „🍬 Naschkatze" schickt dich zum Naschen
 - MISSIONEN! 13 Aufgaben für König Jonah (v162)! 📜🏆 Jetzt gibt es
   im Spiel richtige Aufgaben: Oben links steht immer, was gerade
   dran ist, samt Zähler (z. B. „Hau 10 Holz-Blöcke ab (3/10)").
