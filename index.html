@@ -414,7 +414,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 166 &middot; Vorsicht: Räuber klauen dein Geld! 😈💰</p>
+    Version 167 &middot; WACH-KANONEN! Sie schießen von allein 💣💥</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -460,7 +460,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 166;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 167;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -487,10 +487,11 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
-      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82;
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83;
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
+const kanonen = new Map();              // 💣 alle Wach-Kanonen: "x,y,z" -> Nachlade-Zeit
 // 🍬 alles, was man im Bonbon-Land wirklich naschen darf (Block -> wie viele Bonbons)
 const NASCH = { [BONBON]:1, [ZUCKERSTANGE]:2, [SCHOKO]:2, [LUTSCHER]:3 };
 
@@ -606,6 +607,17 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
+  // 💣 die Wach-Kanone: sie sucht sich ihre Ziele selbst und schießt von allein!
+  [KANONE]: { name:'Wach-Kanone 💣 (schießt von allein auf Räuber und Monster!)',
+    tiles:[96,96,96], solid:true, model:[
+    [0.06,0,0.06, 0.94,0.2,0.94, 5],                    // Holz-Lafette
+    [0.02,0.06,0.14, 0.14,0.5,0.26, 3], [0.86,0.06,0.14, 0.98,0.5,0.26, 3],   // Räder hinten
+    [0.02,0.06,0.74, 0.14,0.5,0.86, 3], [0.86,0.06,0.74, 0.98,0.5,0.86, 3],   // Räder vorne
+    [0.24,0.2,0.34, 0.76,0.44,0.92, 5],                 // Bock
+    [0.28,0.38,0.5, 0.72,0.82,0.94, 96],                // dickes Pulver-Ende hinten
+    [0.34,0.44,0.44, 0.66,0.76,0.56, 96],               // Verdickung in der Mitte
+    [0.38,0.48,0.06, 0.62,0.72,0.5, 96],                // das lange schlanke Rohr
+    [0.34,0.44,0.0, 0.66,0.76,0.1, 3]] },               // glänzender Mündungs-Ring
   // 💵🪙 dein verdientes Geld als Baustein: hinstellen kostet 1 €, abbauen gibt 1 € zurück
   [GELD]: { name:'Geldscheine 💵 (ein dickes Bündel – kostet 1 €, abbauen = 1 € zurück!)',
     tiles:[93,95,95], solid:true },
@@ -755,7 +767,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -2104,7 +2116,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -2226,6 +2238,8 @@ function setBlock(wx,wy,wz,v) {
   const gk = wx+','+wy+','+wz;
   if (GELD_BLOCK.has(v)) geldOrte.add(gk);
   else if (GELD_BLOCK.has(vorher)) geldOrte.delete(gk);
+  if (v===KANONE) kanonen.set(gk, 0);   // 💣 eine neue Wach-Kanone meldet sich zum Dienst
+  else if (vorher===KANONE) kanonen.delete(gk);
   if (v===AIR) {
     rotations.delete(wx+','+wy+','+wz);              // Drehung mit wegräumen
     meldeSchaden(wx,wy,wz);            // 🔧 der Hausmeister spürt jedes Loch sofort!
@@ -2291,6 +2305,7 @@ function saveGame() {
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
       bonbons, naschZahl,
       geldOrte: [...geldOrte],          // 💰 wo dein Geld herumliegt (die Räuber suchen danach!)
+      kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -2353,6 +2368,7 @@ function loadGame() {
     if (typeof s.bonbons==='number') bonbons = s.bonbons;       // 🍬 der Naschbeutel
     if (typeof s.naschZahl==='number') naschZahl = s.naschZahl;
     if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
+    if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
     if (typeof s.brkBest==='number') brkBest = s.brkBest;
     if (typeof s.racBest==='number') racBest = s.racBest;
@@ -2665,6 +2681,12 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (euroZeichen(x-3,y)) return vary(242,250,238,8);             // großes € daneben
     if ((x+y)%4===0) return vary(94,176,120,8);                     // feines Muster
     return vary(56,140,88,8);                                       // Schein-Grün
+  });
+  tile(96,(x,y)=>{                                                  // Kanone 💣: dunkles Eisen
+    if ((x*3+y*5) % 17 === 0) return vary(96,102,112,10);           // ein paar helle Nieten
+    if (x+y < 6) return vary(104,110,122,10);                       // Glanzlicht oben links
+    if (x+y > 24) return vary(30,33,40,8);                          // Schatten unten rechts
+    return vary(58,62,72,10);                                       // Guss-Eisen
   });
   tile(94,(x,y)=>{                                                  // Münze 🪙: Goldstück mit €
     const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
@@ -5144,6 +5166,12 @@ function drawAnimals() {
   // fliegende Pfeile 🏹
   for (const p of arrows) {
     const pa = { x:p.x, y:p.y, z:p.z, yaw: Math.atan2(p.vx, -p.vz) };
+    if (p.kugel) {                                                // 💣 dicke Kanonenkugel!
+      pushBox(arr,pa, 0,0,0, 0.42,0.42,0.42, 96);
+      pushBox(arr,pa, 0,0,0, 0.5,0.28,0.28, 96);
+      pushBox(arr,pa, 0,0,0, 0.28,0.5,0.28, 96);
+      continue;
+    }
     pushBox(arr,pa, 0,0,-0.05, 0.05,0.05,0.5, 5);                 // Schaft
     pushBox(arr,pa, 0,0,-0.34, 0.08,0.08,0.1, 3);                 // Spitze
     pushBox(arr,pa, 0,0,0.24, 0.1,0.02,0.12, 10);                 // Federn
@@ -8013,6 +8041,13 @@ function shootArrow() {
                 vx:d[0]*24, vy:d[1]*24, vz:d[2]*24, t:3, stuck:0 });
   blip(600,0.04); blip(300,0.08);       // Pfeil-Schuss: zisch!
 }
+// 💥 Wumms: die Kanonenkugel zerplatzt in Rauch und Funken (Blöcke bleiben heil!)
+function kugelKnall(x, y, z) {
+  for (let s=0; s<14; s++)
+    fireworks.push({x, y, z, vx:(Math.random()-0.5)*6, vy:Math.random()*4,
+      vz:(Math.random()-0.5)*6, tile:[27,72,82][s%3], t:0.5+Math.random()*0.3});
+  blip(120,0.12); blip(70,0.16);
+}
 function updateArrows(dt) {
   for (let i=arrows.length-1; i>=0; i--) {
     const p = arrows[i];
@@ -8032,7 +8067,11 @@ function updateArrows(dt) {
         const k = ANIMAL_KIND[a.type];
         if (Math.hypot(nx-a.x, nz-a.z) < k.half+0.4 && ny>a.y-0.3 && ny<a.y+k.height+0.5) {
           const d = Math.hypot(p.vx,p.vz)||1;
-          if (a.type!=='ball') {
+          if (p.kugel && a.type!=='ball') {        // 💣 die Kanonenkugel haut RICHTIG rein
+            kugelKnall(nx, ny, nz);
+            toast('💣💥 BAMM! Die Kanone hat getroffen!', 2200);
+            slimeDamage(a, 8, [p.vx/d, 0, p.vz/d]);
+          } else if (a.type!=='ball') {
             toast('🏹 Volltreffer!', 1500);
             slimeDamage(a, 3, [p.vx/d, 0, p.vz/d]);
           } else {                      // Ball weiterschießen!
@@ -8050,11 +8089,72 @@ function updateArrows(dt) {
           igniteTNT(Math.floor(nx), Math.floor(ny), Math.floor(nz));
           arrows.splice(i,1); done=true; break;
         }
+        if (p.kugel) {                  // 💣 die Kugel zerplatzt (deine Burg bleibt heil!)
+          kugelKnall(nx, ny, nz);
+          arrows.splice(i,1); done=true; break;
+        }
         p.stuck = 1; p.t = Math.min(p.t, 1.2);   // bleibt kurz stecken
         blip(200,0.05);
         done = true; break;
       }
       p.x=nx; p.y=ny; p.z=nz;
+    }
+  }
+}
+// ---------------------------- Wach-Kanonen 💣 -------------------------------
+// Jede aufgestellte Kanone hält Wache: Kommt ein Räuber oder ein Monster in die
+// Nähe, dreht sie sich hin, schießt eine Kanonenkugel - und BAMM, besiegt!
+const KANONE_REICHWEITE = 24;
+let kanonenTipp = false;
+function istFeind(a) {
+  return !a.friedlich && !a.tame &&
+    (a.type==='raeuber' || a.type==='zombie' || a.type==='slime' || a.type==='boss');
+}
+function kanonenTick(dt) {
+  if (!kanonen.size) return;
+  for (const [k, warten] of kanonen) {
+    const p = k.split(','), kx = +p[0], ky = +p[1], kz = +p[2];
+    // weit weg? Dann schläft die Kanone (und spart Rechenzeit)
+    if (Math.hypot(kx-player.x, kz-player.z) > 80) continue;
+    const ch = getChunk(kx>>4, kz>>4);
+    if (!ch || !ch.data) continue;
+    if (getBlock(kx,ky,kz) !== KANONE) { kanonen.delete(k); continue; }
+    if (warten > 0) { kanonen.set(k, warten-dt); continue; }
+    // das nächste Ungeheuer in Reichweite suchen
+    let ziel = null, best = KANONE_REICHWEITE*KANONE_REICHWEITE;
+    for (const a of animals) {
+      if (!istFeind(a)) continue;
+      const d = (a.x-kx-0.5)**2 + (a.y-ky)**2*0.6 + (a.z-kz-0.5)**2;
+      if (d < best) { best = d; ziel = a; }
+    }
+    if (!ziel) continue;
+    kanonen.set(k, 1.8);                // nachladen!
+    // die Kanone dreht sich zum Ziel (Vierteldrehungen wie beim Dreh-Modus)
+    const rx = ziel.x-kx-0.5, rz = ziel.z-kz-0.5;
+    const viertel = Math.abs(rx) > Math.abs(rz) ? (rx > 0 ? 1 : 3) : (rz > 0 ? 2 : 0);
+    if ((rotations.get(k)||0) !== viertel) {
+      if (viertel) rotations.set(k, viertel); else rotations.delete(k);
+      ch.dirty = true;
+    }
+    // ... und schießt mit einem kleinen Bogen, damit sie auch trifft
+    const zx = ziel.x, zy = ziel.y + 0.8, zz = ziel.z;
+    const sx = kx+0.5, sy = ky+0.75, sz = kz+0.5;
+    const weite = Math.hypot(zx-sx, zz-sz);
+    const SPEED = 30, flug = Math.max(0.05, weite/SPEED);
+    const dx = (zx-sx)/flug, dz = (zz-sz)/flug;
+    const dy = (zy-sy)/flug + 7*flug;   // Ausgleich für die Schwerkraft
+    arrows.push({ kugel:1, x:sx+(zx-sx)/weite*0.7, y:sy, z:sz+(zz-sz)/weite*0.7,
+                  vx:dx, vy:dy, vz:dz, t:4, stuck:0 });
+    if (Math.hypot(sx-player.x, sz-player.z) < 60) {
+      blip(90,0.16); blip(60,0.2);      // BAMM!
+      for (let s=0; s<7; s++)           // Rauchwolke aus der Mündung
+        fireworks.push({x:sx+(zx-sx)/weite, y:sy+0.2, z:sz+(zz-sz)/weite,
+          vx:(Math.random()-0.5)*2.5, vy:0.6+Math.random()*1.6, vz:(Math.random()-0.5)*2.5,
+          tile:s%2?82:3, t:0.5});
+      if (!kanonenTipp) {
+        kanonenTipp = true;
+        toast('💣 BAMM! Deine Wach-Kanone schießt ganz von allein auf Räuber und Monster!', 4200);
+      }
     }
   }
 }
@@ -8333,7 +8433,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -10954,6 +11054,7 @@ function frame(now) {
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
+  kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
