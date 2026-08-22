@@ -123,6 +123,15 @@
   .cabSlot img { width:38px; height:38px; image-rendering:pixelated; pointer-events:none; }
   #cabClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  #bankBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(18,40,34,.96); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
+  #bankBox h3 { font-size:18px; }
+  #bankBox p { font-size:12px; opacity:.85; max-width:250px; line-height:1.4; }
+  #bankStand { font-size:17px; font-weight:bold; background:rgba(255,255,255,.12);
+    padding:6px 14px; border-radius:9px; }
+  #bankClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   #radioBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,24,52,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
@@ -336,6 +345,19 @@
   <div class="foodChip" id="foodM"></div>
 </div>
 
+<div class="hud" id="bankBox">
+  <h3>🏦 Deine Bank</h3>
+  <div id="bankStand">Konto: 0 €</div>
+  <p>Geld auf dem Konto ist sicher &ndash; da kommt kein Räuber ran! Und alle 2 Minuten gibt es Zinsen: 1 € für jede vollen 20 € auf dem Konto. 💶</p>
+  <div class="senderRow" data-bank="ein1">⬇️ 1 € einzahlen</div>
+  <div class="senderRow" data-bank="ein5">⬇️ 5 € einzahlen</div>
+  <div class="senderRow" data-bank="einAlles">⬇️ ALLES einzahlen</div>
+  <div class="senderRow" data-bank="aus1">⬆️ 1 € abheben</div>
+  <div class="senderRow" data-bank="aus5">⬆️ 5 € abheben</div>
+  <div class="senderRow" data-bank="ausAlles">⬆️ ALLES abheben</div>
+  <button id="bankClose">Fertig</button>
+</div>
+
 <div class="hud" id="radioBox">
   <h3>📻 Dein Radio</h3>
   <p>Welchen Sender möchtest du hören? Die Musik läuft, solange du in der Nähe bist.</p>
@@ -433,7 +455,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 168 &middot; Das RADIO: 5 Sender mit echter Musik! 📻🎶</p>
+    Version 169 &middot; Deine BANK: Konto, Tresor und Zinsen! 🏦💶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -479,7 +501,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 168;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 169;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -506,7 +528,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
-      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84;
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84, BANK=85;
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -626,6 +648,9 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
+  // 🏦 der Banktresor: antippen und Geld auf dein Konto legen oder abheben
+  [BANK]: { name:'Bank-Tresor 🏦 (antippen = Geld einzahlen und abheben!)',
+    tiles:[99,100,100], solid:true },
   // 📻 das Radio: antippen und einen Sender aussuchen - dann spielt es Musik!
   [RADIO]: { name:'Radio 📻 (antippen = Sender aussuchen und Musik hören!)',
     tiles:[97,98,98], solid:true, model:[
@@ -793,7 +818,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1841,6 +1866,11 @@ function genChunkData(cx, cz, ohneEdits) {
       P(-2,by+11,-11,SIGN);
       const ssig=(B.bx-2)+','+(by+11)+','+(B.bz-11);
       if (!signTexts.has(ssig)) signTexts.set(ssig,'👑 Schatzkammer');
+      // deine eigene BANK 🏦 mitten in der Schatzkammer
+      P(0,by+11,-19,BANK); P(0,by+12,-19,BANK);
+      P(1,by+11,-18,SIGN);
+      const banksig=(B.bx+1)+','+(by+11)+','+(B.bz-18);
+      if (!signTexts.has(banksig)) signTexts.set(banksig,'🏦 Königs-Bank - tipp den Tresor an: Geld einzahlen und abheben!');
       P(-27,by+11,-19,BED); P(-24,by+11,-19,BED);       // Gästezimmer
       // die KUNSTGALERIE 🖼️: fertige Bilder + freie Leinwände zum Selbermalen
       for (const gx3 of [16,19,22,25,28]) P(gx3,by+12,-21,PIC);     // Nordwand
@@ -2142,7 +2172,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -2333,6 +2363,7 @@ function saveGame() {
       geldOrte: [...geldOrte],          // 💰 wo dein Geld herumliegt (die Räuber suchen danach!)
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
+      konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -2396,6 +2427,7 @@ function loadGame() {
     if (typeof s.naschZahl==='number') naschZahl = s.naschZahl;
     if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
+    if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
     if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
@@ -2711,6 +2743,23 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (euroZeichen(x-3,y)) return vary(242,250,238,8);             // großes € daneben
     if ((x+y)%4===0) return vary(94,176,120,8);                     // feines Muster
     return vary(56,140,88,8);                                       // Schein-Grün
+  });
+  tile(99,(x,y)=>{                                                  // Bank-Tresor 🏦: dicke Stahltür
+    if (x===0||x===15||y===0||y===15) return vary(86,92,104,8);     // Rahmen
+    const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
+    if (r < 1.6) return vary(240,206,80,10);                        // goldenes Zahlenschloss
+    if (r < 2.4) return vary(60,66,78,8);
+    if (r < 5.6 && r > 4.9) return vary(200,168,60,10);             // goldener Ring
+    if (r < 6.6 && r > 6.2) return vary(120,128,142,8);             // Tür-Naht
+    // vier Griffe wie an einem echten Tresor
+    if (r < 5.0 && Math.min(Math.abs(dx), Math.abs(dy)) < 0.7) return vary(150,158,172,8);
+    if (x+y < 9) return vary(140,148,162,8);                        // Glanz oben links
+    return vary(104,112,126,10);                                    // polierter Stahl
+  });
+  tile(100,(x,y)=>{                                                 // Tresor von oben/der Seite
+    if (x===0||x===15||y===0||y===15) return vary(86,92,104,8);
+    if ((x+y) % 6 === 0) return vary(126,134,148,8);                // Nieten-Reihen
+    return vary(104,112,126,10);
   });
   tile(97,(x,y)=>{                                                  // Radio 📻: Front mit Lautsprecher
     if (x===0||x===15||y===0||y===15) return vary(96,60,34,8);      // Holz-Rahmen
@@ -5589,7 +5638,7 @@ function eatFood(kind) {
     toast('💎 Deine Schatz-Sammlung: '+gems+' Diamanten! Der Händler im Laden tauscht sie in Euro um!', 3200);
     return;
   } else if (kind==='m') {
-    toast('💶 Dein Geldbeutel: '+money+' Euro! Verdiene mehr beim Händler 🏪 – oder wähle den Geld-Block in der Bau-Leiste und bau damit! (1 Block = 1 €, abbauen = Geld zurück)', 4500);
+    toast('💶 Dein Geldbeutel: '+money+' Euro · 🏦 auf der Bank: '+kontoStand+' Euro. Verdiene mehr beim Händler 🏪, bau mit dem Geld-Block – oder bring es zum Tresor, dann ist es sicher!', 4800);
     return;
   } else return;
   updateFoodHUD(); scheduleSave();
@@ -8148,6 +8197,60 @@ function updateArrows(dt) {
     }
   }
 }
+// ------------------------------- Bank 🏦 ------------------------------------
+// Ein eigenes Konto: Geld einzahlen, abheben - und es liegt sicher vor Räubern.
+let kontoStand = 0, zinsT = 0;
+const bankBox = document.getElementById('bankBox');
+function bankAnzeige() {
+  document.getElementById('bankStand').textContent =
+    'Konto: ' + kontoStand + ' €  ·  in der Tasche: ' + money + ' €';
+}
+function openBank() {
+  bankAnzeige();
+  bankBox.style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(523,0.07); blip(659,0.07); blip(784,0.09);
+}
+function bankAktion(was) {
+  const rein = n => {
+    if (money < n || n <= 0) { toast('💶 So viel Geld hast du gar nicht dabei! (Du hast '+money+' €)', 3000); blip(180,0.12); return; }
+    money -= n; kontoStand += n;
+    toast('🏦 '+n+' € eingezahlt! Auf deinem Konto sind jetzt '+kontoStand+' € – sicher vor Räubern. 🔒', 3600);
+    blip(700,0.06); blip(880,0.08);
+  };
+  const raus = n => {
+    if (kontoStand < n || n <= 0) { toast('🏦 So viel liegt nicht auf deinem Konto! (Da sind '+kontoStand+' €)', 3000); blip(180,0.12); return; }
+    kontoStand -= n; money += n;
+    toast('🏦 '+n+' € abgehoben! Du hast jetzt '+money+' € in der Tasche.', 3400);
+    blip(880,0.06); blip(700,0.08);
+  };
+  if (was==='ein1') rein(1);
+  if (was==='ein5') rein(5);
+  if (was==='einAlles') rein(money);
+  if (was==='aus1') raus(1);
+  if (was==='aus5') raus(5);
+  if (was==='ausAlles') raus(kontoStand);
+  bankAnzeige(); updateFoodHUD(); updateShopUI(); scheduleSave();
+}
+function zinsTick(dt) {                 // alle 2 Minuten schreibt die Bank Zinsen gut
+  if (kontoStand < 20) { zinsT = 0; return; }
+  zinsT += dt;
+  if (zinsT < 120) return;
+  zinsT = 0;
+  const zins = Math.floor(kontoStand / 20);
+  kontoStand += zins;
+  toast('🏦✨ Zinsen! Die Bank schenkt dir '+zins+' € fürs Sparen. Konto: '+kontoStand+' €', 4200);
+  blip(660,0.06); blip(830,0.06); blip(990,0.1);
+  if (bankBox.style.display==='flex') bankAnzeige();
+  scheduleSave();
+}
+for (const el of document.querySelectorAll('#bankBox .senderRow')) {
+  const w = () => bankAktion(el.dataset.bank);
+  el.addEventListener('click', w);
+  el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+}
+document.getElementById('bankClose').addEventListener('click', ()=>{ bankBox.style.display='none'; });
+
 // ------------------------------ Radio 📻 ------------------------------------
 // Ein kleiner Musik-Spieler: Jeder Ton wird selbst erzeugt (wie beim Klavier),
 // darum braucht das Radio kein Internet und keine Musik-Dateien.
@@ -8604,7 +8707,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -10255,6 +10358,10 @@ function doPlace(dir) {
     openLift();                         // 🛗 das Etagen-Menü!
     return;
   }
+  if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
+    openBank();                         // 🏦 Konto-Fenster: einzahlen und abheben
+    return;
+  }
   if (hit.block===RADIO && HOTBAR_ITEMS[selSlot]!==RADIO) {
     openRadio(hit.x, hit.y, hit.z);     // 📻 Sender aussuchen!
     return;
@@ -10510,6 +10617,7 @@ function doPlace(dir) {
     return;
   }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
+  if (b===BANK) toast('🏦 Bank-Tresor aufgestellt! Tipp ihn an (mit einem anderen Block in der Hand): Geld einzahlen, abheben – und Zinsen kassieren! 💶', 4600);
   if (b===RADIO) toast('📻 Radio aufgestellt! Tipp es an (mit einem anderen Block in der Hand) und such dir einen Sender aus. 🎶', 4200);
   if (b===KANONE) toast('💣 Wach-Kanone aufgestellt! Ab jetzt schießt sie ganz von allein auf Räuber und Monster.', 4000);
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
@@ -11233,6 +11341,7 @@ function frame(now) {
   missionTick(dt);                      // 📜 Mission geschafft?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
+  zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);

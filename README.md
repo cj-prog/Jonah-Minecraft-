@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Deine eigene BANK mit Konto (v169)! 🏦💶 In der Schatzkammer
+  deiner Riesen-Festung steht jetzt ein großer Bank-Tresor:
+  polierter Stahl mit goldenem Zahlenschloss und Griffen, dazu ein
+  Schild „Königs-Bank". Tipp ihn an (mit einem anderen Block in
+  der Hand), und dein Konto geht auf. Oben steht immer, wie viel
+  auf dem Konto liegt und wie viel du in der Tasche hast; darunter
+  kannst du 1 €, 5 € oder ALLES einzahlen und genauso wieder
+  abheben. Mehr abheben als da ist geht natürlich nicht – dann
+  sagt die Bank Bescheid. Zwei große Vorteile: Geld auf dem Konto
+  können die Räuber NICHT klauen, und alle 2 Minuten gibt es
+  Zinsen – 1 € für jede vollen 20 €, die du gespart hast. Der
+  Tresor liegt außerdem in der Bau-Leiste, du kannst dir also
+  überall eine eigene Bankfiliale hinstellen. Dein Konto wird
+  natürlich gespeichert
 - Das RADIO mit 5 Sendern (v168)! 📻🎶 In der Bau-Leiste liegt
   jetzt ein Radio: Holzgehäuse mit rundem Lautsprecher, gelber
   Sender-Skala, zwei Drehknöpfen und einer Antenne. Stell es hin,
