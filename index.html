@@ -210,6 +210,10 @@
     display:flex; gap:6px; }
   .foodChip { display:none; align-items:center; background:rgba(0,0,0,.4); color:#fff;
     padding:6px 10px; border-radius:12px; font-size:16px; font-weight:bold; }
+  #missBox { left:calc(12px + env(safe-area-inset-left)); top:calc(52px + env(safe-area-inset-top));
+    display:none; align-items:center; background:rgba(24,20,60,.72); color:#fff;
+    padding:7px 12px; border-radius:12px; font-size:15px; font-weight:bold;
+    border:2px solid rgba(255,220,120,.75); max-width:min(70vw,340px); }
 
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
@@ -304,6 +308,7 @@
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
 <div class="hud" id="lavaFx"></div>
+<div class="hud" id="missBox"><span id="missText"></span></div>
 <div class="hud" id="foodBar">
   <div class="foodChip" id="foodC"></div>
   <div class="foodChip" id="foodT"></div>
@@ -390,7 +395,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 161 &middot; Die WUNDERWELT hinterm Portal - hier ist alles möglich! ✨🌈</p>
+    Version 162 &middot; MISSIONEN! 13 Aufgaben warten auf dich 📜🏆</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +441,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 161;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 162;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2208,6 +2213,7 @@ function saveGame() {
        a.home||'welt', a.hx||0, a.hz||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
+      missIdx, missZahl,                // 📜 wie weit ist Jonah mit den Missionen?
       dim: weltDim,                     // ✨ in welcher Welt ist Jonah gerade?
       edits2: (()=>{ const o={};        // ... und die Änderungen der anderen Welt
         for (const [k,m] of editsLager[weltDim===1?0:1]) { const a=[]; for (const [i,v] of m) a.push(i,v); o[k]=a; }
@@ -2251,6 +2257,8 @@ function loadGame() {
       for (let i=0;i<a.length;i+=2) m.set(a[i]+shift, a[i+1]);
       edits.set(k,m);
     }
+    if (typeof s.missIdx === 'number') missIdx = s.missIdx;   // 📜 Missions-Stand
+    if (typeof s.missZahl === 'number') missZahl = s.missZahl;
     if (typeof s.dim === 'number') weltDim = s.dim;        // ✨ welche Welt?
     for (const k in (s.edits2||{})) {                      // die andere Welt
       const a=s.edits2[k], m=new Map();
@@ -7282,6 +7290,7 @@ const BAUTEN = {
     return p; },
 };
 function butlerBauen(a, art, m) {
+  if (art==='haus') missEvent('butlerhaus');
   const [x,y,z] = bauPlatz(6);
   const plan = BAUTEN[art](x, y, z, m || (art==='haus' ? PLANK : art==='turm' ? BRICK : STONE));
   a.bauPlan = plan; a.bauT = 0; a.bauArt = art;
@@ -7439,6 +7448,7 @@ function portalNutzen() {
     fireworks.push({x:player.x, y:player.y+1, z:player.z, vx:(Math.random()-0.5)*4,
       vy:1+Math.random()*4, vz:(Math.random()-0.5)*4, tile:87, t:0.9});
   blip(300,0.1); blip(500,0.1); blip(750,0.12); blip(1000,0.16);
+  if (neu===1) missEvent('portal');
   weltWechsel(neu);
   const heim = portalHeim[neu];
   if (heim && getBlock(Math.floor(heim.x), Math.floor(heim.y), Math.floor(heim.z))!==undefined) {
@@ -7506,6 +7516,77 @@ function portalTick(dt) {
     fireworks.push({x:player.x+(Math.random()-0.5), y:player.y+Math.random()*1.8,
       z:player.z+(Math.random()-0.5), vx:0, vy:1.5, vz:0, tile:87, t:0.5});
   if (Math.random() < dt*6) blip(600+Math.random()*500, 0.03);
+}
+
+// 📜 DIE MISSIONEN: eine ganze Reise durch JonahCraft! Eine Aufgabe nach der
+// anderen - jede Mission zeigt oben links, was gerade dran ist.
+const MISSIONEN = [
+  { t:'🌳 Holzfäller',      txt:'Hau 10 Holz-Blöcke ab',                  ev:'holz',       ziel:10 },
+  { t:'🏠 Baumeister',      txt:'Baue 25 Blöcke irgendwohin',             ev:'bau',        ziel:25 },
+  { t:'🐾 Tierfreund',      txt:'Zähme ein Tier (füttere es!)',           ev:'zaehm',      ziel:1 },
+  { t:'🏰 Heimkehr',        txt:'Finde deine Riesen-Festung',             ort:()=>imBurghof() },
+  { t:'👑 König Jonah',     txt:'Setz dich auf deinen Thron im Thronsaal', ort:()=>{
+      if (!imBurghof() || !sitting) return false;
+      const B=burgPos(); return Math.abs(sitting.x-B.bx)<3 && Math.abs(sitting.z-(B.bz-19))<3; } },
+  { t:'🛗 Fahrstuhl-Fahrer', txt:'Fahr mit dem Fahrstuhl auf die Dach-Terrasse', ort:()=>
+      imBurghof() && Math.abs(player.y-(burgPos().base+16)) < 1.5 },
+  { t:'🗼 Gipfelstürmer',   txt:'Steig ganz oben auf die Königs-Turm-Spitze', ort:()=>
+      weltDim===0 && player.y > CH-8 && Math.hypot(player.x-burgPos().bx, player.z-burgPos().bz) < 80 },
+  { t:'💰 Schatzsucher',    txt:'Finde den Schatz ganz unten im Königs-Turm', ort:()=>
+      weltDim===0 && player.y < CH_MIN+10 && Math.hypot(player.x-burgPos().bx, player.z-burgPos().bz) < 80 },
+  { t:'🌉 Burgherr',        txt:'Zieh die Zugbrücke einmal hoch',         ev:'bruecke',    ziel:1 },
+  { t:'🤵 Chef',            txt:'Lass den Butler ein Haus für dich bauen', ev:'butlerhaus', ziel:1 },
+  { t:'✨ Weltenreisender', txt:'Geh durchs Zauber-Portal in die Wunderwelt', ev:'portal', ziel:1 },
+  { t:'🍄 Entdecker',       txt:'Finde das Pilz-Land in der Wunderwelt',  ort:()=>
+      weltDim===1 && wunderZone(Math.floor(player.x), Math.floor(player.z))===5 },
+  { t:'👑 Gold-Jäger',      txt:'Finde das Gold-Land in der Wunderwelt',  ort:()=>
+      weltDim===1 && wunderZone(Math.floor(player.x), Math.floor(player.z))===7 },
+];
+let missIdx = 0, missZahl = 0, missT = 0;
+function missAnzeige() {
+  const el = document.getElementById('missBox'), tx = document.getElementById('missText');
+  if (!el) return;
+  if (missIdx >= MISSIONEN.length) {
+    el.style.display = 'flex';
+    tx.textContent = '🏆 ALLE MISSIONEN GESCHAFFT! Du bist der Größte, König Jonah!';
+    return;
+  }
+  const m = MISSIONEN[missIdx];
+  el.style.display = 'flex';
+  tx.textContent = '📜 ' + m.t + ': ' + m.txt +
+    (m.ziel ? '  (' + Math.min(missZahl,m.ziel) + '/' + m.ziel + ')' : '');
+}
+function missEvent(name, n) {
+  if (missIdx >= MISSIONEN.length) return;
+  const m = MISSIONEN[missIdx];
+  if (m.ev !== name) return;
+  missZahl += (n || 1);
+  if (missZahl >= m.ziel) missGeschafft();
+  else { missAnzeige(); scheduleSave(); }
+}
+function missGeschafft() {
+  const m = MISSIONEN[missIdx];
+  missIdx++; missZahl = 0;
+  money += 5; updateFoodHUD();
+  for (let s2=0; s2<24; s2++)           // Feuerwerk zur Belohnung! 🎆
+    fireworks.push({x:player.x+(Math.random()-0.5)*3, y:player.y+1.5+Math.random()*2,
+      z:player.z+(Math.random()-0.5)*3, vx:(Math.random()-0.5)*4, vy:2+Math.random()*3,
+      vz:(Math.random()-0.5)*4, tile:[25,73,53,40][s2%4], t:0.9});
+  for (const f of [523,659,784,1047]) blip(f,0.1);
+  if (missIdx >= MISSIONEN.length)
+    toast('🏆🎉 GESCHAFFT! Du hast ALLE Missionen erfüllt, König Jonah! Du bist ein echter Held!', 7000);
+  else
+    toast('✅ Mission geschafft: ' + m.t + '! +5 € 💶  Neue Mission: ' +
+          MISSIONEN[missIdx].t + ' - ' + MISSIONEN[missIdx].txt, 6000);
+  missAnzeige(); scheduleSave();
+}
+function missionTick(dt) {
+  missT -= dt;
+  if (missT > 0) return;
+  missT = 0.5;
+  if (missIdx >= MISSIONEN.length) return;
+  const m = MISSIONEN[missIdx];
+  if (m.ort) { try { if (m.ort()) missGeschafft(); } catch(e){} }
 }
 
 // Selfie-Ansicht 🤳: die Kamera schaut dich von vorne an!
@@ -9148,7 +9229,7 @@ function hitEntity(a, dir) {
     sitting = null;
     if (flying) toggleFly();
     riding = a; a.walking = false;
-    if (!a.tame) { a.tame=true; a.sit=false; scheduleSave(); }
+    if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); scheduleSave(); }
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
@@ -9248,7 +9329,7 @@ function hitEntity(a, dir) {
   }
   if (isPet(a)) {                       // Tiere zähmen!
     if (!a.tame) {
-      a.tame = true; a.sit = false;
+      a.tame = true; a.sit = false; missEvent('zaehm');
       if (a.type!=='bird') { a.vy = 4.5; a.onGround = false; }
       toast(TAME_MSG[a.type]);
       const s = TAME_SOUND[a.type];
@@ -9483,6 +9564,7 @@ function doBreak(dir) {
   if (hit.block===CABINET) removeCabinet(hit.x,hit.y,hit.z);
   if (hit.block>=PIC && hit.block<=PIC_W) removePainting(hit.x,hit.y,hit.z);
   if (hit.block===WOOL) { wool++; updateFoodHUD(); scheduleSave(); }  // Wolle zurück!
+  if (hit.block===WOOD) missEvent('holz');   // 📜 für die Holzfäller-Mission
   setBlock(hit.x,hit.y,hit.z,AIR);
   weckeFluessigkeit(hit.x,hit.y,hit.z);   // Damm kaputt? Wasser/Lava strömt los!
   pruefeNachbarn(hit.x,hit.y,hit.z);      // und wer den Halt verliert, fällt!
@@ -9623,7 +9705,7 @@ function doPlace(dir) {
     openLift();                         // 🛗 das Etagen-Menü!
     return;
   }
-  if (hit.block===ZUGBRUECKE) { toggleZugbruecke(); return; }   // 🌉 hoch und runter!
+  if (hit.block===ZUGBRUECKE) { toggleZugbruecke(); missEvent('bruecke'); return; }
   if ((hit.block===GATE || hit.block===GATE_OPEN) && HOTBAR_ITEMS[selSlot]!==GATE) {
     toggleGate(hit.x, hit.y, hit.z);    // das ganze Garagentor auf/zu!
     return;
@@ -9818,6 +9900,7 @@ function doPlace(dir) {
     return;
   }
   setBlock(px,py,pz,b);
+  missEvent('bau');                     // 📜 für die Baumeister-Mission
   blip(330,0.06);
   if (b===SCHUTZ) toast('🛡️ Schutz-Block! TNT und Explosionen können ihm NICHTS anhaben – nur du kannst ihn wegtippen.', 3200);
   if (b===WATER) {                      // frisches Wasser sucht sich seinen Weg!
@@ -10578,6 +10661,7 @@ function frame(now) {
   streamChunks();
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
   portalTick(dt);                       // ✨ ab in die andere Welt?
+  missionTick(dt);                      // 📜 Mission geschafft?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
@@ -10785,6 +10869,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   started=true;
   portalKuehl = 3;                      // beim Start nicht sofort ins Portal gesaugt werden
   updateFoodHUD();
+  missAnzeige();
   document.getElementById('miniMap').style.display='block';
   if (bow) document.getElementById('bowBtn').style.display='flex';
   saveGame();                           // beim Start sofort speichern
