@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- MISSIONEN! 13 Aufgaben für König Jonah (v162)! 📜🏆 Jetzt gibt es
+  im Spiel richtige Aufgaben: Oben links steht immer, was gerade
+  dran ist, samt Zähler (z. B. „Hau 10 Holz-Blöcke ab (3/10)").
+  Ist eine Mission geschafft, gibt es Feuerwerk, 5 € Belohnung und
+  gleich die nächste Aufgabe. Die Reise führt einmal quer durch
+  JonahCraft: Holz hacken, bauen, ein Tier zähmen, die Riesen-
+  Festung finden, sich auf den Thron setzen, mit dem Fahrstuhl auf
+  die Dach-Terrasse fahren, auf die Königs-Turm-Spitze steigen, den
+  Schatz ganz unten finden, die Zugbrücke hochziehen, den Butler ein
+  Haus bauen lassen, durchs Portal in die Wunderwelt gehen und dort
+  das Pilz-Land und das Gold-Land entdecken. Der Missions-Stand wird
+  natürlich gespeichert
 - Die WUNDERWELT hinterm Portal (v161)! ✨🌈 Statt nur Wolken
   wartet hinter dem Portal jetzt eine Welt, in der ALLES möglich
   ist: Acht ganz verschiedene Länder liegen dort nebeneinander, und
