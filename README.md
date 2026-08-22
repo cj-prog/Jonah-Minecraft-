@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Bau mit deinem GELD (v164)! 💶🏗️ Dein verdientes Geld gibt es
+  jetzt auch als Baustein: ein glänzender Gold-Block mit
+  eingeprägtem €-Zeichen, ganz normal in der Bau-Leiste. Jeder
+  Geld-Block, den du hinstellst, kostet 1 € aus deinem Geldbeutel
+  (es macht „Kling!" wie eine Münze) – und wenn du ihn wieder
+  abbaust, bekommst du den Euro zurück. So kannst du dir aus
+  deinem Ersparten einen Geld-Turm, eine Gold-Pyramide oder ein
+  Schatzhaus bauen und es jederzeit wieder zu Geld machen. Ist der
+  Geldbeutel leer, sagt das Spiel Bescheid, wie du beim Händler
+  neues Geld verdienst. Und keine Trickserei: Der Hausmeister baut
+  Geld-Blöcke nicht nach
 - BONBON-LAND zum AUFESSEN (v163)! 🍬🍭🍫 Im Bonbon-Land der
   Wunderwelt ist ab jetzt wirklich alles Naschzeug: Der Boden
   besteht aus rosa Bonbon-Blöcken mit bunten Streuseln, darunter
