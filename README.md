@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RÄUBER klauen dein Geld (v166)! 😈💰 Wer sein Geld einfach
+  irgendwo herumliegen lässt, muss jetzt aufpassen: Räuber haben
+  eine Nase für Geldscheine und Münzen. Sieht einer welche in der
+  Nähe liegen, lässt er sogar Jonah in Ruhe, läuft schnurstracks
+  zum Geld und steckt es ein („Hihi, das nehm ich mit! 😈").
+  Steht ihm ein Berg im Weg, kennt er eine Abkürzung. Man merkt es
+  sofort: Der Beutel auf seinem Rücken wird dick und grün, Münzen
+  kullern oben heraus, über ihm schwebt ein 💰-Zeichen und auf der
+  großen Karte ist er als 💰 zu sehen. Ein Räuber mit deiner Beute
+  verschwindet nie mehr von selbst und bleibt sogar nach dem
+  Neuladen da – du kannst ihn also immer jagen. Schnappst du ihn
+  dir, gibt er alles wieder her (dein Geld PLUS 3 € Beute). Und
+  das Wichtigste: Hinter der großen Burgmauer ist dein Geld sicher
+  – da passen die Ritter auf, dort klaut kein Räuber
 - Echte SCHEINE und MÜNZEN + Riesen-Laden (v165)! 💵🪙🏪 Aus dem
   goldenen Geld-Block sind jetzt richtige Geldscheine geworden:
   ein dickes Bündel bunter Scheine (von oben sieht man einen
