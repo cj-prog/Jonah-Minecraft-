@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Das RADIO mit 5 Sendern (v168)! 📻🎶 In der Bau-Leiste liegt
+  jetzt ein Radio: Holzgehäuse mit rundem Lautsprecher, gelber
+  Sender-Skala, zwei Drehknöpfen und einer Antenne. Stell es hin,
+  tipp es an (mit einem anderen Block in der Hand) und such dir
+  einen Sender aus: 🦆 Alle meine Entchen, 🚶 Hänschen klein,
+  🔔 Bruder Jakob, ⭐ Funkel, funkel, kleiner Stern oder
+  🎉 Disco-Party. Die Musik läuft dann in einer Endlos-Schleife
+  weiter, während du baust – mit Melodie UND Bass, und über dem
+  Radio tanzen bunte Musik-Funken. Je näher du am Radio bist,
+  desto lauter ist es; gehst du weit weg, wird es still. Jeder
+  einzelne Ton wird vom Spiel selbst erzeugt, darum braucht das
+  Radio kein Internet und keine Musik-Dateien und funktioniert
+  auch offline. Der Sender wird gespeichert und läuft nach dem
+  Neuladen weiter; „⏹️ Aus" oder das Radio abbauen macht es aus
 - WACH-KANONEN (v167)! 💣💥 In der Bau-Leiste liegt jetzt eine
   große Kanone: schwarzes Eisenrohr mit glänzendem Mündungsring
   auf einer Holz-Lafette mit vier Rädern. Stell sie einfach auf
