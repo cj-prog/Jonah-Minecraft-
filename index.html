@@ -390,7 +390,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 159 &middot; Hausmeister spürt jeden Schaden &amp; alle warten hinter der Mauer! 🔧🧱</p>
+    Version 160 &middot; Wassergraben &amp; Zugbrücke! 💧🌉</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -436,7 +436,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 159;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 160;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -462,7 +462,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_BOWL=57, SCREEN_SOON=58, SCREEN_BREAK=59, SCREEN_RACE=60,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
-      GITTER=73, FAHRSTUHL=74, PORTAL=75;
+      GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76;
 
 // tiles: [Seite, Oben, Unten]  (Index im Textur-Atlas, 4x4-Raster)
 const BLOCKS = {
@@ -575,6 +575,7 @@ const BLOCKS = {
     [0,0.88,0.44, 1,0.98,0.56, 85], [0,0.02,0.44, 1,0.12,0.56, 85]] },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
+  [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
   [PORTAL]: { name:'ZAUBER-PORTAL ✨ (stell dich rein - ab in die Wolkenwelt!)',
     tiles:[87,87,87], solid:false, model:[
     [0.04,0,0.04, 0.96,1.9,0.96, 87]] },
@@ -1873,6 +1874,31 @@ function genChunkData(cx, cz, ohneEdits) {
         const fsig=(B.bx-11)+','+(by+1)+','+B.bz;
         if (!signTexts.has(fsig)) signTexts.set(fsig,'🛗 FAHRSTUHL: reingehen, Wand antippen und Etage aussuchen!');
       }
+      // 14d) der WASSERGRABEN 💧 innerhalb der Mauer - rundum ums Festungs-Haus,
+      // mit fester Brücke zur Garage und zum Turm und der ZUGBRÜCKE am Eingang!
+      {
+        const gr = (dx,dz) => (Math.abs(dx)>=34 && Math.abs(dx)<=36 && Math.abs(dz)<=28) ||
+                              (Math.abs(dz)>=26 && Math.abs(dz)<=28 && Math.abs(dx)<=36);
+        const bruecke = (dx,dz) =>
+          (dz>=6 && dz<=14 && dx>=33)   ||        // Ost: zur Garage
+          (dz>=-2 && dz<=2 && dx<=-33)  ||        // West: zum Königs-Turm
+          (dx>=-2 && dx<=2 && dz>=25);            // Süd: hier kommt die Zugbrücke hin
+        for (let dx=-37; dx<=37; dx++) for (let dz=-29; dz<=29; dz++) {
+          if (!gr(dx,dz) || bruecke(dx,dz)) continue;
+          const wx=B.bx+dx, wz=B.bz+dz;
+          for (let y=by-5; y<=by+6; y++)
+            put(wx, y, wz, y<=by-5 ? STONE : (y<=by-1 ? WATER : AIR), false);
+        }
+        for (const [bx4,bz4] of [[34,10],[-34,0]])   // die zwei festen Steinbrücken
+          for (let dx=Math.min(bx4,0)===0?bx4-2:bx4-2; dx<=bx4+2; dx++)
+            for (let dz=bz4-4; dz<=bz4+4; dz++)
+              if (gr(dx,dz)) { P(dx,by,dz,STONE); for (let y=by+1;y<=by+3;y++) P(dx,y,dz,AIR); }
+        for (let dx=-2; dx<=2; dx++) for (let dz=26; dz<=28; dz++)   // 🌉 DIE ZUGBRÜCKE
+          P(dx, by, dz, ZUGBRUECKE);
+        P(-3,by+1,25,SIGN);
+        const zsig=(B.bx-3)+','+(by+1)+','+(B.bz+25);
+        if (!signTexts.has(zsig)) signTexts.set(zsig,'🌉 ZUGBRÜCKE: antippen und sie klappt hoch - dann kommt keiner mehr rein!');
+      }
       // 15) die GROSSE BURG-MAUER 🧱: einmal rund um ALLES (Festung, Königs-Turm,
       // Freunde-Haus und Gehege) - mit Zinnen, 4 Torbögen und 4 Wach-Türmen!
       {
@@ -2487,6 +2513,12 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(85,(x,y)=>{                                                  // Gitterstäbe 🚔: dunkles Eisen
     if (x===2||x===7||x===12) return vary(180,186,198,14);          // glänzende Stab-Kanten
     return vary(74,80,92,14);
+  });
+  tile(88,(x,y)=>{                                                  // Zugbrücke 🌉: Bohlen mit Beschlag
+    if (x===0||x===15) return vary(72,54,34,10);                    // Eisen-Beschlag an den Enden
+    if (y===3||y===12) return vary(96,100,110,14);                  // Metall-Bänder quer
+    if (y%4===0) return vary(104,74,44,12);                         // Bohlen-Fugen
+    return vary(150,110,66,16);                                     // helles Holz
   });
   tile(87,(x,y)=>{                                                  // Zauber-Portal ✨: lila Wirbel
     const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
@@ -6858,14 +6890,34 @@ const HAUSMEISTER_TALK = [
   'Ich hab hier ein Loch entdeckt... schon weg!',
   'Deine Festung ist bei mir in guten Händen!',
 ];
+// 🌉 DIE ZUGBRÜCKE: antippen und sie klappt rasselnd hoch (oder wieder runter)
+function toggleZugbruecke() {
+  const B = burgPos(), by = B.base;
+  const liegt = getBlock(B.bx, by, B.bz+27)===ZUGBRUECKE;
+  if (liegt) {                          // hochziehen: sie stellt sich senkrecht auf
+    for (let dx=-2; dx<=2; dx++) for (let dz=26; dz<=28; dz++)
+      setBlock(B.bx+dx, by, B.bz+dz, AIR);
+    for (let dx=-2; dx<=2; dx++) for (let h=1; h<=3; h++)
+      setBlock(B.bx+dx, by+h, B.bz+25, ZUGBRUECKE);
+    toast('🌉⛓️ Rassel-rassel... die Zugbrücke ist OBEN! Jetzt kommt keiner mehr über den Graben.', 4000);
+  } else {                              // wieder runterlassen
+    for (let dx=-2; dx<=2; dx++) for (let h=1; h<=3; h++)
+      setBlock(B.bx+dx, by+h, B.bz+25, AIR);
+    for (let dx=-2; dx<=2; dx++) for (let dz=26; dz<=28; dz++)
+      setBlock(B.bx+dx, by, B.bz+dz, ZUGBRUECKE);
+    toast('🌉⛓️ Rumms! Die Zugbrücke liegt wieder - herzlich willkommen, König Jonah!', 4000);
+  }
+  blip(140,0.1); blip(110,0.12); blip(90,0.15);
+}
+
 // 🔧 Der Hausmeister SPÜRT jeden Schaden: Immer wenn irgendwo im Burggelände
 // ein Block verschwindet, wird die Stelle gemeldet - er läuft sofort hin.
 const schadenListe = [];
 let keinSchaden = false;                // während er selbst arbeitet: nicht melden
-function imBurgGelaende(x, z) {
+function imBurgGelaende(x, z) {         // alles INNERHALB der großen Mauer (mit Mauer)
   if (weltDim !== 0) return false;
   const B = burgPos();
-  return x > B.bx-64 && x < B.bx+66 && z > B.bz-36 && z < B.bz+36;
+  return x >= B.bx-61 && x <= B.bx+63 && z >= B.bz-33 && z <= B.bz+33;
 }
 function imBurghof() {                  // ist Jonah HINTER der großen Mauer?
   if (weltDim !== 0) return false;
@@ -6878,13 +6930,21 @@ function meldeSchaden(x, y, z) {
   if (typeof _burg === 'undefined' || !imBurgGelaende(x, z)) return;
   schadenListe.push([x,y,z]);
 }
+// Im Burggelände flickt der Hausmeister ALLES: Wände, Mauern - und auch
+// Löcher im Boden, die jemand gegraben hat. Draußen bleibt er brav.
+function schadenArt(x, y, z) {
+  const art = _lochArt(x,y,z);
+  if (!art) return null;
+  if (art === 'bau') return 'bau';
+  return imBurgGelaende(x,z) ? 'erde' : null;
+}
 function sucheLoch(mx, my, mz, r) {     // fehlt irgendwo in der Nähe ein Block?
-  for (let y=my+4; y>=my-3; y--)
+  for (let y=my+4; y>=my-4; y--)
     for (let dx=-r; dx<=r; dx++)
       for (let dz=-r; dz<=r; dz++) {
         const x=mx+dx, z=mz+dz;
         if (getBlock(x,y,z)!==AIR) continue;
-        if (_lochArt(x,y,z)==='bau') return [x,y,z];
+        if (schadenArt(x,y,z)) return [x,y,z];
       }
   return null;
 }
@@ -6926,7 +6986,7 @@ function hausmeisterTick(a, dt) {
   let versuche = 0;
   while (schadenListe.length && versuche++ < 12) {
     const [sx,sy,sz] = schadenListe.shift();
-    if (_lochArt(sx,sy,sz) === 'bau') {
+    if (schadenArt(sx,sy,sz)) {
       a.ziel = [sx,sy,sz]; a.wegT = 0;
       if (Math.hypot(a.x-sx, a.z-sz) > 12) sagen(a, 'Da ist etwas kaputt - ich komme! 🔧', 3);
       return;
@@ -6937,10 +6997,13 @@ function hausmeisterTick(a, dt) {
   const loch = sucheLoch(Math.floor(a.x), Math.floor(a.y), Math.floor(a.z), 6) ||
                sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7);
   if (loch) { a.ziel = loch; a.wegT = 0; return; }
-  // nichts kaputt: gemütlich beim Eingang patrouillieren
-  if (Math.hypot(a.x-a.heim[0], a.z-a.heim[2]) > 14) {
+  // nichts kaputt: gemütlich patrouillieren - aber NIE aus der Mauer heraus!
+  const raus = a.x < B.bx-59 || a.x > B.bx+61 || a.z < B.bz-31 || a.z > B.bz+31;
+  if (raus || Math.hypot(a.x-a.heim[0], a.z-a.heim[2]) > 34) {
     a.yaw = Math.atan2(a.heim[0]-a.x, -(a.heim[2]-a.z));
-    a.walking = true; a.spd = 2.2; a.t = 4;
+    a.walking = true; a.spd = raus ? 3.4 : 2.2; a.t = 4;
+    if (raus) a.wegT = (a.wegT||0) + 0.7;      // kommt er nicht zurück? Dann eben zaubern
+    if (a.wegT > 12) { a.x = a.heim[0]; a.z = a.heim[2]; a.y = a.heim[1]; a.vy=0; a.wegT=0; }
   }
 }
 const BUTLER_TALK = [
@@ -9490,6 +9553,7 @@ function doPlace(dir) {
     openLift();                         // 🛗 das Etagen-Menü!
     return;
   }
+  if (hit.block===ZUGBRUECKE) { toggleZugbruecke(); return; }   // 🌉 hoch und runter!
   if ((hit.block===GATE || hit.block===GATE_OPEN) && HOTBAR_ITEMS[selSlot]!==GATE) {
     toggleGate(hit.x, hit.y, hit.z);    // das ganze Garagentor auf/zu!
     return;
