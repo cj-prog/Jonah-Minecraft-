@@ -132,6 +132,10 @@
     padding:6px 14px; border-radius:9px; }
   #bankClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  #bankEigen { display:flex; flex-direction:column; align-items:center; gap:6px;
+    background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
+  #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
+    border-radius:8px; border:2px solid rgba(255,255,255,.45); }
   #radioBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,24,52,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
@@ -349,6 +353,11 @@
   <h3>🏦 Deine Bank</h3>
   <div id="bankStand">Konto: 0 €</div>
   <p>Geld auf dem Konto ist sicher &ndash; da kommt kein Räuber ran! Und alle 2 Minuten gibt es Zinsen: 1 € für jede vollen 20 € auf dem Konto. 💶</p>
+  <div id="bankEigen">
+    <input id="bankInput" type="number" min="1" step="1" inputmode="numeric" placeholder="z. B. 12">
+    <div class="senderRow" data-bank="einEigen">⬇️ so viel einzahlen</div>
+    <div class="senderRow" data-bank="ausEigen">⬆️ so viel abheben</div>
+  </div>
   <div class="senderRow" data-bank="ein1">⬇️ 1 € einzahlen</div>
   <div class="senderRow" data-bank="ein5">⬇️ 5 € einzahlen</div>
   <div class="senderRow" data-bank="einAlles">⬇️ ALLES einzahlen</div>
@@ -455,7 +464,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 169 &middot; Deine BANK: Konto, Tresor und Zinsen! 🏦💶</p>
+    Version 170 &middot; Ein echtes BANK-HAUS zum Reingehen! 🏦🚪</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -501,7 +510,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 169;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 170;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1470,6 +1479,66 @@ function genChunkData(cx, cz, ohneEdits) {
         put(sx0+2,sh+5,sz0+3,SIGN,true);
         const lkey=(sx0+2)+','+(sh+5)+','+(sz0+3);
         if (!signTexts.has(lkey)) signTexts.set(lkey,'🏪 Laden');
+      }
+    }
+    // Die DORF-BANK 🏦: ein richtiges Haus zum Reingehen, mit Schalter und Tresor
+    if (wh>SEA) {
+      const bx0=v.vx-12, bz0=v.vz-3, BW=7, BD=6;
+      let bmin=999, bmax=-999;                                   // steht der Platz eben genug?
+      for (const [px2,pz2] of [[bx0,bz0],[bx0+BW-1,bz0],[bx0,bz0+BD-1],[bx0+BW-1,bz0+BD-1],[bx0+3,bz0+3]]) {
+        const h2=terrainHeight(px2,pz2);
+        bmin=Math.min(bmin,h2); bmax=Math.max(bmax,h2);
+      }
+      if (bmin>SEA && bmax-bmin<=3) {
+        const by=bmax;
+        for (let lx=0;lx<BW;lx++) for (let lz=0;lz<BD;lz++) {
+          const wx=bx0+lx, wz=bz0+lz;
+          const th5=terrainHeight(wx,wz);
+          for (let y=th5;y<by;y++) put(wx,y,wz,STONE,false);      // Fundament
+          put(wx,by,wz,PLANK,false);                              // Fußboden
+          const randX = lx===0||lx===BW-1, randZ = lz===0||lz===BD-1;
+          for (let y=by+1;y<=by+3;y++) {
+            let b = AIR;                                          // innen frei
+            if (randX&&randZ) b=WOOD;                             // Eck-Pfeiler
+            else if (randX||randZ) b=BRICK;                       // Ziegel-Wände
+            if (lz===BD-1 && lx===3 && y<=by+2) b=AIR;            // die Eingangstür
+            if (y===by+2 && b===BRICK) {                          // Fenster aus Glas
+              if (randX && (lz===2||lz===3)) b=GLASS;
+              if (lz===BD-1 && (lx===1||lx===5)) b=GLASS;
+              if (lz===0 && (lx===1||lx===5)) b=GLASS;
+            }
+            put(wx,y,wz,b,false);
+          }
+          put(wx,by+4,wz,STONE,false);                            // Dach
+        }
+        for (let lx=-1;lx<=BW;lx++) { put(bx0+lx,by+4,bz0-1,STONE,false); put(bx0+lx,by+4,bz0+BD,STONE,false); }
+        for (let lz=-1;lz<=BD;lz++) { put(bx0-1,by+4,bz0+lz,STONE,false); put(bx0+BW,by+4,bz0+lz,STONE,false); }
+        for (let lx=1;lx<BW-1;lx++) for (let lz=1;lz<BD-1;lz++) put(bx0+lx,by+5,bz0+lz,BRICK,false);
+        // die Eingangstür
+        put(bx0+3,by+1,bz0+BD-1,DOOR,false); put(bx0+3,by+2,bz0+BD-1,DOOR_TOP,false);
+        // eine kleine Freitreppe vor der Tür: so kommt man immer bequem hinein
+        for (let s=1; s<=3; s++) {
+          const zz = bz0+BD-1+s, stufe = by-s+1;
+          for (let lx=2; lx<=4; lx++) {
+            const wx = bx0+lx, th6 = terrainHeight(wx, zz);
+            for (let y=Math.min(th6, stufe); y<stufe; y++) put(wx,y,zz,STONE,false);
+            put(wx, stufe, zz, TREP_N, false);   // jede Stufe eine halbe Treppe: einfach hochlaufen
+            for (let y=stufe+1; y<=stufe+4; y++) put(wx,y,zz,AIR,false);
+          }
+        }
+        // der Schalter: eine Theke quer durch den Raum, in der Mitte ein Durchgang
+        for (const lx of [1,2,4,5]) put(bx0+lx,by+1,bz0+2,TABLE,false);
+        put(bx0+2,by+1,bz0+1,CHAIR,false);                        // Stuhl für den Bankier
+        // der TRESOR an der Rückwand - hier zahlst du ein und hebst ab!
+        put(bx0+3,by+1,bz0+1,BANK,false); put(bx0+3,by+2,bz0+1,BANK,false);
+        put(bx0+1,by+1,bz0+1,TORCH,false); put(bx0+5,by+1,bz0+1,TORCH,false);
+        put(bx0+1,by+1,bz0+4,CHEST,false); put(bx0+5,by+1,bz0+4,CABINET,false);
+        put(bx0+5,by+1,bz0+3,SIGN,true);
+        const bi=(bx0+5)+','+(by+1)+','+(bz0+3);
+        if (!signTexts.has(bi)) signTexts.set(bi,'🏦 Willkommen in der Bank! Geh zum Tresor und tipp ihn an: einzahlen, abheben, Zinsen kassieren.');
+        put(bx0+3,by+5,bz0+BD,SIGN,true);                         // großes Schild überm Eingang
+        const bs=(bx0+3)+','+(by+5)+','+(bz0+BD);
+        if (!signTexts.has(bs)) signTexts.set(bs,'🏦 BANK');
       }
     }
     // Hochhaus! Etwa jedes zweite Dorf hat einen Wohnturm
@@ -8230,6 +8299,13 @@ function bankAktion(was) {
   if (was==='aus1') raus(1);
   if (was==='aus5') raus(5);
   if (was==='ausAlles') raus(kontoStand);
+  if (was==='einEigen' || was==='ausEigen') {          // deine eigene Wunsch-Summe
+    const n = Math.floor(Number(document.getElementById('bankInput').value));
+    if (!(n > 0)) {
+      toast('🏦 Schreib erst eine Zahl in das Feld – zum Beispiel 12. 🔢', 3200);
+      blip(180,0.12);
+    } else if (was==='einEigen') rein(n); else raus(n);
+  }
   bankAnzeige(); updateFoodHUD(); updateShopUI(); scheduleSave();
 }
 function zinsTick(dt) {                 // alle 2 Minuten schreibt die Bank Zinsen gut
@@ -8250,6 +8326,11 @@ for (const el of document.querySelectorAll('#bankBox .senderRow')) {
   el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
 }
 document.getElementById('bankClose').addEventListener('click', ()=>{ bankBox.style.display='none'; });
+// im Zahlen-Feld sollen die Tasten nicht das Spiel steuern
+document.getElementById('bankInput').addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key==='Enter') { e.target.blur(); bankAktion('einEigen'); }
+});
 
 // ------------------------------ Radio 📻 ------------------------------------
 // Ein kleiner Musik-Spieler: Jeder Ton wird selbst erzeugt (wie beim Klavier),
@@ -8732,7 +8813,10 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
         const o=fn(cx,cz); if (o) out.push(o);
       }
     return out; };
-  for (const v of scan(VCELL,villageAt)) marks.push({x:v.vx, z:v.vz, e:'🏠'});
+  for (const v of scan(VCELL,villageAt)) {
+    marks.push({x:v.vx, z:v.vz, e:'🏠'});
+    marks.push({x:v.vx-9, z:v.vz, e:'🏦'});      // die Bank steht westlich vom Brunnen
+  }
   for (const f of scan(FCELL,fieldAt)) marks.push({x:f.fx, z:f.fz, e:'⚽'});
   for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
   for (const m of scan(BCELL,mountainAt)) marks.push({x:m.mx, z:m.mz, e:'⛰️'});

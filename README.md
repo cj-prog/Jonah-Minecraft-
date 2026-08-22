@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Ein echtes BANK-HAUS + Wunsch-Summe (v170)! 🏦🚪 In jedem Dorf
+  steht jetzt ein richtiges Bank-Gebäude, in das man hineingehen
+  kann – gleich westlich vom Dorfbrunnen (auf der Karte als 🏦 zu
+  sehen). Es hat Ziegelwände, Glasfenster, ein Steindach, eine
+  richtige Eingangstür mit kleiner Freitreppe davor (die läufst du
+  einfach hoch, ohne zu springen), Fackeln und ein großes Schild
+  „🏦 BANK" überm Eingang. Drinnen wartet ein Schalter aus zwei
+  Theken mit einem Durchgang in der Mitte, dahinter der große
+  Tresor – tipp ihn an, und dein Konto geht auf. Neu im
+  Konto-Fenster: ein Zahlen-Feld, in das du deine EIGENE Summe
+  schreiben kannst („so viel einzahlen" / „so viel abheben") –
+  neben den Schnell-Knöpfen für 1 €, 5 € und ALLES. Mehr abheben
+  als da ist geht natürlich nicht, und Komma-Zahlen werden
+  abgerundet
 - Deine eigene BANK mit Konto (v169)! 🏦💶 In der Schatzkammer
   deiner Riesen-Festung steht jetzt ein großer Bank-Tresor:
   polierter Stahl mit goldenem Zahlenschloss und Griffen, dazu ein
