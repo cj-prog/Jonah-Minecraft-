@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- WASSERGRABEN & ZUGBRÜCKE + Hausmeister im ganzen Gelände (v160)!
+  💧🌉 Rund um das Festungs-Haus liegt jetzt ein echter Wassergraben
+  (innerhalb der großen Mauer, 3 Blöcke breit und 4 tief). Am
+  Süd-Eingang führt eine ZUGBRÜCKE darüber: antippen, und sie klappt
+  rasselnd hoch und stellt sich senkrecht auf - dann kommt keiner
+  mehr über den Graben! Nochmal antippen = sie liegt wieder. Zur
+  Garage (Osten) und zum Königs-Turm (Westen) führen feste
+  Steinbrücken. Außerdem kümmert sich Hausmeister Kurt jetzt um das
+  GANZE Gelände hinter der Mauer: Er flickt nicht nur Wände, sondern
+  schüttet auch Löcher im Boden wieder zu - aber er verlässt die
+  Mauer nie, und was draußen passiert, lässt er in Ruhe
 - Hausmeister spürt jeden Schaden + alle warten hinter der Mauer (v159)!
   🔧🧱 Zwei Wünsche: 1. Hausmeister Kurt SPÜRT jetzt jedes Loch:
   Sobald irgendwo im ganzen Burggelände ein Block verschwindet -
