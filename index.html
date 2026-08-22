@@ -124,13 +124,15 @@
   #cabClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
   #shopBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
-    align-items:center; gap:7px; background:rgba(18,42,66,.95); padding:14px 18px; border-radius:14px;
-    color:#fff; z-index:40; text-align:center; }
+    align-items:center; gap:6px; background:rgba(18,42,66,.95); padding:12px 16px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center;
+    max-height:86vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   #shopBox h3 { font-size:18px; }
-  #shopBox p { font-size:12px; opacity:.85; max-width:250px; line-height:1.4; }
-  #shopGems { font-size:16px; font-weight:bold; }
-  .shopRow { font-size:15px; font-weight:bold; background:rgba(255,255,255,.14);
-    border:2px solid rgba(255,255,255,.35); border-radius:10px; padding:8px 14px; min-width:232px; }
+  #shopBox p { font-size:12px; opacity:.85; max-width:250px; line-height:1.4; margin-top:4px; }
+  #shopGems { font-size:16px; font-weight:bold; position:sticky; top:0;
+    background:rgba(18,42,66,.97); padding:4px 10px; border-radius:8px; }
+  .shopRow { font-size:14px; font-weight:bold; background:rgba(255,255,255,.14);
+    border:2px solid rgba(255,255,255,.35); border-radius:10px; padding:6px 12px; min-width:232px; }
   .shopRow:active { background:rgba(255,255,255,.35); }
   #shopClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
@@ -326,18 +328,33 @@
 <div class="hud" id="shopBox">
   <h3>🏪 Laden</h3>
   <div id="shopGems">💶 0</div>
-  <div class="shopRow" data-buy="cake">🍰 Kuchen kaufen &mdash; 2 €</div>
-  <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 €</div>
+  <p>Kaufen &mdash; tippe an, was du haben willst:</p>
+  <div class="shopRow" data-buy="cake">🍰 Kuchen &mdash; 2 €</div>
   <div class="shopRow" data-buy="bonbon">🍬 Bonbon-Tüte (5 Stück) &mdash; 2 €</div>
+  <div class="shopRow" data-buy="apple">🍎 Apfel &mdash; 1 €</div>
+  <div class="shopRow" data-buy="brot">🍞 Brot &mdash; 3 €</div>
+  <div class="shopRow" data-buy="samen">🌱 Samen-Tüte (5 🥕 + 5 🌾 + 5 🍅) &mdash; 8 €</div>
+  <div class="shopRow" data-buy="schnee">❄️ Schnee-Paket (5 Stück) &mdash; 2 €</div>
+  <div class="shopRow" data-buy="turbo">⚡ Turbo-Trank (1 Minute rennen) &mdash; 2 €</div>
+  <div class="shopRow" data-buy="sprung">🦘 Sprung-Trank (1 Minute hüpfen) &mdash; 2 €</div>
+  <div class="shopRow" data-buy="balloon">🎈 Luftballon &mdash; 3 €</div>
   <div class="shopRow" data-buy="fw">🎆 Feuerwerk &mdash; 1 €</div>
   <div class="shopRow" data-buy="ball">⚽ Fußball &mdash; 2 €</div>
+  <div class="shopRow" data-buy="ueber">🎁 Überraschungs-Paket &mdash; 3 €</div>
+  <div class="shopRow" data-buy="gem">💎 Diamant &mdash; 5 €</div>
   <div class="shopRow" data-buy="sword">⚔️ Schwert &mdash; 5 €</div>
   <div class="shopRow" data-buy="bow">🏹 Bogen &mdash; 8 €</div>
   <p>Verkaufen &mdash; so verdienst du Geld:</p>
   <div class="shopRow" data-sell="c">5 🥕 verkaufen &rarr; 2 €</div>
   <div class="shopRow" data-sell="w">5 🌾 verkaufen &rarr; 2 €</div>
+  <div class="shopRow" data-sell="t">5 🍅 verkaufen &rarr; 2 €</div>
+  <div class="shopRow" data-sell="a">3 🍎 verkaufen &rarr; 2 €</div>
+  <div class="shopRow" data-sell="b">1 🍞 verkaufen &rarr; 2 €</div>
   <div class="shopRow" data-sell="wo">3 🧶 verkaufen &rarr; 4 €</div>
   <div class="shopRow" data-sell="g">1 💎 verkaufen &rarr; 3 €</div>
+  <div class="shopRow" data-sell="bo">5 🍬 verkaufen &rarr; 1 €</div>
+  <div class="shopRow" data-sell="k">1 🍰 verkaufen &rarr; 1 €</div>
+  <div class="shopRow" data-sell="s">5 ❄️ verkaufen &rarr; 1 €</div>
   <button id="shopClose">Fertig</button>
 </div>
 
@@ -397,7 +414,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 164 &middot; Bau mit deinem GELD! 💶🏗️</p>
+    Version 165 &middot; Echte Scheine & Münzen + Riesen-Laden! 💵🪙🏪</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -443,7 +460,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 164;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 165;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -470,7 +487,9 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
-      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81;
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82;
+// 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
+const GELD_BLOCK = new Set([GELD, MUENZEN]);
 // 🍬 alles, was man im Bonbon-Land wirklich naschen darf (Block -> wie viele Bonbons)
 const NASCH = { [BONBON]:1, [ZUCKERSTANGE]:2, [SCHOKO]:2, [LUTSCHER]:3 };
 
@@ -586,8 +605,17 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
-  // 💶 dein verdientes Geld als Baustein: hinstellen kostet 1 €, abbauen gibt 1 € zurück
-  [GELD]: { name:'Geld-Block 💶 (kostet 1 € – abbauen = 1 € zurück!)', tiles:[93,93,93], solid:true },
+  // 💵🪙 dein verdientes Geld als Baustein: hinstellen kostet 1 €, abbauen gibt 1 € zurück
+  [GELD]: { name:'Geldscheine 💵 (ein dickes Bündel – kostet 1 €, abbauen = 1 € zurück!)',
+    tiles:[93,95,95], solid:true },
+  [MUENZEN]: { name:'Münzen 🪙 (echte Geldstücke – kosten 1 €, abbauen = 1 € zurück!)',
+    tiles:[94,94,94], solid:false, model:[
+    [0.08,0,0.10, 0.44,0.10,0.46, 94, 1.35],            // ein Stapel Münzen
+    [0.11,0.10,0.13, 0.41,0.19,0.43, 94, 1.25],
+    [0.14,0.19,0.16, 0.38,0.27,0.40, 94, 1.4],
+    [0.52,0,0.18, 0.88,0.09,0.54, 94, 1.3],             // noch ein Stapel
+    [0.55,0.09,0.21, 0.85,0.17,0.51, 94, 1.2],
+    [0.30,0,0.58, 0.62,0.07,0.90, 94, 1.45]] },         // eine einzelne Münze daneben
   // 🍬 Naschkram aus dem Bonbon-Land: abbauen = einsammeln, dann unten antippen = ESSEN!
   [BONBON]: { name:'Bonbon-Block 🍬 (abbauen = naschen!)', tiles:[89,89,89], solid:true },
   [SCHOKO]: { name:'Schokolade 🍫 (abbauen = naschen!)', tiles:[92,92,92], solid:true },
@@ -726,7 +754,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -2609,15 +2637,31 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y%4===0) return vary(104,74,44,12);                         // Bohlen-Fugen
     return vary(150,110,66,16);                                     // helles Holz
   });
-  tile(93,(x,y)=>{                                                  // Geld-Block 💶: Goldbarren mit €
-    if (x===0||x===15||y===0||y===15) return vary(150,108,20,10);   // dunkler Rand
-    // ein großes € in die Mitte stempeln
-    const eu = (y>=3 && y<=12 && x>=5 && x<=11 &&
-                ((x===5 && y>=5 && y<=10) || (x===6 && (y===4||y===11)) ||
-                 (x>=7 && (y===3||y===12)) || (y===6&&x<=10) || (y===9&&x<=10)));
-    if (eu) return vary(96,66,10,8);                                // eingeprägtes Euro-Zeichen
-    if (x+y < 7) return vary(255,244,180,10);                       // heller Glanz oben links
-    return vary(238,196,58,12);                                     // glänzendes Gold
+  // ein großes € als Stempel-Vorlage (für Scheine und Münzen)
+  const euroZeichen = (x,y) => (y>=3 && y<=12 && x>=5 && x<=11 &&
+    ((x===5 && y>=5 && y<=10) || (x===6 && (y===4||y===11)) ||
+     (x>=7 && (y===3||y===12)) || (y===6&&x<=10) || (y===9&&x<=10)));
+  tile(93,(x,y)=>{                                                  // Geldscheine 💵: Bündel von der Seite
+    if (x===0||x===15) return vary(226,228,214,8);                  // helle Papierkanten
+    if (y%3===2) return vary(244,246,236,6);                        // weißer Spalt zwischen den Scheinen
+    const f = [[58,140,88],[196,86,74],[70,110,190],[214,150,52],[124,96,176]][Math.floor(y/3)%5];
+    return vary(f[0],f[1],f[2],10);                                 // jeder Schein eine andere Farbe
+  });
+  tile(95,(x,y)=>{                                                  // Geldschein 💵 von oben
+    if (x===0||x===15||y===0||y===15) return vary(28,96,58,8);       // Rand des Scheins
+    const dx=(x-4)*1.25, dy=y-7.5;
+    if (dx*dx+dy*dy < 13) return vary(224,240,224,8);               // helles Fenster mit Bild
+    if (euroZeichen(x-3,y)) return vary(242,250,238,8);             // großes € daneben
+    if ((x+y)%4===0) return vary(94,176,120,8);                     // feines Muster
+    return vary(56,140,88,8);                                       // Schein-Grün
+  });
+  tile(94,(x,y)=>{                                                  // Münze 🪙: Goldstück mit €
+    const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
+    if (r > 7.5) return vary(150,120,40,6);                         // außen: Kante des Stapels
+    if (r > 6.2) return vary(198,152,40,8);                         // geriffelter Münzrand
+    if (euroZeichen(x,y)) return vary(150,110,18,8);                // eingeprägtes €
+    if (x+y < 9) return vary(255,240,164,10);                       // Glanzlicht
+    return vary(244,204,66,10);                                     // Gold
   });
   tile(89,(x,y)=>{                                                  // Bonbon-Block 🍬: rosa mit Streuseln
     const s = (x*7 + y*11) % 23;                                    // nur ein paar wenige Streusel
@@ -6600,11 +6644,13 @@ function openShop(a) {
 function updateShopUI() {
   document.getElementById('shopGems').textContent = 'Du hast: 💶 ' + money + ' Euro · 💎 ' + gems;
 }
+// Was alles im Laden liegt und was es kostet 🏪
+const PREISE = { cake:2, bonbon:2, apple:1, brot:3, samen:8, schnee:2, turbo:2, sprung:2,
+                 balloon:3, fw:1, ball:2, ueber:3, gem:5, sword:5, bow:8 };
 function shopBuy(what) {
   if (what==='sword' && sword) { toast('⚔️ Du hast schon ein Schwert! 😄', 2500); return; }
   if (what==='bow' && bow) { toast('🏹 Du hast schon einen Bogen! 😄', 2500); return; }
-  const cost = what==='cake' ? 2 : what==='bonbon' ? 2 : what==='balloon' ? 3 : what==='ball' ? 2
-             : what==='sword' ? 5 : what==='bow' ? 8 : 1;
+  const cost = PREISE[what] !== undefined ? PREISE[what] : 1;
   if (money < cost) {
     toast('Zu wenig Geld! 💶 Verkaufe dem Händler Gemüse, Wolle oder Diamanten!', 3200);
     blip(180,0.15);
@@ -6613,6 +6659,28 @@ function shopBuy(what) {
   money -= cost;
   if (what==='cake') { cakes++; toast('🍰 Ein Kuchen! Tippe ihn unten in der Leiste an zum Essen!', 3000); }
   if (what==='bonbon') { bonbons += 5; toast('🍬 Eine ganze Bonbon-Tüte! Tippe unten das 🍬 an zum Naschen!', 3200); }
+  if (what==='apple') { apples++; toast('🍎 Ein knackiger Apfel! Tippe ihn unten an zum Essen.', 3000); }
+  if (what==='brot') { bread++; toast('🍞 Ein frisches Brot! Das gibt 20 Sekunden Tempo UND Riesen-Sprünge.', 3400); }
+  if (what==='samen') {
+    carrots += 5; wheat += 5; tomatoes += 5;
+    toast('🌱 Samen-Tüte! 5 🥕, 5 🌾 und 5 🍅 – pflanz sie auf Gras oder Erde und ernte viel mehr!', 4200);
+  }
+  if (what==='schnee') { snowCnt += 5; toast('❄️ 5 Schneebälle! Damit kannst du auch mitten im Sommer Schneemänner ⛄ bauen.', 3600); }
+  if (what==='turbo') { boostT = Math.max(boostT, 60); toast('⚡ Turbo-Trank! Eine ganze Minute rennst du superschnell!', 3200); }
+  if (what==='sprung') { jumpT = Math.max(jumpT, 60); toast('🦘 Sprung-Trank! Eine ganze Minute springst du riesig hoch!', 3200); }
+  if (what==='gem') { gems++; toast('💎 Ein funkelnder Diamant für deine Schatz-Sammlung!', 3000); }
+  if (what==='ueber') {                 // 🎁 was ist wohl drin?
+    const w = Math.floor(Math.random()*8);
+    if (w===0) { apples += 3;  toast('🎁 Im Paket waren: 🍎 3 Äpfel!', 3200); }
+    if (w===1) { bonbons += 5; toast('🎁 Im Paket waren: 🍬 5 Bonbons!', 3200); }
+    if (w===2) { cakes++;      toast('🎁 Im Paket war: 🍰 ein ganzer Kuchen!', 3200); }
+    if (w===3) { snowCnt += 5; toast('🎁 Im Paket waren: ❄️ 5 Schneebälle!', 3200); }
+    if (w===4) { gems++;       toast('🎁 GROSSES GLÜCK! Im Paket war: 💎 ein Diamant!', 3600); }
+    if (w===5) { launchFirework(); toast('🎁 Im Paket war: 🎆 ein Feuerwerk – schau in den Himmel!', 3200); }
+    if (w===6) { carrots += 5; toast('🎁 Im Paket waren: 🥕 5 Karotten!', 3200); }
+    if (w===7) { money += 2;   toast('🎁 Im Paket waren: 💶 2 Euro zurück!', 3200); }
+    blip(659,0.07); blip(880,0.09);
+  }
   if (what==='balloon') { balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800); }
   if (what==='fw') { launchFirework(); toast('🎆 Feuerwerk! Schau in den Himmel!', 3000); }
   if (what==='ball') {
@@ -6633,12 +6701,29 @@ function shopBuy(what) {
   blip(659,0.08); blip(784,0.1);
   updateShopUI(); updateFoodHUD(); scheduleSave();
 }
+// Was der Händler alles ankauft: wie viele Stück, wie sie heißen und was er zahlt
+const VERKAUF = {
+  c:  { anz:5, name:'🥕 Karotten',  euro:2, hat:()=>carrots,  weg:n=>carrots-=n  },
+  w:  { anz:5, name:'🌾 Weizen',    euro:2, hat:()=>wheat,    weg:n=>wheat-=n    },
+  t:  { anz:5, name:'🍅 Tomaten',   euro:2, hat:()=>tomatoes, weg:n=>tomatoes-=n },
+  a:  { anz:3, name:'🍎 Äpfel',     euro:2, hat:()=>apples,   weg:n=>apples-=n   },
+  b:  { anz:1, name:'🍞 Brot',      euro:2, hat:()=>bread,    weg:n=>bread-=n    },
+  wo: { anz:3, name:'🧶 Wolle',     euro:4, hat:()=>wool,     weg:n=>wool-=n     },
+  g:  { anz:1, name:'💎 Diamanten', euro:3, hat:()=>gems,     weg:n=>gems-=n     },
+  bo: { anz:5, name:'🍬 Bonbons',   euro:1, hat:()=>bonbons,  weg:n=>bonbons-=n  },
+  k:  { anz:1, name:'🍰 Kuchen',    euro:1, hat:()=>cakes,    weg:n=>cakes-=n    },
+  s:  { anz:5, name:'❄️ Schnee',    euro:1, hat:()=>snowCnt,  weg:n=>snowCnt-=n  },
+};
 function shopSell(what) {
-  if (what==='c') { if (carrots<5) { toast('Du brauchst 5 Karotten! 🥕 Du hast erst '+carrots+'.', 2500); return; } carrots-=5; money+=2; }
-  if (what==='w') { if (wheat<5)   { toast('Du brauchst 5 Weizen! 🌾 Du hast erst '+wheat+'.', 2500);   return; } wheat-=5;   money+=2; }
-  if (what==='wo'){ if (wool<3)    { toast('Du brauchst 3 Wolle! 🧶 Du hast erst '+wool+'.', 2500);     return; } wool-=3;    money+=4; }
-  if (what==='g') { if (gems<1)    { toast('Du hast keinen Diamanten! 💎 Besiege Höhlenmonster!', 2500); return; } gems-=1;   money+=3; }
-  toast('Verkauft! 💶 „Danke!", sagt der Händler. Kling, Kasse!', 2500);
+  const v = VERKAUF[what];
+  if (!v) return;
+  if (v.hat() < v.anz) {
+    toast('Du brauchst '+v.anz+' '+v.name+'! Du hast erst '+v.hat()+'.', 2800);
+    blip(180,0.12);
+    return;
+  }
+  v.weg(v.anz); money += v.euro;
+  toast('Verkauft! '+v.anz+' '+v.name+' → '+v.euro+' € 💶 „Danke!", sagt der Händler. Kling, Kasse!', 3000);
   blip(784,0.08); blip(1047,0.1);
   updateShopUI(); updateFoodHUD(); scheduleSave();
 }
@@ -7802,7 +7887,7 @@ function finishLasso() {
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
       if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
-      if (b2===GELD) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
+      if (GELD_BLOCK.has(b2)) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,lCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -8164,7 +8249,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#eec43a',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -9613,11 +9698,12 @@ function doBreak(dir) {
     blip(200,0.07);
     return;
   }
-  if (hit.block===GELD) {               // 💶 Geld-Block abbauen = der Euro kommt zurück
+  if (GELD_BLOCK.has(hit.block)) {      // 💵🪙 Geld aufheben = der Euro kommt zurück
     money++; updateFoodHUD(); scheduleSave();
+    const wie = hit.block===MUENZEN ? '🪙 Münzen eingesteckt' : '💵 Scheine eingesteckt';
     setBlock(hit.x,hit.y,hit.z,AIR);
     pruefeNachbarn(hit.x,hit.y,hit.z);
-    toast('💶 Kling! 1 Euro zurück in deinen Geldbeutel (jetzt '+money+' €).', 2600);
+    toast(wie+' – Kling! 1 Euro zurück in deinen Geldbeutel (jetzt '+money+' €).', 2800);
     blip(1170,0.05); blip(880,0.06);
     return;
   }
@@ -9697,7 +9783,7 @@ function doBreak(dir) {
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
       if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
-      if (b2===GELD) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
+      if (GELD_BLOCK.has(b2)) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,wCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -9985,7 +10071,7 @@ function doPlace(dir) {
     }
     snowCnt -= 3; updateFoodHUD(); scheduleSave();
   }
-  if (b===GELD) {                       // 💶 mit dem eigenen Geld bauen: jeder Block kostet 1 €
+  if (GELD_BLOCK.has(b)) {              // 💵🪙 mit dem eigenen Geld bauen: jedes Stück kostet 1 €
     if (money <= 0) {
       toast('💶 Du hast kein Geld mehr! Verkauf dem Händler 🥕 Gemüse, 🧶 Wolle oder 💎 Diamanten. 🏪', 3600);
       blip(180,0.15);
@@ -9995,7 +10081,7 @@ function doPlace(dir) {
     blip(880,0.05); blip(1170,0.06);     // Kling! wie eine Münze
     if (!geldTipp) {
       geldTipp = true;
-      toast('💶 Dein Geld als Baustein! Jeder Block kostet 1 € – und wenn du ihn wieder abbaust, bekommst du den Euro zurück. Bau dir einen Geld-Turm! 🏆', 5000);
+      toast('💵 Dein Geld zum Hinlegen! Ein Bündel Scheine oder ein Stapel Münzen kostet 1 € – und wenn du es wieder aufhebst, bekommst du den Euro zurück. Bau dir einen Geld-Turm! 🏆', 5200);
     }
   }
   if (b===WOOL) {                       // Wolle bauen kostet Wolle vom Schaf!

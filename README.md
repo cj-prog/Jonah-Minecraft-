@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Echte SCHEINE und MÜNZEN + Riesen-Laden (v165)! 💵🪙🏪 Aus dem
+  goldenen Geld-Block sind jetzt richtige Geldscheine geworden:
+  ein dickes Bündel bunter Scheine (von oben sieht man einen
+  grünen Schein mit Bildfenster und €-Zeichen). Dazu gibt es neu
+  die Münzen: kleine Stapel echter Goldstücke mit eingeprägtem €,
+  die man auf den Boden legen kann. Beides kostet 1 € und beides
+  gibt beim Aufheben den Euro zurück. Und der Laden ist viel
+  größer: 15 Sachen zum Kaufen (Kuchen, Bonbon-Tüte, Apfel, Brot,
+  Samen-Tüte, Schnee-Paket, Turbo-Trank, Sprung-Trank, Luftballon,
+  Feuerwerk, Fußball, Überraschungs-Paket, Diamant, Schwert,
+  Bogen) und 10 Sachen zum Verkaufen (Karotten, Weizen, Tomaten,
+  Äpfel, Brot, Wolle, Diamanten, Bonbons, Kuchen, Schnee). Der
+  Laden kann jetzt scrollen, damit alles aufs Handy passt, und
+  oben steht immer, wie viel Geld du gerade hast
 - Bau mit deinem GELD (v164)! 💶🏗️ Dein verdientes Geld gibt es
   jetzt auch als Baustein: ein glänzender Gold-Block mit
   eingeprägtem €-Zeichen, ganz normal in der Bau-Leiste. Jeder
