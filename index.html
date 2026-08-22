@@ -123,6 +123,17 @@
   .cabSlot img { width:38px; height:38px; image-rendering:pixelated; pointer-events:none; }
   #cabClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  #radioBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(28,24,52,.96); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
+  #radioBox h3 { font-size:18px; }
+  #radioBox p { font-size:12px; opacity:.85; max-width:250px; line-height:1.4; }
+  .senderRow { font-size:15px; font-weight:bold; background:rgba(255,255,255,.14);
+    border:2px solid rgba(255,255,255,.35); border-radius:10px; padding:8px 14px; min-width:224px; }
+  .senderRow.laeuft { background:rgba(120,220,150,.32); border-color:#8ee8a8; }
+  .senderRow:active { background:rgba(255,255,255,.35); }
+  #radioClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   #shopBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:6px; background:rgba(18,42,66,.95); padding:12px 16px; border-radius:14px;
     color:#fff; z-index:40; text-align:center;
@@ -325,6 +336,14 @@
   <div class="foodChip" id="foodM"></div>
 </div>
 
+<div class="hud" id="radioBox">
+  <h3>📻 Dein Radio</h3>
+  <p>Welchen Sender möchtest du hören? Die Musik läuft, solange du in der Nähe bist.</p>
+  <div id="senderListe"></div>
+  <div class="senderRow" data-sender="aus">⏹️ Aus</div>
+  <button id="radioClose">Fertig</button>
+</div>
+
 <div class="hud" id="shopBox">
   <h3>🏪 Laden</h3>
   <div id="shopGems">💶 0</div>
@@ -414,7 +433,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 167 &middot; WACH-KANONEN! Sie schießen von allein 💣💥</p>
+    Version 168 &middot; Das RADIO: 5 Sender mit echter Musik! 📻🎶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -460,7 +479,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 167;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 168;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -487,7 +506,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
-      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83;
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84;
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -607,6 +626,13 @@ const BLOCKS = {
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
+  // 📻 das Radio: antippen und einen Sender aussuchen - dann spielt es Musik!
+  [RADIO]: { name:'Radio 📻 (antippen = Sender aussuchen und Musik hören!)',
+    tiles:[97,98,98], solid:true, model:[
+    [0.06,0,0.14, 0.94,0.62,0.86, 97],                  // das Gehäuse
+    [0.05,0.6,0.13, 0.95,0.68,0.87, 98],                // Deckel
+    [0.14,0.68,0.44, 0.2,1.24,0.5, 3],                  // schräge Antenne an der Seite
+    [0.12,1.2,0.42, 0.22,1.3,0.52, 30]] },              // Knubbel an der Spitze
   // 💣 die Wach-Kanone: sie sucht sich ihre Ziele selbst und schießt von allein!
   [KANONE]: { name:'Wach-Kanone 💣 (schießt von allein auf Räuber und Monster!)',
     tiles:[96,96,96], solid:true, model:[
@@ -767,7 +793,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -2116,7 +2142,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -2306,6 +2332,7 @@ function saveGame() {
       bonbons, naschZahl,
       geldOrte: [...geldOrte],          // 💰 wo dein Geld herumliegt (die Räuber suchen danach!)
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
+      radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -2369,6 +2396,9 @@ function loadGame() {
     if (typeof s.naschZahl==='number') naschZahl = s.naschZahl;
     if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
+    if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
+      radioAn = s.radio[0]; radioStart(s.radio[1]);
+    }
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
     if (typeof s.brkBest==='number') brkBest = s.brkBest;
     if (typeof s.racBest==='number') racBest = s.racBest;
@@ -2681,6 +2711,23 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (euroZeichen(x-3,y)) return vary(242,250,238,8);             // großes € daneben
     if ((x+y)%4===0) return vary(94,176,120,8);                     // feines Muster
     return vary(56,140,88,8);                                       // Schein-Grün
+  });
+  tile(97,(x,y)=>{                                                  // Radio 📻: Front mit Lautsprecher
+    if (x===0||x===15||y===0||y===15) return vary(96,60,34,8);      // Holz-Rahmen
+    if (x>=2 && x<=8 && y>=3 && y<=12) {                            // der runde Lautsprecher
+      const dx=x-5, dy=y-7.5, r=Math.hypot(dx,dy*0.9);
+      if (r < 4.4) return (Math.round(r)%2) ? vary(40,42,50,8) : vary(72,76,88,8);
+    }
+    if (x>=10 && x<=13 && y>=3 && y<=6) {                           // die Sender-Skala
+      return (y===4||y===5) && x!==11 ? vary(240,228,150,8) : vary(58,52,40,8);
+    }
+    if (y>=9 && y<=11 && (x===11 || x===13)) return vary(226,196,90,10);   // zwei Drehknöpfe
+    return vary(146,98,56,10);                                      // helles Holz-Gehäuse
+  });
+  tile(98,(x,y)=>{                                                  // Radio von oben und an den Seiten
+    if (x===0||x===15||y===0||y===15) return vary(96,60,34,8);
+    if (y>=6 && y<=9 && x>=4 && x<=11) return vary(58,52,40,8);     // Griff-Mulde
+    return vary(146,98,56,10);
   });
   tile(96,(x,y)=>{                                                  // Kanone 💣: dunkles Eisen
     if ((x*3+y*5) % 17 === 0) return vary(96,102,112,10);           // ein paar helle Nieten
@@ -8101,6 +8148,130 @@ function updateArrows(dt) {
     }
   }
 }
+// ------------------------------ Radio 📻 ------------------------------------
+// Ein kleiner Musik-Spieler: Jeder Ton wird selbst erzeugt (wie beim Klavier),
+// darum braucht das Radio kein Internet und keine Musik-Dateien.
+// Töne: kleine Buchstaben = mittlere Oktave, GROSSE = hoch, q w r t y u i = tief,
+// x = Pause. Eine Zahl dahinter sagt, wie viele Schläge der Ton dauert.
+const TON = { q:130.81, w:146.83, r:164.81, t:174.61, y:196.00, u:220.00, i:246.94,
+              c:261.63, d:293.66, e:329.63, f:349.23, g:392.00, a:440.00, h:493.88,
+              C:523.25, D:587.33, E:659.25, F:698.46, G:783.99, A:880.00, H:987.77, x:0 };
+const SENDER = [
+  { name:'🦆 Alle meine Entchen', takt:0.30, welle:'square',
+    melodie:'c d e f g2 g2 a a a a g4 a a a a g4 f f f f e2 e2 g g g g c4',
+    bass:   'q4 y4 q4 q4 t4 q4 t4 y4 q4' },
+  { name:'🚶 Hänschen klein', takt:0.32, welle:'triangle',
+    melodie:'g e e2 f d d2 c d e f g g g2 g e e2 f d d2 c e g g c4',
+    bass:   'q4 y4 q4 y4 q4 y4 q4 y4' },
+  { name:'🔔 Bruder Jakob', takt:0.30, welle:'square',
+    melodie:'c d e c c d e c e f g2 e f g2 g0.5 a0.5 g0.5 f0.5 e c g0.5 a0.5 g0.5 f0.5 e c c y c2',
+    bass:   'q2 q2 q2 q2 t2 t2 q2 q2 y2 q2' },
+  { name:'⭐ Funkel, funkel, kleiner Stern', takt:0.32, welle:'triangle',
+    melodie:'c c g g a a g2 f f e e d d c2 g g f f e e d2 g g f f e e d2 c c g g a a g2 f f e e d d c2',
+    bass:   'q4 t4 q4 t4 q4 y4 q4 y4 q4 t4 q4 t4' },
+  { name:'🎉 Disco-Party', takt:0.15, welle:'sawtooth',
+    melodie:'c e g C g e c e g C E C G E C E a C E A E C a C g h D G D h g h c e g C g e c2',
+    bass:   'q q q q t t t t y y y y t t t t' },
+];
+let radioAn = null;                     // "x,y,z" des Radios, das gerade läuft
+let radioSender = 0;
+const radioStimmen = [null, null];      // Melodie und Bass laufen nebeneinander
+const radioQuellen = [];                // laufende Töne (zum Ausschalten)
+function tonListe(s) {                  // "c d e2" -> [[Hz, Schläge], ...]
+  return s.trim().split(/\s+/).map(t => {
+    const hz = TON[t[0]] !== undefined ? TON[t[0]] : 0;
+    const n = parseFloat(t.slice(1));
+    return [hz, isNaN(n) ? 1 : n];
+  });
+}
+function spielTon(hz, start, dauer, laut, welle) {
+  if (!actx || hz <= 0 || laut <= 0.002) return;
+  try {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = welle; o.frequency.value = hz;
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.exponentialRampToValueAtTime(laut, start+0.02);          // sanft anschlagen
+    g.gain.exponentialRampToValueAtTime(0.0001, start+dauer*0.95);  // und ausklingen
+    o.connect(g); g.connect(actx.destination);
+    o.start(start); o.stop(start+dauer);
+    radioQuellen.push(o);
+    if (radioQuellen.length > 40) radioQuellen.splice(0, 20);
+  } catch(e) {}
+}
+function radioStart(nr) {
+  radioSender = nr;
+  const s = SENDER[nr];
+  radioStimmen[0] = { noten: tonListe(s.melodie), i:0, zeit:0, hoch:1 };
+  radioStimmen[1] = { noten: tonListe(s.bass),    i:0, zeit:0, hoch:0 };
+  if (actx) { const t = actx.currentTime + 0.06; radioStimmen[0].zeit = t; radioStimmen[1].zeit = t; }
+}
+function radioAus() {
+  radioAn = null; radioStimmen[0] = radioStimmen[1] = null;
+  for (const o of radioQuellen) { try { o.stop(); } catch(e) {} }
+  radioQuellen.length = 0;
+}
+let radioFunkT = 0;
+function radioTick(dt) {
+  if (!radioAn) return;
+  const p = radioAn.split(','), rx = +p[0], ry = +p[1], rz = +p[2];
+  const rch = getChunk(rx>>4, rz>>4);
+  if (!rch || !rch.data) return;        // Gegend noch nicht geladen: erst mal abwarten
+  if (getBlock(rx,ry,rz) !== RADIO) { radioAus(); return; }        // Radio abgebaut
+  const weg = Math.hypot(player.x-rx-0.5, player.y-ry, player.z-rz-0.5);
+  if (weg > 30) return;                 // zu weit weg: Musik pausiert leise
+  if (!actx) return;
+  if (actx.state === 'suspended') { try { actx.resume(); } catch(e) {} }
+  const s = SENDER[radioSender];
+  const laut = Math.max(0, 1 - weg/30);
+  const jetzt = actx.currentTime;
+  for (const st of radioStimmen) {      // Melodie und Bass vorausplanen
+    if (!st) continue;
+    if (st.zeit < jetzt) st.zeit = jetzt + 0.05;
+    let schutz = 0;
+    while (st.zeit < jetzt + 0.3 && schutz++ < 40) {
+      const [hz, schlaege] = st.noten[st.i];
+      const dauer = schlaege * s.takt;
+      spielTon(hz, st.zeit, dauer, (st.hoch ? 0.075 : 0.05) * laut * laut, s.welle);
+      st.zeit += dauer;
+      st.i = (st.i + 1) % st.noten.length;    // das Lied läuft in einer Schleife
+    }
+  }
+  radioFunkT -= dt;                     // kleine Musik-Funken tanzen über dem Radio
+  if (radioFunkT <= 0 && weg < 24) {
+    radioFunkT = 0.35;
+    fireworks.push({x:rx+0.5+(Math.random()-0.5)*0.5, y:ry+1.1, z:rz+0.5+(Math.random()-0.5)*0.5,
+      vx:(Math.random()-0.5)*0.8, vy:1.3+Math.random(), vz:(Math.random()-0.5)*0.8,
+      tile:[30,9,52,25][Math.floor(Math.random()*4)], t:0.8});
+  }
+}
+const radioBox = document.getElementById('radioBox');
+function openRadio(x,y,z) {
+  blip(660,0.05); blip(880,0.06);       // weckt auch den Ton auf dem Handy auf
+  const hier = x+','+y+','+z;
+  const liste = document.getElementById('senderListe');
+  liste.innerHTML = '';
+  SENDER.forEach((s,i) => {
+    const el = document.createElement('div');
+    el.className = 'senderRow' + (radioAn===hier && radioSender===i ? ' laeuft' : '');
+    el.textContent = (radioAn===hier && radioSender===i ? '▶️ ' : '🎵 ') + s.name;
+    const w = () => { radioAus(); radioAn = hier; radioStart(i);
+      toast('📻 '+s.name+' läuft! Geh näher ran, dann wird es lauter. 🎶', 3600);
+      radioBox.style.display='none'; };
+    el.addEventListener('click', w);
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+    liste.appendChild(el);
+  });
+  radioBox.style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+}
+for (const el of document.querySelectorAll('#radioBox .senderRow[data-sender="aus"]')) {
+  const w = () => { radioAus(); toast('📻 Radio aus. Tipp es wieder an für Musik! 🎵', 2600);
+    radioBox.style.display='none'; blip(300,0.08); };
+  el.addEventListener('click', w);
+  el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+}
+document.getElementById('radioClose').addEventListener('click', ()=>{ radioBox.style.display='none'; });
+
 // ---------------------------- Wach-Kanonen 💣 -------------------------------
 // Jede aufgestellte Kanone hält Wache: Kommt ein Räuber oder ein Monster in die
 // Nähe, dreht sie sich hin, schießt eine Kanonenkugel - und BAMM, besiegt!
@@ -8433,7 +8604,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -10084,6 +10255,10 @@ function doPlace(dir) {
     openLift();                         // 🛗 das Etagen-Menü!
     return;
   }
+  if (hit.block===RADIO && HOTBAR_ITEMS[selSlot]!==RADIO) {
+    openRadio(hit.x, hit.y, hit.z);     // 📻 Sender aussuchen!
+    return;
+  }
   if (hit.block===ZUGBRUECKE) { toggleZugbruecke(); missEvent('bruecke'); return; }
   if ((hit.block===GATE || hit.block===GATE_OPEN) && HOTBAR_ITEMS[selSlot]!==GATE) {
     toggleGate(hit.x, hit.y, hit.z);    // das ganze Garagentor auf/zu!
@@ -10335,6 +10510,8 @@ function doPlace(dir) {
     return;
   }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
+  if (b===RADIO) toast('📻 Radio aufgestellt! Tipp es an (mit einem anderen Block in der Hand) und such dir einen Sender aus. 🎶', 4200);
+  if (b===KANONE) toast('💣 Wach-Kanone aufgestellt! Ab jetzt schießt sie ganz von allein auf Räuber und Monster.', 4000);
   if (b===CABINET) toast('🗄️ Schrank aufgestellt! Antippen zum Öffnen.');
   if (b===TOILET) toast('🚽 Toilette aufgestellt! Antippen zum Hinsetzen.');
   if (b===SINK) toast('🧼 Waschbecken aufgestellt! Antippen zum Händewaschen.');
@@ -11055,6 +11232,7 @@ function frame(now) {
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
+  radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
