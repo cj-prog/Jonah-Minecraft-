@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- WACH-KANONEN (v167)! 💣💥 In der Bau-Leiste liegt jetzt eine
+  große Kanone: schwarzes Eisenrohr mit glänzendem Mündungsring
+  auf einer Holz-Lafette mit vier Rädern. Stell sie einfach auf
+  deine Mauer oder vor dein Tor – ab da hält sie ganz von allein
+  Wache. Kommt ein Räuber, ein Zombie, ein Schleim oder sogar der
+  Monster-König auf 24 Blöcke heran, dreht sich die Kanone zu ihm
+  hin und feuert eine dicke Kanonenkugel ab: BAMM! Die Kugel
+  fliegt im Bogen (die Kanone rechnet den Bogen selber aus),
+  zerplatzt beim Treffer in Rauch und Funken und besiegt den
+  Gegner – Räuber und Zombies mit einem Schuss, den Monster-König
+  nach ein paar Treffern. Danach lädt sie knapp zwei Sekunden
+  nach. Ganz wichtig: Die Kugeln machen KEINE Löcher in deine
+  Burg, und deine Freunde, Tiere, Ritter, der Butler, der
+  Hausmeister und friedliche Monster werden nie beschossen. Baue
+  ruhig eine ganze Reihe davon – deine Kanonen stehen auch nach
+  dem Neuladen wieder auf Posten
 - RÄUBER klauen dein Geld (v166)! 😈💰 Wer sein Geld einfach
   irgendwo herumliegen lässt, muss jetzt aufpassen: Räuber haben
   eine Nase für Geldscheine und Münzen. Sieht einer welche in der
