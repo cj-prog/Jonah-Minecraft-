@@ -221,6 +221,25 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DER GEHEIME JONAH-PLANET - dein eigenes Königreich (v177)! 👑
+  Wenn du auf drei fremden Planeten gelandet bist, taucht in der
+  Raketen-Steuerung plötzlich eine goldene Zeile auf: „❓ zum
+  GEHEIMEN Planeten ???". Flieg hin - und du landest vor DEINEM
+  eigenen Königreich! Auf dem Platz vor dem Tor steht dein Name
+  JONAH in riesigen goldenen Buchstaben. Dahinter: eine dicke
+  Schlossmauer mit Zinnen und vier Ecktürmen mit goldenen Kronen und
+  roten Fahnen, ein großes Tor mit goldenem Bogen, ein roter
+  Teppichweg quer über den Hof, zwei goldene Springbrunnen mit
+  Blumen und vier Häuser für dein Volk. Und ganz hinten der PALAST:
+  ein riesiger Saal mit goldenen Säulen, Wappenfahnen, Fackeln,
+  einer langen Festtafel, Schatztruhen und Pokalen an den Wänden -
+  und dem goldenen THRON auf einer goldenen Treppe. Deine vier
+  Ritter bewachen das Tor und grüßen dich mit „Willkommen in DEINEM
+  Königreich, König Jonah!", dein Volk wuselt im Hof herum. Der
+  ganze Planet ist grün: Wiesen voller Blumen, Wälder, Schatztruhen
+  und Goldadern, so weit du gehen kannst. Neu ist auch der 🟨
+  GOLDBLOCK - massives Gold zum Bauen (kein Geld, sondern ein
+  richtiger fester Block, den du überall benutzen kannst).
 - RAKETE VERLOREN? Der 🆘-Knopf holt sie (v176)! 🚀 Wenn du auf
   einem Planeten unterwegs bist, ist unten rechts jetzt ein roter
   🆘-Knopf. Einmal antippen - und deine Rakete landet mit Feuer und

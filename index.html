@@ -498,7 +498,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 176 &middot; RAKETE VERLOREN? Der 🆘-Knopf holt sie! 🚀</p>
+    Version 177 &middot; DER GEHEIME JONAH-PLANET mit deinem Königreich! 👑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -544,7 +544,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 176;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 177;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -572,7 +572,7 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
       BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84, BANK=85, RAKETE=86,
-      STEUER=87;                        // 🎛️ das Bedienungsfeld IN der Rakete
+      STEUER=87, GOLD=88;               // 🎛️ Bedienungsfeld, 🟨 massives Gold zum Bauen
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -695,6 +695,8 @@ const BLOCKS = {
   // 🚀 die Raketen-Luke: antippen, Planet aussuchen und ab ins Weltall!
   [RAKETE]: { name:'Raketen-Luke 🚀 (antippen = ins Weltall fliegen!)',
     tiles:[101,101,101], solid:true },
+  // 🟨 massiver Goldblock: fest zum Draufstehen und Bauen (kein Geld!)
+  [GOLD]: { name:'Goldblock 🟨 (massives Gold zum Bauen!)', tiles:[115,115,115], solid:true },
   // 🎛️ das Bedienungsfeld in der Rakete: antippen und den Planeten aussuchen
   [STEUER]: { name:'Bedienungsfeld 🎛️ (antippen = Planet aussuchen und losfliegen!)',
     tiles:[104,105,105], solid:true },
@@ -868,7 +870,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -947,7 +949,14 @@ const PLANET = [null, null,
   { name:'🟡 Venus',       boden:SAND,   tief:STONE, himmel:[0.34,0.20,0.05], schwer:0.95, basis:42, hub:15,
     erdGross:22, erdWink:0.4,  erdHoch:0.36, sterne:120, kachel:112, flug:6,  km:41000000,
     gruss:'Heiß, heiß, HEISS! Pass auf die Lava-Seen auf - und die Erde ist von hier aus riesig! 🟡' },
+  // 👑 DER GEHEIME PLANET: Jonahs eigenes Königreich. Steht erst im Menü,
+  // wenn Jonah schon auf drei anderen Planeten gelandet ist.
+  { name:'👑 Jonah-Planet', boden:GRASS,  tief:DIRT,  himmel:[0.22,0.10,0.30], schwer:0.75, basis:46, hub:11,
+    erdGross:18, erdWink:2.0,  erdHoch:0.42, sterne:300, kachel:114, flug:11, km:9000000000,
+    geheim:true,
+    gruss:'DEIN EIGENES KÖNIGREICH! 👑 Da vorne steht dein goldenes Schloss mit Thronsaal, Schatzkammer und deinen Rittern. Alles hier gehört DIR!' },
 ];
+const KO_Y = 48;                        // so hoch liegt die Ebene, auf der das Schloss steht
 function planetHoehe(x, z, dim) {
   const P = PLANET[dim] || PLANET[2];
   const b = fbm(x*0.014 + dim*130, z*0.014 - dim*90);
@@ -972,6 +981,10 @@ function planetHoehe(x, z, dim) {
   if (dim===8) {                        // 🟡 Venus: Krater-Kessel voller Lava
     const k = vnoise(x*0.03+21, z*0.03-13, 8080);
     if (k > 0.62) y -= (k-0.62)*52;
+  }
+  if (dim===9) {                        // 👑 Jonah-Planet: sanfte Hügel, aber das Schloss
+    const weit = Math.max(Math.abs(x), Math.abs(z));   // steht auf einer ganz flachen Ebene
+    if (weit < 68) { const t = Math.max(0, Math.min(1, (weit-56)/12)); y = KO_Y*(1-t) + y*t; }
   }
   return Math.max(8, Math.min(CH-30, Math.floor(y)));
 }
@@ -1333,6 +1346,160 @@ function genZauberChunk(cx, cz, ohneEdits) {
   return data;
 }
 // 🚀 Eine ganze Planeten-Oberfläche: Staub, Felsen, Krater und Überraschungen
+// 👑 JONAHS KÖNIGREICH auf dem geheimen Planeten: Schlossmauer mit vier
+// Türmen, ein Thronsaal voller Gold, Schatzkammern, Häuser für sein Volk -
+// und sein Name in großen goldenen Buchstaben auf dem Platz davor.
+const KO_FONT = {                       // 5 breit, 7 hoch - für J O N A H
+  J:['00111','00010','00010','00010','10010','10010','01100'],
+  O:['01110','10001','10001','10001','10001','10001','01110'],
+  N:['10001','11001','10101','10011','10001','10001','10001'],
+  A:['01110','10001','10001','11111','10001','10001','10001'],
+  H:['10001','10001','10001','11111','10001','10001','10001'],
+};
+function bauKoenigreich(put, x0, z0) {
+  const by = KO_Y;
+  if (x0 > 60 || x0+15 < -60 || z0 > 60 || z0+15 < -60) return;   // weit weg: nichts zu bauen
+  const luft = (x,y1,y2,z) => { for (let y=y1; y<=y2; y++) put(x,y,z,AIR,false); };
+
+  // --- die große Schlossmauer, ein Quadrat mit Zinnen ---
+  for (let d=-30; d<=30; d++) {
+    for (const [wx,wz] of [[d,-30],[d,30],[-30,d],[30,d]]) {
+      for (let y=1; y<=5; y++) put(wx, by+y, wz, y===5 ? PLANK : STONE, false);
+      if ((wx+wz) % 2 === 0) put(wx, by+6, wz, STONE, false);      // Zinnen
+      for (let y=7; y<=14; y++) put(wx, by+y, wz, AIR, false);
+    }
+  }
+  for (let d=-29; d<=29; d+=8) {        // Fackeln innen an der Mauer
+    put(d, by+4, -29, TORCH, true); put(d, by+4, 29, TORCH, true);
+    put(-29, by+4, d, TORCH, true); put(29, by+4, d, TORCH, true);
+  }
+  // --- das große Tor nach Süden, mit goldenem Bogen ---
+  for (let dx=-2; dx<=2; dx++) {
+    luft(dx, by+1, by+6, -30);
+    put(dx, by+7, -30, GOLD, false);
+    put(dx, by, -30, PLANK, false);
+  }
+  put(-3, by+7, -30, GOLD, false); put(3, by+7, -30, GOLD, false);
+  for (let dz=-33; dz<=-31; dz++) for (let dx=-3; dx<=3; dx++) luft(dx, by+1, by+5, dz);
+
+  // --- die vier Ecktürme ---
+  for (const [tx,tz] of [[-30,-30],[30,-30],[-30,30],[30,30]]) {
+    for (let y=1; y<=13; y++)
+      for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+        const rand = Math.abs(dx)===2 || Math.abs(dz)===2;
+        put(tx+dx, by+y, tz+dz, rand ? STONE : (y===1 ? PLANK : AIR), false);
+      }
+    for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++)
+      if ((Math.abs(dx)===2||Math.abs(dz)===2) && (dx+dz)%2===0) put(tx+dx, by+14, tz+dz, GOLD, false);
+    put(tx, by+14, tz, WOOL, false);                  // Fahnenmast
+    for (let y=15; y<=18; y++) put(tx, by+y, tz, WOOL, false);
+    for (let y=16; y<=18; y++) { put(tx+1, by+y, tz, BRICK, false); put(tx+2, by+y, tz, BRICK, false); }
+  }
+
+  // --- der rote Teppich vom Tor bis zum Palast ---
+  for (let dz=-29; dz<=2; dz++) for (let dx=-2; dx<=2; dx++) put(dx, by, dz, BRICK, false);
+
+  // --- zwei Springbrunnen, links und rechts vom Weg ---
+  for (const [bx,bz] of [[-12,-16],[12,-16]]) {
+    for (let dx=-3; dx<=3; dx++) for (let dz=-3; dz<=3; dz++) {
+      const r = Math.max(Math.abs(dx), Math.abs(dz));
+      if (r===3) put(bx+dx, by+1, bz+dz, GOLD, false);
+      else if (r>0) { put(bx+dx, by, bz+dz, GLASS, false); put(bx+dx, by+1, bz+dz, WATER, false); }
+    }
+    for (let y=1; y<=4; y++) put(bx, by+y, bz, GLASS, false);
+    put(bx, by+5, bz, WATER, false);
+    for (const [gx,gz] of [[-4,-4],[4,-4],[-4,4],[4,4]]) put(bx+gx, by+1, bz+gz, BLUME, true);
+  }
+
+  // --- vier kleine Häuser für sein Volk ---
+  for (const [hx,hz] of [[-20,-18],[20,-18],[-20,14],[20,14]]) {
+    for (let dx=-3; dx<=3; dx++) for (let dz=-3; dz<=3; dz++) {
+      const rand = Math.abs(dx)===3 || Math.abs(dz)===3;
+      for (let y=1; y<=4; y++) put(hx+dx, by+y, hz+dz, rand ? (y===4?BRICK:PLANK) : AIR, false);
+      put(hx+dx, by+5, hz+dz, BRICK, false);          // Dach
+      put(hx+dx, by, hz+dz, PLANK, false);            // Fußboden
+    }
+    luft(hx, by+1, by+2, hz-3);                       // Tür
+    put(hx-2, by+2, hz-3, GLASS, false); put(hx+2, by+2, hz-3, GLASS, false);
+    put(hx+2, by+1, hz+2, BED, false); put(hx-2, by+1, hz+2, TABLE, false);
+    put(hx-2, by+1, hz+1, CHAIR, false); put(hx, by+3, hz+2, TORCH, false);
+  }
+
+  // --- DER PALAST mit dem Thronsaal ---
+  for (let dx=-13; dx<=13; dx++) for (let dz=2; dz<=26; dz++) {
+    const rand = Math.abs(dx)===13 || dz===2 || dz===26;
+    for (let y=1; y<=10; y++) {
+      let b = AIR;
+      if (rand) b = (y%5===0) ? PLANK : BRICK;        // rote Wände mit hellen Bändern
+      put(dx, by+y, dz, b, false);
+    }
+    put(dx, by, dz, PLANK, false);                    // Fußboden
+    put(dx, by+11, dz, BRICK, false);                 // Dach
+  }
+  for (let dx=-11; dx<=11; dx++) for (let dz=4; dz<=24; dz++) put(dx, by+12, dz, BRICK, false);
+  for (let dx=-9; dx<=9; dx++) for (let dz=6; dz<=22; dz++) put(dx, by+13, dz, GOLD, false);
+  for (let dx=-2; dx<=2; dx++) luft(dx, by+1, by+4, 2);          // das große Portal
+  for (let dx=-3; dx<=3; dx++) put(dx, by+5, 2, GOLD, false);
+  for (let dz=6; dz<=22; dz+=4) {                                 // Fenster
+    for (let y=5; y<=6; y++) { put(-13, by+y, dz, GLASS, false); put(13, by+y, dz, GLASS, false); }
+  }
+  // Thron auf einer goldenen Treppe - mit halben Stufen, damit man hochlaufen kann
+  for (let dx=-5; dx<=5; dx++) {
+    put(dx, by+1, 19, TREP_N, false);                 // halbe Stufe hinauf
+    for (let dz=20; dz<=24; dz++) put(dx, by+1, dz, GOLD, false);
+    put(dx, by+2, 21, TREP_N, false);                 // noch eine halbe Stufe
+    for (let dz=22; dz<=24; dz++) put(dx, by+2, dz, GOLD, false);
+  }
+  put(0, by+3, 23, CHAIR, false);                     // DER THRON! 👑
+  put(-1, by+3, 23, GOLD, false); put(1, by+3, 23, GOLD, false);   // goldene Armlehnen
+  for (let y=3; y<=7; y++) { put(-1, by+y, 24, GOLD, false); put(1, by+y, 24, GOLD, false); }
+  for (let y=4; y<=7; y++) put(0, by+y, 24, GOLD, false);
+  put(0, by+8, 24, GOLD, false);
+  put(-2, by+3, 23, TORCH, false); put(2, by+3, 23, TORCH, false);
+  // Säulen, Fahnen und Fackeln im Saal
+  for (const dz of [8, 14]) for (const dx of [-9, 9]) {
+    for (let y=1; y<=9; y++) put(dx, by+y, dz, GOLD, false);
+    put(dx, by+10, dz, PLANK, false);
+  }
+  for (let dz=5; dz<=19; dz+=2) {
+    put(-12, by+7, dz, (dz%4===1) ? BRICK : WOOL, false);         // Wappen-Fahnen
+    put(12, by+7, dz, (dz%4===1) ? BRICK : WOOL, false);
+    if (dz%4===1) { put(-12, by+4, dz, TORCH, false); put(12, by+4, dz, TORCH, false); }
+  }
+  // die Schatzkammer: Truhen und Pokale an den Seiten
+  for (let dz=5; dz<=18; dz+=3) {
+    put(-11, by+1, dz, CHEST, false); put(11, by+1, dz, CHEST, false);
+    put(-11, by+2, dz, POKAL, false); put(11, by+2, dz, POKAL, false);
+  }
+  // die lange Tafel für das Königsfest - an der Seite, der Weg zum Thron bleibt frei
+  for (let dz=6; dz<=14; dz++) put(-6, by+1, dz, TABLE, false);
+  for (let dz=6; dz<=14; dz+=2) { put(-7, by+1, dz, CHAIR, false); put(-5, by+1, dz, CHAIR, false); }
+
+  // --- JONAH in großen goldenen Buchstaben auf dem Platz ---
+  for (let wx=-20; wx<=20; wx++) for (let wz=-46; wz<=-36; wz++) {   // grauer Platz
+    put(wx, by, wz, STONE, false);
+    luft(wx, by+1, by+3, wz);
+  }
+  const wort = 'JONAH';
+  for (let i=0; i<wort.length; i++) {
+    const g = KO_FONT[wort[i]];
+    for (let zeile=0; zeile<7; zeile++) for (let sp=0; sp<5; sp++)
+      // gespiegelt gesetzt, damit JONAH von der Rakete aus richtig herum dasteht
+      if (g[zeile][sp]==='1') put(16 - (i*7 + sp), by, -38 - zeile, GOLD, false);
+  }
+  // --- der Landeplatz für die Rakete ---
+  for (let dx=-4; dx<=4; dx++) for (let dz=-54; dz<=-46; dz++) {
+    put(dx, by, dz, (dx+dz)%2 ? SCHUTZ : STONE, false);
+    luft(dx, by+1, by+8, dz);
+  }
+  // --- die Schilder ---
+  const s1 = '0,'+(by+1)+',-32';
+  put(0, by+1, -32, SIGN, false);
+  if (!signTexts.has(s1)) signTexts.set(s1, '👑 JONAHS KÖNIGREICH - alles hier gehört DIR!');
+  const s2 = '3,'+(by+1)+',-47';
+  put(3, by+1, -47, SIGN, false);
+  if (!signTexts.has(s2)) signTexts.set(s2, '🚀 Landeplatz - willkommen daheim, König Jonah!');
+}
 function genPlanetChunk(cx, cz, ohneEdits, dim) {
   const P = PLANET[dim] || PLANET[2];
   const data = new Uint8Array(CS*CS*CH_TOT);
@@ -1375,6 +1542,20 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
       const rg = Math.abs(vnoise(wx*0.012, wz*0.012, 7171) - 0.5);     // breiter Ring hoch oben
       if (rg < 0.075) { const ry = h + 34 + Math.floor(vnoise(wx*0.008, wz*0.008, 7172)*8);
         setz(lx, ry, lz, (lx+lz)%3 ? SAND : PLANK); }
+    } else if (dim===9) {               // 👑 JONAH-PLANET: grüne Wiesen, Wälder und Goldadern
+      const weit = Math.max(Math.abs(wx), Math.abs(wz));
+      if (weit > 58) {                  // draußen vor dem Schloss wächst und funkelt es
+        if (r < 0.012) {                // Bäume
+          const hoch = 4 + Math.floor(hash2(wx,wz,7707)*3);
+          for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,WOOD);
+          for (let y=h+hoch-1; y<=h+hoch+1; y++) setz(lx,y,lz,LEAF);
+        }
+        else if (r < 0.07) setz(lx,h+1,lz,BLUME);        // Blumenwiesen
+        else if (r < 0.092) setz(lx,h+1,lz,GOLD);        // Goldadern im Gras!
+        else if (r < 0.102) setz(lx,h+1,lz,CHEST);       // Schatztruhen überall
+        else if (r > 0.9965) setz(lx,h+1,lz,POKAL);      // und Pokale
+        else if (r > 0.994) setz(lx,h+1,lz,TORCH);
+      }
     } else if (dim===8) {               // 🟡 VENUS: glühende Lava-Seen und Schwefel-Felsen
       const kessel = vnoise(wx*0.03+21, wz*0.03-13, 8080);
       if (kessel > 0.68) { setz(lx,h,lz,LAVA); setz(lx,h-1,lz,LAVA); }  // Lava im Kessel
@@ -1391,6 +1572,14 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
       if (ring < 0.035) { const ry = h + 30 + Math.floor(vnoise(wx*0.01, wz*0.01, 6162)*10);
         setz(lx, ry, lz, (lx+lz)%2 ? GLASS : WOOL); }
     }
+  }
+  if (dim===9) {                        // 👑 und mitten drin: Jonahs Königreich!
+    bauKoenigreich((wx,wy,wz,b,nurLuft) => {
+      const lx2 = wx-x0, lz2 = wz-z0;
+      if (lx2<0 || lx2>15 || lz2<0 || lz2>15) return;
+      if (nurLuft && data[bidx(lx2,wy,lz2)] !== AIR) return;
+      setz(lx2, wy, lz2, b);
+    }, x0, z0);
   }
   const e = ohneEdits ? null : edits.get(ckey(cx,cz));
   if (e) for (const [i,v] of e) data[i] = v;
@@ -2533,7 +2722,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -2710,6 +2899,7 @@ function saveGame() {
         return alle; })(),
       heim: portalHeim,
       rakOrt: raketeOrt,               // 🚀 wo überall deine Raketen stehen
+      geheim: geheimEntdeckt,          // 👑 hat Jonah seinen geheimen Planeten gefunden?
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
       rots: Object.fromEntries(rotations),
@@ -2774,6 +2964,7 @@ function loadGame() {
     }
     if (Array.isArray(s.heim)) for (let d=0; d<portalHeim.length; d++) portalHeim[d]=s.heim[d]||null;
     if (Array.isArray(s.rakOrt)) for (let d=0; d<raketeOrt.length; d++) raketeOrt[d]=s.rakOrt[d]||null;
+    if (s.geheim) geheimEntdeckt = true;
     if (typeof s.dayTime==='number') dayTime = s.dayTime;
     if (Array.isArray(s.pets)) savedPets = s.pets;
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
@@ -3223,6 +3414,19 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (s > 0.9) return vary(252,240,196,10);
     if (s < -0.9) return vary(206,158,72,12);
     return vary(234,204,132,12);
+  });
+  tile(115,(x,y)=>{                                                 // 🟨 massiver Goldblock
+    if (x===0||y===0) return vary(168,124,26,8);                    // dunkle Fuge
+    if (x===15||y===15) return vary(255,238,150,10);                // helle Kante
+    if ((x%8===0) || (y%8===0)) return vary(206,164,44,10);         // Barren-Linien
+    if (x+y < 10) return vary(255,246,186,10);                      // Glanzlicht
+    return vary(240,200,58,14);                                     // Gold
+  });
+  tile(114,(x,y)=>{                                                 // 👑 Jonah-Planet: grün-golden
+    if (((x*3+y*2)%13) < 2) return vary(246,206,70,14);             // goldene Adern
+    if (((x*5+y*7)%17) < 3) return vary(58,132,52,16);              // dunkle Wälder
+    if ((x+y) % 11 === 0) return vary(120,210,240,12);              // blaue Seen
+    return vary(96,178,72,16);                                      // grüne Wiesen
   });
   tile(113,(x,y)=>{                                                 // der Ring um Saturn (flache Scheibe)
     const r = Math.hypot(x-7.5, y-7.5);
@@ -4522,9 +4726,29 @@ function updateFish(a, dt) {
   if (b!==WATER && b!==AIR) a.y += 0.5*dt; else if (b===AIR && a.y>SEA) a.y -= 2*dt;
 }
 
+// 👑 Jonahs Hofstaat: Ritter am Tor und sein Volk im Schlosshof
+function hofstaatTick() {
+  if (Math.hypot(player.x, player.z) > 90) return;         // nur beim Schloss
+  if (countType(a=>a.home==='koenigshof') >= 10) return;    // sind schon alle da
+  const ch = getChunk(0, 0);
+  if (!ch || !ch.data) return;                             // Schloss noch nicht geladen
+  const by = KO_Y;
+  const RITTER = ['Ritter Max','Ritter Emil','Ritter Paul','Ritter Ben'];
+  const VOLK   = ['Hofdame Lina','Bäcker Otto','Gärtner Fritz','Köchin Rosa',
+                  'Spielmann Tom','Schmied Kurt'];
+  const setz = (typ, name, x, z) => {
+    if (countType(a=>a.name===name && a.home==='koenigshof') > 0) return;
+    animals.push({type:typ, name, x:x+0.5, y:by+1.1, z:z+0.5,
+      yaw:Math.random()*Math.PI*2, vy:0, kx:0, kz:0, hp:3, walking:false,
+      t:Math.random()*3, ph:0, onGround:false, friend:0,
+      home:'koenigshof', hx:x+0.5, hz:z+0.5});
+  };
+  [[-4,-27],[4,-27],[-4,4],[4,4]].forEach(([x,z],i) => setz('knight', RITTER[i], x, z));
+  [[-9,-12],[9,-12],[-6,-20],[6,-20],[-9,10],[9,10]].forEach(([x,z],i) => setz('villager', VOLK[i], x, z));
+}
 function spawnTick() {
   // 🚀 Auf den Planeten ist es still: dort gibt es keine Tiere, Dorfleute oder Monster
-  if (weltDim >= 2) return;
+  if (weltDim >= 2) { if (weltDim === 9) hofstaatTick(); return; }
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
   if (isNight() && countType(a=>a.type==='zombie') < 4 && Math.random() < 0.3) {
     const zang=Math.random()*Math.PI*2, zd=18+Math.random()*22;   // nachts kommen Zombies!
@@ -8417,10 +8641,10 @@ function butlerFlicken() {              // wie der Hausmeister, nur auf Zuruf
 // ✨ DAS ZAUBER-PORTAL: Stell dich hinein und du landest in der Wolkenwelt -
 // dort steht sofort ein Rück-Portal, damit du immer wieder heimkommst!
 // Erde, Wunderwelt und die vier Planeten - jede Welt merkt sich ihre Änderungen
-// 9 Welten: 0 Erde, 1 Wunderwelt, 2-8 die Planeten
-const editsLager = Array.from({length:9}, ()=>new Map());
-const portalHeim = new Array(9).fill(null);   // wo Jonah in jeder Welt zuletzt stand
-const raketeOrt  = new Array(9).fill(null);   // 🚀 wo in jeder Welt seine Rakete steht
+// 10 Welten: 0 Erde, 1 Wunderwelt, 2-8 die Planeten, 9 Jonahs geheimer Planet 👑
+const editsLager = Array.from({length:10}, ()=>new Map());
+const portalHeim = new Array(10).fill(null);   // wo Jonah in jeder Welt zuletzt stand
+const raketeOrt  = new Array(10).fill(null);   // 🚀 wo in jeder Welt seine Rakete steht
 let portalT = 0, portalKuehl = 0;
 function weltWechsel(neu) {
   editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
@@ -8883,6 +9107,14 @@ function himmelFarbe(dim) {             // die Himmelsfarbe einer Welt
   return [SKY[0]*0.9, SKY[1]*0.9, SKY[2]*0.95];
 }
 function planetName(d) { return d===0 ? '🌍 Erde' : d===1 ? '✨ Wunderwelt' : PLANET[d].name; }
+// 👑 DAS GEHEIMNIS: Wer auf drei fremden Planeten war, findet den Jonah-Planeten.
+let geheimEntdeckt = false, geheimGemeldet = false;
+function planetenBesucht() {
+  let n = 0;
+  for (let d=2; d<=8; d++) if (portalHeim[d] || raketeOrt[d]) n++;
+  return n;
+}
+function geheimOffen() { return geheimEntdeckt || planetenBesucht() >= 3; }
 function openRakete() {
   if (flugT > 0) return;                // mitten im Flug wird nicht umgeplant!
   const liste = document.getElementById('planetListe');
@@ -8890,12 +9122,17 @@ function openRakete() {
   document.getElementById('raketeText').textContent =
     'Du bist gerade auf: ' + planetName(weltDim) + '. Wohin soll die Reise gehen, Kommandant Jonah?';
   const ziele = [0, 2, 3, 4, 5, 6, 7, 8].filter(d => d !== weltDim);
+  if (geheimOffen() && weltDim !== 9) ziele.push(9);      // 👑 der geheime Planet!
   for (const d of ziele) {
     const el = document.createElement('div');
     el.className = 'senderRow';
     const zeit = d>=2 ? PLANET[d].flug : (PLANET[weltDim] ? PLANET[weltDim].flug : 6);
-    el.textContent = (d===0 ? '🌍 Zurück zur Erde' : '🚀 zum ' + PLANET[d].name) +
+    el.textContent = (d===0 ? '🌍 Zurück zur Erde'
+                    : d===9 ? (geheimEntdeckt ? '👑 zu deinem GEHEIMEN Jonah-Planeten'
+                                              : '❓ zum GEHEIMEN Planeten ???')
+                    : '🚀 zum ' + PLANET[d].name) +
                      '  (' + (FLUG_ZAEHL + FLUG_ABHEB + zeit + FLUG_LAND) + ' Sek.)';
+    if (d===9) el.style.background = 'rgba(255,205,60,.3)';
     const w = () => { raketeBox.style.display='none'; raketeStart(d); };
     el.addEventListener('click', w);
     el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
@@ -9045,6 +9282,7 @@ function raketeLanden(ziel) {
   let lx, lz, sitz = null;
   if (alt) { lx = Math.floor(alt.x); lz = Math.floor(alt.z); }
   else if (ziel === 0) { const R = raketenPos(); lx = R.rx; lz = R.rz; }
+  else if (ziel === 9) { lx = 0; lz = -50; }      // 👑 direkt vor dem Schloss-Platz
   else { lx = 0; lz = 0; }
   for (let cx=(lx-24)>>4; cx<=(lx+24)>>4; cx++)
     for (let cz=(lz-24)>>4; cz<=(lz+24)>>4; cz++) ensureData(cx,cz);
@@ -9074,6 +9312,14 @@ function raketeLanden(ziel) {
     ? '🌍 Zurück auf der Erde! Willkommen daheim, Kommandant Jonah - steig aus der Rakete aus!'
     : '🚀 Gelandet auf dem ' + PLANET[ziel].name + '! ' + PLANET[ziel].gruss +
       ' Geh durch die Luke raus - und tipp drinnen das 🎛️ Bedienungsfeld an, wenn du weiterfliegen willst.', 7000);
+  if (ziel === 9 && !geheimEntdeckt) {   // 👑 das Geheimnis ist gelüftet!
+    geheimEntdeckt = true;
+    for (let n=0; n<60; n++)
+      fireworks.push({x:player.x+(Math.random()-0.5)*8, y:player.y+2+Math.random()*6, z:player.z+(Math.random()-0.5)*8,
+        vx:(Math.random()-0.5)*7, vy:2+Math.random()*5, vz:(Math.random()-0.5)*7,
+        tile:[94,73,25,10][n%4], t:1.4});
+    blip(523,0.12); blip(659,0.12); blip(784,0.14); blip(1047,0.25);
+  }
   missEvent('weltall');
   scheduleSave();
 }
@@ -9613,7 +9859,7 @@ function terrColor(h) {                 // Geländefarbe von oben
 }
 // Farben für Gebäude und Bäume auf der Karte
 const MAP_BLOCK_COL = {
-  [WATER]:'#2f6fd0', [SAND]:'#ddca92', [DIRT]:'#8a6a48', [STONE]:'#8d8d8d',
+  [GRASS]:'#5caa3c', [WATER]:'#2f6fd0', [SAND]:'#ddca92', [DIRT]:'#8a6a48', [STONE]:'#8d8d8d',
   [LEAF]:'#256b2f', [APPLE_LEAF]:'#256b2f', [WOOD]:'#6e5230', [PLANK]:'#b08a58',
   [BRICK]:'#b04438', [SNOW]:'#f0f4f8', [WOOL]:'#f0efe8', [GLASS]:'#bcdcf0',
   [TNT]:'#c04030', [BED]:'#c05050', [TABLE]:'#b08a58', [CABINET]:'#b08a58',
@@ -9625,7 +9871,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -9656,6 +9902,7 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   if (weltDim >= 2) {                   // 🚀 auf fremden Planeten gibt es nur DEINE Rakete
     const R = raketeOrt[weltDim];
     if (R) marks.push({x:Math.floor(R.x), z:Math.floor(R.z), e:'🚀'});
+    if (weltDim === 9) marks.push({x:0, z:14, e:'👑'});   // 👑 und dein Schloss!
     return marks;
   }
   const scan=(CELL,fn)=>{ const out=[];
@@ -9712,7 +9959,7 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   }
   mapMarks = collectMarks(mapCx, mapCz, mapR);
   document.getElementById('mapLegend').innerHTML = weltDim >= 2
-    ? '🔺 Du &middot; 🚀 Deine Rakete &middot; ' + PLANET[weltDim].name
+    ? '🔺 Du &middot; 🚀 Deine Rakete &middot; ' + (weltDim===9 ? '👑 Dein Schloss &middot; ' : '') + PLANET[weltDim].name
     : '🔺 Du &middot; 👑 Riesen-Festung &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚜 Mähdrescher &middot; 📍 Ziel';
 }
 function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der Karte!
@@ -10847,7 +11094,15 @@ function hitEntity(a, dir) {
   if (a.type==='knight') {              // mit dem Ritter sprechen!
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3;
-    const RITTER_TALK = a.home==='megaburg' ? [   // die Festungs-Wächter kennen ihren König!
+    const RITTER_TALK = a.home==='koenigshof' ? [   // die Wache vor Jonahs eigenem Schloss!
+      'Willkommen in DEINEM Königreich, König Jonah! 👑',
+      'Der Thronsaal ist frisch poliert, Majestät!',
+      'Die Schatzkammer quillt über vor Gold, König Jonah! 🪙',
+      'Hier kommt keiner rein, den du nicht eingeladen hast, König Jonah!',
+      'Wir halten Wache, Tag und Nacht - für dich, König Jonah! 🛡️',
+      'Setz dich auf deinen goldenen Thron, Majestät!',
+      'Dieser ganze Planet gehört DIR, König Jonah!',
+    ] : a.home==='megaburg' ? [   // die Festungs-Wächter kennen ihren König!
       'Willkommen zurück, KÖNIG JONAH! 👑',
       'Alles ruhig in deiner Festung, König Jonah!',
       'Wir bewachen dein Reich bei Tag und bei Nacht, König Jonah! 🛡️',
