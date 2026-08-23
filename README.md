@@ -221,6 +221,27 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- STEIG WIRKLICH IN DIE RAKETE EIN - und 3 neue Planeten (v175)! 🚀🪐
+  Die große Rakete auf der Startrampe ist jetzt innen HOHL: Geh die
+  Stufe hoch, durch die offene Luke hinein - und schon stehst du im
+  Cockpit, mit zwei Pilotensitzen, einer breiten Frontscheibe und
+  Fenstern an allen Seiten. Vor dir steht das 🎛️ BEDIENUNGSFELD mit
+  grünem Bildschirm und drei dicken Knöpfen. Tipp es an, such dir
+  einen Planeten aus - und dann geht es los: erst der Countdown
+  4-3-2-1, dann brüllen die Triebwerke, der Boden wackelt, Feuer
+  schießt raus, der Himmel draußen wird schwarz und die Sterne
+  rauschen als lange Striche am Fenster vorbei. Unterwegs zeigt dir
+  die Anzeige, wie viele Kilometer du schon geschafft hast, und vorne
+  wird dein Ziel immer größer, bis es das ganze Fenster füllt. Ein
+  Flug dauert je nach Planet 18 bis 25 Sekunden - so lange bleibst du
+  angeschnallt sitzen und schaust einfach raus. Wo du landest, steht
+  die Rakete mit dir da und du steigst durch die Luke aus. NEU dabei
+  sind 🟠 JUPITER (der größte Planet: gestreifte Wolkenbänder,
+  riesige Sturm-Säulen - und du bist so schwer, dass du kaum noch
+  hochkommst), 💛 SATURN (goldene Sandwellen und ein RIESIGER Ring,
+  der über dir am Himmel schwebt) und 🟡 VENUS (glühend heiß, mit
+  Lava-Seen und einer riesengroßen Erde am Himmel). Macht sieben
+  Planeten insgesamt!
 - ERDE UND STERNE am Weltall-Himmel (v174)! 🌍⭐ Wenn du auf
   einem Planeten stehst und nach oben schaust, funkeln jetzt
   hunderte Sterne am schwarzen Himmel - jeder blinzelt in seinem
