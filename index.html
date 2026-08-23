@@ -130,9 +130,16 @@
   #raketeBox p { font-size:12px; opacity:.85; max-width:250px; line-height:1.4; }
   #raketeClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
-  #startBox { left:0; right:0; top:34%; display:none; z-index:45; text-align:center;
-    font-size:min(15vw,84px); font-weight:bold; color:#fff;
-    text-shadow:0 0 18px #ff8c28, 0 0 40px #ff3c10; pointer-events:none; }
+  #startBox { left:0; right:0; top:28%; display:none; z-index:45; text-align:center;
+    pointer-events:none; }
+  #startText { font-size:min(15vw,84px); font-weight:bold; color:#fff; line-height:1.05;
+    text-shadow:0 0 18px #ff8c28, 0 0 40px #ff3c10; }
+  #flugInfo { font-size:min(4.2vw,18px); font-weight:bold; color:#fff; margin-top:6px;
+    text-shadow:0 2px 8px #000, 0 0 14px #000; padding:0 10px; }
+  #flugBalken { width:min(66vw,360px); height:13px; margin:10px auto 0; border-radius:7px;
+    background:rgba(0,0,0,.6); border:2px solid rgba(255,255,255,.55); overflow:hidden; }
+  #flugFuell { display:block; height:100%; width:0%;
+    background:linear-gradient(90deg,#ffe066,#ff8c28,#ff3c10); }
   #bankBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(18,40,34,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
@@ -366,7 +373,11 @@
   <button id="raketeClose">Abbrechen</button>
 </div>
 
-<div class="hud" id="startBox"><span id="startText"></span></div>
+<div class="hud" id="startBox">
+  <div id="startText"></div>
+  <div id="flugInfo"></div>
+  <div id="flugBalken"><i id="flugFuell"></i></div>
+</div>
 
 <div class="hud" id="bankBox">
   <h3 id="bankKopf">🏦 Deine Bank</h3>
@@ -484,7 +495,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 174 &middot; ERDE UND STERNE am Weltall-Himmel! 🌍⭐</p>
+    Version 175 &middot; STEIG IN DIE RAKETE! 7 Planeten! 🚀🪐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -530,7 +541,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 174;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 175;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -557,7 +568,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCREEN_SNAKE=61, SCREEN_PONG=62, SCREEN_INV=63, SCREEN_FROG=64, LAVA=65, POKAL=66,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
-      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84, BANK=85, RAKETE=86;
+      BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84, BANK=85, RAKETE=86,
+      STEUER=87;                        // 🎛️ das Bedienungsfeld IN der Rakete
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -680,6 +692,9 @@ const BLOCKS = {
   // 🚀 die Raketen-Luke: antippen, Planet aussuchen und ab ins Weltall!
   [RAKETE]: { name:'Raketen-Luke 🚀 (antippen = ins Weltall fliegen!)',
     tiles:[101,101,101], solid:true },
+  // 🎛️ das Bedienungsfeld in der Rakete: antippen und den Planeten aussuchen
+  [STEUER]: { name:'Bedienungsfeld 🎛️ (antippen = Planet aussuchen und losfliegen!)',
+    tiles:[104,105,105], solid:true },
   // 🏦 der Banktresor: antippen und Geld auf dein Konto legen oder abheben
   [BANK]: { name:'Bank-Tresor 🏦 (antippen = Geld einzahlen und abheben!)',
     tiles:[99,100,100], solid:true },
@@ -850,7 +865,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -905,16 +920,30 @@ function terrainHeight(x, z) {
 }
 // 🚀 DIE PLANETEN: jeder hat seine eigene Landschaft
 // erdGross/erdWink/erdHoch: wie groß und wo am Himmel die 🌍 Erde von hier aus steht.
-// sterne: so viele Sterne funkeln über dem Planeten.
+// sterne: so viele Sterne funkeln über dem Planeten. kachel: so sieht der Planet
+// selbst am Himmel aus. ring: hat er einen Ring drumherum? flug: Reisezeit in Sekunden.
 const PLANET = [null, null,
   { name:'🌕 Mond',        boden:STONE,  tief:STONE, himmel:[0.02,0.02,0.05], schwer:0.35, basis:40, hub:9,
-    erdGross:34, erdWink:0.9,  erdHoch:0.52, sterne:230 },
+    erdGross:34, erdWink:0.9,  erdHoch:0.52, sterne:230, kachel:106, flug:5,  km:384400,
+    gruss:'Achtung: Hier bist du fast schwerelos - du springst RIESIG hoch! 🌕' },
   { name:'🔴 Mars',        boden:BRICK,  tief:SAND,  himmel:[0.22,0.09,0.05], schwer:0.55, basis:44, hub:16,
-    erdGross:16, erdWink:2.4,  erdHoch:0.44, sterne:170 },
-  { name:'❄️ Eis-Planet',  boden:SNOW,   tief:GLASS, himmel:[0.06,0.10,0.18], schwer:0.7,  basis:46, hub:14,
-    erdGross:13, erdWink:4.1,  erdHoch:0.58, sterne:250 },
+    erdGross:16, erdWink:2.4,  erdHoch:0.44, sterne:170, kachel:107, flug:7,  km:78000000,
+    gruss:'Roter Staub und tiefe Schluchten, so weit du schauen kannst. 🔴' },
+  { name:'❄️ Eis-Planet',  boden:WOOL,   tief:GLASS, himmel:[0.06,0.10,0.18], schwer:0.7,  basis:46, hub:14,
+    erdGross:13, erdWink:4.1,  erdHoch:0.58, sterne:250, kachel:108, flug:8,  km:900000000,
+    gruss:'Alles ist Eis und Schnee - schau dir die Eiszapfen-Türme an! ❄️' },
   { name:'💍 Ring-Planet', boden:WOOL,   tief:BRICK, himmel:[0.12,0.05,0.20], schwer:0.5,  basis:52, hub:20,
-    erdGross:11, erdWink:5.5,  erdHoch:0.4,  sterne:270 },
+    erdGross:11, erdWink:5.5,  erdHoch:0.4,  sterne:270, kachel:109, ring:true, flug:9,  km:1500000000,
+    gruss:'Bunte Bänder am Boden und ein riesiger Ring am Himmel! 💍' },
+  { name:'🟠 Jupiter',     boden:WOOL,   tief:SAND,  himmel:[0.16,0.09,0.05], schwer:1.05,  basis:48, hub:8,
+    erdGross:8,  erdWink:1.7,  erdHoch:0.46, sterne:210, kachel:110, flug:10, km:588000000,
+    gruss:'Der GRÖSSTE Planet von allen! Hier bist du schwerer als überall sonst - du springst nur noch halb so hoch wie auf dem Mond. Schau dir die Sturm-Säulen an! 🟠' },
+  { name:'💛 Saturn',      boden:SAND,   tief:SAND,  himmel:[0.14,0.11,0.05], schwer:0.85, basis:44, hub:13,
+    erdGross:7,  erdWink:3.3,  erdHoch:0.5,  sterne:260, kachel:111, ring:true, flug:12, km:1200000000,
+    gruss:'Goldene Sandwellen - und über dir schwebt der RIESIGE Saturn-Ring! 💛' },
+  { name:'🟡 Venus',       boden:SAND,   tief:STONE, himmel:[0.34,0.20,0.05], schwer:0.95, basis:42, hub:15,
+    erdGross:22, erdWink:0.4,  erdHoch:0.36, sterne:120, kachel:112, flug:6,  km:41000000,
+    gruss:'Heiß, heiß, HEISS! Pass auf die Lava-Seen auf - und die Erde ist von hier aus riesig! 🟡' },
 ];
 function planetHoehe(x, z, dim) {
   const P = PLANET[dim] || PLANET[2];
@@ -928,6 +957,18 @@ function planetHoehe(x, z, dim) {
   if (dim===3) {                        // 🔴 Mars: tiefe Schluchten
     const c = Math.abs(fbm(x*0.008-300, z*0.008+200) - 0.5);
     if (c < 0.045) y -= 16;
+  }
+  if (dim===6) {                        // 🟠 Jupiter: ein sanftes Wolkenmeer mit Sturm-Wirbeln
+    y += Math.sin(z*0.06)*2.5 + Math.sin(x*0.04+z*0.02)*1.5;
+    const w = vnoise(x*0.02-40, z*0.02+90, 6060);
+    if (w > 0.72) y += (w-0.72)*40;     // aufgetürmte Sturm-Wolken
+  }
+  if (dim===7) {                        // 💛 Saturn: lange goldene Sandwellen (Dünen)
+    y += Math.sin(x*0.09)*3 + Math.sin(x*0.03 + z*0.05)*4;
+  }
+  if (dim===8) {                        // 🟡 Venus: Krater-Kessel voller Lava
+    const k = vnoise(x*0.03+21, z*0.03-13, 8080);
+    if (k > 0.62) y -= (k-0.62)*52;
   }
   return Math.max(8, Math.min(CH-30, Math.floor(y)));
 }
@@ -1316,6 +1357,28 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
         for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz,GLASS); }
       else if (r < 0.05) setz(lx,h+1,lz,SNOW);
       else if (r < 0.053) setz(lx,h+1,lz,CHEST);
+    } else if (dim===6) {               // 🟠 JUPITER: Wolkenbänder und Sturm-Säulen
+      for (let y=h-8; y<=h; y++)        // die berühmten Streifen im Boden
+        setz(lx, y, lz, [WOOL,SAND,BRICK,SAND][(Math.floor(wz/7)+64)%4]);
+      if (r < 0.004) { const hoch=4+Math.floor(hash2(wx,wz,7704)*9);   // Sturm-Säulen
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz, y%3 ? WOOL : BRICK); }
+      else if (r < 0.008) setz(lx,h+1,lz,CHEST);
+      else if (r > 0.997) setz(lx,h+1,lz,TORCH);
+    } else if (dim===7) {               // 💛 SATURN: goldene Dünen und der RIESEN-Ring am Himmel
+      if (r < 0.006) { const hoch=2+Math.floor(hash2(wx,wz,7705)*6);   // Sand-Zacken
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz, y%2 ? SAND : PLANK); }
+      else if (r < 0.012) setz(lx,h+1,lz,CHEST);
+      else if (r > 0.995) setz(lx,h+1,lz,POKAL);
+      const rg = Math.abs(vnoise(wx*0.012, wz*0.012, 7171) - 0.5);     // breiter Ring hoch oben
+      if (rg < 0.075) { const ry = h + 34 + Math.floor(vnoise(wx*0.008, wz*0.008, 7172)*8);
+        setz(lx, ry, lz, (lx+lz)%3 ? SAND : PLANK); }
+    } else if (dim===8) {               // 🟡 VENUS: glühende Lava-Seen und Schwefel-Felsen
+      const kessel = vnoise(wx*0.03+21, wz*0.03-13, 8080);
+      if (kessel > 0.68) { setz(lx,h,lz,LAVA); setz(lx,h-1,lz,LAVA); }  // Lava im Kessel
+      else if (r < 0.005) { const hoch=2+Math.floor(hash2(wx,wz,7706)*8);
+        for (let y=h+1; y<=h+hoch; y++) setz(lx,y,lz, y%2 ? SAND : STONE); }
+      else if (r < 0.012) setz(lx,h+1,lz,CHEST);
+      else if (r > 0.996) setz(lx,h+1,lz,TORCH);
     } else {                            // 💍 RING-PLANET: bunte Bänder und schwebende Ringe
       for (let y=h-8; y<=h; y++) setz(lx,y,lz, [WOOL,BRICK,GLASS,SAND][(y+64)%4]);
       if (r < 0.02) setz(lx,h+1,lz,POKAL);
@@ -1879,12 +1942,24 @@ function genChunkData(cx, cz, ohneEdits) {
           put(R.rx, by+y, R.rz+2+f, BRICK, false);
         }
       }
-      // die Luke zum Einsteigen (vorne unten) + Treppe hinauf
-      put(R.rx, by+2, R.rz-2, RAKETE, false);
-      put(R.rx, by+1, R.rz-2, RAKETE, false);
+      // 🚪 DIE KABINE: hier steigt Jonah wirklich ein!
+      for (let y=2; y<=5; y++)            // der Innenraum wird hohl (Boden bleibt bei y=1)
+        for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++)
+          put(R.rx+dx, by+y, R.rz+dz, AIR, false);
+      put(R.rx, by+2, R.rz-2, AIR, false);              // die offene Luke, 2 Blöcke hoch
+      put(R.rx, by+3, R.rz-2, AIR, false);
+      for (const dx2 of [-1,1]) put(R.rx+dx2, by+3, R.rz-2, GLASS, false);
+      for (let dx2=-1; dx2<=1; dx2++) put(R.rx+dx2, by+4, R.rz-2, GLASS, false);  // Cockpit-Scheibe
+      put(R.rx, by+5, R.rz-2, RAKETE, false);           // das Luken-Schild ganz oben
+      for (const [wx2,wz2] of [[2,0],[-2,0],[0,2]])     // Seiten- und Heckfenster
+        for (let y=3; y<=4; y++) put(R.rx+wx2, by+y, R.rz+wz2, GLASS, false);
+      put(R.rx, by+2, R.rz+1, STEUER, false);           // 🎛️ das Bedienungsfeld
+      put(R.rx-1, by+2, R.rz+1, CHAIR, false);          // zwei Pilotensitze
+      put(R.rx+1, by+2, R.rz+1, CHAIR, false);
       for (let dz=3; dz<=7; dz++)         // freier Anlauf zur Luke
         for (let dx=-2; dx<=2; dx++)
           for (let y=1; y<=4; y++) put(R.rx+dx, by+y, R.rz-dz, AIR, false);
+      put(R.rx, by+1, R.rz-3, TREP_N, false);           // Stufe hinauf in die Rakete
       // der Kontrollturm daneben
       const tx=R.rx+9, tz=R.rz+9;
       for (let y=1; y<=8; y++) for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
@@ -1902,7 +1977,7 @@ function genChunkData(cx, cz, ohneEdits) {
       }
       put(R.rx, by+1, R.rz-6, SIGN, true);
       const rs=(R.rx)+','+(by+1)+','+(R.rz-6);
-      if (!signTexts.has(rs)) signTexts.set(rs,'🚀 RAKETENSTATION - steig durch die Luke ein und flieg zum Mond!');
+      if (!signTexts.has(rs)) signTexts.set(rs,'🚀 RAKETENSTATION - steig ein und tipp drinnen das Bedienungsfeld an!');
     }
   }
   // Die große Spielhalle bauen 🕹️
@@ -2455,7 +2530,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -3094,6 +3169,62 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (kueste) return vary(112,186,236,12);
     return vary(38,104,206,16);                                     // blaue Meere
   });
+  tile(104,(x,y)=>{                                                 // 🎛️ Bedienungsfeld in der Rakete
+    if (x===0||x===15||y===0||y===15) return vary(70,74,86,8);      // Rahmen
+    if (y>=2 && y<=6 && x>=2 && x<=13)                              // grüner Bildschirm
+      return ((x+y)%3===0) ? vary(60,220,140,14) : vary(18,66,48,12);
+    if (y>=9 && y<=11) {                                            // drei dicke Knöpfe
+      if (x>=2 && x<=4)   return vary(230,60,50,10);
+      if (x>=6 && x<=8)   return vary(240,200,50,10);
+      if (x>=10 && x<=12) return vary(60,160,240,10);
+    }
+    if (y>=13 && x>=4 && x<=11) return vary(200,206,216,10);        // Schiebe-Regler
+    return vary(48,52,62,10);
+  });
+  tile(105,()=> ((rnd()<0.12) ? vary(200,206,218,6) : vary(166,172,186,10)));  // Raketen-Metall
+  // die Planeten, wie sie am Himmel aussehen (fest gemalt, ohne Zufall)
+  tile(106,(x,y)=>{                                                 // 🌕 Mond
+    const kr=(cx,cy,r)=>Math.hypot(x-cx,y-cy)<r;
+    if (kr(4,4,1.7)||kr(11,9,1.4)||kr(6,12,1)) return vary(112,112,120,10);   // Krater-Böden
+    if (kr(4,4,2.7)||kr(11,9,2.3)||kr(6,12,1.7)) return vary(150,150,158,10); // Krater-Ränder
+    return vary(178,178,186,12);
+  });
+  tile(107,(x,y)=>{                                                 // 🔴 Mars
+    if (y<2) return vary(238,240,246,8);                            // weiße Polkappe
+    if (Math.hypot(x-10,y-9)<3.2) return vary(126,54,28,12);        // dunkle Ebene
+    if (((x*3+y*5)%17)<3) return vary(152,66,32,12);
+    return vary(198,96,52,14);
+  });
+  tile(108,(x,y)=>{                                                 // ❄️ Eis-Planet
+    if ((x+y)%7===0 || (x-y+16)%9===0) return vary(148,196,238,10); // Risse im Eis
+    if (((x*5+y*3)%11)<2) return vary(204,232,250,8);
+    return vary(238,248,255,8);
+  });
+  tile(109,(x,y)=>{                                                 // 💍 Ring-Planet
+    if (((x*2+y)%9)<3) return vary(122,72,172,14);
+    return vary(96,52,140,14);
+  });
+  tile(110,(x,y)=>{                                                 // 🟠 Jupiter: Streifen + roter Fleck
+    if (Math.hypot((x-10)*0.9, (y-10)*1.5) < 2.6) return vary(198,72,48,12);
+    const band = [0,1,0,2,1,0,2,1,0,1,2,0,1,0,2,1][y];
+    return band===0 ? vary(228,192,148,12) : band===1 ? vary(196,140,86,12) : vary(158,100,58,12);
+  });
+  tile(111,(x,y)=>{                                                 // 💛 Saturn: goldene Streifen
+    const band = [0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1][y];
+    return band===0 ? vary(240,214,150,10) : band===1 ? vary(214,180,110,12) : vary(180,142,78,12);
+  });
+  tile(112,(x,y)=>{                                                 // 🟡 Venus: heiße Wolken-Wirbel
+    const s = Math.sin((x+y*0.6)*0.9) + Math.cos((x*0.5-y)*0.8);
+    if (s > 0.9) return vary(252,240,196,10);
+    if (s < -0.9) return vary(206,158,72,12);
+    return vary(234,204,132,12);
+  });
+  tile(113,(x,y)=>{                                                 // der Ring um Saturn (flache Scheibe)
+    const r = Math.hypot(x-7.5, y-7.5);
+    if (r < 3.2) return 'rgba(0,0,0,0)';                            // in der Mitte ist ein Loch
+    if (r > 7.6) return 'rgba(0,0,0,0)';
+    return (Math.floor(r) % 2) ? vary(244,232,192,8) : vary(198,176,128,10);
+  });
   tile(99,(x,y)=>{                                                  // Bank-Tresor 🏦: dicke Stahltür
     if (x===0||x===15||y===0||y===15) return vary(86,92,104,8);     // Rahmen
     const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
@@ -3546,6 +3677,12 @@ function physics(dt) {
   const ch = getChunk(Math.floor(player.x)>>4, Math.floor(player.z)>>4);
   if (!ch || !ch.data) return;   // warten bis der Boden geladen ist
 
+  if (flugT > 0 && flugSitz) {          // 🚀 angeschnallt im Raketensitz - der Flug läuft!
+    const wippe = flugPhase()==='reise' ? Math.sin(performance.now()*0.0016)*0.13 : 0;
+    player.x = flugSitz.x; player.y = flugSitz.y + wippe; player.z = flugSitz.z;
+    player.vx = player.vy = player.vz = 0;
+    return;
+  }
   if (jetRiding) { jetPhysics(dt); return; }
   if (heliRiding) { heliPhysics(dt); return; }
   if (dragonRiding) { dragonPhysics(dt); return; }
@@ -5724,42 +5861,74 @@ const STERNE = (function(){             // die Sternkarte steht fest: immer die 
 const HIMMEL_R = 150;                   // so weit weg hängt der Sternenhimmel
 const himmelBuf = gl.createBuffer();
 
+// eine runde Planeten-Kugel aus sieben ineinander geschobenen Kästen
+function himmelKugel(arr, ce, dir, d, kachel, dreh, ring) {
+  const a = { x: ce[0]+dir[0]*HIMMEL_R, y: ce[1]+dir[1]*HIMMEL_R, z: ce[2]+dir[2]*HIMMEL_R, yaw: dreh };
+  for (const [a1,b1,c1] of [[1,1,1], [1.24,0.72,0.72], [0.72,1.24,0.72], [0.72,0.72,1.24],
+                            [1.14,0.94,0.94], [0.94,1.14,0.94], [0.94,0.94,1.14]])
+    pushBox(arr, a, 0,0,0, d*a1, d*b1, d*c1, kachel);
+  if (ring) {                           // der flache Ring rundherum 💍
+    for (const [a2,c2] of [[2.5,1.5], [1.5,2.5], [2.15,2.15]])
+      pushBox(arr, a, 0,0,0, d*a2, d*0.07, d*c2, 113);
+  }
+}
 function drawHimmel(ce) {
-  if (weltDim < 2) return;              // nur im Weltall
+  const imAll = weltDim >= 2 ? 1 : 0;
+  const raum = Math.max(imAll, flugRaum());
+  if (raum <= 0.02) return;             // auf der Erde ist der Himmel ganz normal blau
   const P = PLANET[weltDim];
   const arr = [];
   const t = performance.now()*0.001;
+  const phase = flugPhase();
+  // beim Abheben und im Weltall rauschen die Sterne nur so vorbei!
+  const warp = phase==='abheb' ? flugAnteil() : phase==='reise' ? 1
+             : phase==='land' ? Math.max(0, 1-flugAnteil()) : 0;
   // ⭐ die Sterne
-  const wieViele = Math.min(STERNE.length, P.sterne||200);
+  const wieViele = Math.min(STERNE.length, (P ? P.sterne : 240));
   for (let i=0; i<wieViele; i++) {
     const s = STERNE[i];
     const funkel = 0.72 + 0.28*Math.sin(t*s.blink + s.ph);     // sie blinzeln!
-    const g = s.gr*funkel*1.25;
-    const sa = { x: ce[0]+s.dx*HIMMEL_R, y: ce[1]+s.dy*HIMMEL_R, z: ce[2]+s.dz*HIMMEL_R, yaw:0 };
-    pushBox(arr, sa, 0,0,0, g,g,g, 102);
+    const g = s.gr*funkel*1.25*Math.max(0.25, raum);
+    let sy = ce[1] + s.dy*HIMMEL_R;
+    if (warp > 0) sy -= (((t*0.9 + s.ph*0.7) % 1) - 0.5) * 150 * warp;   // sie sausen nach unten
+    const sa = { x: ce[0]+s.dx*HIMMEL_R, y: sy, z: ce[2]+s.dz*HIMMEL_R, yaw:0 };
+    pushBox(arr, sa, 0,0,0, g, g*(1 + 26*warp), g, 102);       // im Warp werden sie zu Strichen
   }
-  // 🌍 die Erde: eine dicke Kugel aus drei Kästen übereinander
-  const dx = Math.cos(P.erdHoch)*Math.sin(P.erdWink);
-  const dy = Math.sin(P.erdHoch);
-  const dz = Math.cos(P.erdHoch)*Math.cos(P.erdWink);
-  const dreh = t*0.05;                                        // die Erde dreht sich ganz langsam
-  const ea = { x: ce[0]+dx*HIMMEL_R, y: ce[1]+dy*HIMMEL_R, z: ce[2]+dz*HIMMEL_R, yaw: dreh };
-  const d = P.erdGross;
-  // aus mehreren Kästen wird eine schön runde Kugel
-  for (const [a1,b1,c1] of [[1,1,1], [1.24,0.72,0.72], [0.72,1.24,0.72], [0.72,0.72,1.24],
-                            [1.14,0.94,0.94], [0.94,1.14,0.94], [0.94,0.94,1.14]])
-    pushBox(arr, ea, 0,0,0, d*a1, d*b1, d*c1, 103);
-  // alle Seiten gleich hell: dann sieht die Erde rund aus statt eckig
+  if (phase) {
+    // 🚀 im Flug: vorne wächst das Ziel, hinten wird die alte Welt immer kleiner
+    const fort = phase==='zaehl' ? 0 : phase==='abheb' ? flugAnteil()*0.22
+               : phase==='reise' ? 0.22 + flugAnteil()*0.6 : 0.82 + flugAnteil()*0.18;
+    const zielK = flugZiel>=2 ? PLANET[flugZiel].kachel : 103;
+    const vonK  = flugVon >=2 ? PLANET[flugVon].kachel  : 103;
+    const zielD = 2.5 + fort*fort*68;                          // kommt immer näher!
+    const vonD  = Math.max(2, 46*(1-fort)*(1-fort) + 2);
+    // das Ziel steht genau vor der Luke, die alte Welt draußen am rechten Fenster
+    himmelKugel(arr, ce, [0, Math.sin(0.10), -Math.cos(0.10)], zielD, zielK, t*0.05,
+                flugZiel>=2 && PLANET[flugZiel].ring);
+    himmelKugel(arr, ce, [Math.cos(0.2), Math.sin(0.2), 0], vonD, vonK, -t*0.04,
+                flugVon>=2 && PLANET[flugVon].ring);
+  } else {
+    // 🌍 vom Planeten aus schaut man zur Erde hinüber
+    const dir = [Math.cos(P.erdHoch)*Math.sin(P.erdWink), Math.sin(P.erdHoch),
+                 Math.cos(P.erdHoch)*Math.cos(P.erdWink)];
+    himmelKugel(arr, ce, dir, P.erdGross, 103, t*0.05, false);
+  }
+  // alle Seiten gleich hell: dann sehen die Planeten rund aus statt eckig
   for (let i=5; i<arr.length; i+=6) arr[i] = 1;
   // zeichnen: selbst leuchtend, ohne Nebel, ohne Tiefen-Test
   gl.disable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.uniform1f(loc.uLight, 1);
+  gl.uniform1f(loc.uAlpha, Math.min(1, raum*1.4));
   gl.uniform1f(loc.uFogNear, 4000); gl.uniform1f(loc.uFogFar, 5000);
   gl.bindBuffer(gl.ARRAY_BUFFER, himmelBuf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
   setAttribs();
   gl.drawArrays(gl.TRIANGLES, 0, arr.length/6);
+  gl.disable(gl.BLEND);
   gl.enable(gl.DEPTH_TEST);
+  gl.uniform1f(loc.uAlpha, 1);
   // Nebel und Licht setzt die Zeichen-Schleife gleich danach wieder selbst.
 }
 
@@ -8243,8 +8412,9 @@ function butlerFlicken() {              // wie der Hausmeister, nur auf Zuruf
 // ✨ DAS ZAUBER-PORTAL: Stell dich hinein und du landest in der Wolkenwelt -
 // dort steht sofort ein Rück-Portal, damit du immer wieder heimkommst!
 // Erde, Wunderwelt und die vier Planeten - jede Welt merkt sich ihre Änderungen
-const editsLager = [new Map(), new Map(), new Map(), new Map(), new Map(), new Map()];
-const portalHeim = [null, null, null, null, null, null];   // wo Jonah in jeder Welt zuletzt stand
+// 9 Welten: 0 Erde, 1 Wunderwelt, 2-8 die Planeten
+const editsLager = Array.from({length:9}, ()=>new Map());
+const portalHeim = new Array(9).fill(null);   // wo Jonah in jeder Welt zuletzt stand
 let portalT = 0, portalKuehl = 0;
 function weltWechsel(neu) {
   editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
@@ -8675,18 +8845,51 @@ function updateArrows(dt) {
 // Von der Startrampe zum Mond, zum Mars, zum Eis- und zum Ring-Planeten -
 // und mit der Landerakete überall wieder zurück.
 const raketeBox = document.getElementById('raketeBox');
-let startT = 0, startZiel = null, startPhase = 0;
+// Der Flug hat vier Abschnitte: Countdown, Abheben, Reise, Landung.
+// Die ganze Zeit sitzt Jonah angeschnallt in seiner Rakete und schaut raus.
+let flugZiel = null, flugT = 0, flugGesamt = 0, flugSitz = null, flugVon = 0, flugTon = 0;
+const FLUG_ZAEHL = 4, FLUG_ABHEB = 5, FLUG_LAND = 4;    // Sekunden pro Abschnitt
+function flugReise() { return flugGesamt - FLUG_ZAEHL - FLUG_ABHEB - FLUG_LAND; }
+function flugPhase() {                  // in welchem Abschnitt sind wir gerade?
+  if (flugT <= 0) return null;
+  if (flugT > flugGesamt - FLUG_ZAEHL) return 'zaehl';
+  if (flugT > flugGesamt - FLUG_ZAEHL - FLUG_ABHEB) return 'abheb';
+  if (flugT > FLUG_LAND) return 'reise';
+  return 'land';
+}
+function flugAnteil() {                 // wie weit ist dieser Abschnitt schon? (0..1)
+  const p = flugPhase();
+  if (p === 'zaehl') return (flugGesamt - flugT) / FLUG_ZAEHL;
+  if (p === 'abheb') return (flugGesamt - FLUG_ZAEHL - flugT) / FLUG_ABHEB;
+  if (p === 'reise') return (flugGesamt - FLUG_ZAEHL - FLUG_ABHEB - flugT) / Math.max(0.1, flugReise());
+  if (p === 'land')  return (FLUG_LAND - flugT) / FLUG_LAND;
+  return 0;
+}
+function flugRaum() {                   // 0 = noch am Boden, 1 = mitten im schwarzen Weltall
+  const p = flugPhase();
+  if (!p || p === 'zaehl') return 0;
+  if (p === 'abheb') return Math.min(1, flugAnteil()*1.2);
+  if (p === 'reise') return 1;
+  return flugZiel >= 2 ? 1 : Math.max(0, 1 - flugAnteil()*1.15);   // heim zur Erde wird es wieder hell
+}
+function himmelFarbe(dim) {             // die Himmelsfarbe einer Welt
+  if (dim >= 2) return PLANET[dim].himmel;
+  return [SKY[0]*0.9, SKY[1]*0.9, SKY[2]*0.95];
+}
 function planetName(d) { return d===0 ? '🌍 Erde' : d===1 ? '✨ Wunderwelt' : PLANET[d].name; }
 function openRakete() {
+  if (flugT > 0) return;                // mitten im Flug wird nicht umgeplant!
   const liste = document.getElementById('planetListe');
   liste.innerHTML = '';
   document.getElementById('raketeText').textContent =
     'Du bist gerade auf: ' + planetName(weltDim) + '. Wohin soll die Reise gehen, Kommandant Jonah?';
-  const ziele = [0, 2, 3, 4, 5].filter(d => d !== weltDim);
+  const ziele = [0, 2, 3, 4, 5, 6, 7, 8].filter(d => d !== weltDim);
   for (const d of ziele) {
     const el = document.createElement('div');
     el.className = 'senderRow';
-    el.textContent = (d===0 ? '🌍 Zurück zur Erde' : '🚀 zum ' + PLANET[d].name);
+    const zeit = d>=2 ? PLANET[d].flug : (PLANET[weltDim] ? PLANET[weltDim].flug : 6);
+    el.textContent = (d===0 ? '🌍 Zurück zur Erde' : '🚀 zum ' + PLANET[d].name) +
+                     '  (' + (FLUG_ZAEHL + FLUG_ABHEB + zeit + FLUG_LAND) + ' Sek.)';
     const w = () => { raketeBox.style.display='none'; raketeStart(d); };
     el.addEventListener('click', w);
     el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
@@ -8696,95 +8899,140 @@ function openRakete() {
   if (document.exitPointerLock) document.exitPointerLock();
   blip(300,0.08); blip(420,0.08); blip(560,0.1);
 }
-function raketeStart(ziel) {            // Countdown, dann hebt die Rakete ab!
-  startZiel = ziel; startT = 4.2; startPhase = 3;
-  const sb = document.getElementById('startBox');
-  sb.style.display = 'block';
-  document.getElementById('startText').textContent = '3';
+function raketeStart(ziel) {            // anschnallen, Countdown, und ab ins Weltall!
+  if (flugT > 0) return;
+  const reise = ziel>=2 ? PLANET[ziel].flug : (PLANET[weltDim] ? PLANET[weltDim].flug : 6);
+  flugZiel = ziel; flugVon = weltDim;
+  flugGesamt = FLUG_ZAEHL + FLUG_ABHEB + reise + FLUG_LAND;
+  flugT = flugGesamt; flugTon = 0;
+  flugSitz = { x: player.x, y: player.y, z: player.z };
+  sitting = null;
+  document.getElementById('startBox').style.display = 'block';
+  document.getElementById('startText').textContent = String(FLUG_ZAEHL);
+  document.getElementById('flugFuell').style.width = '0%';
   blip(200,0.25);
-  toast('🚀 Countdown läuft! Festhalten, Kommandant Jonah!', 3000);
+  toast('🔒 Angeschnallt, Kommandant Jonah! Der Countdown läuft - schau aus dem Fenster!', 4200);
 }
-function startTick(dt) {
-  if (!startT) return;
-  const vorher = startT;
-  startT -= dt;
-  const txt = document.getElementById('startText');
-  const sb = document.getElementById('startBox');
-  const step = (grenze, wort, ton) => {
-    if (vorher > grenze && startT <= grenze) { txt.textContent = wort; blip(ton,0.25); }
-  };
-  step(3.2, '2', 240);
-  step(2.2, '1', 280);
-  step(1.2, '🚀 START!', 420);
-  if (startT <= 1.2) {                  // Feuer, Rauch und Wackeln beim Abheben
+function flugTick(dt) {
+  if (flugT <= 0) return;
+  flugT -= dt;
+  const txt  = document.getElementById('startText');
+  const info = document.getElementById('flugInfo');
+  const p = flugPhase(), u = flugAnteil();
+  const zn = planetName(flugZiel);
+  if (p === 'zaehl') {                  // 3 ... 2 ... 1 ...
+    const n = Math.max(1, Math.ceil(flugT - (flugGesamt - FLUG_ZAEHL)));
+    if (txt.textContent !== String(n)) { txt.textContent = String(n); blip(200+(FLUG_ZAEHL-n)*45, 0.25); shake = 0.14; }
+    info.textContent = '🚪 Luke zu! Ziel: ' + zn;
+  } else if (p === 'abheb') {           // 🔥 ABHEBEN
+    if (txt.textContent !== '🚀') { txt.textContent = '🚀'; blip(440,0.35); }
+    info.textContent = u < 0.45 ? '🔥 Triebwerke zünden - wir heben ab!'
+                     : u < 0.8  ? '☁️ Wir schießen durch die Wolken!'
+                                : '🌌 Wir verlassen die Atmosphäre!';
     shake = 0.5;
-    for (let s=0; s<4; s++)
-      fireworks.push({x:player.x+(Math.random()-0.5)*2, y:player.y-0.5, z:player.z+(Math.random()-0.5)*2,
-        vx:(Math.random()-0.5)*4, vy:-2-Math.random()*3, vz:(Math.random()-0.5)*4,
-        tile:[27,72,82][s%3], t:0.6});
-    if (Math.random() < dt*12) blip(90+Math.random()*60, 0.12);
+  } else if (p === 'reise') {           // ✨ schwerelos durchs Weltall
+    txt.textContent = '';
+    const km = Math.round(u * (flugZiel>=2 ? PLANET[flugZiel].km : (PLANET[flugVon] ? PLANET[flugVon].km : 384400)));
+    info.textContent = '✨ Schwerelos unterwegs zum ' + zn + ' · ' + km.toLocaleString('de-DE') + ' km';
+    shake = 0.07;
+  } else {                              // 🛬 Bremsen und landen
+    if (txt.textContent !== '🛬') { txt.textContent = '🛬'; blip(170,0.4); }
+    info.textContent = '🔥 Bremsraketen! Gleich sind wir da: ' + zn;
+    shake = 0.42;
   }
-  if (startT <= 0) {                    // angekommen!
-    startT = 0; sb.style.display = 'none';
-    raketeLanden(startZiel);
-    startZiel = null;
+  document.getElementById('flugFuell').style.width =
+    Math.round(Math.max(0, 1 - flugT/flugGesamt)*100) + '%';
+  // Feuer aus den Düsen beim Abheben und beim Bremsen
+  if ((p === 'abheb' || p === 'land') && flugSitz) {
+    for (let s=0; s<3; s++)
+      fireworks.push({x:flugSitz.x+(Math.random()-0.5)*4.5, y:flugSitz.y-1.4, z:flugSitz.z-2.2-Math.random()*2,
+        vx:(Math.random()-0.5)*5, vy:-2-Math.random()*4, vz:(Math.random()-0.5)*4,
+        tile:[27,72,82][s%3], t:0.7});
+  }
+  // das tiefe Dröhnen der Triebwerke
+  flugTon -= dt;
+  if (flugTon <= 0) {
+    const laut = p==='abheb' ? 0.16 : p==='land' ? 0.13 : p==='reise' ? 0.05 : 0.03;
+    try { if (actx) spielTon(36 + Math.random()*26, actx.currentTime, 0.55, laut, 'sawtooth'); } catch(e) {}
+    flugTon = 0.3;
+  }
+  if (flugT <= 0) {                     // angekommen!
+    flugT = 0;
+    document.getElementById('startBox').style.display = 'none';
+    const z = flugZiel;
+    flugZiel = null; flugSitz = null;
+    raketeLanden(z);
   }
 }
-function raketeBauen(x, y, z) {         // eine kleine Landerakete zum Zurückfliegen
-  for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+// Die Landerakete: genau wie die große Rakete zum REINSTEIGEN, nur kleiner.
+// Gibt zurück, wo Jonah drinnen steht.
+function raketeBauen(x, y, z) {
+  for (let dx=-3; dx<=3; dx++) for (let dz=-3; dz<=3; dz++) {
     if (getBlock(x+dx, y-1, z+dz)===AIR) setBlock(x+dx, y-1, z+dz, SCHUTZ);   // Landeplatz
-    for (let dy=0; dy<=9; dy++) setBlock(x+dx, y+dy, z+dz, AIR);              // Platz schaffen
+    for (let dy=0; dy<=11; dy++) setBlock(x+dx, y+dy, z+dz, AIR);             // Platz schaffen
   }
-  for (let dy=0; dy<=8; dy++) {         // der Rumpf
-    const rad = dy>=7 ? 0 : 1;
-    for (let dx=-rad; dx<=rad; dx++) for (let dz=-rad; dz<=rad; dz++)
-      setBlock(x+dx, y+dy, z+dz, dy>=6 ? BRICK : WOOL);
+  for (let dy=0; dy<=9; dy++) {         // der Rumpf: unten 5x5, oben spitz
+    const rad = dy>=9 ? 0 : (dy>=7 ? 1 : 2);
+    for (let dx=-rad; dx<=rad; dx++) for (let dz=-rad; dz<=rad; dz++) {
+      if (rad===2 && Math.abs(dx)===2 && Math.abs(dz)===2) continue;   // Ecken abrunden
+      setBlock(x+dx, y+dy, z+dz, dy>=7 ? BRICK : (dy===3 ? BRICK : WOOL));
+    }
   }
-  for (let dy=0; dy<=2; dy++) {         // Flossen
-    setBlock(x+2, y+dy, z, BRICK); setBlock(x-2, y+dy, z, BRICK);
-    setBlock(x, y+dy, z+2, BRICK); setBlock(x, y+dy, z-2, BRICK);
+  for (let dy=0; dy<=2; dy++) {         // Stützflossen, vorne bleibt frei
+    setBlock(x+3, y+dy, z, BRICK); setBlock(x-3, y+dy, z, BRICK);
+    setBlock(x, y+dy, z+3, BRICK);
   }
-  setBlock(x, y+4, z+1, GLASS);         // Fenster
-  setBlock(x, y+1, z-1, RAKETE);        // die Luke zum Einsteigen
-  setBlock(x, y, z-1, RAKETE);
+  // 🚪 die Kabine zum Reinsteigen
+  for (let dy=1; dy<=4; dy++)
+    for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++) setBlock(x+dx, y+dy, z+dz, AIR);
+  setBlock(x, y+1, z-2, AIR);           // die offene Luke
+  setBlock(x, y+2, z-2, AIR);
+  for (const dx2 of [-1,1]) setBlock(x+dx2, y+2, z-2, GLASS);
+  for (let dx2=-1; dx2<=1; dx2++) setBlock(x+dx2, y+3, z-2, GLASS);    // Cockpit-Scheibe
+  setBlock(x, y+4, z-2, RAKETE);        // Luken-Schild ganz oben
+  for (const [wx2,wz2] of [[2,0],[-2,0],[0,2]])
+    for (let dy=2; dy<=3; dy++) setBlock(x+wx2, y+dy, z+wz2, GLASS);   // Seitenfenster
+  setBlock(x, y+1, z+1, STEUER);        // 🎛️ das Bedienungsfeld
+  setBlock(x, y, z-3, TREP_N);          // Stufe hinauf zur Luke
+  return { x: x+0.5, y: y+1, z: z+0.5 };
 }
 function raketeLanden(ziel) {
   portalHeim[weltDim] = { x:player.x, y:player.y, z:player.z };
   weltWechsel(ziel);
   portalKuehl = 3;                      // nicht sofort ins Portal stolpern
-  // Wo landen wir? Wenn wir hier schon mal waren: am alten Platz
+  // Wo landen wir? Wenn wir hier schon mal waren: genau am alten Platz
   const alt = portalHeim[ziel];
-  let lx, lz;
+  let lx, lz, sitz = null;
   if (alt) { lx = Math.floor(alt.x); lz = Math.floor(alt.z); }
-  else if (ziel === 0) { const R = raketenPos(); lx = R.rx; lz = R.rz - 6; }
+  else if (ziel === 0) { const R = raketenPos(); lx = R.rx; lz = R.rz; }
   else { lx = 0; lz = 0; }
   for (let cx=(lx-24)>>4; cx<=(lx+24)>>4; cx++)
     for (let cz=(lz-24)>>4; cz<=(lz+24)>>4; cz++) ensureData(cx,cz);
   const ly = terrainHeight(lx, lz) + 1;
-  if (ziel !== 0) raketeBauen(lx, ly, lz);          // die Rakete steht mit dir da
-  // ein freies Plätzchen neben der Rakete suchen
-  let px = lx+0.5, py = ly, pz = lz - 2.5;
-  for (const [ox,oz] of [[0,-3],[0,3],[3,0],[-3,0],[3,3],[-3,-3]]) {
-    if (!collideBox(lx+ox+0.5, ly+0.1, lz+oz+0.5, P_HALF, P_HEIGHT)) {
-      px = lx+ox+0.5; pz = lz+oz+0.5; break;
-    }
+  if (ziel === 0) {
+    // Zur Erde zurück: entweder in die eigene Rakete oder in die große Stationsrakete
+    if (alt) sitz = { x:alt.x, y:alt.y, z:alt.z };
+    else { const R = raketenPos(); sitz = { x:R.rx+0.5, y:R.base+2, z:R.rz+0.5 }; }
+  } else {
+    sitz = raketeBauen(lx, ly, lz);     // die Landerakete steht mit dir da - du sitzt drin!
   }
-  player.x = px; player.z = pz; player.y = ly+0.1;
+  player.x = sitz.x; player.y = sitz.y; player.z = sitz.z;
   player.vx = player.vy = player.vz = 0;
-  for (let s=0;s<30;s++)                // Landefeuer
-    fireworks.push({x:player.x, y:player.y+0.4, z:player.z, vx:(Math.random()-0.5)*5,
-      vy:Math.random()*3, vz:(Math.random()-0.5)*5, tile:[27,72,82][s%3], t:0.8});
-  shake = 0.4;
+  if (collideBox(player.x, player.y, player.z, P_HALF, P_HEIGHT)) {   // Notfall: daneben stellen
+    for (const [ox,oz] of [[0,-3],[0,-4],[3,0],[-3,0],[0,3]])
+      if (!collideBox(lx+ox+0.5, ly+0.1, lz+oz+0.5, P_HALF, P_HEIGHT)) {
+        player.x = lx+ox+0.5; player.z = lz+oz+0.5; player.y = ly+0.1; break;
+      }
+  }
+  for (let s=0;s<30;s++)                // Landefeuer unter der Rakete
+    fireworks.push({x:player.x+(Math.random()-0.5)*3, y:player.y-1.6, z:player.z+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*5, vy:Math.random()*3, vz:(Math.random()-0.5)*5, tile:[27,72,82][s%3], t:0.8});
+  shake = 0.5;
   blip(500,0.12); blip(340,0.14); blip(220,0.2);
-  const P = PLANET[ziel];
   toast(ziel===0
-    ? '🌍 Zurück auf der Erde! Willkommen daheim, Kommandant Jonah!'
-    : '🚀 Gelandet auf dem ' + P.name + '! ' +
-      (ziel===2 ? 'Achtung: Hier bist du fast schwerelos - du springst RIESIG hoch! 🌕'
-       : ziel===3 ? 'Roter Staub und tiefe Schluchten, so weit du schauen kannst. 🔴'
-       : ziel===4 ? 'Alles ist Eis und Schnee - schau dir die Eiszapfen-Türme an! ❄️'
-       : 'Bunte Bänder am Boden und ein riesiger Ring am Himmel! 💍') +
-      ' Steig wieder in die Rakete, wenn du heim willst.', 6000);
+    ? '🌍 Zurück auf der Erde! Willkommen daheim, Kommandant Jonah - steig aus der Rakete aus!'
+    : '🚀 Gelandet auf dem ' + PLANET[ziel].name + '! ' + PLANET[ziel].gruss +
+      ' Geh durch die Luke raus - und tipp drinnen das 🎛️ Bedienungsfeld an, wenn du weiterfliegen willst.', 7000);
   missEvent('weltall');
   scheduleSave();
 }
@@ -9325,7 +9573,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -10728,6 +10976,7 @@ function ridePhysics(dt) {
   }
 }
 function doBreak(dir) {
+  if (flugT > 0) return;                // im Flug bleibt alles heil!
   const e=eyePos();
   // Ist Wasser ausgewählt, wirkt die Spitzhacke wie ein Eimer und saugt Wasser auf
   const scoop = HOTBAR_ITEMS[selSlot]===WATER;
@@ -10924,6 +11173,7 @@ function toggleGate(x, y, z) {          // alle verbundenen Tor-Blöcke zusammen
 }
 let lavaTipp = false, wasserTipp = false, geldTipp = false;   // Erklärung nur beim ersten Setzen
 function doPlace(dir) {
+  if (flugT > 0) return;                // im Flug bleibt alles heil!
   const e=eyePos();
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH);
   if (!hit) return;
@@ -10997,7 +11247,16 @@ function doPlace(dir) {
     return;
   }
   if (hit.block===RAKETE && HOTBAR_ITEMS[selSlot]!==RAKETE) {
-    openRakete();                       // 🚀 Planeten-Auswahl
+    let pult = false;                   // gibt es in der Nähe ein Bedienungsfeld?
+    for (let dx=-3; dx<=3 && !pult; dx++) for (let dy=-3; dy<=4 && !pult; dy++)
+      for (let dz=-3; dz<=3 && !pult; dz++)
+        if (getBlock(hit.x+dx, hit.y+dy, hit.z+dz)===STEUER) pult = true;
+    if (pult) toast('🚪 Die Luke ist offen - steig in die Rakete! Drinnen wartet das 🎛️ Bedienungsfeld.', 4000);
+    else openRakete();                  // alte Raketen ohne Pult: geht weiter wie früher
+    return;
+  }
+  if (hit.block===STEUER && HOTBAR_ITEMS[selSlot]!==STEUER) {
+    openRakete();                       // 🎛️ Planeten-Auswahl - jetzt sitzt du wirklich drin!
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -11259,6 +11518,7 @@ function doPlace(dir) {
     return;
   }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
+  if (b===STEUER) toast('🎛️ Bedienungsfeld eingebaut! Bau eine Rakete drumherum, steig ein und tipp es an - dann geht es ins Weltall! 🚀', 5000);
   if (b===RAKETE) toast('🚀 Raketen-Luke eingebaut! Bau eine Rakete drumherum und tipp die Luke an (mit einem anderen Block in der Hand) - dann geht es ins Weltall!', 5000);
   if (b===BANK) toast('🏦 Bank-Tresor aufgestellt! Tipp ihn an (mit einem anderen Block in der Hand): Geld einzahlen, abheben – und Zinsen kassieren! 💶', 4600);
   if (b===RADIO) toast('📻 Radio aufgestellt! Tipp es an (mit einem anderen Block in der Hand) und such dir einen Sender aus. 🎶', 4200);
@@ -11985,7 +12245,7 @@ function frame(now) {
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
-  startTick(dt);                        // 🚀 läuft gerade ein Countdown?
+  flugTick(dt);                         // 🚀 läuft gerade ein Raketenflug?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
@@ -12041,6 +12301,21 @@ function frame(now) {
     const H = PLANET[weltDim].himmel;
     skyR = H[0]; skyG = H[1]; skyB = H[2];
   }
+  // 🚀 während des Fluges: erst wird es draußen schwarz, beim Landen die Farbe des Ziels
+  const fRaum = flugRaum();
+  if (fRaum > 0) {
+    const RAUM = [0.008, 0.010, 0.032];              // das tiefschwarze Weltall
+    const fp = flugPhase();
+    let ziel = RAUM;
+    if (fp === 'land') {                             // beim Anflug schon die Farbe des Planeten
+      const Z = himmelFarbe(flugZiel), u2 = flugAnteil();
+      ziel = [RAUM[0]+(Z[0]-RAUM[0])*u2, RAUM[1]+(Z[1]-RAUM[1])*u2, RAUM[2]+(Z[2]-RAUM[2])*u2];
+    }
+    const m = fp === 'abheb' ? flugAnteil() : 1;
+    skyR = skyR + (ziel[0]-skyR)*m;
+    skyG = skyG + (ziel[1]-skyG)*m;
+    skyB = skyB + (ziel[2]-skyB)*m;
+  }
   gl.clearColor(skyR, skyG, skyB, 1);
 
   const e=eyePos();
@@ -12076,7 +12351,10 @@ function frame(now) {
     gl.uniform1f(loc.uFogNear,2); gl.uniform1f(loc.uFogFar,18);
   } else {
     gl.uniform3f(loc.uFogColor,skyR,skyG,skyB);
-    gl.uniform1f(loc.uFogNear,CS*(VIEW_R-1)); gl.uniform1f(loc.uFogFar,CS*(VIEW_R+0.8));
+    // im Weltraum-Flug sieht man nur noch die eigene Raketen-Kabine - drumherum: Sterne!
+    const fn0 = CS*(VIEW_R-1), ff0 = CS*(VIEW_R+0.8);
+    gl.uniform1f(loc.uFogNear, fn0 + (2.6 - fn0)*fRaum);
+    gl.uniform1f(loc.uFogFar,  ff0 + (5.5 - ff0)*fRaum);
   }
   gl.uniform1f(loc.uAlpha,1);
   gl.uniform1f(loc.uLight, L);
