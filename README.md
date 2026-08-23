@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ERDE UND STERNE am Weltall-Himmel (v174)! 🌍⭐ Wenn du auf
+  einem Planeten stehst und nach oben schaust, funkeln jetzt
+  hunderte Sterne am schwarzen Himmel - jeder blinzelt in seinem
+  eigenen Takt. Und mittendrin hängt die ERDE: eine blaue Kugel
+  mit grünen Ländern, weißen Wolken und Eis an den Polen, die sich
+  ganz langsam dreht. Vom 🌕 Mond aus ist sie riesig, vom 🔴 Mars,
+  vom ❄️ Eis-Planeten und vom 💍 Ring-Planeten aus siehst du sie
+  als kleine blaue Murmel - jedes Mal an einer anderen Stelle am
+  Himmel. Berge, Häuser und deine Rakete stehen ganz normal davor.
 - DIE RAKETENSTATION - flieg auf vier Planeten (v173)! 🚀🌕 Auf
   der Karte gibt es jetzt ein 🚀: Dort steht die Raketenstation mit
   einer riesigen, 20 Blöcke hohen Rakete auf der gestreiften

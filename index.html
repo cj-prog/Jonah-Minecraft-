@@ -484,7 +484,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 173 &middot; RAKETENSTATION! Flieg zu 4 Planeten! 🚀🌕</p>
+    Version 174 &middot; ERDE UND STERNE am Weltall-Himmel! 🌍⭐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -530,7 +530,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 173;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 174;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -904,11 +904,17 @@ function terrainHeight(x, z) {
   return terrainHeight0(x, z);
 }
 // 🚀 DIE PLANETEN: jeder hat seine eigene Landschaft
+// erdGross/erdWink/erdHoch: wie groß und wo am Himmel die 🌍 Erde von hier aus steht.
+// sterne: so viele Sterne funkeln über dem Planeten.
 const PLANET = [null, null,
-  { name:'🌕 Mond',        boden:STONE,  tief:STONE, himmel:[0.02,0.02,0.05], schwer:0.35, basis:40, hub:9 },
-  { name:'🔴 Mars',        boden:BRICK,  tief:SAND,  himmel:[0.22,0.09,0.05], schwer:0.55, basis:44, hub:16 },
-  { name:'❄️ Eis-Planet',  boden:SNOW,   tief:GLASS, himmel:[0.06,0.10,0.18], schwer:0.7,  basis:46, hub:14 },
-  { name:'💍 Ring-Planet', boden:WOOL,   tief:BRICK, himmel:[0.12,0.05,0.20], schwer:0.5,  basis:52, hub:20 },
+  { name:'🌕 Mond',        boden:STONE,  tief:STONE, himmel:[0.02,0.02,0.05], schwer:0.35, basis:40, hub:9,
+    erdGross:34, erdWink:0.9,  erdHoch:0.52, sterne:230 },
+  { name:'🔴 Mars',        boden:BRICK,  tief:SAND,  himmel:[0.22,0.09,0.05], schwer:0.55, basis:44, hub:16,
+    erdGross:16, erdWink:2.4,  erdHoch:0.44, sterne:170 },
+  { name:'❄️ Eis-Planet',  boden:SNOW,   tief:GLASS, himmel:[0.06,0.10,0.18], schwer:0.7,  basis:46, hub:14,
+    erdGross:13, erdWink:4.1,  erdHoch:0.58, sterne:250 },
+  { name:'💍 Ring-Planet', boden:WOOL,   tief:BRICK, himmel:[0.12,0.05,0.20], schwer:0.5,  basis:52, hub:20,
+    erdGross:11, erdWink:5.5,  erdHoch:0.4,  sterne:270 },
 ];
 function planetHoehe(x, z, dim) {
   const P = PLANET[dim] || PLANET[2];
@@ -3049,6 +3055,44 @@ atlas.width = atlas.height = T*ATLAS_N;
     }
     if ((x+y)%5===0) return vary(196,202,214,8);                    // Nieten
     return vary(166,172,186,10);                                    // helles Raumfahrt-Metall
+  });
+  tile(102,(x,y)=>{                                                 // ⭐ Stern am Weltall-Himmel
+    const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
+    if (r < 3.2) return 'rgb(255,255,255)';                         // weißer Kern
+    if (r < 5.4 || Math.abs(dx)<1.2 || Math.abs(dy)<1.2) return vary(226,236,255,10);  // Zacken
+    return vary(196,214,255,14);                                    // sanfter Schimmer
+  });
+  // 🌍 die Erde: fest gemalt, damit sie in JEDER Welt gleich schön aussieht
+  const ERD_KARTE = [                   // i = Eis, # = Land, o = Wolke, . = Meer
+    'iiiiiiiiiiiiiiii',
+    '.ii...iiiii...i.',
+    '..###.....####..',
+    '.#####...#####..',
+    '..####....####..',
+    '...##......##...',
+    '...#...oooo...#.',
+    '...##.oooo..##..',
+    '....#......###..',
+    '....##....####..',
+    '.....#...####...',
+    '..oo.#...###....',
+    '..ooo....##.....',
+    '...####......o..',
+    '..#####....oo...',
+    'iiiiiiiiiiiiiiii',
+  ];
+  tile(103,(x,y)=>{                                                 // 🌍 die Erde von weit weg
+    const c = ERD_KARTE[y][x];
+    if (c === 'i') return vary(238,244,252,8);                      // Eis an den Polen
+    if (c === 'o') return vary(250,252,255,8);                      // weiße Wolken
+    if (c === '#') return vary(84,168,72,20);                       // grüne Länder
+    let kueste = false;                                             // flaches Wasser am Ufer
+    for (const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const z2 = ERD_KARTE[y+oy];
+      if (z2 && z2[x+ox] === '#') kueste = true;
+    }
+    if (kueste) return vary(112,186,236,12);
+    return vary(38,104,206,16);                                     // blaue Meere
   });
   tile(99,(x,y)=>{                                                  // Bank-Tresor 🏦: dicke Stahltür
     if (x===0||x===15||y===0||y===15) return vary(86,92,104,8);     // Rahmen
@@ -5658,6 +5702,65 @@ function drawAnimals() {
     gl.drawArrays(gl.TRIANGLES, 0, fwArr.length/6);
     gl.uniform1f(loc.uLight, curLight);
   }
+}
+
+// --------------------- 🌍 Weltall-Himmel: Erde und Sterne ---------------------
+// Auf jedem Planeten funkeln Sterne am schwarzen Himmel - und die Erde
+// steht als blaue Kugel dort oben. Sie wird VOR dem Gelände gezeichnet,
+// aber ohne Tiefen-Test: Berge und Häuser decken sie danach ganz normal zu.
+const STERNE = (function(){             // die Sternkarte steht fest: immer die gleichen Sterne
+  let s = 987654321;
+  const rnd = ()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; };
+  const liste = [];
+  for (let i=0; i<300; i++) {
+    const wink = rnd()*Math.PI*2;                        // Himmelsrichtung
+    const hoch = 0.04 + rnd()*rnd()*1.45;                // Höhe über dem Horizont
+    liste.push({ dx: Math.cos(hoch)*Math.sin(wink), dy: Math.sin(hoch),
+                 dz: Math.cos(hoch)*Math.cos(wink),
+                 gr: 0.7 + rnd()*1.5, ph: rnd()*6.3, blink: 1.4 + rnd()*2.6 });
+  }
+  return liste;
+})();
+const HIMMEL_R = 150;                   // so weit weg hängt der Sternenhimmel
+const himmelBuf = gl.createBuffer();
+
+function drawHimmel(ce) {
+  if (weltDim < 2) return;              // nur im Weltall
+  const P = PLANET[weltDim];
+  const arr = [];
+  const t = performance.now()*0.001;
+  // ⭐ die Sterne
+  const wieViele = Math.min(STERNE.length, P.sterne||200);
+  for (let i=0; i<wieViele; i++) {
+    const s = STERNE[i];
+    const funkel = 0.72 + 0.28*Math.sin(t*s.blink + s.ph);     // sie blinzeln!
+    const g = s.gr*funkel*1.25;
+    const sa = { x: ce[0]+s.dx*HIMMEL_R, y: ce[1]+s.dy*HIMMEL_R, z: ce[2]+s.dz*HIMMEL_R, yaw:0 };
+    pushBox(arr, sa, 0,0,0, g,g,g, 102);
+  }
+  // 🌍 die Erde: eine dicke Kugel aus drei Kästen übereinander
+  const dx = Math.cos(P.erdHoch)*Math.sin(P.erdWink);
+  const dy = Math.sin(P.erdHoch);
+  const dz = Math.cos(P.erdHoch)*Math.cos(P.erdWink);
+  const dreh = t*0.05;                                        // die Erde dreht sich ganz langsam
+  const ea = { x: ce[0]+dx*HIMMEL_R, y: ce[1]+dy*HIMMEL_R, z: ce[2]+dz*HIMMEL_R, yaw: dreh };
+  const d = P.erdGross;
+  // aus mehreren Kästen wird eine schön runde Kugel
+  for (const [a1,b1,c1] of [[1,1,1], [1.24,0.72,0.72], [0.72,1.24,0.72], [0.72,0.72,1.24],
+                            [1.14,0.94,0.94], [0.94,1.14,0.94], [0.94,0.94,1.14]])
+    pushBox(arr, ea, 0,0,0, d*a1, d*b1, d*c1, 103);
+  // alle Seiten gleich hell: dann sieht die Erde rund aus statt eckig
+  for (let i=5; i<arr.length; i+=6) arr[i] = 1;
+  // zeichnen: selbst leuchtend, ohne Nebel, ohne Tiefen-Test
+  gl.disable(gl.DEPTH_TEST);
+  gl.uniform1f(loc.uLight, 1);
+  gl.uniform1f(loc.uFogNear, 4000); gl.uniform1f(loc.uFogFar, 5000);
+  gl.bindBuffer(gl.ARRAY_BUFFER, himmelBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
+  setAttribs();
+  gl.drawArrays(gl.TRIANGLES, 0, arr.length/6);
+  gl.enable(gl.DEPTH_TEST);
+  // Nebel und Licht setzt die Zeichen-Schleife gleich danach wieder selbst.
 }
 
 // ------------------------------ Schilder ------------------------------------
@@ -11967,6 +12070,7 @@ function frame(now) {
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.uniformMatrix4fv(loc.uMVP,false,new Float32Array(mvp));
   gl.uniform3f(loc.uCam,ce[0],ce[1],ce[2]);
+  drawHimmel(ce);                       // 🌍⭐ zuerst Sterne und Erde ganz hinten
   if (eyeInWater) {
     gl.uniform3f(loc.uFogColor,0.1,0.3,0.7);
     gl.uniform1f(loc.uFogNear,2); gl.uniform1f(loc.uFogFar,18);
