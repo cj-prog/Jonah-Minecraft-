@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RAKETE VERLOREN? Der 🆘-Knopf holt sie (v176)! 🚀 Wenn du auf
+  einem Planeten unterwegs bist, ist unten rechts jetzt ein roter
+  🆘-Knopf. Einmal antippen - und deine Rakete landet mit Feuer und
+  Getöse direkt bei dir, und du sitzt sofort drin. Du kannst also
+  losfliegen, so weit du willst, und findest immer zurück. Steht die
+  Rakete sowieso schon neben dir, sagt der Knopf einfach Bescheid.
+  Außerdem zeigt die 🗺️ große Karte auf fremden Planeten jetzt die
+  ECHTE Planeten-Landschaft (vorher war da immer noch Erd-Grün) -
+  mit einem 🚀 genau da, wo deine Rakete steht. So findest du sie
+  auch zu Fuß wieder.
 - STEIG WIRKLICH IN DIE RAKETE EIN - und 3 neue Planeten (v175)! 🚀🪐
   Die große Rakete auf der Startrampe ist jetzt innen HOHL: Geh die
   Stufe hoch, durch die offene Luke hinein - und schon stehst du im
