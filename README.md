@@ -221,6 +221,28 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RAKETENSTATION - flieg auf vier Planeten (v173)! 🚀🌕 Auf
+  der Karte gibt es jetzt ein 🚀: Dort steht die Raketenstation mit
+  einer riesigen, 20 Blöcke hohen Rakete auf der gestreiften
+  Startrampe - weißer Rumpf mit roten Ringen, roter Spitze,
+  Fenstern, Stützflossen, dazu ein verglaster Kontrollturm und
+  Flutlicht-Masten. Vorne an der Rakete ist die Luke: antippen,
+  Planet aussuchen, und dann läuft der Countdown - 3, 2, 1, START!
+  Der Boden wackelt, Feuer und Rauch schießen unter dir hervor, und
+  schon landest du auf einer ganz neuen Welt:
+  🌕 der MOND (grauer Staub, riesige Krater, Mondgestein - und du
+  bist fast schwerelos und springst dreimal so hoch!),
+  🔴 der MARS (roter Staub, Felsnadeln und tiefe Schluchten),
+  ❄️ der EIS-PLANET (Schnee, gefrorene Seen und hohe
+  Eiszapfen-Türme) und 💍 der RING-PLANET (bunte Bänder am Boden,
+  Pokale und ein riesiger Ring am Himmel). Der Himmel ist überall
+  schwarz wie im Weltall, und auf jedem Planeten steht deine
+  Landerakete: einfach die Luke antippen, dann geht es weiter oder
+  zurück zur Erde. Jede Welt merkt sich, was du dort gebaut hast,
+  und alles wird gespeichert. Es gibt auch drei neue Missionen:
+  🚀 Astronaut, 🌕 Mondlandung und 🪐 Planeten-Sammler. Die
+  Raketen-Luke liegt außerdem in der Bau-Leiste - bau dir deine
+  eigene Rakete, wo du willst!
 - Bugfix: Die Bankleute sind jetzt WIRKLICH da (v172)! 🏦👨‍💼 In
   Version 171 konnte es passieren, dass die Bankhalle leer war: Die
   Bankleute wurden nur zusammen mit den ersten Dorfbewohnern
