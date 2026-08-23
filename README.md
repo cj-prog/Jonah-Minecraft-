@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Bugfix: Die Bankleute sind jetzt WIRKLICH da (v172)! 🏦👨‍💼 In
+  Version 171 konnte es passieren, dass die Bankhalle leer war: Die
+  Bankleute wurden nur zusammen mit den ersten Dorfbewohnern
+  erzeugt – war das Dorf schon bevölkert (oder die Bank noch nicht
+  geladen), kam nie wieder jemand. Jetzt prüft das Spiel die Bank
+  getrennt: Sobald Jonah in die Nähe der Halle kommt, stehen die
+  drei sofort an ihren Schaltern, und sie kommen auch nach jedem
+  Weggehen wieder. Außerdem: die Halle wird jetzt auch auf
+  hügeligem Grund gebaut (der Bauplatz wird ringsum freigeräumt und
+  aufgefüllt), das 🏦 auf der Karte erscheint nur noch dort, wo
+  wirklich eine Bank steht – und in der Schatzkammer deiner
+  Festung steht ab jetzt dein eigener Bankier „Herr Goldmann"
+  direkt neben dem Tresor
 - Die RIESEN-BANKHALLE mit Bankleuten am Schalter (v171)! 🏦👨‍💼
   Aus dem engen Bankhäuschen ist eine richtig große Halle geworden:
   15 × 13 Blöcke groß und 5 Blöcke hoch, mit einem breiten
