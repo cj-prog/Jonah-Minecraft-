@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die RIESEN-BANKHALLE mit Bankleuten am Schalter (v171)! 🏦👨‍💼
+  Aus dem engen Bankhäuschen ist eine richtig große Halle geworden:
+  15 × 13 Blöcke groß und 5 Blöcke hoch, mit einem breiten
+  Eingangs-Portal (zwei Flügeltüren und einer offenen Mitte), einer
+  breiten Freitreppe davor, hohen Glasfenstern rundum, Fackeln an
+  den Wänden, einem roten Teppich vom Eingang bis zum Schalter und
+  einem Wartebereich mit Stühlen, Tischen und Blumen. Quer durch
+  die Halle geht die Schalter-Mauer: unten die lange Theke, darüber
+  eine Mauer mit DREI Sprech-Fenstern und eine Glaswand ganz oben.
+  Und hinter der Mauer stehen jetzt drei echte Bankleute – Frau
+  Mark, Herr Taler und Frau Krone – mit weißem Hemd, roter
+  Krawatte und goldener Kassierer-Mütze. Man sieht sie durch ihr
+  Schalterfenster; tippt man einen von ihnen an, begrüßt er dich
+  mit Namen und fragt: „Guten Tag, König Jonah! Wie viel möchtest
+  du einzahlen oder abheben?" Dann schreibst du deine Summe ins
+  Feld. Die Tresore an der Rückwand funktionieren weiterhin, und
+  die Bank steht südwestlich vom Dorf (🏦 auf der Karte)
 - Ein echtes BANK-HAUS + Wunsch-Summe (v170)! 🏦🚪 In jedem Dorf
   steht jetzt ein richtiges Bank-Gebäude, in das man hineingehen
   kann – gleich westlich vom Dorfbrunnen (auf der Karte als 🏦 zu
