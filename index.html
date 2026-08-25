@@ -48,6 +48,12 @@
     width:54px; height:54px; font-size:24px; background:rgba(255,60,180,.4); }
   #superBtn.an { background:rgba(255,215,60,.75); box-shadow:0 0 22px #ffd83c; }
   #superBtn.warte { opacity:.55; font-size:18px; font-weight:bold; }
+  #kroneBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:24px; }
+  #kroneBtn.an { background:rgba(255,215,60,.7); box-shadow:0 0 18px #ffd83c; }
+  #zepterBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(358px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:24px; background:rgba(190,120,255,.45); }
+  #zepterBtn.warte { opacity:.5; }
   #superBox { display:none; left:50%; transform:translateX(-50%); top:calc(56px + env(safe-area-inset-top));
     z-index:44; text-align:center; pointer-events:none; }
   #superText { display:block; font-size:min(5vw,21px); font-weight:bold; color:#fff;
@@ -305,6 +311,8 @@
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="rufBtn" style="display:none" title="Rakete rufen">🆘</div>
 <div class="hud btn" id="superBtn" title="Superkräfte!">🦸</div>
+<div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
+<div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
 <div class="hud" id="superBox"><span id="superText"></span><div id="superBalken"><i id="superFuell"></i></div></div>
 <div class="hud" id="superFx"></div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
@@ -516,7 +524,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 178 &middot; SUPERKRÄFTE, RIESEN, STRASSEN und dein Königreich! 🦸👹🛣️👑</p>
+    Version 179 &middot; DIE KRONE UND DAS ZEPTER gehören DIR! 👑🪄</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -562,7 +570,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 178;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 179;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -591,7 +599,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
       BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84, BANK=85, RAKETE=86,
       STEUER=87, GOLD=88,               // 🎛️ Bedienungsfeld, 🟨 massives Gold zum Bauen
-      STRASSE=89, STRASSE_M=90;         // 🛣️ Asphalt und Asphalt mit Mittelstreifen
+      STRASSE=89, STRASSE_M=90,         // 🛣️ Asphalt und Asphalt mit Mittelstreifen
+      KRONE=91, ZEPTER=92;              // 👑🪄 die Königs-Sachen zum Mitnehmen
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -714,6 +723,19 @@ const BLOCKS = {
   // 🚀 die Raketen-Luke: antippen, Planet aussuchen und ab ins Weltall!
   [RAKETE]: { name:'Raketen-Luke 🚀 (antippen = ins Weltall fliegen!)',
     tiles:[101,101,101], solid:true },
+  // 👑🪄 Krone und Zepter: antippen = mitnehmen und tragen!
+  [KRONE]: { name:'Königs-Krone 👑 (antippen = aufsetzen!)', tiles:[120,120,120], solid:false, model:[
+    [0.22,0,0.22, 0.78,0.22,0.78, 120, 1.5],            // der goldene Reif
+    [0.24,0.22,0.24, 0.32,0.42,0.32, 120, 1.6],         // vier Zacken
+    [0.68,0.22,0.24, 0.76,0.42,0.32, 120, 1.6],
+    [0.24,0.22,0.68, 0.32,0.42,0.76, 120, 1.6],
+    [0.68,0.22,0.68, 0.76,0.42,0.76, 120, 1.6],
+    [0.44,0.22,0.44, 0.56,0.5,0.56, 120, 1.7],          // Mittelzacke
+    [0.42,0.5,0.42, 0.58,0.62,0.58, 27, 1.8]] },        // funkelnder Edelstein
+  [ZEPTER]: { name:'Königs-Zepter 🪄 (antippen = mitnehmen!)', tiles:[121,121,121], solid:false, model:[
+    [0.45,0,0.45, 0.55,0.72,0.55, 5, 1.1],              // der Stab
+    [0.36,0.72,0.36, 0.64,0.88,0.64, 120, 1.6],         // goldener Knauf
+    [0.42,0.88,0.42, 0.58,1.0,0.58, 27, 1.9]] },        // der funkelnde Stern
   // 🛣️ die Straße: hier fahren die Autos doppelt so schnell!
   [STRASSE]:   { name:'Straße 🛣️ (hier fahren Autos richtig schnell!)', tiles:[118,118,118], solid:true },
   [STRASSE_M]: { name:'Straße mit Mittelstreifen 🛣️', tiles:[119,119,119], solid:true },
@@ -892,7 +914,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -1610,10 +1632,13 @@ function bauKoenigreich(put, x0, z0) {
   }
   put(0, by+3, 23, CHAIR, false);                     // DER THRON! 👑
   put(-1, by+3, 23, GOLD, false); put(1, by+3, 23, GOLD, false);   // goldene Armlehnen
+  put(-3, by+3, 22, GOLD, false); put(3, by+3, 22, GOLD, false);   // zwei Podeste...
+  put(-3, by+4, 22, KRONE, false);                                 // 👑 DIE KRONE
+  put(3, by+4, 22, ZEPTER, false);                                 // 🪄 DAS ZEPTER
   for (let y=3; y<=7; y++) { put(-1, by+y, 24, GOLD, false); put(1, by+y, 24, GOLD, false); }
   for (let y=4; y<=7; y++) put(0, by+y, 24, GOLD, false);
   put(0, by+8, 24, GOLD, false);
-  put(-2, by+3, 23, TORCH, false); put(2, by+3, 23, TORCH, false);
+  put(-5, by+3, 23, TORCH, false); put(5, by+3, 23, TORCH, false);
   // Säulen, Fahnen und Fackeln im Saal
   for (const dz of [8, 14]) for (const dx of [-9, 9]) {
     for (let y=1; y<=9; y++) put(dx, by+y, dz, GOLD, false);
@@ -2940,7 +2965,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M, KRONE, ZEPTER]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -3143,6 +3168,7 @@ function saveGame() {
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
+      krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0,
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
       player:{x:player.x,y:player.y,z:player.z,yaw,pitch}
@@ -3229,6 +3255,11 @@ function loadGame() {
     if (typeof s.frgBest==='number') frgBest = s.frgBest;
     if (s.jub100) jub100 = true;
     if (s.sword) sword = true;
+    if (s.krone) hatKrone = true;
+    if (s.zepter) hatZepter = true;
+    if (s.auf) traegtKrone = true;
+    if (!hatKrone) traegtKrone = false;  // ohne Krone kann man keine tragen
+    koenigsHUD();                        // 👑🪄 Knöpfe passend zeigen
     if (s.bow) bow = true;
     if (Array.isArray(s.look)) {            // dein ausgesuchtes Aussehen
       if (LOOK_FARBEN.shirt.some(f=>f[0]===s.look[0])) outfit.shirt = s.look[0];
@@ -3635,6 +3666,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (s < -0.9) return vary(206,158,72,12);
     return vary(234,204,132,12);
   });
+  tile(120,(x,y)=>{                                                 // 👑 Krone: Gold mit Edelsteinen
+    if (((x*3+y*5)%19) < 2) return vary(120,220,255,14);             // blaue Steinchen
+    if (((x*7+y*2)%23) < 2) return vary(255,90,120,14);              // rote Steinchen
+    if (x+y < 9) return vary(255,248,196,10);                        // Glanz
+    return vary(246,206,66,14);
+  });
+  tile(121,()=> (rnd()<0.2 ? vary(122,92,58,10) : vary(96,70,42,12)));   // 🪄 Zepter-Holz
   tile(118,()=> (rnd()<0.10 ? vary(78,80,86,6) : vary(62,64,70,10)));   // 🛣️ Asphalt
   tile(119,(x,y)=>{                                                 // 🛣️ Asphalt mit Mittelstreifen
     if (y>=6 && y<=9) return vary(246,240,210,8);                   // weißer Streifen
@@ -6000,6 +6038,16 @@ function drawAnimals() {
     pushBox(arr,a, 0,1.63,0, 0.44,0.44,0.44, HT[0], HT[1]);       // Kopf mit Gesicht
     pushBox(arr,a, 0,1.88,0.02, 0.46,0.1,0.46, outfit.haar);        // Haare
     if (sword) pushBox(arr,a, 0.42,1.0,-0.2, 0.07,0.5,0.07, 3);   // dein Schwert!
+    if (traegtKrone) {                                            // 👑 DIE KRONE!
+      pushBox(arr,a, 0,1.97,0, 0.5,0.13,0.5, 120);
+      for (const kx2 of [-0.17,0,0.17]) pushBox(arr,a, kx2,2.08,0, 0.11,0.13,0.11, 120);
+      pushBox(arr,a, 0,2.17,0, 0.13,0.1,0.13, 27);                // der Edelstein
+    }
+    if (hatZepter) {                                              // 🪄 DAS ZEPTER!
+      pushBox(arr,a, -0.42,1.05,-0.18, 0.07,0.62,0.07, 121);
+      pushBox(arr,a, -0.42,1.42,-0.18, 0.17,0.14,0.17, 120);
+      pushBox(arr,a, -0.42,1.54,-0.18, 0.11,0.11,0.11, 27);
+    }
   }
   if (friendP) {                        // dein Mitspieler!
     const a={x:friendP.x, y:friendP.y, z:friendP.z, yaw:friendP.yaw||0, ph:0};
@@ -9302,6 +9350,8 @@ function toggleBrush() {
 
 // ------------------------------ Waffen ⚔️🏹 ----------------------------------
 let sword = false, bow = false;         // deine Ausrüstung (wird gespeichert)
+// 👑🪄 die Königs-Sachen: hat er sie, und trägt er die Krone gerade?
+let hatKrone = false, hatZepter = false, traegtKrone = false, zepterKuehl = 0;
 const arrows = [];                      // fliegende Pfeile
 
 function shootArrow() {
@@ -9550,6 +9600,83 @@ function raketeBauen(x, y, z) {
   return { x: x+0.5, y: y+1, z: z+0.5 };
 }
 // 🆘 Rakete verloren? Kein Problem - sie kommt einfach zu dir geflogen!
+// -------------------- 👑🪄 DIE KRONE UND DAS ZEPTER --------------------------
+// Beide liegen im Thronsaal auf der goldenen Treppe. Antippen = mitnehmen!
+function koenigsHUD() {
+  document.getElementById('kroneBtn').style.display = hatKrone ? 'flex' : 'none';
+  document.getElementById('kroneBtn').className = 'hud btn' + (traegtKrone ? ' an' : '');
+  document.getElementById('zepterBtn').style.display = hatZepter ? 'flex' : 'none';
+}
+function nimmKrone() {
+  hatKrone = true; traegtKrone = true;
+  koenigsHUD();
+  toast('👑 DIE KÖNIGS-KRONE GEHÖRT JETZT DIR! Du trägst sie auf dem Kopf - ' +
+        'alle nennen dich ab jetzt KÖNIG JONAH! Mit dem 👑-Knopf kannst du sie ab- und aufsetzen.', 7000);
+  blip(523,0.1); blip(659,0.1); blip(784,0.12); blip(1047,0.2);
+  for (let n=0; n<36; n++)
+    fireworks.push({x:player.x, y:player.y+1.8, z:player.z, vx:(Math.random()-0.5)*5,
+      vy:1+Math.random()*4, vz:(Math.random()-0.5)*5, tile:[94,30,10][n%3], t:1.1});
+  scheduleSave();
+}
+function nimmZepter() {
+  hatZepter = true;
+  koenigsHUD();
+  toast('🪄 DAS KÖNIGS-ZEPTER GEHÖRT JETZT DIR! Drück den 🪄-Knopf: dann schießt ein goldener ' +
+        'Zauberstrahl nach vorne - er besiegt Monster und verwandelt Blöcke in GOLD! ✨', 7000);
+  blip(659,0.1); blip(880,0.1); blip(1175,0.18);
+  for (let n=0; n<30; n++)
+    fireworks.push({x:player.x, y:player.y+1.4, z:player.z, vx:(Math.random()-0.5)*5,
+      vy:1+Math.random()*4, vz:(Math.random()-0.5)*5, tile:[94,87,10][n%3], t:1.1});
+  scheduleSave();
+}
+function kroneWechseln() {
+  if (!hatKrone) return;
+  traegtKrone = !traegtKrone;
+  koenigsHUD();
+  toast(traegtKrone ? '👑 Krone auf! Lang lebe König Jonah!' : '👑 Krone abgesetzt.', 2500);
+  blip(traegtKrone ? 880 : 440, 0.1);
+  scheduleSave();
+}
+// 🪄 der Zauberstrahl: Monster weg, Blöcke zu Gold!
+function zepterZaubern() {
+  if (!hatZepter) return;
+  if (zepterKuehl > 0) { toast('🪄 Das Zepter lädt sich auf... noch ' + Math.ceil(zepterKuehl) + ' Sek.', 2000); return; }
+  zepterKuehl = 4;
+  const f = forwardVec();
+  const ex = player.x, ey = player.y + P_EYE, ez = player.z;
+  let getroffen = 0;
+  for (const a of [...animals]) {        // alle Monster im Strahl besiegen
+    if (!istFeind(a)) continue;
+    const dx = a.x-ex, dy = (a.y+0.9)-ey, dz = a.z-ez;
+    const d = Math.hypot(dx,dy,dz);
+    if (d > 22) continue;
+    const dot = (dx*f[0] + dy*f[1] + dz*f[2]) / Math.max(0.1, d);
+    if (dot < 0.93) continue;            // muss vor dir sein
+    slimeDamage(a, 999, [f[0], 0, f[2]]);
+    getroffen++;
+  }
+  const hit = raycast(ex, ey, ez, f[0], f[1], f[2], 22);
+  let bis = 22;
+  if (hit && hit.block !== undefined) {
+    bis = Math.min(bis, Math.hypot(hit.x+0.5-ex, hit.y+0.5-ey, hit.z+0.5-ez));
+    if (hit.block !== AIR && hit.block !== WATER && hit.block !== GOLD &&
+        !GELD_BLOCK.has(hit.block) && hit.block !== SCHUTZ) {
+      setBlock(hit.x, hit.y, hit.z, GOLD);          // ✨ zu GOLD verzaubert!
+      for (let n=0; n<16; n++)
+        fireworks.push({x:hit.x+0.5, y:hit.y+0.5, z:hit.z+0.5, vx:(Math.random()-0.5)*4,
+          vy:Math.random()*3, vz:(Math.random()-0.5)*4, tile:94, t:0.7});
+    }
+  }
+  for (let i=0; i<=30; i++) {            // der goldene Strahl
+    const t = i/30*bis;
+    fireworks.push({x: ex+f[0]*t, y: ey+f[1]*t, z: ez+f[2]*t,
+      vx:0, vy:0.15, vz:0, tile: i%2 ? 94 : 27, t:0.4});
+  }
+  blip(1175,0.06); blip(880,0.06); blip(659,0.1);
+  toast(getroffen ? '🪄✨ ZAUBER! ' + getroffen + ' Monster verschwunden!'
+                  : '🪄✨ Zauberstrahl! Was er trifft, wird zu GOLD!', 2600);
+  scheduleSave();
+}
 // ---------------------- 🦸 SUPER-JONAH: die Superkräfte -----------------------
 // Ein Knopf, fünf Kräfte auf einmal: rasend schnell, riesige Sprünge,
 // unverwundbar, Laser-Blick und Superstärke. 40 Sekunden lang!
@@ -10256,7 +10383,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -11541,6 +11668,26 @@ function hitEntity(a, dir) {
     blip(350,0.08); blip(280,0.06);
     return;
   }
+  if ((a.type==='villager' || a.type==='kid' || a.type==='trader') && traegtKrone) {
+    // 👑 Wer die Krone trägt, wird überall als König begrüßt!
+    if (!a.name) a.name = VILLAGER_NAMES[Math.floor(Math.random()*VILLAGER_NAMES.length)];
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = false; a.t = 3.5;
+    const KOENIG_TALK = [
+      'Oh! Die KRONE! Guten Tag, König Jonah! 👑',
+      'Eure Majestät! Wie schön, dass Ihr da seid!',
+      'Seht nur, der König persönlich! Hoch lebe König Jonah!',
+      'Ich verneige mich, mein König! 🙇',
+      'Eure Krone glänzt heute besonders schön, Majestät!',
+      'Befehlt, König Jonah - wir tun alles für Euch!',
+      'Der König ist da! Schnell, holt die Blumen! 🌸',
+    ];
+    const spruch = KOENIG_TALK[Math.floor(Math.random()*KOENIG_TALK.length)];
+    sagen(a, spruch, 3.5);
+    toast('👑 ' + a.name + ': „' + spruch + '"', 3400);
+    blip(659,0.08); blip(880,0.1);
+    return;
+  }
   if (a.type==='villager' || a.type==='kid') {   // mit Bewohnern und Kindern sprechen!
     const kid = a.type==='kid';
     if (!a.name) a.name = (kid?KID_NAMES:VILLAGER_NAMES)[Math.floor(Math.random()*(kid?KID_NAMES:VILLAGER_NAMES).length)];
@@ -11993,6 +12140,16 @@ function doPlace(dir) {
         if (getBlock(hit.x+dx, hit.y+dy, hit.z+dz)===STEUER) pult = true;
     if (pult) toast('🚪 Die Luke ist offen - steig in die Rakete! Drinnen wartet das 🎛️ Bedienungsfeld.', 4000);
     else openRakete();                  // alte Raketen ohne Pult: geht weiter wie früher
+    return;
+  }
+  if (hit.block===KRONE && HOTBAR_ITEMS[selSlot]!==KRONE) {
+    setBlock(hit.x, hit.y, hit.z, AIR);   // 👑 die Krone wandert auf deinen Kopf!
+    nimmKrone();
+    return;
+  }
+  if (hit.block===ZEPTER && HOTBAR_ITEMS[selSlot]!==ZEPTER) {
+    setBlock(hit.x, hit.y, hit.z, AIR);   // 🪄 das Zepter nimmst du in die Hand!
+    nimmZepter();
     return;
   }
   if (hit.block===STEUER && HOTBAR_ITEMS[selSlot]!==STEUER) {
@@ -12735,6 +12892,12 @@ rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 const flyBtn=document.getElementById('flyBtn');
 flyBtn.addEventListener('touchstart',e=>{e.preventDefault();toggleFly();},{passive:false});
 flyBtn.addEventListener('mousedown',e=>{e.preventDefault();toggleFly();});
+const kroneBtnEl=document.getElementById('kroneBtn');   // 👑 Krone auf/ab
+kroneBtnEl.addEventListener('touchstart',e=>{e.preventDefault();kroneWechseln();},{passive:false});
+kroneBtnEl.addEventListener('mousedown',e=>{e.preventDefault();kroneWechseln();});
+const zepterBtnEl=document.getElementById('zepterBtn'); // 🪄 zaubern!
+zepterBtnEl.addEventListener('touchstart',e=>{e.preventDefault();zepterZaubern();},{passive:false});
+zepterBtnEl.addEventListener('mousedown',e=>{e.preventDefault();zepterZaubern();});
 const superBtnEl=document.getElementById('superBtn');   // 🦸 Superkräfte!
 superBtnEl.addEventListener('touchstart',e=>{e.preventDefault();superStart();},{passive:false});
 superBtnEl.addEventListener('mousedown',e=>{e.preventDefault();superStart();});
@@ -12993,6 +13156,12 @@ function frame(now) {
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
   flugTick(dt);                         // 🚀 läuft gerade ein Raketenflug?
   superTick(dt);                        // 🦸 laufen die Superkräfte?
+  if (zepterKuehl > 0) {                // 🪄 das Zepter lädt sich auf
+    zepterKuehl -= dt;
+    const zb = document.getElementById('zepterBtn');
+    if (zepterKuehl <= 0) { zepterKuehl = 0; zb.className = 'hud btn'; zb.textContent = '🪄'; }
+    else { zb.className = 'hud btn warte'; zb.textContent = Math.ceil(zepterKuehl); }
+  }
   physics(dt);
   updateFuses(dt);
   fliesse(dt);

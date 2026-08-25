@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE KRONE UND DAS ZEPTER GEHÖREN JETZT WIRKLICH DIR (v179)! 👑🪄
+  In deinem Thronsaal stehen jetzt zwei goldene Podeste neben dem
+  Thron: auf dem einen liegt die KÖNIGS-KRONE, auf dem anderen das
+  KÖNIGS-ZEPTER. Tipp sie an - und sie gehören dir!
+  👑 Die Krone trägst du auf dem Kopf (in der Selfie-Ansicht siehst du
+  sie glitzern, mit Edelstein obendrauf). Mit dem 👑-Knopf setzt du
+  sie auf und ab. Und solange du sie trägst, begrüßt dich JEDER als
+  König: „Oh! Die KRONE! Guten Tag, König Jonah!", „Ich verneige
+  mich, mein König!", „Der König ist da! Schnell, holt die Blumen!"
+  🪄 Das Zepter hältst du in der Hand. Drück den 🪄-Knopf: dann
+  schießt ein goldener ZAUBERSTRAHL nach vorne - alle Monster im
+  Strahl verschwinden sofort, und der Block, den er trifft, wird zu
+  GOLD verwandelt! Danach lädt sich das Zepter 4 Sekunden lang auf.
+  Beide sind außerdem echte Blöcke: du kannst sie überall hinstellen,
+  wo du magst.
 - SUPERKRÄFTE, RIESEN, STRASSEN und ein RIESIGES Königreich (v178)!
   🦸👹🛣️👑 Gleich vier neue Sachen auf einmal:
   🦸 SUPERKRÄFTE: Unten rechts ist ein 🦸-Knopf. Einmal antippen und
