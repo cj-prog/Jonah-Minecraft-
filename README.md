@@ -221,6 +221,37 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- SUPERKRÄFTE, RIESEN, STRASSEN und ein RIESIGES Königreich (v178)!
+  🦸👹🛣️👑 Gleich vier neue Sachen auf einmal:
+  🦸 SUPERKRÄFTE: Unten rechts ist ein 🦸-Knopf. Einmal antippen und
+  du bist 40 Sekunden lang SUPER-JONAH: du rennst dreimal so schnell,
+  springst fünfmal so hoch, bist UNVERWUNDBAR (Monster prallen an dir
+  ab und sind sofort besiegt), hast SUPERSTÄRKE und einen LASER-BLICK
+  - tipp ein Monster an und ein leuchtender Strahl schießt aus deinen
+  Augen. Alles funkelt und leuchtet rosa dabei. Danach lädt der Knopf
+  sich 25 Sekunden lang wieder auf.
+  👹 RIESEN: Fünf Blöcke hohe grüne Riesen mit roten Augen und einer
+  dicken Keule! Über ihrem Kopf siehst du ihre Lebenspunkte. Wenn
+  einer dich erwischt, schleudert er dich meterweit weg und der Boden
+  wackelt. Auf der Karte gibt es jetzt ein 👹 - dort ist das
+  RIESEN-LAGER mit Lagerfeuer, Hütten und drei Riesen: Grimm, Knorx
+  und Brummbär. Und nachts stapft manchmal einer durch die Gegend.
+  Fünf Schläge mit dem Schwert - oder EIN Schlag als Super-Jonah! Für
+  jeden Riesen gibt es 30 €, 4 Diamanten und einen Pokal.
+  🛣️ ECHTE STRASSEN: Durch die ganze Welt läuft jetzt ein Straßennetz
+  aus richtigem Asphalt, mit weißem Mittelstreifen und Laternen am
+  Rand - mitten durch die Dörfer. Und dein Auto fährt darauf fast
+  doppelt so schnell wie im Gelände!
+  👑 DER JONAH-PLANET IST JETZT RICHTIG GEHEIM: Er zeigt sich erst,
+  wenn du auf ALLEN SIEBEN Planeten gelandet bist (im Raketen-Menü
+  steht, wie viele dir noch fehlen). Der Flug dorthin dauert jetzt
+  58 Sekunden - eine echte lange Reise durchs Weltall. Dafür ist
+  jetzt der GANZE Planet dein Königreich: überall stehen Wachtürme
+  mit goldenen Kronen 🗼, Schatzhäuser voller Truhen 💰, riesige
+  Statuen von dir mit Krone und Zepter 🗿, Goldminen mit Schacht und
+  Schienen ⛏️, Königsgärten mit Springbrunnen 🌷 und Kampf-Arenen 🏟️.
+  Alle stehen auf der Karte! Und weil die Schwerkraft dort ganz
+  klein ist, springst du fast FÜNF Blöcke hoch.
 - DER GEHEIME JONAH-PLANET - dein eigenes Königreich (v177)! 👑
   Wenn du auf drei fremden Planeten gelandet bist, taucht in der
   Raketen-Steuerung plötzlich eine goldene Zeile auf: „❓ zum
