@@ -44,6 +44,21 @@
   #flyBtn.on { background:rgba(110,190,255,.55); }
   #rufBtn  { right:calc(92px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(255,90,60,.45); }
+  #superBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(424px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:24px; background:rgba(255,60,180,.4); }
+  #superBtn.an { background:rgba(255,215,60,.75); box-shadow:0 0 22px #ffd83c; }
+  #superBtn.warte { opacity:.55; font-size:18px; font-weight:bold; }
+  #superBox { display:none; left:50%; transform:translateX(-50%); top:calc(56px + env(safe-area-inset-top));
+    z-index:44; text-align:center; pointer-events:none; }
+  #superText { display:block; font-size:min(5vw,21px); font-weight:bold; color:#fff;
+    text-shadow:0 0 12px #ff2ea6, 0 2px 8px #000; }
+  #superBalken { width:min(58vw,300px); height:11px; margin:5px auto 0; border-radius:6px;
+    border:2px solid rgba(255,255,255,.6); background:rgba(0,0,0,.55); overflow:hidden; }
+  #superFuell { display:block; height:100%; width:100%;
+    background:linear-gradient(90deg,#ffe066,#ff2ea6); }
+  #superFx { display:none; left:0; top:0; right:0; bottom:0; z-index:9; pointer-events:none;
+    box-shadow:inset 0 0 130px 44px rgba(255,90,215,.55);
+    border:4px solid rgba(255,180,240,.6); box-sizing:border-box; }
   #brushBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:16px; font-weight:bold; color:#fff; }
   #brushBtn.on { background:rgba(255,200,90,.5); }
@@ -289,6 +304,9 @@
 <div class="hud btn" id="fireBtn">🔥</div>
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="rufBtn" style="display:none" title="Rakete rufen">🆘</div>
+<div class="hud btn" id="superBtn" title="Superkräfte!">🦸</div>
+<div class="hud" id="superBox"><span id="superText"></span><div id="superBalken"><i id="superFuell"></i></div></div>
+<div class="hud" id="superFx"></div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
 <div class="hud btn" id="fsBtn">⛶</div>
 <div class="hud btn" id="chatBtn">💬</div>
@@ -498,7 +516,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 177 &middot; DER GEHEIME JONAH-PLANET mit deinem Königreich! 👑</p>
+    Version 178 &middot; SUPERKRÄFTE, RIESEN, STRASSEN und dein Königreich! 🦸👹🛣️👑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -544,7 +562,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 177;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 178;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -572,7 +590,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SCHUTZ=67, BURGPLAN=68, RUTSCHE_N=69, RUTSCHE_E=70, RUTSCHE_S=71, RUTSCHE_W=72,
       GITTER=73, FAHRSTUHL=74, PORTAL=75, ZUGBRUECKE=76,
       BONBON=77, ZUCKERSTANGE=78, LUTSCHER=79, SCHOKO=80, GELD=81, MUENZEN=82, KANONE=83, RADIO=84, BANK=85, RAKETE=86,
-      STEUER=87, GOLD=88;               // 🎛️ Bedienungsfeld, 🟨 massives Gold zum Bauen
+      STEUER=87, GOLD=88,               // 🎛️ Bedienungsfeld, 🟨 massives Gold zum Bauen
+      STRASSE=89, STRASSE_M=90;         // 🛣️ Asphalt und Asphalt mit Mittelstreifen
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -695,6 +714,9 @@ const BLOCKS = {
   // 🚀 die Raketen-Luke: antippen, Planet aussuchen und ab ins Weltall!
   [RAKETE]: { name:'Raketen-Luke 🚀 (antippen = ins Weltall fliegen!)',
     tiles:[101,101,101], solid:true },
+  // 🛣️ die Straße: hier fahren die Autos doppelt so schnell!
+  [STRASSE]:   { name:'Straße 🛣️ (hier fahren Autos richtig schnell!)', tiles:[118,118,118], solid:true },
+  [STRASSE_M]: { name:'Straße mit Mittelstreifen 🛣️', tiles:[119,119,119], solid:true },
   // 🟨 massiver Goldblock: fest zum Draufstehen und Bauen (kein Geld!)
   [GOLD]: { name:'Goldblock 🟨 (massives Gold zum Bauen!)', tiles:[115,115,115], solid:true },
   // 🎛️ das Bedienungsfeld in der Rakete: antippen und den Planeten aussuchen
@@ -870,7 +892,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -951,10 +973,10 @@ const PLANET = [null, null,
     gruss:'Heiß, heiß, HEISS! Pass auf die Lava-Seen auf - und die Erde ist von hier aus riesig! 🟡' },
   // 👑 DER GEHEIME PLANET: Jonahs eigenes Königreich. Steht erst im Menü,
   // wenn Jonah schon auf drei anderen Planeten gelandet ist.
-  { name:'👑 Jonah-Planet', boden:GRASS,  tief:DIRT,  himmel:[0.22,0.10,0.30], schwer:0.75, basis:46, hub:11,
-    erdGross:18, erdWink:2.0,  erdHoch:0.42, sterne:300, kachel:114, flug:11, km:9000000000,
+  { name:'👑 Jonah-Planet', boden:GRASS,  tief:DIRT,  himmel:[0.22,0.10,0.30], schwer:0.28, basis:46, hub:11,
+    erdGross:18, erdWink:2.0,  erdHoch:0.42, sterne:300, kachel:114, flug:45, km:9000000000,
     geheim:true,
-    gruss:'DEIN EIGENES KÖNIGREICH! 👑 Da vorne steht dein goldenes Schloss mit Thronsaal, Schatzkammer und deinen Rittern. Alles hier gehört DIR!' },
+    gruss:'DEIN EIGENES KÖNIGREICH! 👑 Da vorne steht dein goldenes Schloss - und auf dem GANZEN Planeten stehen deine Wachtürme, Schatzhäuser, Goldminen, Statuen und Gärten. Und pass auf: hier springst du SUPERHOCH! Alles hier gehört DIR!' },
 ];
 const KO_Y = 48;                        // so hoch liegt die Ebene, auf der das Schloss steht
 function planetHoehe(x, z, dim) {
@@ -1076,6 +1098,33 @@ function castleAt(cellX, cellZ) {
   return c;
 }
 
+// ------------------------- 👹 DAS RIESEN-LAGER -------------------------------
+// Ein fester Platz weit draußen, wo drei Riesen hausen. Auf der Karte: 👹
+let _lager = null, _lagerSeed = null;
+function riesenLager() {
+  if (_lager && _lagerSeed===seed) return _lager;
+  const ang = hash2(33,33,5150)*Math.PI*2;
+  let lx = Math.round(Math.cos(ang)*200), lz = Math.round(Math.sin(ang)*200);
+  for (let i=0; i<300; i++) {           // flaches, trockenes Land ohne Dorf daneben
+    let hmin=999, hmax=-999, ok=true;
+    for (const [dx,dz] of [[-9,-9],[9,-9],[-9,9],[9,9],[0,0]]) {
+      const h=terrainHeight0(lx+dx, lz+dz);
+      hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
+    }
+    ok = hmin>SEA+1 && hmax-hmin<=3;
+    for (let vz=Math.floor((lz-50)/VCELL); vz<=Math.floor((lz+50)/VCELL) && ok; vz++)
+      for (let vx=Math.floor((lx-50)/VCELL); vx<=Math.floor((lx+50)/VCELL) && ok; vx++) {
+        const v=villageAt(vx,vz);
+        if (v && Math.hypot(v.vx-lx, v.vz-lz) < 60) ok=false;
+      }
+    if (ok) { _lager = { lx, lz, base: hmax }; break; }
+    const a2 = ang + i*2.39996, d2 = 200 + (i%40)*7;
+    lx = Math.round(Math.cos(a2)*d2); lz = Math.round(Math.sin(a2)*d2);
+  }
+  if (!_lager) _lager = { lx, lz, base: terrainHeight0(lx,lz) };
+  _lagerSeed = seed;
+  return _lager;
+}
 // ------------------------------ Jonahs Festung -------------------------------
 let _fort = null, _fortSeed = null;
 function fortressPos() {                // eine geheime Festung pro Welt
@@ -1189,6 +1238,23 @@ function villageAt(cellX, cellZ) {
     vx: cellX*VCELL + 20 + Math.floor(hash2(cellX,cellZ,4343)*40),
     vz: cellZ*VCELL + 20 + Math.floor(hash2(cellX,cellZ,4444)*40),
   };
+}
+// 🛣️ DAS STRASSENNETZ: alle 80 Blöcke eine Straße, quer durch die Dörfer.
+// Auf ihr fahren die Autos doppelt so schnell!
+const STR_BREIT = 2;                    // 2 Blöcke links und rechts der Mitte = 5 breit
+function strasseAn(wx, wz) {            // steht hier Straße? gibt {mitte, achse} zurück
+  const mx = ((wx % VCELL) + VCELL) % VCELL, mz = ((wz % VCELL) + VCELL) % VCELL;
+  const dx = Math.abs(mx - 40), dz = Math.abs(mz - 40);
+  if (dz <= STR_BREIT) return { achse:'x', mitte: dz===0, quer: dx <= STR_BREIT };   // Straße in x-Richtung
+  if (dx <= STR_BREIT) return { achse:'z', mitte: dx===0, quer: false };
+  return null;
+}
+function strasseHoehe(wx, wz) {         // die Straße bleibt quer schön eben
+  const st = strasseAn(wx, wz);
+  if (!st) return null;
+  const gx = st.achse==='x' ? wx : Math.round(wx/VCELL)*VCELL + 40;
+  const gz = st.achse==='x' ? Math.round(wz/VCELL)*VCELL + 40 : wz;
+  return Math.max(SEA+1, terrainHeight0(gx, gz));
 }
 // Fußballplätze: auf flachem Rasen, mit weißen Linien und zwei Toren
 const FCELL = 96;
@@ -1356,6 +1422,98 @@ const KO_FONT = {                       // 5 breit, 7 hoch - für J O N A H
   A:['01110','10001','10001','11111','10001','10001','10001'],
   H:['10001','10001','10001','11111','10001','10001','10001'],
 };
+// 👑 ÜBERALL auf dem Planeten steht etwas von Jonah: pro 96x96-Feld ein Bauwerk.
+const KCELL2 = 96;
+const KO_ARTEN = ['turm','schatz','statue','mine','garten','arena'];
+function koenigsOrt(cellX, cellZ) {
+  if (hash2(cellX, cellZ, 6006) < 0.30) return null;      // nicht in jedem Feld
+  const kx = cellX*KCELL2 + 24 + Math.floor(hash2(cellX,cellZ,6007)*48);
+  const kz = cellZ*KCELL2 + 24 + Math.floor(hash2(cellX,cellZ,6008)*48);
+  if (Math.max(Math.abs(kx), Math.abs(kz)) < 78) return null;   // nicht ins Schloss bauen
+  const art = KO_ARTEN[Math.floor(hash2(cellX,cellZ,6009)*KO_ARTEN.length) % KO_ARTEN.length];
+  return { kx, kz, art, base: planetHoehe(kx, kz, 9) };
+}
+const KO_EMOJI = { turm:'🗼', schatz:'💰', statue:'🗿', mine:'⛏️', garten:'🌷', arena:'🏟️' };
+function bauKoenigsOrt(put, o) {        // ein einzelnes Bauwerk aus Jonahs Reich
+  const { kx, kz, art } = o, by = o.base;
+  const luft = (x,y1,y2,z) => { for (let y=y1; y<=y2; y++) put(x,y,z,AIR,false); };
+  if (art === 'turm') {                 // 🗼 ein Wachturm mit goldener Spitze
+    for (let y=1; y<=14; y++) for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+      const rand = Math.abs(dx)===2 || Math.abs(dz)===2;
+      put(kx+dx, by+y, kz+dz, rand ? (y%5===0 ? GOLD : STONE) : (y===1 ? PLANK : AIR), false);
+    }
+    luft(kx, by+1, by+2, kz-2);         // Tür
+    for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++)
+      if ((dx+dz)%2===0) put(kx+dx, by+15, kz+dz, GOLD, false);
+    for (let y=16; y<=19; y++) put(kx, by+y, kz, WOOL, false);       // Fahnenmast
+    for (let y=17; y<=19; y++) put(kx+1, by+y, kz, BRICK, false);
+    put(kx+1, by+1, kz+1, CHEST, false);
+  } else if (art === 'schatz') {        // 💰 ein Schatzhaus voller Truhen
+    for (let dx=-4; dx<=4; dx++) for (let dz=-4; dz<=4; dz++) {
+      const rand = Math.abs(dx)===4 || Math.abs(dz)===4;
+      for (let y=1; y<=5; y++) put(kx+dx, by+y, kz+dz, rand ? (y===5?GOLD:BRICK) : AIR, false);
+      put(kx+dx, by, kz+dz, PLANK, false);
+      put(kx+dx, by+6, kz+dz, GOLD, false);
+    }
+    luft(kx, by+1, by+2, kz-4);
+    for (const dx of [-3,-1,1,3]) for (const dz of [2,3]) put(kx+dx, by+1, kz+dz, CHEST, false);
+    put(kx, by+1, kz+3, POKAL, false);
+    put(kx-3, by+3, kz-3, TORCH, false); put(kx+3, by+3, kz+3, TORCH, false);
+  } else if (art === 'statue') {        // 🗿 eine RIESEN-Statue von König Jonah
+    for (let dx=-3; dx<=3; dx++) for (let dz=-3; dz<=3; dz++)
+      for (let y=1; y<=2; y++) put(kx+dx, by+y, kz+dz, STONE, false);   // Sockel
+    for (let y=3; y<=6; y++) { put(kx-1, by+y, kz, STONE, false); put(kx+1, by+y, kz, STONE, false); }
+    for (let y=7; y<=11; y++) for (let dx=-1; dx<=1; dx++) put(kx+dx, by+y, kz, STONE, false);
+    for (let y=8; y<=10; y++) { put(kx-2, by+y, kz, STONE, false); put(kx+2, by+y, kz, STONE, false); }
+    for (let y=12; y<=14; y++) for (let dx=-1; dx<=1; dx++)
+      for (let dz=-1; dz<=1; dz++) put(kx+dx, by+y, kz+dz, STONE, false);
+    for (let dx=-1; dx<=1; dx++) put(kx+dx, by+15, kz, GOLD, false);    // die goldene KRONE
+    put(kx, by+16, kz, GOLD, false);
+    put(kx+2, by+11, kz, GOLD, false);                                  // goldenes Zepter
+    for (let y=12; y<=14; y++) put(kx+2, by+y, kz, PLANK, false);
+  } else if (art === 'mine') {          // ⛏️ eine Goldmine mit Loren-Schienen
+    for (let dx=-5; dx<=5; dx++) for (let dz=-5; dz<=5; dz++) {
+      if (Math.hypot(dx,dz) > 5) continue;
+      for (let y=1; y<=4; y++) put(kx+dx, by+y, kz+dz, AIR, false);
+      if (Math.hypot(dx,dz) > 3.6) put(kx+dx, by+1, kz+dz, STONE, false);
+    }
+    for (let y=0; y>=-7; y--) for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) {
+      const rand = Math.abs(dx)===2 || Math.abs(dz)===2;
+      put(kx+dx, by+y, kz+dz, rand ? STONE : AIR, false);               // der Schacht
+    }
+    for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++) put(kx+dx, by-8, kz+dz, GOLD, false);
+    put(kx, by-7, kz, CHEST, false);
+    for (let dz=-4; dz<=4; dz++) put(kx, by+1, kz+dz, RAIL, false);     // Schienen
+    put(kx+4, by+2, kz, TORCH, false); put(kx-4, by+2, kz, TORCH, false);
+  } else if (art === 'garten') {        // 🌷 ein Königsgarten mit Brunnen
+    for (let dx=-6; dx<=6; dx++) for (let dz=-6; dz<=6; dz++) {
+      const r = Math.hypot(dx,dz);
+      if (r > 6) continue;
+      luft(kx+dx, by+1, by+4, kz+dz);
+      if (r > 5.2) put(kx+dx, by+1, kz+dz, GOLD, false);                // goldene Einfassung
+      else if (r > 2 && (dx+dz)%2===0) put(kx+dx, by+1, kz+dz, BLUME, true);
+      else if (r <= 2 && r > 0) { put(kx+dx, by, kz+dz, GLASS, false); put(kx+dx, by+1, kz+dz, WATER, false); }
+    }
+    for (let y=1; y<=3; y++) put(kx, by+y, kz, GLASS, false);
+    put(kx, by+4, kz, WATER, false);
+    for (const [sx,sz] of [[-5,-5],[5,-5],[-5,5],[5,5]]) {
+      for (let y=1; y<=3; y++) put(kx+sx, by+y, kz+sz, PLANK, false);
+      put(kx+sx, by+4, kz+sz, TORCH, false);
+    }
+  } else {                              // 🏟️ eine Kampf-Arena
+    for (let dx=-9; dx<=9; dx++) for (let dz=-9; dz<=9; dz++) {
+      const r = Math.max(Math.abs(dx), Math.abs(dz));
+      if (r > 9) continue;
+      luft(kx+dx, by+1, by+6, kz+dz);
+      if (r === 9) { for (let y=1; y<=4; y++) put(kx+dx, by+y, kz+dz, BRICK, false); put(kx+dx, by+5, kz+dz, GOLD, false); }
+      else if (r === 8) { put(kx+dx, by+1, kz+dz, TREP_N, false); put(kx+dx, by, kz+dz, STONE, false); }
+      else put(kx+dx, by, kz+dz, (dx+dz)%2 ? SAND : PLANK, false);
+    }
+    for (let dx=-1; dx<=1; dx++) luft(kx+dx, by+1, by+4, kz-9);        // Eingang
+    put(kx, by+1, kz, POKAL, false);
+    for (const [cx2,cz2] of [[-6,-6],[6,-6],[-6,6],[6,6]]) put(kx+cx2, by+1, kz+cz2, CHEST, false);
+  }
+}
 function bauKoenigreich(put, x0, z0) {
   const by = KO_Y;
   if (x0 > 60 || x0+15 < -60 || z0 > 60 || z0+15 < -60) return;   // weit weg: nichts zu bauen
@@ -1574,12 +1732,21 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
     }
   }
   if (dim===9) {                        // 👑 und mitten drin: Jonahs Königreich!
-    bauKoenigreich((wx,wy,wz,b,nurLuft) => {
+    const putW = (wx,wy,wz,b,nurLuft) => {
       const lx2 = wx-x0, lz2 = wz-z0;
       if (lx2<0 || lx2>15 || lz2<0 || lz2>15) return;
       if (nurLuft && data[bidx(lx2,wy,lz2)] !== AIR) return;
       setz(lx2, wy, lz2, b);
-    }, x0, z0);
+    };
+    bauKoenigreich(putW, x0, z0);
+    // ... und überall auf dem Planeten seine Bauwerke
+    const c0x = Math.floor(x0/KCELL2), c0z = Math.floor(z0/KCELL2);
+    for (let dcz=-1; dcz<=1; dcz++) for (let dcx=-1; dcx<=1; dcx++) {
+      const o = koenigsOrt(c0x+dcx, c0z+dcz);
+      if (!o) continue;
+      if (o.kx+12 < x0 || o.kx-12 > x0+CS-1 || o.kz+12 < z0 || o.kz-12 > z0+CS-1) continue;
+      bauKoenigsOrt(putW, o);
+    }
   }
   const e = ohneEdits ? null : edits.get(ckey(cx,cz));
   if (e) for (const [i,v] of e) data[i] = v;
@@ -1609,6 +1776,20 @@ function genChunkData(cx, cz, ohneEdits) {
       data[bidx(lx,y,lz)] = b;
     }
     for (let y=h+1; y<=SEA; y++) data[bidx(lx,y,lz)] = WATER;
+    const sh = strasseHoehe(wx, wz);    // 🛣️ läuft hier eine Straße lang?
+    if (sh !== null) {
+      for (let y=Math.min(h, sh); y<sh; y++) data[bidx(lx,y,lz)] = STONE;   // Damm auffüllen
+      const st2 = strasseAn(wx, wz);
+      const strich = st2.mitte && !st2.quer && (((st2.achse==='x' ? wx : wz) % 6) < 3);
+      data[bidx(lx,sh,lz)] = strich ? STRASSE_M : STRASSE;
+      for (let y=sh+1; y<=sh+5; y++) data[bidx(lx,y,lz)] = AIR;             // Luft drüber
+      if (h > SEA && (((st2.achse==='x' ? wx : wz) % 24) === 0) &&
+          Math.abs((st2.achse==='x' ? ((wz%VCELL)+VCELL)%VCELL - 40
+                                    : ((wx%VCELL)+VCELL)%VCELL - 40)) === STR_BREIT) {
+        for (let y=sh+1; y<=sh+3; y++) data[bidx(lx,y,lz)] = STONE;         // Laternenmast
+        data[bidx(lx,sh+4,lz)] = TORCH;                                     // Laterne
+      }
+    }
     if (hash2(wx,wz,4207) < 0.004) {    // tief vergrabene Schatztruhe! 💎
       const ty = CH_MIN+3 + Math.floor(hash2(wx,wz,4208)*Math.max(4, h-12-CH_MIN-3));
       data[bidx(lx,ty,lz)] = CHEST;
@@ -2094,6 +2275,43 @@ function genChunkData(cx, cz, ohneEdits) {
       put(c.kx, by+13, c.kz, WOOL, false);
       put(c.kx+1, by+13, c.kz, BRICK, false);      // rote Fahne
       put(c.kx+1, by+12, c.kz, BRICK, false);
+    }
+  }
+  // 👹 DAS RIESEN-LAGER: Knochen, Lagerfeuer und drei Riesen-Hütten
+  {
+    const L = riesenLager();
+    if (!(L.lx+16<x0 || L.lx-16>x0+CS-1 || L.lz+16<z0 || L.lz-16>z0+CS-1)) {
+      const ly = L.base;
+      for (let dx=-14; dx<=14; dx++) for (let dz=-14; dz<=14; dz++) {
+        const wx=L.lx+dx, wz=L.lz+dz, rr=Math.hypot(dx,dz);
+        if (rr > 14) continue;
+        const th=terrainHeight0(wx,wz);
+        for (let y=Math.min(th,ly); y<ly; y++) put(wx,y,wz,DIRT,false);
+        put(wx, ly, wz, rr<3 ? STONE : (rr<12 ? DIRT : GRASS), false);   // festgetrampelte Erde
+        for (let y=ly+1; y<=ly+8; y++) put(wx,y,wz,AIR,false);
+      }
+      for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++)          // das große Lagerfeuer
+        put(L.lx+dx, ly+1, L.lz+dz, (dx===0&&dz===0) ? BRICK : WOOD, false);
+      for (let dy=2; dy<=4; dy++) put(L.lx, ly+dy, L.lz, TORCH, false);   // die Flammen
+      for (const [cx2,cz2] of [[-2,-2],[2,-2],[-2,2],[2,2],[0,-3],[0,3],[-3,0],[3,0]])
+        put(L.lx+cx2, ly+1, L.lz+cz2, STONE, false);                     // Feuerstellen-Ring
+      for (const [hx,hz] of [[-9,-4],[9,-4],[0,10]]) {                   // drei Riesen-Hütten
+        for (let dx=-4; dx<=4; dx++) for (let dz=-4; dz<=4; dz++) {
+          const rand = Math.abs(dx)===4 || Math.abs(dz)===4;
+          for (let y=1; y<=6; y++) put(L.lx+hx+dx, ly+y, L.lz+hz+dz, rand ? WOOD : AIR, false);
+          put(L.lx+hx+dx, ly+7, L.lz+hz+dz, LEAF, false);
+        }
+        for (let y=1; y<=4; y++) put(L.lx+hx, ly+y, L.lz+hz-4, AIR, false);   // Eingang
+        put(L.lx+hx+2, ly+1, L.lz+hz+2, CHEST, false);                   // ihre Beute!
+      }
+      for (let i=0; i<26; i++) {                                          // Knochen und Felsen
+        const bx = L.lx + Math.floor(hash2(i,7,5151)*27) - 13;
+        const bz = L.lz + Math.floor(hash2(i,8,5152)*27) - 13;
+        put(bx, ly+1, bz, hash2(i,9,5153) < 0.5 ? WOOL : STONE, true);
+      }
+      const ls = L.lx+','+(ly+1)+','+(L.lz-13);
+      put(L.lx, ly+1, L.lz-13, SIGN, false);
+      if (!signTexts.has(ls)) signTexts.set(ls, '👹 RIESEN-LAGER - hier wohnen die Riesen. Pass auf!');
     }
   }
   // 🚀 DIE RAKETENSTATION mit der großen Rakete auf der Startrampe
@@ -2722,7 +2940,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -2900,6 +3118,7 @@ function saveGame() {
       heim: portalHeim,
       rakOrt: raketeOrt,               // 🚀 wo überall deine Raketen stehen
       geheim: geheimEntdeckt,          // 👑 hat Jonah seinen geheimen Planeten gefunden?
+      riesen: riesenBesiegt,           // 👹 seine besiegten Riesen
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
       rots: Object.fromEntries(rotations),
@@ -2965,6 +3184,7 @@ function loadGame() {
     if (Array.isArray(s.heim)) for (let d=0; d<portalHeim.length; d++) portalHeim[d]=s.heim[d]||null;
     if (Array.isArray(s.rakOrt)) for (let d=0; d<raketeOrt.length; d++) raketeOrt[d]=s.rakOrt[d]||null;
     if (s.geheim) geheimEntdeckt = true;
+    if (typeof s.riesen === 'number') riesenBesiegt = s.riesen;
     if (typeof s.dayTime==='number') dayTime = s.dayTime;
     if (Array.isArray(s.pets)) savedPets = s.pets;
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
@@ -3414,6 +3634,29 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (s > 0.9) return vary(252,240,196,10);
     if (s < -0.9) return vary(206,158,72,12);
     return vary(234,204,132,12);
+  });
+  tile(118,()=> (rnd()<0.10 ? vary(78,80,86,6) : vary(62,64,70,10)));   // 🛣️ Asphalt
+  tile(119,(x,y)=>{                                                 // 🛣️ Asphalt mit Mittelstreifen
+    if (y>=6 && y<=9) return vary(246,240,210,8);                   // weißer Streifen
+    return (rnd()<0.10 ? vary(78,80,86,6) : vary(62,64,70,10));
+  });
+  tile(116,(x,y)=>{                                                 // 👹 Riesen-Haut
+    if (((x*5+y*3)%13) < 2) return vary(74,96,56,14);                // dunkle Flecken
+    if ((x+y) % 9 === 0) return vary(126,150,96,12);
+    return vary(102,128,74,16);
+  });
+  tile(117,(x,y)=>{                                                 // 👹 Riesen-Gesicht: wütend!
+    if ((x>=2&&x<=5||x>=10&&x<=13) && y>=4 && y<=7) {               // riesige Augen
+      if ((x===3||x===4||x===11||x===12) && y>=5 && y<=6) return 'rgb(220,40,30)';   // rote Pupillen
+      return vary(240,240,230,8);
+    }
+    if (x>=2 && x<=5 && y===3) return 'rgb(40,45,30)';              // dicke Augenbrauen
+    if (x>=10 && x<=13 && y===3) return 'rgb(40,45,30)';
+    if (y>=11 && y<=13 && x>=3 && x<=12) {                          // aufgerissenes Maul
+      if (y===11 && (x===4||x===7||x===10)) return vary(250,250,240,6);   // Zähne
+      return 'rgb(50,20,20)';
+    }
+    return vary(102,128,74,16);
   });
   tile(115,(x,y)=>{                                                 // 🟨 massiver Goldblock
     if (x===0||y===0) return vary(168,124,26,8);                    // dunkle Fuge
@@ -3985,7 +4228,7 @@ function physics(dt) {
   mf += joy.fwd; ms += joy.strafe;
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
-  const speed = swim ? 3.0 : (boostT > 0 ? 6.6 : WALK_SPEED);   // Karotten-Power!
+  const speed = swim ? 3.0 : superT > 0 ? 11.5 : (boostT > 0 ? 6.6 : WALK_SPEED);   // 🦸 Super-Speed!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   player.vx = (fx*mf + rx*ms) * speed + player.kx;
   player.vz = (fz*mf + rz*ms) * speed + player.kz;
@@ -4023,7 +4266,7 @@ function physics(dt) {
         player.vy = 14.5;
         toast('🕳️💪 Super-Sprung! Huuup - raus aus dem Loch!', 2000);
         blip(300,0.08); blip(450,0.1); blip(650,0.12);
-      } else player.vy = jumpT>0 ? 12 : JUMP_V;
+      } else player.vy = superT>0 ? 17.5 : jumpT>0 ? 12 : JUMP_V;   // 🦸 Mega-Sprung!
       player.onGround=false;
     }
     player.vy = Math.max(player.vy, balloonT>0 ? -2.2 : -50);
@@ -4134,6 +4377,7 @@ const ANIMAL_KIND = {
   raeuber:  { speed:2.0, half:0.32, height:1.8,  tile:82, face:21 },
   blitzmaus:{ speed:2.2, half:0.3,  height:0.75, tile:73, face:73 },
   boss:     { speed:1.3, half:0.75, height:1.7,  tile:53, face:54 },
+  riese:    { speed:1.7, half:1.5,  height:5.4,  tile:116, face:117 },
   boat:     { speed:0,   half:0.7,  height:0.9,  tile:8,  face:8 },
   kabine:   { speed:0,   half:1.0,  height:0.3,  tile:86, face:86 },
   hausmeister:{speed:1.2, half:0.3, height:1.8,  tile:40, face:21 },
@@ -4750,6 +4994,42 @@ function spawnTick() {
   // 🚀 Auf den Planeten ist es still: dort gibt es keine Tiere, Dorfleute oder Monster
   if (weltDim >= 2) { if (weltDim === 9) hofstaatTick(); return; }
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
+  {                                     // 👹 im Riesen-Lager wohnen immer drei Riesen
+    const L = riesenLager();
+    if (Math.hypot(L.lx-player.x, L.lz-player.z) < 70) {
+      const lch = getChunk(L.lx>>4, L.lz>>4);
+      if (lch && lch.data) {
+        const da = countType(a=>a.type==='riese' && a.home==='riesenlager');
+        for (let i=da; i<3; i++) {
+          const rx = L.lx + [-9,9,0][i], rz = L.lz + [-4,-4,10][i];
+          animals.push({type:'riese', name:['Grimm','Knorx','Brummbär'][i],
+            x:rx+0.5, y:L.base+1.2, z:rz+2.5, yaw:Math.random()*6.3, vy:0, kx:0, kz:0,
+            hp:15, walking:false, t:2, ph:0, onGround:false,
+            home:'riesenlager', hx:rx+0.5, hz:rz+2.5});
+        }
+        if (da === 0) toast('👹 Du bist am RIESEN-LAGER! Drei Riesen wohnen hier - besiege sie! ' +
+                            'Tipp: mit 🦸 Superkräften schaffst du jeden mit EINEM Schlag!', 6000);
+      }
+    }
+  }
+  if (isNight() && countType(a=>a.type==='riese') < 1 && Math.random() < 0.06) {
+    const rang=Math.random()*Math.PI*2, rd=26+Math.random()*16;   // nachts stapft einer umher
+    const rx=Math.floor(player.x+Math.cos(rang)*rd), rz=Math.floor(player.z+Math.sin(rang)*rd);
+    let weit=true;
+    for (let vz3=Math.floor((rz-30)/VCELL); vz3<=Math.floor((rz+30)/VCELL) && weit; vz3++)
+      for (let vx3=Math.floor((rx-30)/VCELL); vx3<=Math.floor((rx+30)/VCELL) && weit; vx3++) {
+        const v=villageAt(vx3,vz3);
+        if (v && Math.hypot(v.vx-rx, v.vz-rz)<30) weit=false;      // nicht bei den Dörfern
+      }
+    const rh = terrainHeight(rx,rz);
+    if (weit && rh > SEA+1) {
+      animals.push({type:'riese', name:'Nacht-Riese', x:rx+0.5, y:rh+1.2, z:rz+0.5,
+        yaw:Math.random()*6.3, vy:0, kx:0, kz:0, hp:15, walking:false, t:2, ph:0,
+        onGround:false, hx:rx+0.5, hz:rz+0.5});
+      toast('👹 Ein RIESE stapft durch die Nacht! Hörst du seine Schritte? Besiege ihn!', 5000);
+      blip(45,0.3); blip(38,0.35);
+    }
+  }
   if (isNight() && countType(a=>a.type==='zombie') < 4 && Math.random() < 0.3) {
     const zang=Math.random()*Math.PI*2, zd=18+Math.random()*22;   // nachts kommen Zombies!
     const zx=Math.floor(player.x+Math.cos(zang)*zd), zz=Math.floor(player.z+Math.sin(zang)*zd);
@@ -5496,7 +5776,7 @@ function updateAnimals(dt) {
         }
       }
     }
-    if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber') {
+    if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber' || a.type==='riese') {
       // Sonnenaufgang: Zombies erstarren im Licht zu Stein-Statuen! 🗿
       // (friedliche Spazier-Monster sind davon ausgenommen - die dürfen bleiben!)
       if (a.type==='zombie' && !isNight() && !a.friedlich) { werdeStatue(a); continue; }
@@ -5535,26 +5815,33 @@ function updateAnimals(dt) {
       const klaut = a.type==='raeuber' && !a.friedlich && geldKlau(a, dt);
       // Friedliche Monster jagen NIEMANDEN - sie spazieren nur herum
       const jagd = a.friedlich || klaut ? -1
-                 : a.type==='boss' ? 15 : a.type==='zombie' ? 13 : a.type==='raeuber' ? 12 : 9;
+                 : a.type==='riese' ? 26 : a.type==='boss' ? 15 : a.type==='zombie' ? 13 : a.type==='raeuber' ? 12 : 9;
       const dx=player.x-a.x, dz=player.z-a.z, dp=Math.hypot(dx,dz);
       if (a.friedlich && dp<10 && Math.random()<dt*0.04)
         sagen(a, ['Uuuh... schöner Tag! ☀️','Uuh, Blumen! 🌼','Nur spazieren. Uuuh.','Brmmm... 🎵'][Math.floor(Math.random()*4)], 3);
       if (dp<jagd) {
         a.yaw=Math.atan2(dx,-dz); a.walking=true; a.t=0.5;
-        if (dp < (a.type==='boss'?1.9:1.2) && Math.abs(player.y-a.y)<1.8) {
-          const d=Math.max(0.3,dp), st = a.type==='boss' ? 10 : 7;
+        if (dp < (a.type==='riese'?3.2:a.type==='boss'?1.9:1.2) && Math.abs(player.y-a.y)<(a.type==='riese'?6:1.8)) {
+          if (superT > 0) {             // 🦸 UNVERWUNDBAR: das Monster prallt an dir ab!
+            slimeDamage(a, 99, [(a.x-player.x)/Math.max(0.3,dp), 0, (a.z-player.z)/Math.max(0.3,dp)]);
+            toast('🦸💥 PENG! Das Monster ist an Super-Jonah abgeprallt!', 2200);
+            continue;
+          }
+          const d=Math.max(0.3,dp), st = a.type==='riese' ? 17 : a.type==='boss' ? 10 : 7;
           player.kx += dx/d*st; player.kz += dz/d*st;
-          player.vy += a.type==='boss' ? 4.5 : 3; player.onGround=false;
+          player.vy += a.type==='riese' ? 7 : a.type==='boss' ? 4.5 : 3; player.onGround=false;
           if (a.type==='raeuber' && money>0) {   // der Räuber stibitzt 1 €!
             money--; updateFoodHUD(); scheduleSave();
             toast('😈 Der Räuber hat dich geschubst und 1 € stibitzt! Besieg ihn und hol dir die Beute!', 3000);
           } else {
-            toast(a.type==='boss' ? '👑 RUMMS! Der Monster-König hat dich weggeschleudert! 😵'
+            toast(a.type==='riese' ? '👹 WUMMS!!! Der RIESE hat dich mit seiner Keule weggeschleudert! 😵💫'
+                : a.type==='boss' ? '👑 RUMMS! Der Monster-König hat dich weggeschleudert! 😵'
                 : a.type==='zombie' ? 'Uuuh! Der Zombie hat dich geschubst! 😵'
                 : a.type==='raeuber' ? '😈 Haha! Der Räuber hat dich geschubst!'
                 : 'Wusch! Das Höhlenmonster hat dich geschubst! 😵', 2000);
           }
-          blip(a.type==='boss'?60:120,0.18);
+          blip(a.type==='riese'?40:a.type==='boss'?60:120, a.type==='riese'?0.3:0.18);
+          if (a.type==='riese') shake = 0.6;
         }
       } else if (!klaut && Math.hypot((a.hx||a.x)-a.x,(a.hz||a.z)-a.z)>16) {
         a.yaw=Math.atan2(a.hx-a.x,-(a.hz-a.z)); a.walking=true; a.t=0.6;
@@ -5994,6 +6281,20 @@ function drawAnimals() {
         pushBox(arr,a, 0,1.9,0, 0.5,0.09,0.5, 55);                 // Zylinder
         pushBox(arr,a, 0,2.02,0, 0.3,0.22,0.3, 55);
         pushBox(arr,a, 0.34,1.24,-0.28, 0.34,0.04,0.28, 49);       // silbernes Tablett
+      }
+      if (a.type==='riese') {                                      // 👹 DER RIESE: 5 Blöcke hoch!
+        const k2 = ANIMAL_KIND.riese, sw2 = a.walking ? Math.sin(a.ph)*0.5 : 0;
+        pushBox(arr,a, -0.55,1.05,sw2, 0.62,2.1,0.62, k2.tile);       // Beine
+        pushBox(arr,a,  0.55,1.05,-sw2, 0.62,2.1,0.62, k2.tile);
+        pushBox(arr,a, 0,3.05,0, 1.9,2.0,1.15, k2.tile);              // dicker Bauch
+        pushBox(arr,a, -1.25,3.2,-sw2*0.8, 0.55,1.9,0.55, k2.tile);   // lange Arme
+        pushBox(arr,a,  1.25,3.2,sw2*0.8, 0.55,1.9,0.55, k2.tile);
+        pushBox(arr,a, 0,4.75,0, 1.5,1.5,1.5, k2.tile, k2.face);      // RIESEN-Kopf
+        pushBox(arr,a, 0,5.5,0, 1.6,0.3,1.6, 3);                      // Stein-Stirnband
+        pushBox(arr,a, 1.4,2.5,-0.4, 0.4,2.4,0.4, 5);                 // die KEULE
+        pushBox(arr,a, 1.4,3.7,-0.4, 0.85,0.9,0.85, 5);
+        for (let i=0; i<a.hp && i<20; i++)                            // Lebens-Punkte über ihm
+          pushBox(arr,a, -0.9+i*0.1, 6.1, 0, 0.07,0.16,0.07, 25);
       }
       if (a.type==='knight') {                                     // Helm, Federbusch, Schwert
         pushBox(arr,a, 0,1.95,0, 0.52,0.16,0.52, 3);
@@ -9114,13 +9415,17 @@ function planetenBesucht() {
   for (let d=2; d<=8; d++) if (portalHeim[d] || raketeOrt[d]) n++;
   return n;
 }
-function geheimOffen() { return geheimEntdeckt || planetenBesucht() >= 3; }
+function geheimOffen() { return geheimEntdeckt || planetenBesucht() >= 7; }
+// wie viele Planeten fehlen noch bis zum Geheimnis?
+function geheimFehlt() { return Math.max(0, 7 - planetenBesucht()); }
 function openRakete() {
   if (flugT > 0) return;                // mitten im Flug wird nicht umgeplant!
   const liste = document.getElementById('planetListe');
   liste.innerHTML = '';
   document.getElementById('raketeText').textContent =
-    'Du bist gerade auf: ' + planetName(weltDim) + '. Wohin soll die Reise gehen, Kommandant Jonah?';
+    'Du bist gerade auf: ' + planetName(weltDim) + '. Wohin soll die Reise gehen, Kommandant Jonah?' +
+    (geheimOffen() ? '' : ' 🤫 Gerüchte sagen: Wer auf ALLEN sieben Planeten war, findet einen geheimen achten... noch ' +
+      geheimFehlt() + ' zu besuchen!');
   const ziele = [0, 2, 3, 4, 5, 6, 7, 8].filter(d => d !== weltDim);
   if (geheimOffen() && weltDim !== 9) ziele.push(9);      // 👑 der geheime Planet!
   for (const d of ziele) {
@@ -9176,7 +9481,12 @@ function flugTick(dt) {
   } else if (p === 'reise') {           // ✨ schwerelos durchs Weltall
     txt.textContent = '';
     const km = Math.round(u * (flugZiel>=2 ? PLANET[flugZiel].km : (PLANET[flugVon] ? PLANET[flugVon].km : 384400)));
-    info.textContent = '✨ Schwerelos unterwegs zum ' + zn + ' · ' + km.toLocaleString('de-DE') + ' km';
+    const REISE_TEXT = [
+      '✨ Schwerelos unterwegs zum ', '🌌 Mitten im Sternenmeer zum ', '🪐 Wir fliegen an fremden Welten vorbei - Ziel: ',
+      '⭐ Halbzeit! Weiter geht es zum ', '🔭 Da vorne wird es schon größer: ', '🚀 Fast geschafft! Gleich sind wir am ',
+    ];
+    info.textContent = REISE_TEXT[Math.min(REISE_TEXT.length-1, Math.floor(u*REISE_TEXT.length))] +
+                       zn + ' · ' + km.toLocaleString('de-DE') + ' km';
     shake = 0.07;
   } else {                              // 🛬 Bremsen und landen
     if (txt.textContent !== '🛬') { txt.textContent = '🛬'; blip(170,0.4); }
@@ -9240,6 +9550,80 @@ function raketeBauen(x, y, z) {
   return { x: x+0.5, y: y+1, z: z+0.5 };
 }
 // 🆘 Rakete verloren? Kein Problem - sie kommt einfach zu dir geflogen!
+// ---------------------- 🦸 SUPER-JONAH: die Superkräfte -----------------------
+// Ein Knopf, fünf Kräfte auf einmal: rasend schnell, riesige Sprünge,
+// unverwundbar, Laser-Blick und Superstärke. 40 Sekunden lang!
+const SUPER_DAUER = 40, SUPER_KUEHL = 25;
+let superT = 0, superKuehl = 0, superFunkel = 0;
+function superAn() { return superT > 0; }
+function superStart() {
+  if (superT > 0) { toast('🦸 Du BIST doch schon Super-Jonah! Noch ' + Math.ceil(superT) + ' Sekunden!', 2500); return; }
+  if (superKuehl > 0) {
+    toast('🔋 Deine Superkräfte laden sich noch auf - in ' + Math.ceil(superKuehl) + ' Sekunden geht es wieder!', 3000);
+    blip(160,0.12); return;
+  }
+  superT = SUPER_DAUER;
+  document.getElementById('superFx').style.display = 'block';
+  document.getElementById('superBox').style.display = 'block';
+  toast('🦸✨ SUPER-JONAH! Du bist jetzt BLITZSCHNELL, springst RIESIG hoch, ' +
+        'bist UNVERWUNDBAR, hast SUPERSTÄRKE und einen LASER-BLICK! 40 Sekunden lang!', 6500);
+  blip(523,0.09); blip(659,0.09); blip(784,0.09); blip(1047,0.09); blip(1319,0.22);
+  for (let n=0; n<50; n++)              // Funken-Explosion rundherum
+    fireworks.push({x:player.x+(Math.random()-0.5)*3, y:player.y+Math.random()*3, z:player.z+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*9, vy:1+Math.random()*7, vz:(Math.random()-0.5)*9,
+      tile:[94,73,25,10][n%4], t:1.1});
+  shake = 0.3;
+}
+function superTick(dt) {
+  const btn = document.getElementById('superBtn');
+  if (superT > 0) {
+    superT -= dt;
+    superFunkel -= dt;
+    if (superFunkel <= 0) {             // ein Funkelschweif hinter Jonah
+      superFunkel = 0.035;
+      fireworks.push({x:player.x+(Math.random()-0.5)*1.1, y:player.y+0.3+Math.random()*1.6,
+        z:player.z+(Math.random()-0.5)*1.1, vx:(Math.random()-0.5)*1.2, vy:0.4+Math.random(),
+        vz:(Math.random()-0.5)*1.2, tile:[94,10,73][Math.floor(Math.random()*3)], t:0.5});
+    }
+    document.getElementById('superText').textContent = '🦸 SUPER-JONAH! ' + Math.ceil(superT) + ' Sek.';
+    document.getElementById('superFuell').style.width = Math.max(0, superT/SUPER_DAUER*100) + '%';
+    btn.className = 'hud btn an'; btn.textContent = '🦸';
+    if (superT <= 0) {                  // vorbei!
+      superT = 0; superKuehl = SUPER_KUEHL;
+      document.getElementById('superFx').style.display = 'none';
+      document.getElementById('superBox').style.display = 'none';
+      toast('🦸 Deine Superkräfte sind aufgebraucht! In ' + SUPER_KUEHL + ' Sekunden kannst du wieder!', 4000);
+      blip(300,0.12); blip(200,0.16);
+    }
+    return;
+  }
+  if (document.getElementById('superFx').style.display === 'block') {   // sicherheitshalber aus
+    document.getElementById('superFx').style.display = 'none';
+    document.getElementById('superBox').style.display = 'none';
+  }
+  if (superKuehl > 0) {
+    superKuehl -= dt;
+    btn.className = 'hud btn warte';
+    btn.textContent = Math.ceil(superKuehl);
+    if (superKuehl <= 0) {
+      superKuehl = 0;
+      btn.className = 'hud btn'; btn.textContent = '🦸';
+      toast('🦸 Deine Superkräfte sind wieder aufgeladen! Tipp den 🦸-Knopf an!', 3500);
+      blip(700,0.08); blip(900,0.1);
+    }
+  }
+}
+// 🔥 der Laser-Blick: ein leuchtender Strahl zum Monster - und weg ist es!
+function laserStrahl(zx, zy, zz) {
+  const ex = player.x, ey = player.y + P_EYE, ez = player.z;
+  const n = 26;
+  for (let i=0; i<=n; i++) {
+    const t = i/n;
+    fireworks.push({x: ex+(zx-ex)*t, y: ey+(zy-ey)*t, z: ez+(zz-ez)*t,
+      vx:0, vy:0.2, vz:0, tile: i%2 ? 25 : 10, t:0.35});
+  }
+  blip(1200,0.05); blip(900,0.05); blip(600,0.08);
+}
 function raketeRufen() {
   if (flugT > 0) return;
   if (weltDim < 2) {
@@ -9328,6 +9712,7 @@ document.getElementById('raketeClose').addEventListener('click', ()=>{ raketeBox
 // ------------------------------- Bank 🏦 ------------------------------------
 // Ein eigenes Konto: Geld einzahlen, abheben - und es liegt sicher vor Räubern.
 let kontoStand = 0, zinsT = 0;
+let riesenBesiegt = 0;                  // 👹 wie viele Riesen hat Jonah schon geschafft?
 const bankBox = document.getElementById('bankBox');
 function bankAnzeige() {
   document.getElementById('bankStand').textContent =
@@ -9535,7 +9920,7 @@ const KANONE_REICHWEITE = 24;
 let kanonenTipp = false;
 function istFeind(a) {
   return !a.friedlich && !a.tame &&
-    (a.type==='raeuber' || a.type==='zombie' || a.type==='slime' || a.type==='boss');
+    (a.type==='raeuber' || a.type==='zombie' || a.type==='slime' || a.type==='boss' || a.type==='riese');
 }
 function kanonenTick(dt) {
   if (!kanonen.size) return;
@@ -9871,7 +10256,7 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
-  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c',
+  [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
@@ -9902,7 +10287,15 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   if (weltDim >= 2) {                   // 🚀 auf fremden Planeten gibt es nur DEINE Rakete
     const R = raketeOrt[weltDim];
     if (R) marks.push({x:Math.floor(R.x), z:Math.floor(R.z), e:'🚀'});
-    if (weltDim === 9) marks.push({x:0, z:14, e:'👑'});   // 👑 und dein Schloss!
+    if (weltDim === 9) {
+      marks.push({x:0, z:14, e:'👑'});                   // 👑 dein Schloss
+      const c0x = Math.floor(cx0/KCELL2), c0z = Math.floor(cz0/KCELL2);
+      const w = Math.ceil(r/KCELL2)+1;
+      for (let dcz=-w; dcz<=w; dcz++) for (let dcx=-w; dcx<=w; dcx++) {
+        const o = koenigsOrt(c0x+dcx, c0z+dcz);
+        if (o) marks.push({x:o.kx, z:o.kz, e:KO_EMOJI[o.art]});
+      }
+    }
     return marks;
   }
   const scan=(CELL,fn)=>{ const out=[];
@@ -9923,6 +10316,7 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   const ft=fortressPos(); marks.push({x:ft.fx, z:ft.gz, e:'🏰'});
   const A=arcadePos(); marks.push({x:A.ax, z:A.az, e:'🕹️'});
   const RS=raketenPos(); marks.push({x:RS.rx, z:RS.rz, e:'🚀'});
+  const RL=riesenLager(); marks.push({x:RL.lx, z:RL.lz, e:'👹'});
   const MB=burgPos(); marks.push({x:MB.bx, z:MB.bz, e:'👑'});
   return marks;
 }
@@ -9960,7 +10354,7 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   mapMarks = collectMarks(mapCx, mapCz, mapR);
   document.getElementById('mapLegend').innerHTML = weltDim >= 2
     ? '🔺 Du &middot; 🚀 Deine Rakete &middot; ' + (weltDim===9 ? '👑 Dein Schloss &middot; ' : '') + PLANET[weltDim].name
-    : '🔺 Du &middot; 👑 Riesen-Festung &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚜 Mähdrescher &middot; 📍 Ziel';
+    : '🔺 Du &middot; 👑 Festung &middot; 🏠 Dorf &middot; 👹 Riesen-Lager &middot; 🚀 Rakete &middot; 📍 Ziel';
 }
 function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der Karte!
   const out=[];
@@ -10363,7 +10757,13 @@ function carPhysics(dt) {
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
   const swim = getBlock(Math.floor(a.x),Math.floor(a.y+0.3),Math.floor(a.z))===WATER;
-  const speed = swim ? 1.5 : 9;         // flottes Auto!
+  const unten = getBlock(Math.floor(a.x), Math.floor(a.y-0.3), Math.floor(a.z));
+  const aufStrasse = unten===STRASSE || unten===STRASSE_M;   // 🛣️ auf Asphalt gibt es Gas!
+  if (aufStrasse !== !!a.strasse) {
+    a.strasse = aufStrasse;
+    if (aufStrasse) { toast('🛣️ VOLLGAS! Auf der Straße fährt dein Auto doppelt so schnell!', 2600); blip(500,0.07); blip(660,0.09); }
+  }
+  const speed = swim ? 1.5 : (aufStrasse ? 17 : 9);         // flottes Auto!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
   if (ml>0.05) { a.yaw=Math.atan2(vx,-vz); a.ph+=dt*14; }
@@ -10997,6 +11397,19 @@ function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
           vy:2+Math.random()*5, vz:(Math.random()-0.5)*6, tile:[30,25,52][s2%3], t:0.9});
       return true;
     }
+    if (a.type==='riese') {             // 👹 EIN RIESE IST BESIEGT!
+      gems += 4; money += 30; riesenBesiegt++; updateFoodHUD(); scheduleSave();
+      toast('👹💥 RIESE BESIEGT!!! Du bekommst 4 Diamanten und 30 € - und einen Pokal! ' +
+            'Du hast jetzt ' + riesenBesiegt + ' Riesen besiegt! 🏆', 6000);
+      blip(392,0.1); blip(523,0.1); blip(659,0.12); blip(784,0.12); blip(1047,0.25);
+      shake = 0.7;
+      for (let s2=0; s2<40; s2++)
+        fireworks.push({x:a.x, y:a.y+2.5, z:a.z, vx:(Math.random()-0.5)*10,
+          vy:2+Math.random()*7, vz:(Math.random()-0.5)*10, tile:[30,25,52,94][s2%4], t:1.2});
+      const px3=Math.floor(a.x), pz3=Math.floor(a.z), py3=terrainHeight(px3,pz3)+1;
+      if (getBlock(px3,py3,pz3)===AIR) setBlock(px3,py3,pz3,POKAL);   // der Sieger-Pokal!
+      return true;
+    }
     if (a.type==='raeuber') {           // der Räuber lässt seine Beute fallen! 💰
       const geklaut = a.beute || 0;
       money += 3 + geklaut; updateFoodHUD(); scheduleSave();
@@ -11211,10 +11624,16 @@ function hitEntity(a, dir) {
     updateFoodHUD(); scheduleSave();
     return;
   }
-  if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber') {   // Monster bekämpfen!
+  if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber' || a.type==='riese') {   // Monster bekämpfen!
     if (sword) { blip(880,0.05); blip(660,0.07); }   // Schwert-Schwung: wusch!
+    if (superT > 0) {                 // 🦸 LASER-BLICK: ein Treffer reicht!
+      laserStrahl(a.x, a.y + 0.9, a.z);
+      slimeDamage(a, 999, dir);
+      return;
+    }
     if (!slimeDamage(a, sword?3:1, dir))
-      toast((a.type==='boss'?'👑 Der Monster-König wankt! Noch '+a.hp+' Treffer!'
+      toast((a.type==='riese'?'👹 Der RIESE brüllt vor Wut! Noch '+a.hp+' Lebenspunkte!'
+            :a.type==='boss'?'👑 Der Monster-König wankt! Noch '+a.hp+' Treffer!'
             :a.type==='raeuber'?'😈 Der Räuber wankt! Noch '+a.hp+'x tippen!'
             :'Getroffen! Noch '+a.hp+'x tippen!')+' 👊', 1400);
     return;
@@ -12316,6 +12735,9 @@ rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 const flyBtn=document.getElementById('flyBtn');
 flyBtn.addEventListener('touchstart',e=>{e.preventDefault();toggleFly();},{passive:false});
 flyBtn.addEventListener('mousedown',e=>{e.preventDefault();toggleFly();});
+const superBtnEl=document.getElementById('superBtn');   // 🦸 Superkräfte!
+superBtnEl.addEventListener('touchstart',e=>{e.preventDefault();superStart();},{passive:false});
+superBtnEl.addEventListener('mousedown',e=>{e.preventDefault();superStart();});
 const rufBtn=document.getElementById('rufBtn');        // 🆘 die Rakete herrufen
 rufBtn.addEventListener('touchstart',e=>{e.preventDefault();raketeRufen();},{passive:false});
 rufBtn.addEventListener('mousedown',e=>{e.preventDefault();raketeRufen();});
@@ -12570,6 +12992,7 @@ function frame(now) {
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
   flugTick(dt);                         // 🚀 läuft gerade ein Raketenflug?
+  superTick(dt);                        // 🦸 laufen die Superkräfte?
   physics(dt);
   updateFuses(dt);
   fliesse(dt);
