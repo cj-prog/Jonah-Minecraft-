@@ -539,7 +539,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 180 &middot; DER THRON kann jetzt BEFEHLEN! 🪑👑</p>
+    Version 181 &middot; Der Thron in DEINER BURG kann jetzt befehlen! 🪑👑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -585,7 +585,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 180;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 181;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2540,9 +2540,9 @@ function genChunkData(cx, cz, ohneEdits) {
       put(ft.fx-7,8,ft.fz,CHEST,false);
       put(ft.fx-6,8,ft.fz+4,CHEST,false);
       put(ft.fx+6,8,ft.fz-4,CHEST,false);
-      // Thron: Podest aus Brettern mit Stuhl
-      for (let tx=ft.fx+4;tx<=ft.fx+7;tx++) for (let tz=ft.fz-1;tz<=ft.fz+1;tz++) put(tx,8,tz,PLANK,false);
-      put(ft.fx+6,9,ft.fz,CHAIR,false);
+      // Thron: goldenes Podest mit dem echten Königsthron
+      for (let tx=ft.fx+4;tx<=ft.fx+7;tx++) for (let tz=ft.fz-1;tz<=ft.fz+1;tz++) put(tx,8,tz,GOLD,false);
+      put(ft.fx+6,9,ft.fz,THRON,false);                 // 🪑👑 DER KÖNIGSTHRON!
       put(ft.fx+6,9,ft.fz-1,TORCH,false);
       put(ft.fx+6,9,ft.fz+1,TORCH,false);
       put(ft.fx+4,9,ft.fz,SIGN,false);
@@ -2657,8 +2657,11 @@ function genChunkData(cx, cz, ohneEdits) {
       if (!signTexts.has(dsig)) signTexts.set(dsig,'🌞 Jonahs Dach-Terrasse');
       // 7) ERDGESCHOSS: Thronsaal, Küche, Bäder, Wohnzimmer, Garage
       for (let dx=-2; dx<=2; dx++) for (let dz=-20; dz<=-18; dz++) P(dx,by+1,dz,S_);
-      P(0,by+2,-19,CHAIR);                              // DER THRON!
+      P(0,by+2,-19,THRON);                              // 🪑👑 DER KÖNIGSTHRON!
+      for (let dx=-2; dx<=2; dx++) for (let dz=-20; dz<=-18; dz++) P(dx,by+1,dz,GOLD);   // goldenes Podest
       P(-2,by+2,-19,TORCH); P(2,by+2,-19,TORCH);
+      P(-1,by+2,-20,KRONE);                             // 👑 die Königs-Krone
+      P(1,by+2,-20,ZEPTER);                             // 🪄 das Königs-Zepter
       P(-2,by+2,-18,SIGN);
       const tsig=(B.bx-2)+','+(by+2)+','+(B.bz-18);
       if (!signTexts.has(tsig)) signTexts.set(tsig,'👑 König Jonahs Thron');
@@ -9659,7 +9662,7 @@ function openThron(x, y, z) {
   document.getElementById('thronText').textContent = hatKrone
     ? 'Du sitzt auf deinem goldenen Thron. Was befiehlst du, König Jonah?'
     : 'Du sitzt auf dem Thron. (Ohne Krone bist du noch kein richtiger König - ' +
-      'sie liegt im Thronsaal auf dem goldenen Podest!)';
+      'sie liegt gleich neben deinem Thron! Tipp sie an. 👑)';
   const BEFEHLE = [
     ['fest',   '🎉 Ein großes FEST feiern!'],
     ['steuern','💰 Steuern einsammeln'],

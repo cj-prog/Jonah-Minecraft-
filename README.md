@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Thron in DEINER BURG kann jetzt auch befehlen (v181)! 🪑👑
+  Der Königsthron gab es erst nur auf dem geheimen Jonah-Planeten -
+  aber der Thron in deiner Riesen-Burg auf der Erde (und der in
+  deiner geheimen Festung) war noch ein ganz normaler Stuhl. Jetzt
+  stehen ÜBERALL echte Königsthrone auf goldenen Podesten: setz dich
+  drauf und die königlichen Befehle gehen auf. Und damit du nicht
+  erst zu allen sieben Planeten fliegen musst: die 👑 KRONE und das
+  🪄 ZEPTER liegen jetzt auch gleich neben dem Thron in deiner Burg
+  auf der Erde - antippen und sie gehören dir!
 - DER THRON KANN JETZT BEFEHLEN (v180)! 🪑👑 Aus dem einfachen Stuhl
   im Thronsaal ist ein echter KÖNIGSTHRON geworden: goldene Beine,
   rotes Samt-Sitzkissen, eine hohe goldene Rückenlehne mit rotem
