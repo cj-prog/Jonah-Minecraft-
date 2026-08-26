@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RAKETEN-PARKPLATZ statt Raketen im Weg (v182)! 🅿️🚀 Bisher hat der
+  🆘-Knopf jedes Mal eine NEUE Rakete genau dort gebaut, wo du gerade
+  standest - irgendwann standen überall Raketen herum, sogar mitten
+  in deinem Thronsaal. Ab jetzt gibt es in jeder Welt EINEN festen
+  RAKETEN-PARKPLATZ: grauer Asphalt mit weißen Parkbuchten, Laternen
+  an den Ecken und einem Schild. Auf dem Jonah-Planeten liegt er
+  direkt vor dem Schlossplatz, auf allen anderen Planeten in der
+  Mitte, und auf der Erde ist es die Raketenstation.
+  🆘 Der SOS-Knopf beamt jetzt DICH zum Parkplatz (mit Funken-Effekt)
+  statt eine Rakete zu dir zu holen - und du sitzt sofort drin.
+  🚀 Auch nach jedem Flug landest du immer auf dem Parkplatz. Es gibt
+  also nie wieder mehr als eine Rakete.
+  🧹 Und für die Raketen, die schon herumstehen: Setz dich auf deinen
+  Thron und wähle „Herumstehende Raketen wegräumen". Dann verschwinden
+  alle Raketen im Umkreis - und alles, was sie kaputt gemacht haben,
+  ist wieder genau wie vorher. Die Rakete auf dem Parkplatz bleibt
+  natürlich stehen.
 - Der Thron in DEINER BURG kann jetzt auch befehlen (v181)! 🪑👑
   Der Königsthron gab es erst nur auf dem geheimen Jonah-Planeten -
   aber der Thron in deiner Riesen-Burg auf der Erde (und der in

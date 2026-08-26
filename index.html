@@ -539,7 +539,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 181 &middot; Der Thron in DEINER BURG kann jetzt befehlen! 🪑👑</p>
+    Version 182 &middot; RAKETEN-PARKPLATZ - der 🆘-Knopf beamt DICH hin! 🅿️🚀</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -585,7 +585,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 181;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 182;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1701,11 +1701,24 @@ function bauKoenigreich(put, x0, z0) {
       // gespiegelt gesetzt, damit JONAH von der Rakete aus richtig herum dasteht
       if (g[zeile][sp]==='1') put(16 - (i*7 + sp), by, -38 - zeile, GOLD, false);
   }
-  // --- der Landeplatz für die Rakete ---
-  for (let dx=-4; dx<=4; dx++) for (let dz=-54; dz<=-46; dz++) {
-    put(dx, by, dz, (dx+dz)%2 ? SCHUTZ : STONE, false);
-    luft(dx, by+1, by+8, dz);
+  // --- 🅿️ DER RAKETEN-PARKPLATZ mit Parkbuchten ---
+  for (let dx=-9; dx<=9; dx++) for (let dz=-56; dz<=-44; dz++) {
+    put(dx, by, dz, STONE, false);                  // grauer Asphalt
+    luft(dx, by+1, by+9, dz);
   }
+  for (const bx of [-6, 0, 6]) {                    // drei Parkbuchten mit weißen Linien
+    for (let dz=-55; dz<=-45; dz++) {
+      put(bx-3, by, dz, WOOL, false); put(bx+3, by, dz, WOOL, false);
+    }
+    for (let dx=bx-3; dx<=bx+3; dx++) put(dx, by, -55, WOOL, false);
+  }
+  for (const [lx2,lz2] of [[-9,-56],[9,-56],[-9,-44],[9,-44]]) {   // Laternen an den Ecken
+    for (let y=1; y<=4; y++) put(lx2, by+y, lz2, STONE, false);
+    put(lx2, by+5, lz2, TORCH, false);
+  }
+  const ps = '0,'+(by+1)+',-43';
+  put(0, by+1, -43, SIGN, false);
+  if (!signTexts.has(ps)) signTexts.set(ps, '🅿️ RAKETEN-PARKPLATZ - hier steht deine Rakete!');
   // --- die Schilder ---
   const s1 = '0,'+(by+1)+',-32';
   put(0, by+1, -32, SIGN, false);
@@ -1785,6 +1798,19 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
       const ring = Math.abs(vnoise(wx*0.02, wz*0.02, 6161) - 0.5);   // der große Ring am Himmel
       if (ring < 0.035) { const ry = h + 30 + Math.floor(vnoise(wx*0.01, wz*0.01, 6162)*10);
         setz(lx, ry, lz, (lx+lz)%2 ? GLASS : WOOL); }
+    }
+  }
+  if (dim>=2 && dim<=8 && Math.abs(x0)<=32 && Math.abs(z0)<=32) {
+    // 🅿️ der Raketen-Parkplatz mitten auf jedem Planeten
+    const py = planetHoehe(0, 0, dim);
+    for (let wx=-8; wx<=8; wx++) for (let wz=-8; wz<=8; wz++) {
+      const lx2 = wx-x0, lz2 = wz-z0;
+      if (lx2<0 || lx2>15 || lz2<0 || lz2>15) continue;
+      const rand = Math.max(Math.abs(wx), Math.abs(wz));
+      for (let y=py-3; y<py; y++) setz(lx2, y, lz2, P.tief);        // aufschütten
+      setz(lx2, py, lz2, rand===8 ? WOOL : STONE);                  // Asphalt mit weißem Rand
+      if ((Math.abs(wx)===3 || Math.abs(wx)===0) && rand<8 && wz%2===0) setz(lx2, py, lz2, WOOL);
+      for (let y=py+1; y<=py+10; y++) setz(lx2, y, lz2, AIR);       // Luftraum frei
     }
   }
   if (dim===9) {                        // 👑 und mitten drin: Jonahs Königreich!
@@ -9670,6 +9696,7 @@ function openThron(x, y, z) {
     ['volk',   '🙇 Mein Volk versammeln'],
     ['sonne',  '☀️ Sonnenschein befehlen'],
     ['regen',  '🌧️ Regen befehlen'],
+    ['putzen', '🧹 Herumstehende Raketen wegräumen'],
   ];
   for (const [was, text] of BEFEHLE) {
     const el = document.createElement('div');
@@ -9744,6 +9771,10 @@ function thronBefehl(was, tx, ty, tz) {
     toast((was==='ritter' ? '🛡️ ' : '🙇 ') + wer.length +
           (was==='ritter' ? ' Ritter stehen jetzt Wache um deinen Thron!'
                           : ' aus deinem Volk versammeln sich vor dir und verneigen sich!'), 5000);
+    return;
+  }
+  if (was === 'putzen') {               // 🧹 alle Raketen im Weg verschwinden lassen
+    raketenAufraeumen();
     return;
   }
   if (was === 'sonne' || was === 'regen') {   // ☀️🌧️ der König bestimmt das Wetter
@@ -9910,59 +9941,118 @@ function laserStrahl(zx, zy, zz) {
   }
   blip(1200,0.05); blip(900,0.05); blip(600,0.08);
 }
+// 🅿️ DER RAKETEN-PARKPLATZ: In jeder Welt gibt es EINEN festen Platz,
+// auf dem die Raketen stehen. So stehen sie nie mehr im Weg herum.
+function raketenPark(dim) {
+  if (dim === 0) { const R = raketenPos(); return { x: R.rx, z: R.rz }; }
+  if (dim === 9) return { x: 0, z: -50 };          // 👑 vor dem Schlossplatz
+  return { x: 0, z: 0 };                           // auf allen anderen Planeten
+}
+// steht auf dem Parkplatz schon eine Rakete? Dann den Sitzplatz zurückgeben.
+function parkRakete(dim) {
+  const P = raketenPark(dim);
+  for (let cx=(P.x-14)>>4; cx<=(P.x+14)>>4; cx++)
+    for (let cz=(P.z-14)>>4; cz<=(P.z+14)>>4; cz++) ensureData(cx,cz);
+  const ly = terrainHeight(P.x, P.z) + 1;
+  for (let dy=-2; dy<=3; dy++)                     // das Bedienungsfeld verrät die Rakete
+    if (getBlock(P.x, ly+dy+1, P.z+1) === STEUER) return { x:P.x+0.5, y:ly+dy+1, z:P.z+0.5, stand:true };
+  return { x:P.x+0.5, y:ly+1, z:P.z+0.5, stand:false, bauY:ly };
+}
+// 🧹 Alle Raketen wegräumen, die irgendwo herumstehen (nicht die auf dem Parkplatz).
+// Alles, was Jonah nicht selbst gebaut hat, kommt einfach zurück auf den Urzustand.
+const RAK_TEILE = new Set([WOOL, BRICK, GLASS, SCHUTZ, STEUER, RAKETE, TREP_N, GOLD]);
+function raketenAufraeumen() {
+  const cx0 = Math.floor(player.x), cz0 = Math.floor(player.z), R = 42;
+  for (let cx=(cx0-R)>>4; cx<=(cx0+R)>>4; cx++)
+    for (let cz=(cz0-R)>>4; cz<=(cz0+R)>>4; cz++) ensureData(cx,cz);
+  const P = raketenPark(weltDim);
+  const orte = [];
+  for (let x=cx0-R; x<=cx0+R; x++) for (let z=cz0-R; z<=cz0+R; z++) {
+    if (Math.hypot(x-P.x, z-P.z) < 14) continue;   // der Parkplatz bleibt in Ruhe!
+    const h = terrainHeight(x, z);
+    for (let y=h-2; y<=h+13; y++)
+      if (getBlock(x,y,z) === STEUER && _pureAt(x,y,z) !== STEUER) orte.push([x,y,z]);
+  }
+  let weg = 0;
+  for (const [ox,oy,oz] of orte) {                 // rund um jedes Pult die Rakete abräumen
+    for (let dx=-4; dx<=4; dx++) for (let dz=-5; dz<=4; dz++) for (let dy=-3; dy<=11; dy++) {
+      const x=ox+dx, y=oy+dy, z=oz+dz;
+      const jetzt = getBlock(x,y,z), rein = _pureAt(x,y,z);
+      if (jetzt === rein) continue;                // war schon immer so: anfassen verboten
+      // Raketen-Blöcke wegräumen - und die Löcher, die die Rakete gestanzt hat,
+      // wieder zumachen. So sieht alles wieder aus wie vorher.
+      if (!RAK_TEILE.has(jetzt) && jetzt !== AIR) continue;
+      setBlock(x, y, z, rein);
+      weg++;
+    }
+  }
+  if (orte.length) {
+    for (let n=0; n<30; n++)
+      fireworks.push({x:player.x+(Math.random()-0.5)*10, y:player.y+1+Math.random()*4,
+        z:player.z+(Math.random()-0.5)*10, vx:(Math.random()-0.5)*4, vy:1+Math.random()*3,
+        vz:(Math.random()-0.5)*4, tile:87, t:1});
+    blip(880,0.08); blip(660,0.08); blip(440,0.14);
+    toast('🧹✨ ' + orte.length + ' herumstehende Rakete' + (orte.length>1?'n':'') +
+          ' weggezaubert (' + weg + ' Blöcke aufgeräumt)! Alles ist wieder wie vorher. ' +
+          'Deine Rakete steht ab jetzt immer auf dem 🅿️ Parkplatz.', 7000);
+  } else {
+    toast('🧹 Hier steht keine Rakete im Weg - alles schön aufgeräumt! ✨', 3500);
+    blip(660,0.08);
+  }
+  scheduleSave();
+}
 function raketeRufen() {
   if (flugT > 0) return;
   if (weltDim < 2) {
     toast('🚀 Auf der Erde steht deine große Rakete auf der Raketenstation. Mach die 🗺️ Karte auf - da ist ein 🚀!', 5500);
     return;
   }
-  const alt = raketeOrt[weltDim];
-  if (alt && Math.hypot(player.x-alt.x, player.z-alt.z) < 8) {
-    toast('🚀 Deine Rakete steht doch direkt hier neben dir! Geh durch die offene Luke rein.', 4500);
+  const P = raketenPark(weltDim);
+  const weit = Math.round(Math.hypot(player.x-P.x, player.z-P.z));
+  if (weit < 6) {                                 // schon da!
+    toast('🅿️ Du stehst doch schon auf dem Raketen-Parkplatz! Geh durch die offene Luke rein. 🚀', 4500);
     return;
   }
-  const lx = Math.floor(player.x), lz = Math.floor(player.z);
-  for (let cx=(lx-14)>>4; cx<=(lx+14)>>4; cx++)
-    for (let cz=(lz-14)>>4; cz<=(lz+14)>>4; cz++) ensureData(cx,cz);
-  const ly = terrainHeight(lx, lz) + 1;
-  const weit = alt ? Math.round(Math.hypot(player.x-alt.x, player.z-alt.z)) : 0;
-  const sitz = raketeBauen(lx, ly, lz);           // eine funkelnagelneue Rakete!
+  for (let n=0; n<26; n++)                        // Funken am alten Platz: zisch, weg!
+    fireworks.push({x:player.x+(Math.random()-0.5)*2, y:player.y+Math.random()*2.5, z:player.z+(Math.random()-0.5)*2,
+      vx:(Math.random()-0.5)*4, vy:1+Math.random()*4, vz:(Math.random()-0.5)*4, tile:87, t:0.9});
+  const park = parkRakete(weltDim);
+  let sitz = park;
+  if (!park.stand) sitz = raketeBauen(P.x, park.bauY, P.z);   // steht keine da? Dann kommt eine
   raketeOrt[weltDim] = { x: sitz.x, y: sitz.y, z: sitz.z };
   player.x = sitz.x; player.y = sitz.y; player.z = sitz.z;
   player.vx = player.vy = player.vz = 0;
   flying = false;
   const fb = document.getElementById('flyBtn'); if (fb) fb.classList.remove('on');
-  for (let n=0; n<40; n++)                        // Landefeuer rundherum
-    fireworks.push({x:player.x+(Math.random()-0.5)*5, y:player.y-1.4, z:player.z+(Math.random()-0.5)*5,
-      vx:(Math.random()-0.5)*6, vy:Math.random()*3, vz:(Math.random()-0.5)*6,
-      tile:[27,72,82][n%3], t:0.9});
-  shake = 0.55;
-  blip(520,0.12); blip(360,0.14); blip(230,0.2);
-  toast('🚀 Rakete gerufen - sie ist direkt bei dir gelandet und du sitzt schon drin! ' +
-        (weit ? 'Die alte steht ' + weit + ' Blöcke weit weg. ' : '') +
-        'Tipp das 🎛️ Bedienungsfeld an, wenn du losfliegen willst.', 7000);
+  for (let cx=(P.x-14)>>4; cx<=(P.x+14)>>4; cx++)   // Umgebung sofort laden
+    for (let cz=(P.z-14)>>4; cz<=(P.z+14)>>4; cz++) ensureData(cx,cz);
+  for (let n=0; n<40; n++)                        // und funkelnd wieder auftauchen
+    fireworks.push({x:player.x+(Math.random()-0.5)*3, y:player.y+Math.random()*3, z:player.z+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*5, vy:1+Math.random()*4, vz:(Math.random()-0.5)*5, tile:[87,94,10][n%3], t:1});
+  shake = 0.35;
+  blip(300,0.08); blip(600,0.08); blip(900,0.1); blip(1200,0.16);
+  toast('🅿️✨ SCHWUPP! Du bist ' + weit + ' Blöcke weit zum 🚀 RAKETEN-PARKPLATZ gebeamt worden ' +
+        'und sitzt schon in deiner Rakete! Tipp das 🎛️ Bedienungsfeld an, wenn du losfliegen willst.', 7000);
   scheduleSave();
 }
 function raketeLanden(ziel) {
   portalHeim[weltDim] = { x:player.x, y:player.y, z:player.z };
   weltWechsel(ziel);
   portalKuehl = 3;                      // nicht sofort ins Portal stolpern
-  // Wo landen wir? Wenn wir hier schon mal waren: genau am alten Platz
+  // 🅿️ Gelandet wird IMMER auf dem Raketen-Parkplatz - so steht nie eine
+  // Rakete im Weg herum und du findest sie jedes Mal am selben Ort wieder.
   const alt = portalHeim[ziel];
-  let lx, lz, sitz = null;
-  if (alt) { lx = Math.floor(alt.x); lz = Math.floor(alt.z); }
-  else if (ziel === 0) { const R = raketenPos(); lx = R.rx; lz = R.rz; }
-  else if (ziel === 9) { lx = 0; lz = -50; }      // 👑 direkt vor dem Schloss-Platz
-  else { lx = 0; lz = 0; }
+  const PP = raketenPark(ziel);
+  let lx = PP.x, lz = PP.z, sitz = null;
   for (let cx=(lx-24)>>4; cx<=(lx+24)>>4; cx++)
     for (let cz=(lz-24)>>4; cz<=(lz+24)>>4; cz++) ensureData(cx,cz);
   const ly = terrainHeight(lx, lz) + 1;
   if (ziel === 0) {
-    // Zur Erde zurück: entweder in die eigene Rakete oder in die große Stationsrakete
-    if (alt) sitz = { x:alt.x, y:alt.y, z:alt.z };
-    else { const R = raketenPos(); sitz = { x:R.rx+0.5, y:R.base+2, z:R.rz+0.5 }; }
+    const R = raketenPos();             // auf der Erde: in die große Stationsrakete
+    sitz = { x:R.rx+0.5, y:R.base+2, z:R.rz+0.5 };
   } else {
-    sitz = raketeBauen(lx, ly, lz);     // die Landerakete steht mit dir da - du sitzt drin!
+    const schon = parkRakete(ziel);     // steht dort schon eine? Dann setz dich rein!
+    sitz = schon.stand ? schon : raketeBauen(lx, ly, lz);
   }
   raketeOrt[ziel] = { x: sitz.x, y: sitz.y, z: sitz.z };   // hier steht sie jetzt!
   player.x = sitz.x; player.y = sitz.y; player.z = sitz.z;
@@ -10572,8 +10662,8 @@ function bankSteht(v) {
 function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   const marks=[];
   if (weltDim >= 2) {                   // 🚀 auf fremden Planeten gibt es nur DEINE Rakete
-    const R = raketeOrt[weltDim];
-    if (R) marks.push({x:Math.floor(R.x), z:Math.floor(R.z), e:'🚀'});
+    const PP = raketenPark(weltDim);
+    marks.push({x:PP.x, z:PP.z, e:'🚀'});          // 🅿️ der Raketen-Parkplatz
     if (weltDim === 9) {
       marks.push({x:0, z:14, e:'👑'});                   // 👑 dein Schloss
       const c0x = Math.floor(cx0/KCELL2), c0z = Math.floor(cz0/KCELL2);
