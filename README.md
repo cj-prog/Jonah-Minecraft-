@@ -221,6 +221,26 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DER THRON KANN JETZT BEFEHLEN (v180)! 🪑👑 Aus dem einfachen Stuhl
+  im Thronsaal ist ein echter KÖNIGSTHRON geworden: goldene Beine,
+  rotes Samt-Sitzkissen, eine hohe goldene Rückenlehne mit rotem
+  Polster, Armlehnen - und oben drauf drei kleine Kronen mit einem
+  funkelnden Edelstein. Setz dich drauf (er setzt dir automatisch die
+  Krone auf!) und das Fenster „👑 Königliche Befehle" geht auf. Sechs
+  Befehle stehen dir zur Wahl:
+  🎉 EIN GROSSES FEST - riesiges Feuerwerk über dem ganzen Schloss,
+  und dein ganzer Hofstaat jubelt dir zu: „Es lebe der König!"
+  💰 STEUERN EINSAMMELN - dein Volk bringt dir Tribut (je mehr Leute
+  in der Nähe, desto mehr; mit Krone auf gibt es 15 € extra). Alle
+  2 Minuten wieder.
+  🛡️ MEINE RITTER HERBEIRUFEN - deine Ritter erscheinen im Kreis um
+  den Thron, schauen dich an und melden „Zu Befehl, König Jonah!"
+  🙇 MEIN VOLK VERSAMMELN - alle aus deinem Reich stellen sich vor
+  dir auf und verneigen sich.
+  ☀️ SONNENSCHEIN und 🌧️ REGEN BEFEHLEN - der König bestimmt das
+  Wetter, und das Wetter gehorcht!
+  Der Thron ist außerdem ein Block in deiner Hotbar: du kannst dir
+  überall einen hinstellen, auch auf der Erde.
 - DIE KRONE UND DAS ZEPTER GEHÖREN JETZT WIRKLICH DIR (v179)! 👑🪄
   In deinem Thronsaal stehen jetzt zwei goldene Podeste neben dem
   Thron: auf dem einen liegt die KÖNIGS-KRONE, auf dem anderen das
