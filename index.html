@@ -543,7 +543,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 184 &middot; DEIN RIESEN-ROBOTER KANN FLIEGEN! 🤖🚀</p>
+    Version 185 &middot; Der Roboter läuft dir nach + eigener Roboter-Platz! 🤖👣</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -589,7 +589,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 184;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 185;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2871,6 +2871,23 @@ function genChunkData(cx, cz, ohneEdits) {
         P(-3,by+1,25,SIGN);
         const zsig=(B.bx-3)+','+(by+1)+','+(B.bz+25);
         if (!signTexts.has(zsig)) signTexts.set(zsig,'🌉 ZUGBRÜCKE: antippen und sie klappt hoch - dann kommt keiner mehr rein!');
+      }
+      // 14e) 🤖 DER ROBOTER-PLATZ: ein großer Landeplatz im Burghof, damit dein
+      // neun Blöcke hoher Riesen-Roboter zu Hause einen eigenen Stellplatz hat.
+      {
+        const RX = 48, RZ = 0;                          // östlicher Hof, hinter dem Wassergraben
+        for (let dx=RX-5; dx<=RX+5; dx++) for (let dz=RZ-5; dz<=RZ+5; dz++) {
+          const rand = Math.abs(dx-RX)===5 || Math.abs(dz-RZ)===5;
+          const kreuz = dx===RX || dz===RZ;
+          P(dx, by, dz, rand ? GOLD : kreuz ? WOOL : STONE);   // Landekreuz mit goldenem Rand
+          for (let y=by+1; y<=by+13; y++) P(dx, y, dz, AIR);   // freier Himmel für den Riesen
+          P(dx, by-1, dz, STONE);                             // fester Unterbau
+        }
+        for (const [ex,ez] of [[-5,-5],[5,-5],[-5,5],[5,5]])   // vier Laternen an den Ecken
+          { P(RX+ex, by+1, RZ+ez, S_); P(RX+ex, by+2, RZ+ez, TORCH); }
+        P(RX-5, by+1, RZ, SIGN);
+        const rsig=(B.bx+RX-5)+','+(by+1)+','+(B.bz+RZ);
+        if (!signTexts.has(rsig)) signTexts.set(rsig,'🤖 ROBOTER-PLATZ: hier parkt dein Riesen-Roboter!');
       }
       // 15) die GROSSE BURG-MAUER 🧱: einmal rund um ALLES (Festung, Königs-Turm,
       // Freunde-Haus und Gehege) - mit Zinnen, 4 Torbögen und 4 Wach-Türmen!
@@ -5384,8 +5401,9 @@ function spawnTick() {
 // 🅿️ Die Festungs-Garage: Ist Jonah in seiner Riesen-Festung, fährt kein
 // Gefährt mehr draußen herum - jedes rollt automatisch auf seinen Platz
 // in der Garage und parkt dort, bis Jonah wieder losfährt oder weggeht.
-const GARAGEN_PLATZ = { bagger:[25,9], jet:[18,9], heli:[18,16], dragon:[24,16] };
-const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hubschrauber', dragon:'Dein Drache' };
+const GARAGEN_PLATZ = { bagger:[25,9], jet:[18,9], heli:[18,16], dragon:[24,16], roboter:[48,0] };
+const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hubschrauber',
+                       dragon:'Dein Drache', roboter:'🤖 Dein Riesen-Roboter' };
 function parkeInGarage(a, dt) {
   if (!imBurghof()) return false;       // erst hinter der Mauer fahren sie in die Garage
   const p = GARAGEN_PLATZ[a.type];
@@ -5406,12 +5424,13 @@ function parkeInGarage(a, dt) {
   }
   const dir = Math.atan2(gx-a.x, -(gz-a.z));    // hinrollen zur Garage
   a.yaw = dir;
-  const sp = a.type==='bagger' ? 8 : 12;
+  const sp = a.type==='bagger' ? 8 : a.type==='roboter' ? 9 : 12;
   a.x += Math.sin(dir)*sp*dt;
   a.z += -Math.cos(dir)*sp*dt;
   a.y += Math.max(-8*dt, Math.min(8*dt, (B.base+1.05) - a.y));
   a.vy = 0;
   if (a.type==='bagger') { a.ph += dt*8; }
+  if (a.type==='roboter') { a.walking = true; a.ph += dt*4.2; roboterStampf(a, dt); }
   return true;
 }
 // 🏠🐾 Ist Jonah in seiner Festung, gehen Freunde ins Freunde-Haus und
@@ -5624,10 +5643,37 @@ function updateAnimals(dt) {
     }
     if (a.type==='roboter') {           // 🤖 Jonahs Riesen-Roboter
       if (a===roboterRiding) continue;  // Jonah steuert ihn gerade selbst
+      if (parkeInGarage(a, dt)) continue;         // 🅿️ zu Hause auf den Roboter-Platz
+      a.garage = false;                           // draußen ist die Garage wieder vergessen
+      // 👣 STAMPF, STAMPF: der treue Riese kommt Jonah überallhin nach!
+      const dpR = Math.hypot(a.x-player.x, a.z-player.z);
+      if (dpR > 26 && !a.ferry) {
+        a.ferry = true;
+        toast('🤖 STAMPF, STAMPF... dein Riesen-Roboter kommt dir nachgestapft!', 3000);
+      }
+      if (a.ferry) {
+        if (dpR < 9) {
+          a.ferry = false;
+          toast('🤖 Dein Riesen-Roboter ist bei dir und wartet auf dich!', 2500);
+          blip(80,0.14); blip(110,0.1);
+        } else {
+          const dirR = Math.atan2(player.x-a.x, -(player.z-a.z));
+          a.yaw = dirR; a.walking = true; a.ph += dt*4.2;
+          const spR = Math.min(16, 7 + dpR*0.12);   // je weiter weg, desto größere Schritte
+          a.x += Math.sin(dirR)*spR*dt;
+          a.z += -Math.cos(dirR)*spR*dt;
+          const tyR = Math.max(terrainHeight(Math.floor(a.x), Math.floor(a.z)), SEA) + 1;
+          a.y += Math.max(-10*dt, Math.min(10*dt, tyR - a.y));   // stapft über Hügel und Täler
+          a.vy = 0;
+          ensureData(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
+          roboterStampf(a, dt);
+          continue;
+        }
+      }
       a.walking = false;                // sonst wartet er brav dort, wo er geparkt ist
       a.vy = Math.max(a.vy - 25*dt, -40);
       const nyR = a.y + Math.max(a.vy*dt, -0.9);
-      if (!collideBox(a.x, nyR, a.z, 1.5, 8.6)) a.y = nyR;
+      if (!collideBox(a.x, nyR, a.z, ROB_HALF, ROB_H)) a.y = nyR;
       else { a.vy = 0; a.onGround = true; }
       continue;
     }
@@ -11394,13 +11440,29 @@ function baggerPhysics(dt) {
 // ganze RIESE: geht er nach vorne, stampft der Roboter nach vorne!
 let roboterRiding = null;
 let faustKuehl = 0;                     // 🦾 wie lange lädt die Faust noch?
-const ROB_H = 8.6, ROB_HALF = 1.5;      // so groß ist der Blechkerl wirklich
+// Er SIEHT riesig aus, stößt sich aber mit einer schlanken Box durch die Welt -
+// sonst bliebe der Riese in jedem Wald und an jedem Hügel hängen.
+const ROB_H = 7.0, ROB_HALF = 0.9;
+// STAMPF, STAMPF: bei jedem Schritt wackelt die Welt und Staub wirbelt auf.
+// (Nur wenn Jonah in der Nähe ist - sonst wackelt es grundlos.)
+function roboterStampf(a, dt) {
+  a.stampf = (a.stampf||0) - dt;
+  if (a.stampf > 0) return;
+  a.stampf = 0.62;
+  const nah = Math.hypot(a.x-player.x, a.z-player.z) < 26;
+  if (a === roboterRiding) shake = Math.max(shake, 0.22);
+  else if (nah) shake = Math.max(shake, 0.10);
+  if (nah) { blip(55,0.16); blip(80,0.1); }
+  for (let s2=0;s2<7;s2++)
+    fireworks.push({x:a.x+(Math.random()-0.5)*3, y:a.y+0.2, z:a.z+(Math.random()-0.5)*3,
+      vx:(Math.random()-0.5)*3, vy:1+Math.random()*2, vz:(Math.random()-0.5)*3, tile:52, t:0.45});
+}
 function enterRoboter(a) {
   if (riding) dismount();
   if (flying) toggleFly();
   sitting = null;
   roboterRiding = a;
-  a.stampf = 0;
+  a.stampf = 0; a.garage = false; a.ferry = false;
   const rb = document.getElementById('rideBtn');
   rb.style.display='flex'; rb.textContent='🅿️';
   document.getElementById('faustBtn').style.display='flex';
@@ -11481,16 +11543,7 @@ function roboterPhysics(dt) {
   a.onGround=false;
   if (stuck || !collideBox(a.x,ny,a.z,ROB_HALF,ROB_H)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
-  // STAMPF, STAMPF: bei jedem Schritt wackelt die ganze Welt und Staub fliegt!
-  a.stampf = (a.stampf||0) - dt;
-  if (a.walking && a.onGround && a.stampf<=0) {
-    a.stampf = 0.62;
-    shake = Math.max(shake, 0.22);
-    blip(55,0.16); blip(80,0.1);
-    for (let s2=0;s2<7;s2++)
-      fireworks.push({x:a.x+(Math.random()-0.5)*3, y:a.y+0.2, z:a.z+(Math.random()-0.5)*3,
-        vx:(Math.random()-0.5)*3, vy:1+Math.random()*2, vz:(Math.random()-0.5)*3, tile:52, t:0.45});
-  }
+  if (a.walking && a.onGround) roboterStampf(a, dt);
   if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
   // Jonah sitzt oben IM KOPF - von dort schaut er über die ganze Welt!
   player.x=a.x; player.z=a.z; player.y=a.y+7.3;
