@@ -44,6 +44,9 @@
   #flyBtn.on { background:rgba(110,190,255,.55); }
   #rufBtn  { right:calc(92px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(255,90,60,.45); }
+  #faustBtn { right:calc(156px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:24px; background:rgba(120,160,220,.5); }
+  #faustBtn.warte { opacity:.5; }
   #superBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(424px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(255,60,180,.4); }
   #superBtn.an { background:rgba(255,215,60,.75); box-shadow:0 0 22px #ffd83c; }
@@ -318,6 +321,7 @@
 <div class="hud btn" id="fireBtn">🔥</div>
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="rufBtn" style="display:none" title="Rakete rufen">🆘</div>
+<div class="hud btn" id="faustBtn" style="display:none" title="Roboter-Faust">🦾</div>
 <div class="hud btn" id="superBtn" title="Superkräfte!">🦸</div>
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
@@ -539,7 +543,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 182 &middot; RAKETEN-PARKPLATZ - der 🆘-Knopf beamt DICH hin! 🅿️🚀</p>
+    Version 183 &middot; RIESEN laufen frei + DEIN RIESEN-ROBOTER! 👹🤖</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -585,7 +589,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 182;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 183;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1151,33 +1155,6 @@ function castleAt(cellX, cellZ) {
   return c;
 }
 
-// ------------------------- 👹 DAS RIESEN-LAGER -------------------------------
-// Ein fester Platz weit draußen, wo drei Riesen hausen. Auf der Karte: 👹
-let _lager = null, _lagerSeed = null;
-function riesenLager() {
-  if (_lager && _lagerSeed===seed) return _lager;
-  const ang = hash2(33,33,5150)*Math.PI*2;
-  let lx = Math.round(Math.cos(ang)*200), lz = Math.round(Math.sin(ang)*200);
-  for (let i=0; i<300; i++) {           // flaches, trockenes Land ohne Dorf daneben
-    let hmin=999, hmax=-999, ok=true;
-    for (const [dx,dz] of [[-9,-9],[9,-9],[-9,9],[9,9],[0,0]]) {
-      const h=terrainHeight0(lx+dx, lz+dz);
-      hmin=Math.min(hmin,h); hmax=Math.max(hmax,h);
-    }
-    ok = hmin>SEA+1 && hmax-hmin<=3;
-    for (let vz=Math.floor((lz-50)/VCELL); vz<=Math.floor((lz+50)/VCELL) && ok; vz++)
-      for (let vx=Math.floor((lx-50)/VCELL); vx<=Math.floor((lx+50)/VCELL) && ok; vx++) {
-        const v=villageAt(vx,vz);
-        if (v && Math.hypot(v.vx-lx, v.vz-lz) < 60) ok=false;
-      }
-    if (ok) { _lager = { lx, lz, base: hmax }; break; }
-    const a2 = ang + i*2.39996, d2 = 200 + (i%40)*7;
-    lx = Math.round(Math.cos(a2)*d2); lz = Math.round(Math.sin(a2)*d2);
-  }
-  if (!_lager) _lager = { lx, lz, base: terrainHeight0(lx,lz) };
-  _lagerSeed = seed;
-  return _lager;
-}
 // ------------------------------ Jonahs Festung -------------------------------
 let _fort = null, _fortSeed = null;
 function fortressPos() {                // eine geheime Festung pro Welt
@@ -2359,43 +2336,6 @@ function genChunkData(cx, cz, ohneEdits) {
       put(c.kx+1, by+12, c.kz, BRICK, false);
     }
   }
-  // 👹 DAS RIESEN-LAGER: Knochen, Lagerfeuer und drei Riesen-Hütten
-  {
-    const L = riesenLager();
-    if (!(L.lx+16<x0 || L.lx-16>x0+CS-1 || L.lz+16<z0 || L.lz-16>z0+CS-1)) {
-      const ly = L.base;
-      for (let dx=-14; dx<=14; dx++) for (let dz=-14; dz<=14; dz++) {
-        const wx=L.lx+dx, wz=L.lz+dz, rr=Math.hypot(dx,dz);
-        if (rr > 14) continue;
-        const th=terrainHeight0(wx,wz);
-        for (let y=Math.min(th,ly); y<ly; y++) put(wx,y,wz,DIRT,false);
-        put(wx, ly, wz, rr<3 ? STONE : (rr<12 ? DIRT : GRASS), false);   // festgetrampelte Erde
-        for (let y=ly+1; y<=ly+8; y++) put(wx,y,wz,AIR,false);
-      }
-      for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++)          // das große Lagerfeuer
-        put(L.lx+dx, ly+1, L.lz+dz, (dx===0&&dz===0) ? BRICK : WOOD, false);
-      for (let dy=2; dy<=4; dy++) put(L.lx, ly+dy, L.lz, TORCH, false);   // die Flammen
-      for (const [cx2,cz2] of [[-2,-2],[2,-2],[-2,2],[2,2],[0,-3],[0,3],[-3,0],[3,0]])
-        put(L.lx+cx2, ly+1, L.lz+cz2, STONE, false);                     // Feuerstellen-Ring
-      for (const [hx,hz] of [[-9,-4],[9,-4],[0,10]]) {                   // drei Riesen-Hütten
-        for (let dx=-4; dx<=4; dx++) for (let dz=-4; dz<=4; dz++) {
-          const rand = Math.abs(dx)===4 || Math.abs(dz)===4;
-          for (let y=1; y<=6; y++) put(L.lx+hx+dx, ly+y, L.lz+hz+dz, rand ? WOOD : AIR, false);
-          put(L.lx+hx+dx, ly+7, L.lz+hz+dz, LEAF, false);
-        }
-        for (let y=1; y<=4; y++) put(L.lx+hx, ly+y, L.lz+hz-4, AIR, false);   // Eingang
-        put(L.lx+hx+2, ly+1, L.lz+hz+2, CHEST, false);                   // ihre Beute!
-      }
-      for (let i=0; i<26; i++) {                                          // Knochen und Felsen
-        const bx = L.lx + Math.floor(hash2(i,7,5151)*27) - 13;
-        const bz = L.lz + Math.floor(hash2(i,8,5152)*27) - 13;
-        put(bx, ly+1, bz, hash2(i,9,5153) < 0.5 ? WOOL : STONE, true);
-      }
-      const ls = L.lx+','+(ly+1)+','+(L.lz-13);
-      put(L.lx, ly+1, L.lz-13, SIGN, false);
-      if (!signTexts.has(ls)) signTexts.set(ls, '👹 RIESEN-LAGER - hier wohnen die Riesen. Pass auf!');
-    }
-  }
   // 🚀 DIE RAKETENSTATION mit der großen Rakete auf der Startrampe
   {
     const R = raketenPos();
@@ -3167,7 +3107,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedDiebe = [];
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedDiebe = [];
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -3182,8 +3122,10 @@ function saveGame() {
     const heliSave = heliA ? [Math.round(heliA.x*10)/10, Math.round(heliA.y*10)/10, Math.round(heliA.z*10)/10] : null;
     const dragA = animals.find(a=>a.type==='dragon');
     const dragSave = dragA ? [Math.round(dragA.x*10)/10, Math.round(dragA.y*10)/10, Math.round(dragA.z*10)/10] : null;
+    const robA = animals.find(a=>a.type==='roboter');
     const bagA = animals.find(a=>a.type==='bagger');
     const bagSave = bagA ? [Math.round(bagA.x*10)/10, Math.round(bagA.y*10)/10, Math.round(bagA.z*10)/10] : null;
+    const robSave = robA ? [Math.round(robA.x*10)/10, Math.round(robA.y*10)/10, Math.round(robA.z*10)/10] : null;
     const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
@@ -3219,6 +3161,7 @@ function saveGame() {
       heli: heliSave,
       drache: dragSave,
       bagger: bagSave,
+      roboter: robSave,
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
       bonbons, naschZahl,
@@ -3287,6 +3230,7 @@ function loadGame() {
     if (Array.isArray(s.heli)) savedHeli = s.heli;
     if (Array.isArray(s.drache)) savedDrache = s.drache;
     if (Array.isArray(s.bagger)) savedBagger = s.bagger;
+    if (Array.isArray(s.roboter)) savedRoboter = s.roboter;
     if (s.cabinets) for (const k in s.cabinets) cabinets.set(k, s.cabinets[k]);
     if (typeof s.carrots==='number') carrots = s.carrots;
     if (typeof s.tomatoes==='number') tomatoes = s.tomatoes;
@@ -3744,6 +3688,23 @@ atlas.width = atlas.height = T*ATLAS_N;
   tile(119,(x,y)=>{                                                 // 🛣️ Asphalt mit Mittelstreifen
     if (y>=6 && y<=9) return vary(246,240,210,8);                   // weißer Streifen
     return (rnd()<0.10 ? vary(78,80,86,6) : vary(62,64,70,10));
+  });
+  tile(123,(x,y)=>{                                                 // 🤖 Roboter-Panzerung
+    if (x===0||y===0||x===15||y===15) return vary(72,84,104,8);     // dunkle Fugen
+    if ((x%7===0 && y>1 && y<14) || (y%7===0 && x>1 && x<14)) return vary(96,112,138,8);
+    if ((x===3||x===12) && (y===3||y===12)) return vary(226,180,60,10);   // Schrauben
+    if (x+y < 9) return vary(196,212,236,10);                       // Glanzlicht
+    return vary(150,168,196,12);                                    // Stahlblau
+  });
+  tile(124,(x,y)=>{                                                 // 🤖 die Kanzel im Kopf
+    if (x===0||y===0||x===15||y===15) return vary(72,84,104,8);
+    if (y>=3 && y<=10 && x>=2 && x<=13) {                           // die große Scheibe
+      if ((x===2||x===13||y===3||y===10)) return vary(96,112,138,8); // Rahmen
+      if ((x+y)%5===0) return vary(190,240,255,14);                  // Spiegelungen
+      return vary(60,140,190,14);
+    }
+    if (y>=12 && (x===3||x===4||x===11||x===12)) return 'rgb(255,60,50)';   // rote Lampen
+    return vary(150,168,196,12);
   });
   tile(116,(x,y)=>{                                                 // 👹 Riesen-Haut
     if (((x*5+y*3)%13) < 2) return vary(74,96,56,14);                // dunkle Flecken
@@ -4245,6 +4206,7 @@ function physics(dt) {
   if (dragonRiding) { dragonPhysics(dt); return; }
   if (boatRiding) { boatPhysics(dt); return; }
   if (cartRiding) { cartPhysics(dt); return; }
+  if (roboterRiding) { roboterPhysics(dt); return; }   // 🤖 der Riesen-Roboter!
   if (baggerRiding) { baggerPhysics(dt); return; }
   if (carRiding) { carPhysics(dt); return; }
   if (riding) { ridePhysics(dt); return; }
@@ -4483,7 +4445,8 @@ const ANIMAL_KIND = {
   raeuber:  { speed:2.0, half:0.32, height:1.8,  tile:82, face:21 },
   blitzmaus:{ speed:2.2, half:0.3,  height:0.75, tile:73, face:73 },
   boss:     { speed:1.3, half:0.75, height:1.7,  tile:53, face:54 },
-  riese:    { speed:1.7, half:1.5,  height:5.4,  tile:116, face:117 },
+  riese:    { speed:1.7, half:0.8,  height:4.0,  tile:116, face:117 },
+  roboter:  { speed:0,   half:1.9,  height:9.0,  tile:123, face:124 },
   boat:     { speed:0,   half:0.7,  height:0.9,  tile:8,  face:8 },
   kabine:   { speed:0,   half:1.0,  height:0.3,  tile:86, face:86 },
   hausmeister:{speed:1.2, half:0.3, height:1.8,  tile:40, face:21 },
@@ -5100,39 +5063,24 @@ function spawnTick() {
   // 🚀 Auf den Planeten ist es still: dort gibt es keine Tiere, Dorfleute oder Monster
   if (weltDim >= 2) { if (weltDim === 9) hofstaatTick(); return; }
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
-  {                                     // 👹 im Riesen-Lager wohnen immer drei Riesen
-    const L = riesenLager();
-    if (Math.hypot(L.lx-player.x, L.lz-player.z) < 70) {
-      const lch = getChunk(L.lx>>4, L.lz>>4);
-      if (lch && lch.data) {
-        const da = countType(a=>a.type==='riese' && a.home==='riesenlager');
-        for (let i=da; i<3; i++) {
-          const rx = L.lx + [-9,9,0][i], rz = L.lz + [-4,-4,10][i];
-          animals.push({type:'riese', name:['Grimm','Knorx','Brummbär'][i],
-            x:rx+0.5, y:L.base+1.2, z:rz+2.5, yaw:Math.random()*6.3, vy:0, kx:0, kz:0,
-            hp:15, walking:false, t:2, ph:0, onGround:false,
-            home:'riesenlager', hx:rx+0.5, hz:rz+2.5});
-        }
-        if (da === 0) toast('👹 Du bist am RIESEN-LAGER! Drei Riesen wohnen hier - besiege sie! ' +
-                            'Tipp: mit 🦸 Superkräften schaffst du jeden mit EINEM Schlag!', 6000);
-      }
-    }
-  }
-  if (isNight() && countType(a=>a.type==='riese') < 1 && Math.random() < 0.06) {
-    const rang=Math.random()*Math.PI*2, rd=26+Math.random()*16;   // nachts stapft einer umher
+  // 👹 DIE RIESEN streifen frei durch die Welt - bei Tag UND bei Nacht.
+  // Sie wohnen nirgendwo, sie stapfen einfach herum und stürmen auf Jonah zu!
+  if (countType(a=>a.type==='riese') < 2 && Math.random() < 0.13) {
+    const rang=Math.random()*Math.PI*2, rd=32+Math.random()*22;
     const rx=Math.floor(player.x+Math.cos(rang)*rd), rz=Math.floor(player.z+Math.sin(rang)*rd);
-    let weit=true;
-    for (let vz3=Math.floor((rz-30)/VCELL); vz3<=Math.floor((rz+30)/VCELL) && weit; vz3++)
-      for (let vx3=Math.floor((rx-30)/VCELL); vx3<=Math.floor((rx+30)/VCELL) && weit; vx3++) {
+    let weit=true;                      // nur nicht mitten ins Dorf!
+    for (let vz3=Math.floor((rz-26)/VCELL); vz3<=Math.floor((rz+26)/VCELL) && weit; vz3++)
+      for (let vx3=Math.floor((rx-26)/VCELL); vx3<=Math.floor((rx+26)/VCELL) && weit; vx3++) {
         const v=villageAt(vx3,vz3);
-        if (v && Math.hypot(v.vx-rx, v.vz-rz)<30) weit=false;      // nicht bei den Dörfern
+        if (v && Math.hypot(v.vx-rx, v.vz-rz)<26) weit=false;
       }
     const rh = terrainHeight(rx,rz);
-    if (weit && rh > SEA+1) {
-      animals.push({type:'riese', name:'Nacht-Riese', x:rx+0.5, y:rh+1.2, z:rz+0.5,
-        yaw:Math.random()*6.3, vy:0, kx:0, kz:0, hp:15, walking:false, t:2, ph:0,
-        onGround:false, hx:rx+0.5, hz:rz+0.5});
-      toast('👹 Ein RIESE stapft durch die Nacht! Hörst du seine Schritte? Besiege ihn!', 5000);
+    if (weit && rh > SEA+1 && !collideBox(rx+0.5, rh+1.2, rz+0.5, 1.5, 5.4)) {
+      const namen = ['Grimm','Knorx','Brummbär','Donnerfaust','Steinbeißer','Wackelzahn'];
+      animals.push({type:'riese', name:namen[Math.floor(Math.random()*namen.length)],
+        x:rx+0.5, y:rh+1.2, z:rz+0.5, yaw:Math.random()*6.3, vy:0, kx:0, kz:0, hp:15,
+        walking:false, t:2, ph:0, onGround:false, hx:rx+0.5, hz:rz+0.5});
+      toast('👹 STAMPF, STAMPF... ein RIESE kommt auf dich zu! Besiege ihn - oder lauf weg!', 5000);
       blip(45,0.3); blip(38,0.35);
     }
   }
@@ -5660,6 +5608,15 @@ function updateAnimals(dt) {
         const ny=a.y+a.vy*dt;
         if (!collideBox(a.x,ny,a.z,1.1,1.2) && ny > SEA+0.8) a.y=ny; else a.vy=0;
       }
+      continue;
+    }
+    if (a.type==='roboter') {           // 🤖 Jonahs Riesen-Roboter
+      if (a===roboterRiding) continue;  // Jonah steuert ihn gerade selbst
+      a.walking = false;                // sonst wartet er brav dort, wo er geparkt ist
+      a.vy = Math.max(a.vy - 25*dt, -40);
+      const nyR = a.y + Math.max(a.vy*dt, -0.9);
+      if (!collideBox(a.x, nyR, a.z, 1.5, 8.6)) a.y = nyR;
+      else { a.vy = 0; a.onGround = true; }
       continue;
     }
     if (a.type==='bagger') {            // der Riesen-Bagger parkt brav und sinkt sanft
@@ -6397,6 +6354,30 @@ function drawAnimals() {
         pushBox(arr,a, 0,1.9,0, 0.5,0.09,0.5, 55);                 // Zylinder
         pushBox(arr,a, 0,2.02,0, 0.3,0.22,0.3, 55);
         pushBox(arr,a, 0.34,1.24,-0.28, 0.34,0.04,0.28, 49);       // silbernes Tablett
+      }
+      if (a.type==='roboter') {                                    // 🤖 DER RIESEN-ROBOTER!
+        const kR = ANIMAL_KIND.roboter;
+        const sw3 = a.walking ? Math.sin(a.ph)*0.85 : 0;
+        // 🦾 haut er gerade zu? Dann schnellen beide Arme nach VORNE!
+        const st3 = a.faustT > 0 ? -2.8*Math.sin((0.35-a.faustT)/0.35*Math.PI) : 0;
+        const arm = st3 ? st3 : (a.walking ? Math.sin(a.ph)*0.5 : 0);
+        pushBox(arr,a, -0.85,0.35,sw3*0.5, 1.0,0.35,1.7, 3);          // dicke Füße
+        pushBox(arr,a,  0.85,0.35,-sw3*0.5, 1.0,0.35,1.7, 3);
+        pushBox(arr,a, -0.85,1.9,sw3, 0.9,2.7,0.9, kR.tile);          // Beine
+        pushBox(arr,a,  0.85,1.9,-sw3, 0.9,2.7,0.9, kR.tile);
+        pushBox(arr,a, 0,3.5,0, 2.6,0.6,1.6, 3);                      // Hüfte
+        pushBox(arr,a, 0,5.1,0, 3.1,2.7,2.0, kR.tile);                // der breite Rumpf
+        pushBox(arr,a, 0,5.4,-1.05, 0.9,0.9,0.12, 27);                // leuchtender Brustkern
+        pushBox(arr,a, -2.05,st3?5.6:5.2,arm, 0.9,st3?0.9:3.0,st3?3.0:0.9, kR.tile);   // lange Arme
+        pushBox(arr,a,  2.05,st3?5.6:5.2,st3?arm:-arm, 0.9,st3?0.9:3.0,st3?3.0:0.9, kR.tile);
+        pushBox(arr,a, -2.05,st3?5.6:3.5,st3?arm*1.55:arm*1.3, 1.25,1.25,1.25, 3);     // dicke Fäuste
+        pushBox(arr,a,  2.05,st3?5.6:3.5,st3?arm*1.55:-arm*1.3, 1.25,1.25,1.25, 3);
+        pushBox(arr,a, 0,6.9,0, 1.3,1.6,1.3, 3);                      // kräftiger Hals
+        pushBox(arr,a, 0,8.5,0, 2.4,1.9,2.2, kR.tile, kR.face);       // DER KOPF mit der Kabine
+        pushBox(arr,a, -0.75,9.7,0, 0.16,0.9,0.16, 3);                // zwei Antennen
+        pushBox(arr,a,  0.75,9.7,0, 0.16,0.9,0.16, 3);
+        pushBox(arr,a, -0.75,10.2,0, 0.3,0.3,0.3, 25);
+        pushBox(arr,a,  0.75,10.2,0, 0.3,0.3,0.3, 25);
       }
       if (a.type==='riese') {                                      // 👹 DER RIESE: 5 Blöcke hoch!
         const k2 = ANIMAL_KIND.riese, sw2 = a.walking ? Math.sin(a.ph)*0.5 : 0;
@@ -10693,7 +10674,6 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   const ft=fortressPos(); marks.push({x:ft.fx, z:ft.gz, e:'🏰'});
   const A=arcadePos(); marks.push({x:A.ax, z:A.az, e:'🕹️'});
   const RS=raketenPos(); marks.push({x:RS.rx, z:RS.rz, e:'🚀'});
-  const RL=riesenLager(); marks.push({x:RL.lx, z:RL.lz, e:'👹'});
   const MB=burgPos(); marks.push({x:MB.bx, z:MB.bz, e:'👑'});
   return marks;
 }
@@ -10731,12 +10711,13 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   mapMarks = collectMarks(mapCx, mapCz, mapR);
   document.getElementById('mapLegend').innerHTML = weltDim >= 2
     ? '🔺 Du &middot; 🚀 Deine Rakete &middot; ' + (weltDim===9 ? '👑 Dein Schloss &middot; ' : '') + PLANET[weltDim].name
-    : '🔺 Du &middot; 👑 Festung &middot; 🏠 Dorf &middot; 👹 Riesen-Lager &middot; 🚀 Rakete &middot; 📍 Ziel';
+    : '🔺 Du &middot; 👑 Festung &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚀 Rakete &middot; 📍 Ziel';
 }
 function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der Karte!
   const out=[];
   for (const a of animals) {
     if (a.type==='bagger') out.push({x:a.x, z:a.z, e:'🚜'});
+    else if (a.type==='roboter') out.push({x:a.x, z:a.z, e:'🤖'});
     else if (a.type==='dragon') out.push({x:a.x, z:a.z, e:'🐉'});
     else if (a.type==='heli') out.push({x:a.x, z:a.z, e:'🚁'});
     else if (a.type==='jet') out.push({x:a.x, z:a.z, e:'✈️'});
@@ -11383,6 +11364,126 @@ function baggerPhysics(dt) {
   }
 }
 
+// --------------------- 🤖 DER RIESEN-ROBOTER --------------------------------
+// Jonah klettert oben in die Kopf-Kabine. Was er dort drin macht, macht der
+// ganze RIESE: geht er nach vorne, stampft der Roboter nach vorne!
+let roboterRiding = null;
+let faustKuehl = 0;                     // 🦾 wie lange lädt die Faust noch?
+const ROB_H = 8.6, ROB_HALF = 1.5;      // so groß ist der Blechkerl wirklich
+function enterRoboter(a) {
+  if (riding) dismount();
+  if (flying) toggleFly();
+  sitting = null;
+  roboterRiding = a;
+  a.stampf = 0;
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='flex'; rb.textContent='🅿️';
+  document.getElementById('faustBtn').style.display='flex';
+  toast('🤖 DU SITZT IN DER KOPF-KABINE! Geh los - der RIESEN-ROBOTER geht mit dir mit! ' +
+        '(🦾 = Riesenfaust, 🅿️ = aussteigen)', 5000);
+  blip(70,0.22); blip(95,0.18); blip(130,0.14);
+}
+function exitRoboter() {
+  const a = roboterRiding;
+  roboterRiding = null;
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='none'; rb.textContent='🐴';
+  document.getElementById('faustBtn').style.display='none';
+  if (a) {                              // die Leiter runter - Jonah steht neben ihm
+    const gy = terrainHeight(Math.floor(a.x+3), Math.floor(a.z)) + 1.05;
+    player.x = a.x + 3; player.z = a.z; player.y = Math.max(gy, a.y + 0.1);
+    if (collideBox(player.x, player.y, player.z, P_HALF, P_HEIGHT)) {
+      player.x = a.x - 3;
+      player.y = Math.max(terrainHeight(Math.floor(a.x-3), Math.floor(a.z)) + 1.05, a.y + 0.1);
+    }
+    player.vx = player.vy = player.vz = 0;
+  }
+  toast('🅿️ Der Roboter wartet hier auf dich!', 1800);
+  blip(300,0.08); blip(220,0.08);
+  scheduleSave();
+}
+function roboterPhysics(dt) {
+  const a = roboterRiding;
+  let mf=0, ms=0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf,ms);
+  if (ml>1) { mf/=ml; ms/=ml; }
+  const speed = 5.2;                    // riesige Schritte!
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+  const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
+  a.walking = ml>0.05;
+  if (a.walking) { a.yaw=Math.atan2(vx,-vz); a.ph += dt*4.2; }
+  const jump = jumpHeld || keys['Space'];
+  a.vy = Math.max(a.vy-25*dt, -40);
+  if (jump && a.onGround) { a.vy = 11; a.onGround = false; }   // ein RIESEN-Satz!
+  // die Welt vor ihm schon mal laden - er ist ja so schnell
+  if (a.walking) {
+    const ll=Math.hypot(vx,vz)||1;
+    ensureData(Math.floor(a.x+vx/ll*12)>>4, Math.floor(a.z+vz/ll*12)>>4);
+  }
+  const stuck = collideBox(a.x,a.y,a.z,ROB_HALF,ROB_H);
+  let blocked=false;
+  const nx=a.x+vx*dt;
+  if (stuck || !collideBox(nx,a.y,a.z,ROB_HALF,ROB_H)) a.x=nx; else blocked=true;
+  const nz=a.z+vz*dt;
+  if (stuck || !collideBox(a.x,a.y,nz,ROB_HALF,ROB_H)) a.z=nz; else blocked=true;
+  if (blocked && a.onGround && !jump) a.vy = 9;   // er steigt einfach drüber
+  const ny=a.y+Math.max(a.vy*dt,-0.9);
+  a.onGround=false;
+  if (stuck || !collideBox(a.x,ny,a.z,ROB_HALF,ROB_H)) a.y=ny;
+  else { if (a.vy<0) a.onGround=true; a.vy=0; }
+  // STAMPF, STAMPF: bei jedem Schritt wackelt die ganze Welt und Staub fliegt!
+  a.stampf = (a.stampf||0) - dt;
+  if (a.walking && a.onGround && a.stampf<=0) {
+    a.stampf = 0.62;
+    shake = Math.max(shake, 0.22);
+    blip(55,0.16); blip(80,0.1);
+    for (let s2=0;s2<7;s2++)
+      fireworks.push({x:a.x+(Math.random()-0.5)*3, y:a.y+0.2, z:a.z+(Math.random()-0.5)*3,
+        vx:(Math.random()-0.5)*3, vy:1+Math.random()*2, vz:(Math.random()-0.5)*3, tile:52, t:0.45});
+  }
+  if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
+  // Jonah sitzt oben IM KOPF - von dort schaut er über die ganze Welt!
+  player.x=a.x; player.z=a.z; player.y=a.y+7.3;
+  player.vx=player.vy=player.vz=0;
+  if (a.y<CH_MIN+2) {                   // tief gefallen? Zauber-Rettung - MIT Roboter!
+    exitRoboter();
+    retteZurueck();
+    a.x=player.x+3; a.z=player.z; a.y=player.y+0.5; a.vy=0;
+  }
+}
+// 🦾 DIE RIESENFAUST: ein Hieb, und alle Monster vor dir fliegen davon!
+function roboterFaust() {
+  if (!roboterRiding || faustKuehl > 0) return;
+  const a = roboterRiding;
+  faustKuehl = 1.2;
+  a.faustT = 0.35;                      // die Faust schnellt nach vorne
+  const bfx=Math.sin(a.yaw), bfz=-Math.cos(a.yaw);
+  const wx=a.x+bfx*3.5, wz=a.z+bfz*3.5;
+  shake = Math.max(shake, 0.5);
+  blip(50,0.22); blip(90,0.14); blip(160,0.1);
+  for (let s2=0;s2<26;s2++)             // WUMMS - eine Wolke aus Funken!
+    fireworks.push({x:wx+(Math.random()-0.5)*3.5, y:a.y+1.5+Math.random()*3, z:wz+(Math.random()-0.5)*3.5,
+      vx:bfx*4+(Math.random()-0.5)*4, vy:1+Math.random()*4, vz:bfz*4+(Math.random()-0.5)*4,
+      tile:s2%3?27:72, t:0.5});
+  let getroffen = 0;
+  for (const m of [...animals]) {
+    if (m === a) continue;
+    if (Math.hypot(m.x-wx, m.z-wz) > 5.5 || Math.abs(m.y-a.y) > 7) continue;
+    if (m.type==='statue') { hitEntity(m, [bfx,0,bfz]); getroffen++; }
+    else if (m.type==='slime'||m.type==='zombie'||m.type==='boss'||m.type==='raeuber'||m.type==='riese') {
+      slimeDamage(m, 20, [bfx*2, 0, bfz*2]);
+      getroffen++;
+    }
+  }
+  toast(getroffen>0 ? '🦾💥 WUMMS!!! Die Riesenfaust hat ' + getroffen + ' Monster weggeboxt!'
+                    : '🦾💨 WUSCH! Die Riesenfaust saust durch die Luft!', 2200);
+}
+
 // ------------------------------ Boote ----------------------------------------
 let boatRiding = null;
 function enterBoat(a) {
@@ -11821,6 +11922,11 @@ function hitEntity(a, dir) {
   if (a.type==='bagger') {              // rauf auf den Riesen-Bagger! 🚜
     if (jetRiding || carRiding || heliRiding || boatRiding || dragonRiding || baggerRiding) return;
     enterBagger(a);
+    return;
+  }
+  if (a.type==='roboter') {             // 🤖 hinein in die Kopf-Kabine!
+    if (jetRiding || carRiding || heliRiding || boatRiding || dragonRiding || baggerRiding || roboterRiding) return;
+    enterRoboter(a);
     return;
   }
   if (a.type==='heli') {                // Einsteigen in den Hubschrauber!
@@ -13142,7 +13248,7 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-const rideOff = ()=>{ if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
+const rideOff = ()=>{ if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
@@ -13155,6 +13261,9 @@ kroneBtnEl.addEventListener('mousedown',e=>{e.preventDefault();kroneWechseln();}
 const zepterBtnEl=document.getElementById('zepterBtn'); // 🪄 zaubern!
 zepterBtnEl.addEventListener('touchstart',e=>{e.preventDefault();zepterZaubern();},{passive:false});
 zepterBtnEl.addEventListener('mousedown',e=>{e.preventDefault();zepterZaubern();});
+const faustBtnEl=document.getElementById('faustBtn');   // 🦾 Roboter-Faust
+faustBtnEl.addEventListener('touchstart',e=>{e.preventDefault();roboterFaust();},{passive:false});
+faustBtnEl.addEventListener('mousedown',e=>{e.preventDefault();roboterFaust();});
 const superBtnEl=document.getElementById('superBtn');   // 🦸 Superkräfte!
 superBtnEl.addEventListener('touchstart',e=>{e.preventDefault();superStart();},{passive:false});
 superBtnEl.addEventListener('mousedown',e=>{e.preventDefault();superStart();});
@@ -13413,6 +13522,12 @@ function frame(now) {
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
   flugTick(dt);                         // 🚀 läuft gerade ein Raketenflug?
   superTick(dt);                        // 🦸 laufen die Superkräfte?
+  if (faustKuehl > 0) {                 // 🦾 die Roboter-Faust lädt nach
+    faustKuehl -= dt;
+    const fb2 = document.getElementById('faustBtn');
+    fb2.className = faustKuehl > 0 ? 'hud btn warte' : 'hud btn';
+  }
+  if (roboterRiding && roboterRiding.faustT > 0) roboterRiding.faustT -= dt;
   if (steuerZeit > 0) steuerZeit = Math.max(0, steuerZeit - dt);   // 💰 Steuer-Pause läuft
   if (zepterKuehl > 0) {                // 🪄 das Zepter lädt sich auf
     zepterKuehl -= dt;
@@ -13756,6 +13871,26 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     animals.push({type:'dragon', x:dx2+0.5, y:terrainHeight(dx2,dz2)+2.5, z:dz2+0.5,
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
     setTimeout(()=>toast('🐉 Ein lieber Drache ist bei dir gelandet! Tippe ihn an und flieg mit ihm!', 5000), 3500);
+  }
+  // 🤖 DEIN RIESEN-ROBOTER!
+  if (savedRoboter) {
+    let ry2 = savedRoboter[1];
+    if (ry2 <= CH_MIN+3) ry2 = terrainHeight(Math.floor(savedRoboter[0]), Math.floor(savedRoboter[2])) + 1;
+    animals.push({type:'roboter', x:savedRoboter[0], y:ry2, z:savedRoboter[2],
+      yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
+  } else {
+    let rx2=Math.floor(player.x)-10, rz2=Math.floor(player.z)+10;
+    for (let r=8; r<34; r+=2) {         // ein schöner flacher Platz für den Riesen
+      let ok=true;
+      const x=Math.floor(player.x)-r, z=Math.floor(player.z)+r;
+      for (let qx=-3;qx<=3 && ok;qx++) for (let qz=-3;qz<=3 && ok;qz++)
+        if (terrainHeight(x+qx,z+qz)<=SEA || Math.abs(terrainHeight(x+qx,z+qz)-terrainHeight(x,z))>1) ok=false;
+      if (ok) { rx2=x; rz2=z; break; }
+    }
+    animals.push({type:'roboter', x:rx2+0.5, y:terrainHeight(rx2,rz2)+1, z:rz2+0.5,
+      yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
+    setTimeout(()=>toast('🤖 EIN RIESEN-ROBOTER ist für dich gebaut worden! Er ist NEUN Blöcke hoch - ' +
+      'tippe ihn an, dann sitzt du oben in der Kopf-Kabine und steuerst ihn!', 6500), 9000);
   }
   // Dein RIESEN-BAGGER! 🚜
   if (savedBagger) {
