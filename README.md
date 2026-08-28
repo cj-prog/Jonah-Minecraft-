@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der Roboter STAPFT DIR NACH - und hat zu Hause einen eigenen
+  ROBOTER-PLATZ (v185)! 🤖👣 Dein Riesen-Roboter bleibt nicht mehr
+  irgendwo stehen, wo du ihn zuletzt geparkt hast: Sobald du weiter
+  als 26 Blöcke weg bist, setzt er sich in Bewegung und kommt dir
+  mit riesigen Schritten nachgestapft - je weiter weg du bist,
+  desto größere Schritte macht er, und bei jedem Schritt wackelt
+  der Boden und Staub wirbelt auf. Ist er wieder bei dir, bleibt er
+  ruhig stehen und wartet. Und wenn du hinter der großen Mauer in
+  deiner Festung bist, geht er von allein auf seinen eigenen
+  ROBOTER-PLATZ: ein großer Landeplatz im Osthof mit grauem Belag,
+  weißem Lande-Kreuz, goldenem Rand, vier Laternen an den Ecken und
+  einem Schild. Dort parkt er, bis du wieder losziehst.
 - DEIN RIESEN-ROBOTER KANN FLIEGEN (v184)! 🤖🚀 In seinen Füßen
   stecken RAKETEN-DÜSEN! Setz dich in die Kopf-Kabine und drück den
   ✈️-Knopf: mit einem lauten Zischen zünden die Düsen, aus beiden
