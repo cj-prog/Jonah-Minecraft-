@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN RIESEN-ROBOTER + freilaufende RIESEN (v183)! 🤖👹 Gleich beim
+  Start wird dir ein RIESEN-ROBOTER angeliefert - neun Blöcke hoch,
+  mit dicken Stahlfäusten, leuchtendem Brustkern und zwei blinkenden
+  Antennen. Tippe ihn an, dann kletterst du oben in die KOPF-KABINE
+  und schaust von ganz oben über die Welt. Und jetzt der Trick: was
+  DU in der Kabine machst, macht der Roboter! Gehst du nach vorne,
+  stampft der Riese nach vorne; gehst du zur Seite, geht er zur
+  Seite. Bei jedem Schritt wackelt der Boden (STAMPF, STAMPF!) und
+  Staub wirbelt auf. Mit 🦾 schnellen beide Riesenfäuste nach vorne
+  und boxen alle Monster im Umkreis weg - WUMMS! Mit 🅿️ steigst du
+  aus, dann wartet er genau dort auf dich (auch nach dem Neuladen)
+  und steht als 🤖 auf deiner Karte. Außerdem wohnen die RIESEN
+  nicht mehr in einem Riesendorf: sie laufen jetzt frei durch die
+  ganze Welt, haben Namen wie Grimm, Knorx oder Donnerfaust - und
+  sobald sie dich sehen, RENNEN sie auf dich zu, genau wie Räuber
+  und Monster!
 - RAKETEN-PARKPLATZ statt Raketen im Weg (v182)! 🅿️🚀 Bisher hat der
   🆘-Knopf jedes Mal eine NEUE Rakete genau dort gebaut, wo du gerade
   standest - irgendwann standen überall Raketen herum, sogar mitten
