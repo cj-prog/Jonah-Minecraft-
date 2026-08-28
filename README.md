@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN RIESEN-ROBOTER KANN FLIEGEN (v184)! 🤖🚀 In seinen Füßen
+  stecken RAKETEN-DÜSEN! Setz dich in die Kopf-Kabine und drück den
+  ✈️-Knopf: mit einem lauten Zischen zünden die Düsen, aus beiden
+  Fußsohlen schießt ein Feuerstrahl, hinten fahren die Schulter-
+  Raketen aus - und der neun Blöcke hohe Riese HEBT AB! Mit ⬆
+  steigst du höher, mit ⬇ sinkst du wieder, und wenn du nichts
+  drückst, schwebt er einfach still in der Luft. In der Luft ist er
+  doppelt so schnell wie zu Fuß, du kannst also über Berge, Wälder
+  und das ganze Meer fliegen und von ganz oben auf deine Welt
+  hinunterschauen. Noch mal ✈️ drücken, und er landet wieder. Steigst
+  du in der Luft aus, gehen die Düsen von allein aus - der Roboter
+  sinkt dann sanft zu Boden und wartet dort auf dich.
 - DEIN RIESEN-ROBOTER + freilaufende RIESEN (v183)! 🤖👹 Gleich beim
   Start wird dir ein RIESEN-ROBOTER angeliefert - neun Blöcke hoch,
   mit dicken Stahlfäusten, leuchtendem Brustkern und zwei blinkenden

@@ -543,7 +543,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 183 &middot; RIESEN laufen frei + DEIN RIESEN-ROBOTER! 👹🤖</p>
+    Version 184 &middot; DEIN RIESEN-ROBOTER KANN FLIEGEN! 🤖🚀</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -589,7 +589,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 183;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 184;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -4903,6 +4903,18 @@ let wfSoundT = 0;                       // Wasserfall-Rauschen-Takt
 let downHeld = false;
 
 function toggleFly() {
+  if (roboterRiding) {                  // 🤖🚀 DER FLIEGENDE RIESEN-ROBOTER!
+    const r = roboterRiding;
+    r.flug = !r.flug;
+    if (r.flug) r.vy = 0;
+    document.getElementById('flyBtn').classList.toggle('on', r.flug);
+    document.getElementById('downBtn').style.display = r.flug ? 'flex' : 'none';
+    toast(r.flug ? '🤖🚀 RAKETEN-DÜSEN AN! Der Riesen-Roboter HEBT AB! (⬆ = höher, ⬇ = tiefer)'
+                 : '🤖 Düsen aus - der Roboter landet wieder auf dem Boden.', 3500);
+    if (r.flug) { blip(120,0.14); blip(300,0.12); blip(700,0.16); }
+    else { blip(500,0.1); blip(200,0.14); }
+    return;
+  }
   if (baggerRiding) {                   // der FLUG-TRAKTOR! 🚜✈️
     baggerRiding.flug = !baggerRiding.flug;
     document.getElementById('flyBtn').classList.toggle('on', baggerRiding.flug);
@@ -6378,6 +6390,19 @@ function drawAnimals() {
         pushBox(arr,a,  0.75,9.7,0, 0.16,0.9,0.16, 3);
         pushBox(arr,a, -0.75,10.2,0, 0.3,0.3,0.3, 25);
         pushBox(arr,a,  0.75,10.2,0, 0.3,0.3,0.3, 25);
+        if (a.flug) {                                                // 🚀 DIE RAKETEN-DÜSEN!
+          const fl = 0.7 + Math.abs(Math.sin(performance.now()*0.02))*0.9;
+          pushBox(arr,a, -0.85,0.1,0, 1.0,0.3,1.4, 3);               // Düsen-Ringe unter den Füßen
+          pushBox(arr,a,  0.85,0.1,0, 1.0,0.3,1.4, 3);
+          pushBox(arr,a, -0.85,-fl*0.5,0, 0.7,fl,0.9, 27);           // heller Feuerstrahl
+          pushBox(arr,a,  0.85,-fl*0.5,0, 0.7,fl,0.9, 27);
+          pushBox(arr,a, -0.85,-fl*0.85,0, 0.4,fl*0.7,0.5, 72);
+          pushBox(arr,a,  0.85,-fl*0.85,0, 0.4,fl*0.7,0.5, 72);
+          pushBox(arr,a, -1.9,5.1,1.15, 0.5,1.6,0.5, 3);             // Schulter-Raketen hinten
+          pushBox(arr,a,  1.9,5.1,1.15, 0.5,1.6,0.5, 3);
+          pushBox(arr,a, -1.9,4.1,1.15, 0.4,fl*0.8,0.4, 27);
+          pushBox(arr,a,  1.9,4.1,1.15, 0.4,fl*0.8,0.4, 27);
+        }
       }
       if (a.type==='riese') {                                      // 👹 DER RIESE: 5 Blöcke hoch!
         const k2 = ANIMAL_KIND.riese, sw2 = a.walking ? Math.sin(a.ph)*0.5 : 0;
@@ -11380,12 +11405,17 @@ function enterRoboter(a) {
   rb.style.display='flex'; rb.textContent='🅿️';
   document.getElementById('faustBtn').style.display='flex';
   toast('🤖 DU SITZT IN DER KOPF-KABINE! Geh los - der RIESEN-ROBOTER geht mit dir mit! ' +
-        '(🦾 = Riesenfaust, 🅿️ = aussteigen)', 5000);
+        '(✈️ = Raketen-Düsen zum FLIEGEN, 🦾 = Riesenfaust, 🅿️ = aussteigen)', 5500);
   blip(70,0.22); blip(95,0.18); blip(130,0.14);
 }
 function exitRoboter() {
   const a = roboterRiding;
   roboterRiding = null;
+  if (a && a.flug) {                    // Düsen aus beim Aussteigen
+    a.flug = false;
+    document.getElementById('flyBtn').classList.remove('on');
+    if (!flying) document.getElementById('downBtn').style.display='none';
+  }
   const rb = document.getElementById('rideBtn');
   rb.style.display='none'; rb.textContent='🐴';
   document.getElementById('faustBtn').style.display='none';
@@ -11412,18 +11442,33 @@ function roboterPhysics(dt) {
   mf += joy.fwd; ms += joy.strafe;
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
-  const speed = 5.2;                    // riesige Schritte!
+  const speed = a.flug ? 11 : 5.2;      // mit Düsen saust er durch die Luft!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
-  a.walking = ml>0.05;
-  if (a.walking) { a.yaw=Math.atan2(vx,-vz); a.ph += dt*4.2; }
+  a.walking = ml>0.05 && !a.flug;       // in der Luft stampft er nicht, er schwebt
+  if (ml>0.05) a.yaw=Math.atan2(vx,-vz);
+  if (a.walking) a.ph += dt*4.2;
   const jump = jumpHeld || keys['Space'];
-  a.vy = Math.max(a.vy-25*dt, -40);
-  if (jump && a.onGround) { a.vy = 11; a.onGround = false; }   // ein RIESEN-Satz!
+  if (a.flug) {                         // 🚀 DIE RAKETEN-DÜSEN in den Füßen!
+    a.vy = jump ? 7.5 : downHeld ? -7.5 : 0;
+    a.duese = (a.duese||0) - dt;
+    if (a.duese <= 0) {                 // Feuerstrahl aus beiden Fußsohlen
+      a.duese = 0.05;
+      const sx=Math.cos(a.yaw), sz=Math.sin(a.yaw);
+      for (const s of [-0.85, 0.85])
+        fireworks.push({x:a.x+sx*s, y:a.y+0.15, z:a.z+sz*s,
+          vx:(Math.random()-0.5)*1.2, vy:-3-Math.random()*3, vz:(Math.random()-0.5)*1.2,
+          tile:Math.random()<0.5?27:72, t:0.35});
+    }
+    if (Math.random()<dt*3) blip(90+Math.random()*40, 0.06);   // Düsen-Rauschen
+  } else {
+    a.vy = Math.max(a.vy-25*dt, -40);
+    if (jump && a.onGround) { a.vy = 11; a.onGround = false; }   // ein RIESEN-Satz!
+  }
   // die Welt vor ihm schon mal laden - er ist ja so schnell
-  if (a.walking) {
+  if (ml>0.05) {
     const ll=Math.hypot(vx,vz)||1;
-    ensureData(Math.floor(a.x+vx/ll*12)>>4, Math.floor(a.z+vz/ll*12)>>4);
+    ensureData(Math.floor(a.x+vx/ll*(a.flug?18:12))>>4, Math.floor(a.z+vz/ll*(a.flug?18:12))>>4);
   }
   const stuck = collideBox(a.x,a.y,a.z,ROB_HALF,ROB_H);
   let blocked=false;
