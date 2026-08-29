@@ -569,7 +569,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 190 &middot; DER TELEPORT-KNOPF ist da! 🛸✨</p>
+    Version 191 &middot; Der Hausmeister FLIEGT zu hohen Löchern! 🔧✈️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -615,7 +615,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 190;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 191;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -6085,7 +6085,9 @@ function updateAnimals(dt) {
     const inWater = getBlock(Math.floor(a.x),Math.floor(a.y+0.3),Math.floor(a.z))===WATER;
     const mensch = a.type==='villager'||a.type==='kid'||a.type==='trader'||a.type==='knight'||
                    a.type==='hausmeister'||a.type==='butler';
-    if (inWater) {
+    if (a.flug) {                       // 🔧✈️ Düsen-Rucksack an: keine Schwerkraft!
+      a.vy = a.steig || 0;
+    } else if (inWater) {
       if (mensch) {                     // Menschen tauchen erst unter - wie Jonah!
         if (!a.warImWasser && (a.trockenT===undefined || a.trockenT>0.5)) {
           a.tauchT = 0;                 // frischer Sprung ins Wasser (kein Gebobbe)
@@ -6444,6 +6446,17 @@ function drawAnimals() {
         pushBox(arr,a, 0,1.9,-0.3, 0.36,0.07,0.12, 73);            // Schirm
         pushBox(arr,a, 0.36,1.02,0.06, 0.24,0.22,0.32, 25);        // roter Werkzeugkasten
         pushBox(arr,a, 0.36,1.16,0.06, 0.08,0.1,0.14, 3);          // Kasten-Griff
+        if (a.flug) {                                              // ✈️ DER DÜSEN-RUCKSACK!
+          const fl2 = 0.28 + Math.abs(Math.sin(performance.now()*0.03))*0.34;
+          pushBox(arr,a, -0.16,1.24,0.26, 0.2,0.62,0.2, 3);        // zwei Tanks auf dem Rücken
+          pushBox(arr,a,  0.16,1.24,0.26, 0.2,0.62,0.2, 3);
+          pushBox(arr,a, -0.16,1.58,0.26, 0.24,0.1,0.24, 73);      // gelbe Deckel
+          pushBox(arr,a,  0.16,1.58,0.26, 0.24,0.1,0.24, 73);
+          pushBox(arr,a, -0.16,0.9-fl2*0.5,0.26, 0.16,fl2,0.16, 27);   // Feuerstrahl
+          pushBox(arr,a,  0.16,0.9-fl2*0.5,0.26, 0.16,fl2,0.16, 27);
+          pushBox(arr,a, -0.16,0.86-fl2*0.9,0.26, 0.1,fl2*0.7,0.1, 72);
+          pushBox(arr,a,  0.16,0.86-fl2*0.9,0.26, 0.1,fl2*0.7,0.1, 72);
+        }
       }
       if (a.type==='bankier') {                                    // 🏦 Hemd, Krawatte, Visier-Mütze
         pushBox(arr,a, 0,1.14,-0.16, 0.26,0.52,0.02, 49);          // weißes Hemd
@@ -8753,8 +8766,11 @@ function schadenArt(x, y, z) {
   if (art === 'bau') return 'bau';
   return imBurgGelaende(x,z) ? 'erde' : null;
 }
-function sucheLoch(mx, my, mz, r) {     // fehlt irgendwo in der Nähe ein Block?
-  for (let y=my+4; y>=my-4; y--)
+// Sucht ein fehlendes Stück in der Nähe. hoch/tief sagen, wie weit er nach oben
+// und unten schaut - der fliegende Hausmeister guckt viel weiter hinauf! 🔧✈️
+function sucheLoch(mx, my, mz, r, hoch, tief) {
+  const H = hoch===undefined ? 4 : hoch, T = tief===undefined ? 4 : tief;
+  for (let y=my+H; y>=my-T; y--)
     for (let dx=-r; dx<=r; dx++)
       for (let dz=-r; dz<=r; dz++) {
         const x=mx+dx, z=mz+dz;
@@ -8777,9 +8793,32 @@ function hausmeisterTick(a, dt) {
   a.repT = (a.repT===undefined ? 1.5 : a.repT-dt);
   if (a.ziel) {                         // er ist auf dem Weg zu einem Loch
     const dx=a.ziel[0]+0.5-a.x, dz=a.ziel[2]+0.5-a.z, dp=Math.hypot(dx,dz);
+    const hoch = a.ziel[1] + 0.1 - a.y;                 // wie weit ist es hinauf?
     a.yaw = Math.atan2(dx,-dz); a.t = 9;
-    if (dp > 2.2) {
-      a.walking = true; a.spd = 3.6;    // er hat es eilig!
+    // 🔧✈️ DER DÜSEN-RUCKSACK: liegt das Loch hoch oben, hebt er einfach ab!
+    if (!a.flug && hoch > 1.8) {
+      a.flug = true; a.duesenT = 0;
+      if (Math.hypot(a.x-player.x, a.z-player.z) < 26) {
+        sagen(a, 'Hoch da oben? Kein Problem - ich flieg hin! 🔧✈️', 3);
+        blip(220,0.1); blip(330,0.09); blip(520,0.12);
+      }
+    }
+    if (a.flug) {
+      a.steig = Math.max(-4, Math.min(4.5, hoch*2.2));  // sanft auf Loch-Höhe schweben
+      a.spd = 4.4;                                      // in der Luft ist er flott
+      a.duesenT = (a.duesenT||0) - dt;
+      if (a.duesenT <= 0) {                             // Düsen-Wölkchen unter den Füßen
+        a.duesenT = 0.08;
+        fireworks.push({x:a.x+(Math.random()-0.5)*0.4, y:a.y+0.1, z:a.z+(Math.random()-0.5)*0.4,
+          vx:(Math.random()-0.5)*0.8, vy:-1.4-Math.random(), vz:(Math.random()-0.5)*0.8,
+          tile:Math.random()<0.5?52:73, t:0.35});
+      }
+      if (Math.random() < dt*1.5 && Math.hypot(a.x-player.x, a.z-player.z) < 20)
+        blip(150+Math.random()*60, 0.05);               // leises Düsen-Surren
+    }
+    const da = dp <= 2.2 && (!a.flug || Math.abs(hoch) < 1.6);
+    if (!da) {
+      a.walking = true; if (!a.flug) a.spd = 3.6;       // er hat es eilig!
       a.wegT = (a.wegT||0) + dt;        // Mauer oder Wand im Weg? Dann außenrum
       if (a.wegT > 8) {
         a.x = a.ziel[0]+0.5+(Math.random()-0.5); a.z = a.ziel[2]+0.5+(Math.random()-0.5);
@@ -8801,6 +8840,17 @@ function hausmeisterTick(a, dt) {
     }
     return;
   }
+  // 🔧✈️ nichts mehr zu tun in der Luft? Dann schwebt er sanft wieder herunter
+  if (a.flug) {
+    a.steig = -3;
+    a.duesenT = (a.duesenT||0) - dt;
+    if (a.duesenT <= 0) {
+      a.duesenT = 0.1;
+      fireworks.push({x:a.x, y:a.y+0.1, z:a.z, vx:(Math.random()-0.5)*0.6,
+        vy:-1-Math.random(), vz:(Math.random()-0.5)*0.6, tile:52, t:0.3});
+    }
+    if (a.onGround) { a.flug = false; a.steig = 0; a.vy = 0; blip(280,0.08); }
+  }
   if (a.repT > 0) return;
   a.repT = 0.7;
   if (weltDim !== 0 && weltDim !== 9) return;
@@ -8816,8 +8866,9 @@ function hausmeisterTick(a, dt) {
   }
   // 2) Sonst schaut er selbst nach: erst um sich herum, dann bei Jonah
   if (Math.hypot(player.x-B.hx, player.z-B.hz) > 90) return;
-  const loch = sucheLoch(Math.floor(a.x), Math.floor(a.y), Math.floor(a.z), 6) ||
-               sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7);
+  // er schaut jetzt bis 16 Blöcke ÜBER sich - Dächer, hohe Wände, Türme!
+  const loch = sucheLoch(Math.floor(a.x), Math.floor(a.y), Math.floor(a.z), 6, 16, 5) ||
+               sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7, 16, 5);
   if (loch) { a.ziel = loch; a.wegT = 0; return; }
   // nichts kaputt: gemütlich patrouillieren - aber NIE aus der Mauer heraus!
   const raus = weltDim === 9

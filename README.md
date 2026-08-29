@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Der HAUSMEISTER KANN FLIEGEN (v191)! 🔧✈️ Bisher hat Kurt nur
+  Löcher geflickt, an die er zu Fuß herankam - Löcher weiter oben
+  in Wänden, Türmen und Dächern blieben einfach kaputt. Jetzt
+  schaut er beim Suchen SECHZEHN Blöcke weit nach oben, und wenn
+  das Loch zu hoch liegt, ruft er „Hoch da oben? Kein Problem - ich
+  flieg hin!", schnallt seinen DÜSEN-RUCKSACK um und hebt ab: zwei
+  Tanks auf dem Rücken, Feuerstrahl aus den Düsen, kleine
+  Rauchwölkchen hinter ihm. Oben schwebt er vor dem Loch, flickt es
+  mit dem gewohnten Funkeln - und danach sinkt er ganz sanft wieder
+  hinunter und landet. Bei Löchern auf Augenhöhe läuft er wie immer
+  einfach hin. Das gilt auf der Erde genauso wie bei Hausmeister
+  Willi auf deinem Jonah-Planeten.
 - DIE TELEPORT-STATION (v190)! 🛸✨ Neu im Bildschirm: der
   🛸-Knopf. Tipp ihn an, und es geht ein Feld auf - genau wie das
   Bedienungsfeld in deiner Rakete. Darin stehen schon jede Menge
