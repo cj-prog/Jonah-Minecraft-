@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RIESEN-YACHT mit Pool, U-BOOT und Yachten auf dem Meer (v194)!
+  🛥️🟡 Drei Sachen fürs Wasser: (1) DEINE EIGENE RIESEN-YACHT -
+  vierzehn Blöcke lang, weiß, mit Holzdeck, Reling rundherum,
+  großer Kabine, Brücke ganz oben, Mast mit Fahne, Liegestühlen und
+  einem richtigen POOL an Deck! Sie liegt immer im nächsten Wasser
+  bereit, wenn du in der Nähe vom Meer bist, und kommt dir nach,
+  wenn du woanders ans Ufer gehst. Tipp sie an, dann stehst du oben
+  auf der Brücke und fährst los - mit Bugwelle! (2) DEIN U-BOOT:
+  knallgelb, mit Turm, Periskop, Bullaugen, Seitenflossen und einer
+  Schraube, die sich dreht. Mit ⬆ tauchst du auf, mit ⬇ tauchst du
+  ab, und dann fährst du unter Wasser zwischen den Fischen umher -
+  Blubberblasen inklusive. (3) Draußen auf dem Meer kreuzen jetzt
+  FREMDE YACHTEN mit drei bis fünf Gästen an Deck. Yacht und U-Boot
+  stehen als 🛥️ und 🟡 auf deiner Karte und im Teleport-Menü.
 - LIMOUSINE mit Fahrer + BUSSE mit Haltestellen (v193)! 🚙🚌🚏 Deine
   eigene LIMOUSINE wird dir vorgefahren: ganz lang, sechs Räder,
   dunkle Scheiben, goldener Kühlergrill, Königs-Fähnchen - und

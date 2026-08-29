@@ -572,7 +572,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 193 &middot; LIMOUSINE mit Fahrer + BUSSE mit Haltestellen! 🚙🚌🚏</p>
+    Version 194 &middot; RIESEN-YACHT mit Pool + U-BOOT + Yachten auf dem Meer! 🛥️🟡</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -618,7 +618,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 193;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 194;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -4328,6 +4328,7 @@ function physics(dt) {
   if (dragonRiding) { dragonPhysics(dt); return; }
   if (boatRiding) { boatPhysics(dt); return; }
   if (cartRiding) { cartPhysics(dt); return; }
+  if (ubootRiding) { ubootPhysics(dt); return; }      // 🟡 das U-Boot
   if (busRiding) {                      // 🚌 der Busfahrer fährt - Jonah schaut nur zu
     player.vx = player.vy = player.vz = 0;
     return;
@@ -4576,6 +4577,8 @@ const ANIMAL_KIND = {
   riese:    { speed:1.7, half:0.8,  height:4.0,  tile:116, face:117 },
   roboter:  { speed:0,   half:1.9,  height:9.0,  tile:123, face:124 },
   boat:     { speed:0,   half:0.7,  height:0.9,  tile:8,  face:8 },
+  yacht:    { speed:0,   half:2.4,  height:3.4,  tile:49, face:49 },
+  uboot:    { speed:0,   half:1.2,  height:1.8,  tile:73, face:73 },
   kabine:   { speed:0,   half:1.0,  height:0.3,  tile:86, face:86 },
   hausmeister:{speed:1.2, half:0.3, height:1.8,  tile:40, face:21 },
   butler:   { speed:1.3, half:0.3,  height:1.8,  tile:55, face:21 },
@@ -5344,6 +5347,9 @@ function spawnTick() {
   if (countType(a=>a.type==='bird') < 5) spawnBird(14,40);
   if (countType(a=>a.type==='fish') < 6) spawnFish(10,45);
   if (countType(a=>a.type==='boat') < 2) trySpawnBoat();   // Boote am Ufer
+  seeFahrzeugTick();                             // 🛥️🟡 Yacht und U-Boot ans nächste Wasser
+  if (countType(a=>a.type==='yacht' && a.fremd) < 2 && Math.random() < 0.5)
+    trySpawnSeeYacht();                          // 🛥️ fremde Yachten mit Gästen
   if (countType(a=>a.type==='bus') < 2) {        // 🚌 Linienbusse auf den Straßen
     for (let v=0; v<14; v++) {
       const ang=Math.random()*Math.PI*2, d=26+Math.random()*44;
@@ -5858,6 +5864,7 @@ function updateAnimals(dt) {
     }
     if (!a.tame && !a.follow && a.type!=='dragon' && a.type!=='statue' &&
         !MITREISER.has(a.type) && a !== busRiding &&        // deine Fahrzeuge bleiben immer!
+        !(a.type==='uboot') && !(a.type==='yacht' && !a.fremd) &&
         !(a.type==='butler' && a.befehl==='folgen') &&      // der Butler kommt überall mit!
         !a.beute &&                       // 💰 ein Räuber mit deiner Beute verschwindet NIE!
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
@@ -6114,6 +6121,15 @@ function updateAnimals(dt) {
              : a.type==='raeuber' ? 240+Math.random()*60
              : 85+Math.random()*40, 0.2);                      // Grummeln und Blubbern
     }
+    if (a.type==='yacht' && a.fremd && a!==boatRiding) {   // 🛥️ fremde Yachten kreuzen übers Meer
+      a.kurs = (a.kurs||0) + (Math.random()-0.5)*dt*0.3;
+      const nx2 = a.x + Math.sin(a.kurs)*3.2*dt, nz2 = a.z - Math.cos(a.kurs)*3.2*dt;
+      if (terrainHeight(Math.floor(nx2), Math.floor(nz2)) < SEA-1) { a.x = nx2; a.z = nz2; }
+      else a.kurs += Math.PI*(0.5+Math.random()*0.7);
+      a.yaw = a.kurs;
+      a.y = SEA + 0.2;
+      continue;
+    }
     if (a.type==='bus') {               // 🚌 DER BUS fährt seine Linie und hält an Haltestellen
       busTick(a, dt);
     }
@@ -6328,6 +6344,59 @@ function drawAnimals() {
       pushBox(arr,a,  0.52,0.24, 0.6, 0.14,0.42,0.42, 55);
       pushBox(arr,a, -0.3,0.5,-0.98, 0.2,0.14,0.08, 37);           // Scheinwerfer
       pushBox(arr,a,  0.3,0.5,-0.98, 0.2,0.14,0.08, 37);
+    } else if (a.type==='yacht') {                                 // 🛥️ DIE RIESEN-YACHT!
+      const wippe2 = Math.sin(performance.now()*0.0011 + a.x)*0.06;
+      pushBox(arr,a, 0,0.5+wippe2,0, 4.6,0.9,14.0, 49);            // der weiße Rumpf
+      pushBox(arr,a, 0,0.1+wippe2,0, 4.2,0.5,13.2, 3);             // dunkler Kiel
+      pushBox(arr,a, 0,0.55+wippe2,-7.6, 2.2,0.8,1.6, 49);         // spitzer Bug
+      pushBox(arr,a, 0,1.05+wippe2,0, 4.4,0.2,13.6, 8);            // Holz-Deck
+      pushBox(arr,a, 0,2.0+wippe2,1.4, 3.4,1.6,6.4, 49);           // die große Kabine
+      pushBox(arr,a, 0,2.9+wippe2,1.4, 3.6,0.2,6.6, 42);           // Kabinendach
+      for (const fz of [-1.2, 0.4, 2.0, 3.6]) {                    // Panorama-Fenster
+        pushBox(arr,a, -1.72,2.1+wippe2,fz, 0.06,0.7,1.1, 48);
+        pushBox(arr,a,  1.72,2.1+wippe2,fz, 0.06,0.7,1.1, 48);
+      }
+      pushBox(arr,a, 0,2.1+wippe2,-1.86, 2.6,0.8,0.06, 48);        // Brücken-Fenster
+      pushBox(arr,a, 0,3.6+wippe2,0.2, 2.0,1.2,2.4, 49);           // Oberdeck-Brücke
+      pushBox(arr,a, 0,3.7+wippe2,-1.02, 1.7,0.7,0.06, 48);
+      pushBox(arr,a, 0,4.4+wippe2,0.2, 2.2,0.16,2.6, 42);
+      pushBox(arr,a, 0,5.6+wippe2,0.2, 0.12,2.2,0.12, 3);          // Mast mit Fahne 🚩
+      pushBox(arr,a, 0.5,6.4+wippe2,0.2, 0.9,0.5,0.06, 25);
+      for (let d=-6; d<=6; d+=2) {                                 // Reling rundherum
+        pushBox(arr,a, -2.2,1.5+wippe2,d, 0.1,0.7,0.1, 42);
+        pushBox(arr,a,  2.2,1.5+wippe2,d, 0.1,0.7,0.1, 42);
+      }
+      pushBox(arr,a, -2.2,1.85+wippe2,0, 0.12,0.1,13.0, 42);
+      pushBox(arr,a,  2.2,1.85+wippe2,0, 0.12,0.1,13.0, 42);
+      pushBox(arr,a, 0,1.2+wippe2,5.6, 2.2,0.14,2.6, 9);           // der POOL an Deck! 🏊
+      pushBox(arr,a, 0,1.16+wippe2,5.6, 2.6,0.2,3.0, 49);
+      pushBox(arr,a, -1.4,1.35+wippe2,-4.4, 0.7,0.24,0.7, 73);     // Liegestühle
+      pushBox(arr,a,  1.4,1.35+wippe2,-4.4, 0.7,0.24,0.7, 73);
+      if (a.gaeste2) for (let g=0; g<a.gaeste2; g++) {             // Passagiere an Deck!
+        const gz = -4.5 + g*2.2, gx = (g%2 ? 1.2 : -1.2);
+        pushBox(arr,a, gx,1.55+wippe2,gz, 0.34,0.7,0.24, [25,40,42,53][g%4]);
+        pushBox(arr,a, gx,2.06+wippe2,gz, 0.3,0.3,0.3, 22, 23);
+      }
+    } else if (a.type==='uboot') {                                 // 🟡 DAS U-BOOT!
+      pushBox(arr,a, 0,0.9,0, 2.0,1.9,6.6, 73);                    // gelber Rumpf
+      pushBox(arr,a, 0,0.9,-3.7, 1.3,1.3,1.2, 73);                 // runde Nase
+      pushBox(arr,a, 0,0.9,3.7, 1.2,1.2,1.0, 73);                  // Heck
+      pushBox(arr,a, 0,2.1,-0.4, 1.1,1.3,1.8, 73);                 // Turm
+      pushBox(arr,a, 0,2.9,-0.4, 1.3,0.2,2.0, 3);                  // Turm-Deck
+      pushBox(arr,a, 0,3.5,-0.4, 0.1,1.0,0.1, 3);                  // Periskop
+      pushBox(arr,a, 0.2,3.9,-0.4, 0.4,0.14,0.14, 3);
+      pushBox(arr,a, 0,2.2,-1.32, 0.7,0.5,0.06, 48);               // Turm-Fenster
+      for (const fz of [-1.6, 0, 1.6]) {                           // Bullaugen
+        pushBox(arr,a, -1.02,1.0,fz, 0.06,0.5,0.5, 48);
+        pushBox(arr,a,  1.02,1.0,fz, 0.06,0.5,0.5, 48);
+      }
+      pushBox(arr,a, 0,0.9,-4.3, 0.8,0.8,0.3, 48);                 // großes Bugfenster
+      pushBox(arr,a, -1.5,0.9,2.2, 1.2,0.14,1.0, 3);               // Seitenflossen
+      pushBox(arr,a,  1.5,0.9,2.2, 1.2,0.14,1.0, 3);
+      pushBox(arr,a, 0,1.9,2.6, 0.14,1.0,0.9, 3);                  // Seitenruder
+      { const dreh2 = performance.now()*(a===ubootRiding ? 0.02 : 0.004);
+        pushBox(arr,a, 0,0.9,4.3, 0.2*Math.abs(Math.cos(dreh2))*6+0.2, 0.16, 0.16, 3);
+        pushBox(arr,a, 0,0.9,4.3, 0.16, 0.2*Math.abs(Math.sin(dreh2))*6+0.2, 0.16, 3); }
     } else if (a.type==='limo') {                                  // 🚙 DIE LANGE LIMOUSINE!
       pushBox(arr,a, 0,0.52,0, 1.15,0.5,5.2, 3);                   // der laaange schwarze Rumpf
       pushBox(arr,a, 0,0.92,0.6, 1.0,0.42,3.2, 3);                 // Dach über Fahrer und Gästen
@@ -9419,7 +9488,7 @@ const portalHeim = new Array(10).fill(null);   // wo Jonah in jeder Welt zuletzt
 const raketeOrt  = new Array(10).fill(null);   // 🚀 wo in jeder Welt seine Rakete steht
 let portalT = 0, portalKuehl = 0;
 // 🚀 DIESE GEFÄHRTE REISEN IMMER MIT - egal auf welchen Planeten es geht!
-const MITREISER = new Set(['jet','heli','dragon','bagger','roboter','limo','uboot','yacht']);
+const MITREISER = new Set(['jet','heli','dragon','bagger','roboter','limo']);   // Schiffe bleiben auf der Erde
 function weltWechsel(neu) {
   editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
   edits.clear();
@@ -10042,7 +10111,8 @@ const TP_NAME = {
 };
 const TP_FAHRZEUG = { roboter:'🤖 Mein Riesen-Roboter', dragon:'🐉 Mein Drache',
                       jet:'✈️ Mein Privatjet', heli:'🚁 Mein Hubschrauber',
-                      bagger:'🚜 Mein Mähdrescher', limo:'🚙 Meine Limousine' };
+                      bagger:'🚜 Mein Mähdrescher', limo:'🚙 Meine Limousine',
+                      yacht:'🛥️ Meine Riesen-Yacht', uboot:'🟡 Mein U-Boot' };
 function teleportZiele() {
   const ziele = [], px = Math.round(player.x), pz = Math.round(player.z);
   if (weltDim === 9) ziele.push(['👑 Mein Königsschloss', 0, 14]);
@@ -10059,7 +10129,8 @@ function teleportZiele() {
     ziele.push([e + ' ' + TP_NAME[e], o.x, o.z]);
   }
   for (const a of animals)                              // zu deinen Fahrzeugen!
-    if (TP_FAHRZEUG[a.type]) ziele.push([TP_FAHRZEUG[a.type], Math.round(a.x), Math.round(a.z)]);
+    if (TP_FAHRZEUG[a.type] && !a.fremd)
+      ziele.push([TP_FAHRZEUG[a.type], Math.round(a.x), Math.round(a.z)]);
   for (const t of customTargets)                        // deine gemerkten Schilder
     ziele.push(['📍 ' + t.label, t.x, t.z]);
   return ziele;
@@ -11220,6 +11291,8 @@ function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der 
     if (a.type==='bagger') out.push({x:a.x, z:a.z, e:'🚜'});
     else if (a.type==='limo') out.push({x:a.x, z:a.z, e:'🚙'});
     else if (a.type==='bus') out.push({x:a.x, z:a.z, e:'🚌'});
+    else if (a.type==='yacht' && !a.fremd) out.push({x:a.x, z:a.z, e:'🛥️'});
+    else if (a.type==='uboot') out.push({x:a.x, z:a.z, e:'🟡'});
     else if (a.type==='roboter') out.push({x:a.x, z:a.z, e:'🤖'});
     else if (a.type==='dragon') out.push({x:a.x, z:a.z, e:'🐉'});
     else if (a.type==='heli') out.push({x:a.x, z:a.z, e:'🚁'});
@@ -12209,6 +12282,7 @@ function exitBoat() {
 }
 function boatPhysics(dt) {
   const a = boatRiding;
+  const gross = a.type === 'yacht';     // 🛥️ die RIESEN-YACHT fährt genauso, nur größer
   let mf=0, ms=0;
   if (keys['KeyW']||keys['ArrowUp']) mf += 1;
   if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
@@ -12217,20 +12291,136 @@ function boatPhysics(dt) {
   mf += joy.fwd; ms += joy.strafe;
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
-  const speed = 7;
+  const speed = gross ? 9 : 7;
+  const halb = gross ? 2.3 : 0.6, hoehe = gross ? 2.6 : 0.8;
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
   if (ml>0.05) {
     a.yaw = Math.atan2(vx,-vz);
-    if (Math.random()<dt*2) blip(480+Math.random()*260, 0.04);   // Platscher
+    if (Math.random()<dt*(gross?1:2)) blip((gross?200:480)+Math.random()*260, gross?0.09:0.04);
+    if (gross && Math.random()<dt*4)  // Bug-Welle
+      fireworks.push({x:a.x-Math.sin(a.yaw)*7+(Math.random()-0.5)*3, y:SEA+0.7,
+        z:a.z+Math.cos(a.yaw)*7+(Math.random()-0.5)*3, vx:(Math.random()-0.5)*2,
+        vy:0.6+Math.random(), vz:(Math.random()-0.5)*2, tile:9, t:0.5});
   }
   const nx=a.x+vx*dt;
-  if (!collideBox(nx, SEA+0.45, a.z, 0.6, 0.8)) a.x=nx;
+  if (!collideBox(nx, SEA+0.45, a.z, halb, hoehe)) a.x=nx;
   const nz=a.z+vz*dt;
-  if (!collideBox(a.x, SEA+0.45, nz, 0.6, 0.8)) a.z=nz;
-  a.y = SEA + 0.55 + Math.sin(performance.now()*0.003)*0.05;    // schaukelt
-  player.x=a.x; player.z=a.z; player.y=a.y+0.35;
+  if (!collideBox(a.x, SEA+0.45, nz, halb, hoehe)) a.z=nz;
+  a.y = SEA + (gross ? 0.2 : 0.55) + Math.sin(performance.now()*0.003)*0.05;   // schaukelt
+  player.x=a.x; player.z=a.z; player.y=a.y+(gross ? 4.8 : 0.35);
+  if (gross) player.z = a.z + Math.cos(a.yaw)*0.6;   // auf der Brücke ganz oben
   player.vx=player.vy=player.vz=0;
+}
+// ------------------------- 🟡 DAS U-BOOT ------------------------------------
+let ubootRiding = null;
+function enterUboot(a) {
+  if (riding) dismount();
+  if (flying) toggleFly();
+  sitting = null;
+  ubootRiding = a;
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='flex'; rb.textContent='🅿️';
+  document.getElementById('downBtn').style.display='flex';
+  toast('🟡 U-BOOT! Mit ⬆ tauchst du auf, mit ⬇ tauchst du ab - und dann fahr los ' +
+        'und schau dir die Fische an! (🅿️ = aussteigen)', 5000);
+  blip(180,0.16); blip(140,0.14); blip(110,0.18);
+}
+function exitUboot() {
+  const a = ubootRiding;
+  ubootRiding = null;
+  const rb = document.getElementById('rideBtn');
+  rb.style.display='none'; rb.textContent='🐴';
+  if (!flying) document.getElementById('downBtn').style.display='none';
+  if (a) {                              // an der Oberfläche wieder aussteigen
+    a.y = Math.max(a.y, SEA - 0.4);
+    player.x = a.x; player.z = a.z; player.y = SEA + 1.2;
+    player.vx = player.vy = player.vz = 0;
+  }
+  toast('🟡 Aufgetaucht und ausgestiegen!', 2200);
+  blip(400,0.08); blip(300,0.1);
+}
+function ubootPhysics(dt) {
+  const a = ubootRiding;
+  let mf=0, ms=0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf,ms);
+  if (ml>1) { mf/=ml; ms/=ml; }
+  const speed = 6.5;
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+  const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
+  if (ml>0.05) a.yaw = Math.atan2(vx,-vz);
+  const jump = jumpHeld || keys['Space'];
+  a.vy = jump ? 3.4 : downHeld ? -3.4 : 0;            // ⬆ auftauchen, ⬇ abtauchen
+  if (a.y > SEA - 0.2 && a.vy > 0) a.vy = 0;          // nicht aus dem Wasser springen
+  // es schwebt immer ein Stück über dem Meeresgrund - so bleibt es nie stecken
+  const grund = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1.4;
+  if (a.y <= grund && a.vy < 0) { a.vy = 0; a.y = grund; }
+  const nx=a.x+vx*dt;
+  if (!collideBox(nx, Math.max(a.y, terrainHeight(Math.floor(nx), Math.floor(a.z))+1.4),
+                  a.z, 0.8, 1.2)) { a.x=nx; a.y = Math.max(a.y, terrainHeight(Math.floor(a.x), Math.floor(a.z))+1.4); }
+  const nz=a.z+vz*dt;
+  if (!collideBox(a.x, Math.max(a.y, terrainHeight(Math.floor(a.x), Math.floor(nz))+1.4),
+                  nz, 0.8, 1.2)) { a.z=nz; a.y = Math.max(a.y, terrainHeight(Math.floor(a.x), Math.floor(a.z))+1.4); }
+  if (a.y > SEA - 0.2) a.y = SEA - 0.2;               // die Oberfläche ist die Grenze
+  const ny=a.y+a.vy*dt;
+  if (!collideBox(a.x, ny, a.z, 0.8, 1.2) && ny > CH_MIN+2 && ny >= grund - 0.01) a.y=ny;
+  if (ml>0.05 && Math.random()<dt*2) {                // Blubber-Blasen 🫧
+    fireworks.push({x:a.x-Math.sin(a.yaw)*4, y:a.y+1, z:a.z+Math.cos(a.yaw)*4,
+      vx:(Math.random()-0.5)*1.4, vy:1.4+Math.random(), vz:(Math.random()-0.5)*1.4, tile:9, t:0.6});
+    if (Math.random()<0.3) blip(200+Math.random()*120, 0.05);
+  }
+  ensureData(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
+  player.x=a.x; player.z=a.z; player.y=a.y+2.1;       // Jonah sitzt im Turm
+  player.vx=player.vy=player.vz=0;
+}
+// 🌊 Einen schönen freien Wasserplatz in Jonahs Nähe suchen (für Yacht und U-Boot)
+function wasserPlatzNahe(minAbstand, maxAbstand, breit) {
+  for (let i=0; i<60; i++) {
+    const ang = Math.random()*Math.PI*2, d = minAbstand + Math.random()*(maxAbstand-minAbstand);
+    const x = Math.floor(player.x+Math.cos(ang)*d), z = Math.floor(player.z+Math.sin(ang)*d);
+    const ch = getChunk(x>>4, z>>4);
+    if (!ch || !ch.data) continue;
+    let frei = true;
+    for (let ox=-breit; ox<=breit && frei; ox++)
+      for (let oz=-breit; oz<=breit && frei; oz++)
+        if (terrainHeight(x+ox, z+oz) > SEA-2) frei = false;
+    if (frei) return { x, z };
+  }
+  return null;
+}
+// 🛥️🟡 Deine Yacht und dein U-Boot warten immer im nächsten Wasser auf dich!
+function seeFahrzeugTick() {
+  if (weltDim !== 0) return;
+  for (const [typ, breit, name] of [['yacht', 5, '🛥️ Deine RIESEN-YACHT liegt im Wasser bereit - tipp sie an!'],
+                                    ['uboot', 3, '🟡 Dein U-BOOT ist aufgetaucht - tipp es an und tauch ab!']]) {
+    const da = animals.find(a => a.type === typ);
+    if (da && (da === boatRiding || da === ubootRiding)) continue;
+    const platz = wasserPlatzNahe(14, 40, breit);
+    if (!platz) continue;
+    if (!da) {                          // noch keins da? Dann kommt es angefahren!
+      animals.push({type:typ, x:platz.x+0.5, y: typ==='yacht' ? SEA+0.2 : SEA-1.5, z:platz.z+0.5,
+        yaw:Math.random()*6.28, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
+      toast(name, 4000);
+      blip(300,0.1); blip(400,0.12);
+    } else if (Math.hypot(da.x-player.x, da.z-player.z) > 70) {   // zu weit weg? Kommt nach!
+      da.x = platz.x+0.5; da.z = platz.z+0.5;
+      da.y = typ==='yacht' ? SEA+0.2 : SEA-1.5;
+    }
+  }
+}
+// 🛥️ Fremde Yachten mit Gästen draußen auf dem Meer
+function trySpawnSeeYacht() {
+  const platz = wasserPlatzNahe(30, 70, 6);
+  if (!platz) return;
+  animals.push({type:'yacht', x:platz.x+0.5, y:SEA+0.2, z:platz.z+0.5, fremd:true,
+    gaeste2: 3 + Math.floor(Math.random()*3),
+    yaw:Math.random()*6.28, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false,
+    kurs: Math.random()*Math.PI*2});
 }
 function trySpawnBoat() {
   for (let i=0;i<20;i++) {
@@ -12612,6 +12802,20 @@ function hitEntity(a, dir) {
   if (a.type==='bagger') {              // rauf auf den Riesen-Bagger! 🚜
     if (jetRiding || carRiding || heliRiding || boatRiding || dragonRiding || baggerRiding) return;
     enterBagger(a);
+    return;
+  }
+  if (a.type==='yacht') {               // 🛥️ hinauf auf die Riesen-Yacht!
+    if (jetRiding || carRiding || heliRiding || boatRiding || dragonRiding ||
+        baggerRiding || roboterRiding || busRiding || ubootRiding) return;
+    enterBoat(a);
+    toast('🛥️ AHOI! Du stehst auf der Brücke deiner RIESEN-YACHT - mit Pool, Liegestühlen ' +
+          'und Sonnendeck. Fahr los mit dem Joystick! (⚓ = von Bord)', 5000);
+    return;
+  }
+  if (a.type==='uboot') {               // 🟡 rein ins U-Boot!
+    if (jetRiding || carRiding || heliRiding || boatRiding || dragonRiding ||
+        baggerRiding || roboterRiding || busRiding || ubootRiding) return;
+    enterUboot(a);
     return;
   }
   if (a.type==='bus') {                 // 🚌 in den Bus einsteigen und mitfahren!
@@ -13952,7 +14156,7 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-const rideOff = ()=>{ if (busRiding) busAussteigen(); else if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
+const rideOff = ()=>{ if (ubootRiding) exitUboot(); else if (busRiding) busAussteigen(); else if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
