@@ -221,16 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
-- Der Roboter parkt jetzt in einer richtigen ROBOTER-GARAGE (v186)!
-  🤖🅿️ Vorher stand er nur auf einem Platz draußen im Hof - jetzt
-  hat er eine RIESIGE Halle für sich allein: 11x11 Blöcke groß und
-  zwölf Blöcke hoch, mit dicken Schutz-Wänden, hohem Dach mit
-  Zinnen, einem Fenster-Band, durch das man ihn von außen stehen
-  sieht, vier Fackeln in den Ecken und dem weißen Lande-Kreuz mit
-  goldenem Rand auf dem Boden. Vorne und hinten hat sie je ein
-  RIESEN-GARAGENTOR über elf Blöcke Höhe - antippen, und das ganze
-  Tor rollt auf oder zu. Kommst du in deine Festung, stapft der
-  Roboter von allein hinein und wartet dort im Trockenen auf dich.
+- Der Roboter parkt in DEINER GARAGE - bei allen anderen Fahrzeugen
+  (v187)! 🤖🅿️ Er steht jetzt genau da, wo auch dein Jet, dein
+  Hubschrauber, dein Mähdrescher und dein Drache stehen. Damit der
+  neun Blöcke hohe Riese überhaupt hineinpasst, ist die Garage in
+  deiner Festung zu einer RIESEN-HALLE geworden: über der Garage
+  sind die beiden Zwischendecken weg, jetzt geht es dort VIERZEHN
+  Blöcke hoch bis unters Dach. Rundherum auf den zwei Etagen
+  darüber ist ein Geländer, damit keiner hinunterfällt - von oben
+  kannst du deinem Roboter also aufs Blechdach schauen. Das
+  Garagentor im Osten ist elf Blöcke hoch und sieben breit
+  geworden, damit er hindurchstapfen kann, und mitten in der Halle
+  ist sein Stellplatz mit weißem Kreuz und goldenem Rand markiert.
 - Der Roboter STAPFT DIR NACH (v185)! 🤖👣 Dein Riesen-Roboter bleibt nicht mehr
   irgendwo stehen, wo du ihn zuletzt geparkt hast: Sobald du weiter
   als 26 Blöcke weg bist, setzt er sich in Bewegung und kommt dir
@@ -238,8 +240,8 @@ Leertaste springen · Tasten 1–8 Block wählen
   desto größere Schritte macht er, und bei jedem Schritt wackelt
   der Boden und Staub wirbelt auf. Ist er wieder bei dir, bleibt er
   ruhig stehen und wartet. Und wenn du hinter der großen Mauer in
-  deiner Festung bist, geht er von allein zu seiner Garage im
-  Osthof. Dort parkt er, bis du wieder losziehst.
+  deiner Festung bist, geht er von allein in die Garage. Dort
+  parkt er, bis du wieder losziehst.
 - DEIN RIESEN-ROBOTER KANN FLIEGEN (v184)! 🤖🚀 In seinen Füßen
   stecken RAKETEN-DÜSEN! Setz dich in die Kopf-Kabine und drück den
   ✈️-Knopf: mit einem lauten Zischen zünden die Düsen, aus beiden
