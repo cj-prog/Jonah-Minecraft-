@@ -56,6 +56,8 @@
   #kroneBtn.an { background:rgba(255,215,60,.7); box-shadow:0 0 18px #ffd83c; }
   #zepterBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(358px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(190,120,255,.45); }
+  #groesseBtn { right:calc(156px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:22px; background:rgba(120,220,160,.45); }
   #tpBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(80,220,255,.4); }
   #tpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
@@ -335,6 +337,7 @@
 <div class="hud btn" id="flyBtn">✈️</div>
 <div class="hud btn" id="rufBtn" style="display:none" title="Rakete rufen">🆘</div>
 <div class="hud btn" id="faustBtn" style="display:none" title="Roboter-Faust">🦾</div>
+<div class="hud btn" id="groesseBtn" style="display:none" title="Roboter größer und kleiner machen">📏</div>
 <div class="hud btn" id="superBtn" title="Superkräfte!">🦸</div>
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
@@ -569,7 +572,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 191 &middot; Der Hausmeister FLIEGT zu hohen Löchern! 🔧✈️</p>
+    Version 192 &middot; Tiefe Planeten, Mond+Sterne, Gefährte reisen mit, Roboter-Größe! 🕳️🌙🚀📏</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -615,7 +618,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 191;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 192;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -1739,7 +1742,30 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
     const wx = x0+lx, wz = z0+lz;
     const h = planetHoehe(wx, wz, dim);
     setz(lx, CH_MIN+1, lz, SCHUTZ);     // ganz unten ein Netz, damit niemand ins Nichts fällt
-    for (let y=h-8; y<=h; y++) setz(lx, y, lz, y>h-3 ? P.boden : P.tief);
+    // 🕳️ TIEF, TIEF HINUNTER: auch die Planeten gehen jetzt bis zum Weltboden!
+    // Mit Höhlen, Lava-Seen und vergrabenen Schätzen - genau wie auf der Erde.
+    const lavaP = vnoise(wx*0.05 + dim*17, wz*0.05 - dim*23, 909+dim);
+    const pockP = vnoise(wx*0.07 - dim*31, wz*0.07 + dim*13, 911+dim);
+    const pockYP = Math.floor(CH_MIN+10 + vnoise(wx*0.03+dim*7, wz*0.03-dim*9, 912+dim)*38);
+    for (let y=CH_MIN+2; y<=h; y++) {
+      let b = y > h-3 ? P.boden : P.tief;
+      if (y < h-6) {
+        b = STONE;                      // tiefes Gestein
+        if (lavaP > 0.32 && y <= CH_MIN+2+Math.round((lavaP-0.32)*6)) b = LAVA;
+        else if (pockP > 0.68 && Math.abs(y-pockYP) <= 1+Math.round((pockP-0.68)*6)) b = LAVA;
+        else {                          // Höhlen und Erz-Adern
+          const hoehle = vnoise(wx*0.045+dim*3, wz*0.045-dim*5, 4400+dim) * 0.55
+                       + vnoise(wx*0.085-dim*2, y*0.13 + dim, 4500+dim) * 0.45;
+          if (hoehle > 0.605 && y > CH_MIN+4 && y < h-9) b = AIR;   // 🕳️ Höhlen!
+          else if (hash2(wx, wz*7+y, 4600+dim) < 0.006) b = GOLD;   // Gold-Adern ⛏️
+        }
+      }
+      setz(lx, y, lz, b);
+    }
+    if (hash2(wx, wz, 4207+dim) < 0.004) {      // tief vergrabene Schatztruhe! 💎
+      const ty = CH_MIN+4 + Math.floor(hash2(wx, wz, 4208+dim) * Math.max(4, h-14-CH_MIN));
+      setz(lx, ty, lz, CHEST);
+    }
     const r = hash2(wx, wz, 7700+dim);
     if (dim===2) {                      // 🌕 MOND: Felsbrocken, Krater-Ränder und Mond-Steine
       if (r < 0.004) { for (let y=h+1; y<=h+1+Math.floor(hash2(wx,wz,7701)*3); y++) setz(lx,y,lz,STONE); }
@@ -3179,7 +3205,8 @@ function saveGame() {
     const robA = animals.find(a=>a.type==='roboter');
     const bagA = animals.find(a=>a.type==='bagger');
     const bagSave = bagA ? [Math.round(bagA.x*10)/10, Math.round(bagA.y*10)/10, Math.round(bagA.z*10)/10] : null;
-    const robSave = robA ? [Math.round(robA.x*10)/10, Math.round(robA.y*10)/10, Math.round(robA.z*10)/10] : null;
+    const robSave = robA ? [Math.round(robA.x*10)/10, Math.round(robA.y*10)/10,
+                            Math.round(robA.z*10)/10, robA.grStufe===undefined?2:robA.grStufe] : null;
     const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
@@ -5719,7 +5746,8 @@ function updateAnimals(dt) {
       a.walking = false;                // sonst wartet er brav dort, wo er geparkt ist
       a.vy = Math.max(a.vy - 25*dt, -40);
       const nyR = a.y + Math.max(a.vy*dt, -0.9);
-      if (!collideBox(a.x, nyR, a.z, ROB_HALF, ROB_H)) a.y = nyR;
+      if (!collideBox(a.x, nyR, a.z, Math.min(ROB_HALF*(a.gr||1),1.4),
+                                     Math.min(ROB_H*(a.gr||1),9))) a.y = nyR;
       else { a.vy = 0; a.onGround = true; }
       continue;
     }
@@ -6474,39 +6502,43 @@ function drawAnimals() {
       }
       if (a.type==='roboter') {                                    // 🤖 DER RIESEN-ROBOTER!
         const kR = ANIMAL_KIND.roboter;
+        // 📏 Jonah kann ihn schrumpfen und wachsen lassen - alles skaliert mit!
+        const G = a.gr || 1;
+        const pb = (ox,oy,oz,sx,sy,sz,t2,t3) =>
+          pushBox(arr, a, ox*G, oy*G, oz*G, sx*G, sy*G, sz*G, t2, t3);
         const sw3 = a.walking ? Math.sin(a.ph)*0.85 : 0;
         // 🦾 haut er gerade zu? Dann schnellen beide Arme nach VORNE!
         const st3 = a.faustT > 0 ? -2.8*Math.sin((0.35-a.faustT)/0.35*Math.PI) : 0;
         const arm = st3 ? st3 : (a.walking ? Math.sin(a.ph)*0.5 : 0);
-        pushBox(arr,a, -0.85,0.35,sw3*0.5, 1.0,0.35,1.7, 3);          // dicke Füße
-        pushBox(arr,a,  0.85,0.35,-sw3*0.5, 1.0,0.35,1.7, 3);
-        pushBox(arr,a, -0.85,1.9,sw3, 0.9,2.7,0.9, kR.tile);          // Beine
-        pushBox(arr,a,  0.85,1.9,-sw3, 0.9,2.7,0.9, kR.tile);
-        pushBox(arr,a, 0,3.5,0, 2.6,0.6,1.6, 3);                      // Hüfte
-        pushBox(arr,a, 0,5.1,0, 3.1,2.7,2.0, kR.tile);                // der breite Rumpf
-        pushBox(arr,a, 0,5.4,-1.05, 0.9,0.9,0.12, 27);                // leuchtender Brustkern
-        pushBox(arr,a, -2.05,st3?5.6:5.2,arm, 0.9,st3?0.9:3.0,st3?3.0:0.9, kR.tile);   // lange Arme
-        pushBox(arr,a,  2.05,st3?5.6:5.2,st3?arm:-arm, 0.9,st3?0.9:3.0,st3?3.0:0.9, kR.tile);
-        pushBox(arr,a, -2.05,st3?5.6:3.5,st3?arm*1.55:arm*1.3, 1.25,1.25,1.25, 3);     // dicke Fäuste
-        pushBox(arr,a,  2.05,st3?5.6:3.5,st3?arm*1.55:-arm*1.3, 1.25,1.25,1.25, 3);
-        pushBox(arr,a, 0,6.9,0, 1.3,1.6,1.3, 3);                      // kräftiger Hals
-        pushBox(arr,a, 0,8.5,0, 2.4,1.9,2.2, kR.tile, kR.face);       // DER KOPF mit der Kabine
-        pushBox(arr,a, -0.75,9.7,0, 0.16,0.9,0.16, 3);                // zwei Antennen
-        pushBox(arr,a,  0.75,9.7,0, 0.16,0.9,0.16, 3);
-        pushBox(arr,a, -0.75,10.2,0, 0.3,0.3,0.3, 25);
-        pushBox(arr,a,  0.75,10.2,0, 0.3,0.3,0.3, 25);
+        pb(-0.85,0.35,sw3*0.5, 1.0,0.35,1.7, 3);          // dicke Füße
+        pb( 0.85,0.35,-sw3*0.5, 1.0,0.35,1.7, 3);
+        pb(-0.85,1.9,sw3, 0.9,2.7,0.9, kR.tile);          // Beine
+        pb( 0.85,1.9,-sw3, 0.9,2.7,0.9, kR.tile);
+        pb(0,3.5,0, 2.6,0.6,1.6, 3);                      // Hüfte
+        pb(0,5.1,0, 3.1,2.7,2.0, kR.tile);                // der breite Rumpf
+        pb(0,5.4,-1.05, 0.9,0.9,0.12, 27);                // leuchtender Brustkern
+        pb(-2.05,st3?5.6:5.2,arm, 0.9,st3?0.9:3.0,st3?3.0:0.9, kR.tile);   // lange Arme
+        pb( 2.05,st3?5.6:5.2,st3?arm:-arm, 0.9,st3?0.9:3.0,st3?3.0:0.9, kR.tile);
+        pb(-2.05,st3?5.6:3.5,st3?arm*1.55:arm*1.3, 1.25,1.25,1.25, 3);     // dicke Fäuste
+        pb( 2.05,st3?5.6:3.5,st3?arm*1.55:-arm*1.3, 1.25,1.25,1.25, 3);
+        pb(0,6.9,0, 1.3,1.6,1.3, 3);                      // kräftiger Hals
+        pb(0,8.5,0, 2.4,1.9,2.2, kR.tile, kR.face);       // DER KOPF mit der Kabine
+        pb(-0.75,9.7,0, 0.16,0.9,0.16, 3);                // zwei Antennen
+        pb( 0.75,9.7,0, 0.16,0.9,0.16, 3);
+        pb(-0.75,10.2,0, 0.3,0.3,0.3, 25);
+        pb( 0.75,10.2,0, 0.3,0.3,0.3, 25);
         if (a.flug) {                                                // 🚀 DIE RAKETEN-DÜSEN!
           const fl = 0.7 + Math.abs(Math.sin(performance.now()*0.02))*0.9;
-          pushBox(arr,a, -0.85,0.1,0, 1.0,0.3,1.4, 3);               // Düsen-Ringe unter den Füßen
-          pushBox(arr,a,  0.85,0.1,0, 1.0,0.3,1.4, 3);
-          pushBox(arr,a, -0.85,-fl*0.5,0, 0.7,fl,0.9, 27);           // heller Feuerstrahl
-          pushBox(arr,a,  0.85,-fl*0.5,0, 0.7,fl,0.9, 27);
-          pushBox(arr,a, -0.85,-fl*0.85,0, 0.4,fl*0.7,0.5, 72);
-          pushBox(arr,a,  0.85,-fl*0.85,0, 0.4,fl*0.7,0.5, 72);
-          pushBox(arr,a, -1.9,5.1,1.15, 0.5,1.6,0.5, 3);             // Schulter-Raketen hinten
-          pushBox(arr,a,  1.9,5.1,1.15, 0.5,1.6,0.5, 3);
-          pushBox(arr,a, -1.9,4.1,1.15, 0.4,fl*0.8,0.4, 27);
-          pushBox(arr,a,  1.9,4.1,1.15, 0.4,fl*0.8,0.4, 27);
+          pb(-0.85,0.1,0, 1.0,0.3,1.4, 3);               // Düsen-Ringe unter den Füßen
+          pb( 0.85,0.1,0, 1.0,0.3,1.4, 3);
+          pb(-0.85,-fl*0.5,0, 0.7,fl,0.9, 27);           // heller Feuerstrahl
+          pb( 0.85,-fl*0.5,0, 0.7,fl,0.9, 27);
+          pb(-0.85,-fl*0.85,0, 0.4,fl*0.7,0.5, 72);
+          pb( 0.85,-fl*0.85,0, 0.4,fl*0.7,0.5, 72);
+          pb(-1.9,5.1,1.15, 0.5,1.6,0.5, 3);             // Schulter-Raketen hinten
+          pb( 1.9,5.1,1.15, 0.5,1.6,0.5, 3);
+          pb(-1.9,4.1,1.15, 0.4,fl*0.8,0.4, 27);
+          pb( 1.9,4.1,1.15, 0.4,fl*0.8,0.4, 27);
         }
       }
       if (a.type==='riese') {                                      // 👹 DER RIESE: 5 Blöcke hoch!
@@ -6631,8 +6663,17 @@ function himmelKugel(arr, ce, dir, d, kachel, dreh, ring) {
 }
 function drawHimmel(ce) {
   const imAll = weltDim >= 2 ? 1 : 0;
-  const raum = Math.max(imAll, flugRaum());
-  if (raum <= 0.02) return;             // auf der Erde ist der Himmel ganz normal blau
+  // 🌙 AUCH AUF DER ERDE: sobald es dunkel wird, kommen Sterne und der MOND heraus!
+  // (aber nur unter freiem Himmel - durch ein Dach sieht man keine Sterne!)
+  let nacht = (weltDim === 0 && !flugPhase())
+            ? Math.max(0, Math.min(1, (0.62 - light01()) / 0.26)) : 0;
+  if (nacht > 0) {
+    const px2 = Math.floor(player.x), pz2 = Math.floor(player.z);
+    for (let y2 = Math.floor(player.y)+2; y2 < Math.floor(player.y)+34 && y2 < CH; y2++)
+      if (getBlock(px2, y2, pz2) !== AIR) { nacht = 0; break; }
+  }
+  const raum = Math.max(imAll, flugRaum(), nacht * 0.95);
+  if (raum <= 0.02) return;             // am hellen Tag ist der Himmel ganz normal blau
   const P = PLANET[weltDim];
   const arr = [];
   const t = performance.now()*0.001;
@@ -6641,7 +6682,7 @@ function drawHimmel(ce) {
   const warp = phase==='abheb' ? flugAnteil() : phase==='reise' ? 1
              : phase==='land' ? Math.max(0, 1-flugAnteil()) : 0;
   // ⭐ die Sterne
-  const wieViele = Math.min(STERNE.length, (P ? P.sterne : 240));
+  const wieViele = Math.min(STERNE.length, (P ? P.sterne : Math.round(60 + nacht*180)));
   for (let i=0; i<wieViele; i++) {
     const s = STERNE[i];
     const funkel = 0.72 + 0.28*Math.sin(t*s.blink + s.ph);     // sie blinzeln!
@@ -6664,11 +6705,36 @@ function drawHimmel(ce) {
                 flugZiel>=2 && PLANET[flugZiel].ring);
     himmelKugel(arr, ce, [Math.cos(0.2), Math.sin(0.2), 0], vonD, vonK, -t*0.04,
                 flugVon>=2 && PLANET[flugVon].ring);
+  } else if (weltDim === 0) {
+    // 🌙 DER MOND wandert nachts über den Himmel - und ein paar Planeten funkeln mit!
+    const mw = (dayTime + 0.5) * Math.PI * 2;         // gegenüber der Sonne
+    const mh = 0.28 + Math.sin(dayTime*Math.PI*2 + Math.PI) * 0.55;
+    himmelKugel(arr, ce, [Math.cos(mh)*Math.sin(mw), Math.max(0.06, Math.sin(mh)),
+                          Math.cos(mh)*Math.cos(mw)], 15, PLANET[2].kachel, t*0.02, false);
+    // die Nachbar-Planeten: klein, aber man erkennt sie an der Farbe
+    for (const [dim2, wink2, hoch2, gr2] of [[3, 1.15, 0.75, 4.2], [7, 4.35, 0.62, 5.0],
+                                             [6, 2.65, 0.95, 4.6], [8, 5.55, 0.42, 3.8]])
+      himmelKugel(arr, ce, [Math.cos(hoch2)*Math.sin(wink2), Math.sin(hoch2),
+                            Math.cos(hoch2)*Math.cos(wink2)], gr2,
+                  PLANET[dim2].kachel, t*0.03, dim2===7);
   } else {
-    // 🌍 vom Planeten aus schaut man zur Erde hinüber
+    // 🌍 vom Planeten aus schaut man zur Erde hinüber ...
     const dir = [Math.cos(P.erdHoch)*Math.sin(P.erdWink), Math.sin(P.erdHoch),
                  Math.cos(P.erdHoch)*Math.cos(P.erdWink)];
     himmelKugel(arr, ce, dir, P.erdGross, 103, t*0.05, false);
+    // ... und die ANDEREN PLANETEN stehen auch am Himmel! Jeder an seinem Platz,
+    // und je näher er ist, desto größer sieht er aus.
+    for (let d2=2; d2<PLANET.length; d2++) {
+      if (d2 === weltDim || !PLANET[d2]) continue;
+      if (d2 === 9 && !geheimOffen()) continue;       // der geheime Planet bleibt geheim!
+      const abstand = Math.abs(PLANET[d2].km - PLANET[weltDim].km);
+      const gr = Math.max(3, 26 - Math.log10(Math.max(1e5, abstand)) * 2.4);
+      const wink = (d2*1.37 + 0.6) % (Math.PI*2);     // jeder hat seine feste Ecke
+      const hoch = 0.30 + ((d2*0.41) % 0.9);
+      himmelKugel(arr, ce, [Math.cos(hoch)*Math.sin(wink), Math.sin(hoch),
+                            Math.cos(hoch)*Math.cos(wink)], gr,
+                  PLANET[d2].kachel, t*0.03, !!PLANET[d2].ring);
+    }
   }
   // alle Seiten gleich hell: dann sehen die Planeten rund aus statt eckig
   for (let i=5; i<arr.length; i+=6) arr[i] = 1;
@@ -9226,6 +9292,8 @@ const editsLager = Array.from({length:10}, ()=>new Map());
 const portalHeim = new Array(10).fill(null);   // wo Jonah in jeder Welt zuletzt stand
 const raketeOrt  = new Array(10).fill(null);   // 🚀 wo in jeder Welt seine Rakete steht
 let portalT = 0, portalKuehl = 0;
+// 🚀 DIESE GEFÄHRTE REISEN IMMER MIT - egal auf welchen Planeten es geht!
+const MITREISER = new Set(['jet','heli','dragon','bagger','roboter','limo','uboot','yacht','bus']);
 function weltWechsel(neu) {
   editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
   edits.clear();
@@ -9234,9 +9302,9 @@ function weltWechsel(neu) {
   for (const ch of [...chunks.values()]) freeChunk(ch);   // alles neu zeichnen
   cropSet.clear(); snowSet.clear();
   fallende.length = 0; flowQ.length = 0; fallQ.length = 0;
-  for (let i=animals.length-1; i>=0; i--) {  // nur Haustiere und Begleiter kommen mit!
+  for (let i=animals.length-1; i>=0; i--) {  // Haustiere, Begleiter UND alle Fahrzeuge kommen mit!
     const a = animals[i];
-    if (!(a.tame || a.follow)) animals.splice(i,1);
+    if (!(a.tame || a.follow || MITREISER.has(a.type))) animals.splice(i,1);
   }
 }
 function portalBauen(x, y, z) {         // ein Portal mit Torbogen - vorne offen!
@@ -10319,6 +10387,17 @@ function raketeLanden(ziel) {
         player.x = lx+ox+0.5; player.z = lz+oz+0.5; player.y = ly+0.1; break;
       }
   }
+  // 🚀🚜 DEINE GEFÄHRTE SIND MITGEREIST! Sie stehen rund um den Parkplatz.
+  const mit = animals.filter(a => MITREISER.has(a.type));
+  mit.forEach((a, i) => {
+    const w2 = i * (Math.PI*2 / Math.max(1, mit.length)) + 0.4, r2 = 10 + (i%2)*4;
+    const ax = Math.round(lx + Math.cos(w2)*r2), az = Math.round(lz + Math.sin(w2)*r2);
+    for (let cx=(ax-8)>>4; cx<=(ax+8)>>4; cx++)
+      for (let cz=(az-8)>>4; cz<=(az+8)>>4; cz++) ensureData(cx,cz);
+    a.x = ax+0.5; a.z = az+0.5;
+    a.y = terrainHeight(ax, az) + (a.type==='roboter' ? 1 : 2.2);
+    a.vy = 0; a.ferry = false; a.garage = false; a.flug = false; a.walking = false;
+  });
   for (let s=0;s<30;s++)                // Landefeuer unter der Rakete
     fireworks.push({x:player.x+(Math.random()-0.5)*3, y:player.y-1.6, z:player.z+(Math.random()-0.5)*3,
       vx:(Math.random()-0.5)*5, vy:Math.random()*3, vz:(Math.random()-0.5)*5, tile:[27,72,82][s%3], t:0.8});
@@ -11673,13 +11752,14 @@ const ROB_H = 7.0, ROB_HALF = 0.9;
 function roboterStampf(a, dt) {
   a.stampf = (a.stampf||0) - dt;
   if (a.stampf > 0) return;
-  a.stampf = 0.62;
+  const G2 = a.gr || 1;
+  a.stampf = 0.62 * Math.max(0.5, Math.sqrt(G2));
   const nah = Math.hypot(a.x-player.x, a.z-player.z) < 26;
-  if (a === roboterRiding) shake = Math.max(shake, 0.22);
-  else if (nah) shake = Math.max(shake, 0.10);
-  if (nah) { blip(55,0.16); blip(80,0.1); }
+  if (a === roboterRiding) shake = Math.max(shake, 0.22*G2);
+  else if (nah) shake = Math.max(shake, 0.10*G2);
+  if (nah) { blip(55/Math.max(0.5,G2),0.16); blip(80/Math.max(0.5,G2),0.1); }
   for (let s2=0;s2<7;s2++)
-    fireworks.push({x:a.x+(Math.random()-0.5)*3, y:a.y+0.2, z:a.z+(Math.random()-0.5)*3,
+    fireworks.push({x:a.x+(Math.random()-0.5)*3*G2, y:a.y+0.2, z:a.z+(Math.random()-0.5)*3*G2,
       vx:(Math.random()-0.5)*3, vy:1+Math.random()*2, vz:(Math.random()-0.5)*3, tile:52, t:0.45});
 }
 function enterRoboter(a) {
@@ -11691,6 +11771,9 @@ function enterRoboter(a) {
   const rb = document.getElementById('rideBtn');
   rb.style.display='flex'; rb.textContent='🅿️';
   document.getElementById('faustBtn').style.display='flex';
+  const gb = document.getElementById('groesseBtn');
+  gb.style.display='flex';
+  gb.textContent = (a.gr||1) < 1 ? '🔽' : (a.gr||1) > 1 ? '🔼' : '📏';
   toast('🤖 DU SITZT IN DER KOPF-KABINE! Geh los - der RIESEN-ROBOTER geht mit dir mit! ' +
         '(✈️ = Raketen-Düsen zum FLIEGEN, 🦾 = Riesenfaust, 🅿️ = aussteigen)', 5500);
   blip(70,0.22); blip(95,0.18); blip(130,0.14);
@@ -11706,6 +11789,7 @@ function exitRoboter() {
   const rb = document.getElementById('rideBtn');
   rb.style.display='none'; rb.textContent='🐴';
   document.getElementById('faustBtn').style.display='none';
+  document.getElementById('groesseBtn').style.display='none';
   if (a) {                              // die Leiter runter - Jonah steht neben ihm
     const gy = terrainHeight(Math.floor(a.x+3), Math.floor(a.z)) + 1.05;
     player.x = a.x + 3; player.z = a.z; player.y = Math.max(gy, a.y + 0.1);
@@ -11721,6 +11805,10 @@ function exitRoboter() {
 }
 function roboterPhysics(dt) {
   const a = roboterRiding;
+  const G = a.gr || 1;                  // 📏 so groß ist er gerade
+  // Die Stoß-Box wächst nur bis zu einer Grenze mit - sonst bliebe der ganz
+  // große Roboter überall hängen und käme keinen Schritt voran.
+  const RH = Math.min(ROB_H*G, 9), RHF = Math.min(ROB_HALF*G, 1.4);
   let mf=0, ms=0;
   if (keys['KeyW']||keys['ArrowUp']) mf += 1;
   if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
@@ -11729,7 +11817,7 @@ function roboterPhysics(dt) {
   mf += joy.fwd; ms += joy.strafe;
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
-  const speed = a.flug ? 11 : 5.2;      // mit Düsen saust er durch die Luft!
+  const speed = (a.flug ? 11 : 5.2) * Math.sqrt(G);   // größer = größere Schritte!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
   a.walking = ml>0.05 && !a.flug;       // in der Luft stampft er nicht, er schwebt
@@ -11737,7 +11825,7 @@ function roboterPhysics(dt) {
   if (a.walking) a.ph += dt*4.2;
   const jump = jumpHeld || keys['Space'];
   if (a.flug) {                         // 🚀 DIE RAKETEN-DÜSEN in den Füßen!
-    a.vy = jump ? 7.5 : downHeld ? -7.5 : 0;
+    a.vy = (jump ? 7.5 : downHeld ? -7.5 : 0) * Math.sqrt(G);
     a.duese = (a.duese||0) - dt;
     if (a.duese <= 0) {                 // Feuerstrahl aus beiden Fußsohlen
       a.duese = 0.05;
@@ -11750,28 +11838,28 @@ function roboterPhysics(dt) {
     if (Math.random()<dt*3) blip(90+Math.random()*40, 0.06);   // Düsen-Rauschen
   } else {
     a.vy = Math.max(a.vy-25*dt, -40);
-    if (jump && a.onGround) { a.vy = 11; a.onGround = false; }   // ein RIESEN-Satz!
+    if (jump && a.onGround) { a.vy = 11*Math.sqrt(G); a.onGround = false; }   // ein RIESEN-Satz!
   }
   // die Welt vor ihm schon mal laden - er ist ja so schnell
   if (ml>0.05) {
     const ll=Math.hypot(vx,vz)||1;
     ensureData(Math.floor(a.x+vx/ll*(a.flug?18:12))>>4, Math.floor(a.z+vz/ll*(a.flug?18:12))>>4);
   }
-  const stuck = collideBox(a.x,a.y,a.z,ROB_HALF,ROB_H);
+  const stuck = collideBox(a.x,a.y,a.z,RHF,RH);
   let blocked=false;
   const nx=a.x+vx*dt;
-  if (stuck || !collideBox(nx,a.y,a.z,ROB_HALF,ROB_H)) a.x=nx; else blocked=true;
+  if (stuck || !collideBox(nx,a.y,a.z,RHF,RH)) a.x=nx; else blocked=true;
   const nz=a.z+vz*dt;
-  if (stuck || !collideBox(a.x,a.y,nz,ROB_HALF,ROB_H)) a.z=nz; else blocked=true;
-  if (blocked && a.onGround && !jump) a.vy = 9;   // er steigt einfach drüber
-  const ny=a.y+Math.max(a.vy*dt,-0.9);
+  if (stuck || !collideBox(a.x,a.y,nz,RHF,RH)) a.z=nz; else blocked=true;
+  if (blocked && a.onGround && !jump) a.vy = 9*Math.sqrt(G);   // er steigt einfach drüber
+  const ny=a.y+Math.max(a.vy*dt,-0.9*Math.max(1,G));
   a.onGround=false;
-  if (stuck || !collideBox(a.x,ny,a.z,ROB_HALF,ROB_H)) a.y=ny;
+  if (stuck || !collideBox(a.x,ny,a.z,RHF,RH)) a.y=ny;
   else { if (a.vy<0) a.onGround=true; a.vy=0; }
   if (a.walking && a.onGround) roboterStampf(a, dt);
   if (a.onGround) merkeBoden(dt, a.x, a.y+0.4, a.z);
   // Jonah sitzt oben IM KOPF - von dort schaut er über die ganze Welt!
-  player.x=a.x; player.z=a.z; player.y=a.y+7.3;
+  player.x=a.x; player.z=a.z; player.y=a.y+7.3*G;
   player.vx=player.vy=player.vz=0;
   if (a.y<CH_MIN+2) {                   // tief gefallen? Zauber-Rettung - MIT Roboter!
     exitRoboter();
@@ -11779,24 +11867,50 @@ function roboterPhysics(dt) {
     a.x=player.x+3; a.z=player.z; a.y=player.y+0.5; a.vy=0;
   }
 }
+// 📏 SCHRUMPFEN UND WACHSEN: Jonah tippt auf 📏 und der Roboter wird
+// winzig klein oder gigantisch groß - so groß, wie er will!
+const ROB_GROESSEN = [
+  [0.35, '🐜 WINZIG',   'So klein wie ein Spielzeug! Du passt jetzt überall durch.'],
+  [0.7,  '🙂 klein',    'Handlich klein - super für enge Gassen.'],
+  [1,    '🤖 NORMAL',   'Seine ganz normale Riesen-Größe: neun Blöcke.'],
+  [1.8,  '💪 GROSS',    'Fast doppelt so groß! Jetzt guckst du über die Bäume.'],
+  [3,    '🏔️ RIESIG',   'DREIMAL so groß! Häuser reichen dir nur bis zum Knie.'],
+  [5,    '🌋 GIGANTISCH','FÜNFMAL so groß!! Du überragst sogar deine Festung!'],
+];
+function roboterGroesse() {
+  if (!roboterRiding) return;
+  const a = roboterRiding;
+  a.grStufe = ((a.grStufe === undefined ? 2 : a.grStufe) + 1) % ROB_GROESSEN.length;
+  const [g, name, text] = ROB_GROESSEN[a.grStufe];
+  a.gr = g;
+  a.y += 0.4;                           // ein Hauch Luft, damit er nicht im Boden klemmt
+  document.getElementById('groesseBtn').textContent = g < 1 ? '🔽' : g > 1 ? '🔼' : '📏';
+  for (let s2=0;s2<24;s2++)             // ✨ Zauber-Funken beim Verwandeln
+    fireworks.push({x:a.x+(Math.random()-0.5)*4*g, y:a.y+Math.random()*9*g, z:a.z+(Math.random()-0.5)*4*g,
+      vx:(Math.random()-0.5)*3, vy:1+Math.random()*3, vz:(Math.random()-0.5)*3, tile:73, t:0.7});
+  toast('📏 ' + name + '! ' + text, 3200);
+  blip(g<1 ? 900 : 200, 0.1); blip(g<1 ? 600 : 350, 0.1); blip(g<1 ? 400 : 520, 0.14);
+  scheduleSave();
+}
 // 🦾 DIE RIESENFAUST: ein Hieb, und alle Monster vor dir fliegen davon!
 function roboterFaust() {
   if (!roboterRiding || faustKuehl > 0) return;
   const a = roboterRiding;
   faustKuehl = 1.2;
   a.faustT = 0.35;                      // die Faust schnellt nach vorne
+  const G = a.gr || 1;                  // 📏 je größer der Roboter, desto weiter die Faust
   const bfx=Math.sin(a.yaw), bfz=-Math.cos(a.yaw);
-  const wx=a.x+bfx*3.5, wz=a.z+bfz*3.5;
-  shake = Math.max(shake, 0.5);
+  const wx=a.x+bfx*3.5*G, wz=a.z+bfz*3.5*G;
+  shake = Math.max(shake, 0.5*G);
   blip(50,0.22); blip(90,0.14); blip(160,0.1);
   for (let s2=0;s2<26;s2++)             // WUMMS - eine Wolke aus Funken!
-    fireworks.push({x:wx+(Math.random()-0.5)*3.5, y:a.y+1.5+Math.random()*3, z:wz+(Math.random()-0.5)*3.5,
+    fireworks.push({x:wx+(Math.random()-0.5)*3.5*G, y:a.y+(1.5+Math.random()*3)*G, z:wz+(Math.random()-0.5)*3.5*G,
       vx:bfx*4+(Math.random()-0.5)*4, vy:1+Math.random()*4, vz:bfz*4+(Math.random()-0.5)*4,
       tile:s2%3?27:72, t:0.5});
   let getroffen = 0;
   for (const m of [...animals]) {
     if (m === a) continue;
-    if (Math.hypot(m.x-wx, m.z-wz) > 5.5 || Math.abs(m.y-a.y) > 7) continue;
+    if (Math.hypot(m.x-wx, m.z-wz) > 5.5*G || Math.abs(m.y-a.y) > 7*G) continue;
     if (m.type==='statue') { hitEntity(m, [bfx,0,bfz]); getroffen++; }
     else if (m.type==='slime'||m.type==='zombie'||m.type==='boss'||m.type==='raeuber'||m.type==='riese') {
       slimeDamage(m, 20, [bfx*2, 0, bfz*2]);
@@ -11810,9 +11924,11 @@ function roboterFaust() {
   const brx=Math.cos(a.yaw), brz=Math.sin(a.yaw);
   const fy0 = Math.floor(a.y);
   let weg = 0;
-  for (let tiefe=1; tiefe<=3; tiefe++)
-    for (let seite=-2; seite<=2; seite++)
-      for (let hoch=1; hoch<=7; hoch++) {
+  const TT = Math.max(1, Math.round(3*G)), SS = Math.max(1, Math.round(2*G)),
+        HH = Math.max(2, Math.round(7*G));
+  for (let tiefe=1; tiefe<=TT; tiefe++)
+    for (let seite=-SS; seite<=SS; seite++)
+      for (let hoch=1; hoch<=HH; hoch++) {
         const qx=Math.floor(a.x+bfx*tiefe+brx*seite);
         const qz=Math.floor(a.z+bfz*tiefe+brz*seite);
         const qy=fy0+hoch;
@@ -11831,7 +11947,7 @@ function roboterFaust() {
             vx:bfx*3+(Math.random()-0.5)*5, vy:2+Math.random()*4, vz:bfz*3+(Math.random()-0.5)*5,
             tile:(BLOCKS[b]&&BLOCKS[b].tiles)?BLOCKS[b].tiles[1]:3, t:0.7});
       }
-  if (weg>0) { blip(70,0.14); blip(110,0.1); shake = Math.max(shake, 0.65); }
+  if (weg>0) { blip(70,0.14); blip(110,0.1); shake = Math.max(shake, 0.65*G); }
   toast(getroffen>0 && weg>0 ? '🦾💥 WUMMS!!! ' + getroffen + ' Monster weggeboxt und ' + weg + ' Blöcke zertrümmert!'
       : getroffen>0 ? '🦾💥 WUMMS!!! Die Riesenfaust hat ' + getroffen + ' Monster weggeboxt!'
       : weg>0       ? '🦾🧱 KRACH!!! Die Riesenfaust hat ' + weg + ' Blöcke weggeschlagen!'
@@ -13618,6 +13734,9 @@ zepterBtnEl.addEventListener('mousedown',e=>{e.preventDefault();zepterZaubern();
 const faustBtnEl=document.getElementById('faustBtn');   // 🦾 Roboter-Faust
 faustBtnEl.addEventListener('touchstart',e=>{e.preventDefault();roboterFaust();},{passive:false});
 faustBtnEl.addEventListener('mousedown',e=>{e.preventDefault();roboterFaust();});
+const groesseBtnEl=document.getElementById('groesseBtn');   // 📏 schrumpfen und wachsen
+groesseBtnEl.addEventListener('touchstart',e=>{e.preventDefault();roboterGroesse();},{passive:false});
+groesseBtnEl.addEventListener('mousedown',e=>{e.preventDefault();roboterGroesse();});
 const superBtnEl=document.getElementById('superBtn');   // 🦸 Superkräfte!
 superBtnEl.addEventListener('touchstart',e=>{e.preventDefault();superStart();},{passive:false});
 superBtnEl.addEventListener('mousedown',e=>{e.preventDefault();superStart();});
@@ -14230,7 +14349,9 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   if (savedRoboter) {
     let ry2 = savedRoboter[1];
     if (ry2 <= CH_MIN+3) ry2 = terrainHeight(Math.floor(savedRoboter[0]), Math.floor(savedRoboter[2])) + 1;
+    const gst = typeof savedRoboter[3] === 'number' ? savedRoboter[3] : 2;
     animals.push({type:'roboter', x:savedRoboter[0], y:ry2, z:savedRoboter[2],
+      grStufe: gst, gr: ROB_GROESSEN[gst] ? ROB_GROESSEN[gst][0] : 1,
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
   } else {
     let rx2=Math.floor(player.x)-10, rz2=Math.floor(player.z)+10;
