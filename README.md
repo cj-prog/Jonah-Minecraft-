@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE TELEPORT-STATION (v190)! 🛸✨ Neu im Bildschirm: der
+  🛸-Knopf. Tipp ihn an, und es geht ein Feld auf - genau wie das
+  Bedienungsfeld in deiner Rakete. Darin stehen schon jede Menge
+  Ziele bereit, immer mit der Entfernung dahinter: deine
+  RIESEN-FESTUNG, die Raketen-Station, die Spielhalle, das nächste
+  Dorf, die große Bank, der Fußballplatz, der Höhlen-Eingang, der
+  große Berg, der Zauberwald und die Ritterburg. Dazu kommen DEINE
+  FAHRZEUGE - Roboter, Drache, Jet, Hubschrauber, Mähdrescher - und
+  alle Schilder, die du dir gemerkt hast. Auf deinem Jonah-Planeten
+  zeigt die Liste stattdessen dein Königsschloss, die Arena, die
+  Schatzkammer, den Königsgarten, die Gold-Mine und die Wachtürme.
+  Und ganz unten kannst du dir ein EIGENES Ziel ausdenken: einfach
+  X und Z eintippen und auf „Zu diesen Koordinaten!" drücken. Zack -
+  ein Funkeln, ein Pling, und du stehst da. Du landest immer sicher
+  auf festem Boden, nie in einer Wand, und wenn du gerade in einem
+  Fahrzeug sitzt, steigst du vorher automatisch aus.
 - Die RIESENFAUST zertrümmert jetzt ganze WÄNDE (v189)! 🦾🧱 Bisher
   hat der 🦾-Knopf nur Monster weggeboxt - ab sofort haut der
   Riesen-Roboter damit auch BLÖCKE weg. Und zwar nicht einen
