@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- LIMOUSINE mit Fahrer + BUSSE mit Haltestellen (v193)! 🚙🚌🚏 Deine
+  eigene LIMOUSINE wird dir vorgefahren: ganz lang, sechs Räder,
+  dunkle Scheiben, goldener Kühlergrill, Königs-Fähnchen - und
+  vorne sitzt ein richtiger CHAUFFEUR mit Mütze. Tipp sie an, steig
+  ein und sag ihm mit dem Joystick, wo es langgeht. Sie steht auf
+  deiner Karte (🚙), parkt zu Hause mit in der Garage und ist auch
+  im Teleport-Menü. Außerdem fahren jetzt richtige LINIENBUSSE über
+  deine Straßen: großer gelber Bus mit Fensterreihe, Tür,
+  Ziel-Anzeige, sechs Rädern und eigenem Busfahrer. Er bleibt
+  brav auf seiner Spur, hupt, und an jeder BUSHALTESTELLE hält er
+  vier Sekunden an - Ding-Dong! Die Haltestellen stehen alle 48
+  Blöcke am Straßenrand: Wartefläche, zwei Pfosten, Dach und
+  Schild. Tipp den Bus an, dann fährst du einfach mit und schaust
+  aus dem Fenster; mit 🚪 steigst du wieder aus.
 - Tiefe Planeten, Mond und Sterne, mitreisende Gefährte und ein
   Roboter zum Schrumpfen (v192)! 🕳️🌙🚀📏 Vier Sachen auf einmal:
   (1) Auf allen Planeten geht es jetzt UNENDLICH TIEF hinunter -
