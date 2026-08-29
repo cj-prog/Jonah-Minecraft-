@@ -543,7 +543,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 185 &middot; Der Roboter läuft dir nach + eigener Roboter-Platz! 🤖👣</p>
+    Version 186 &middot; Der Roboter parkt in seiner RIESEN-GARAGE! 🤖🅿️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -589,7 +589,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 185;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 186;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -2872,22 +2872,39 @@ function genChunkData(cx, cz, ohneEdits) {
         const zsig=(B.bx-3)+','+(by+1)+','+(B.bz+25);
         if (!signTexts.has(zsig)) signTexts.set(zsig,'🌉 ZUGBRÜCKE: antippen und sie klappt hoch - dann kommt keiner mehr rein!');
       }
-      // 14e) 🤖 DER ROBOTER-PLATZ: ein großer Landeplatz im Burghof, damit dein
-      // neun Blöcke hoher Riesen-Roboter zu Hause einen eigenen Stellplatz hat.
+      // 14e) 🤖 DIE ROBOTER-GARAGE: eine RIESIGE Halle im Burghof, in der dein
+      // neun Blöcke hoher Roboter wirklich DRINNEN parkt - mit Wänden, Dach,
+      // Fenstern und einem echten Garagentor zum Antippen!
       {
         const RX = 48, RZ = 0;                          // östlicher Hof, hinter dem Wassergraben
-        for (let dx=RX-5; dx<=RX+5; dx++) for (let dz=RZ-5; dz<=RZ+5; dz++) {
-          const rand = Math.abs(dx-RX)===5 || Math.abs(dz-RZ)===5;
-          const kreuz = dx===RX || dz===RZ;
-          P(dx, by, dz, rand ? GOLD : kreuz ? WOOL : STONE);   // Landekreuz mit goldenem Rand
-          for (let y=by+1; y<=by+13; y++) P(dx, y, dz, AIR);   // freier Himmel für den Riesen
-          P(dx, by-1, dz, STONE);                             // fester Unterbau
+        const W = 6, DACH = by+13;                      // Innenraum 11x11, 12 Blöcke hoch
+        for (let dx=RX-W; dx<=RX+W; dx++) for (let dz=RZ-W; dz<=RZ+W; dz++) {
+          const wand = Math.abs(dx-RX)===W || Math.abs(dz-RZ)===W;
+          // Boden: grauer Belag mit weißem Lande-Kreuz und goldenem Rand
+          const kreuz = !wand && (dx===RX || dz===RZ);
+          const rand  = !wand && (Math.abs(dx-RX)===W-1 || Math.abs(dz-RZ)===W-1);
+          P(dx, by-1, dz, STONE);                       // fester Unterbau
+          P(dx, by, dz, wand ? S_ : rand ? GOLD : kreuz ? WOOL : STONE);
+          for (let y=by+1; y<=DACH-1; y++) {
+            // Fenster-Band auf halber Höhe, damit man den Riesen von außen sieht
+            const fenster = wand && y>=by+7 && y<=by+8 && (((dx+dz)&1)===0);
+            P(dx, y, dz, wand ? (fenster ? GLASS : S_) : AIR);
+          }
+          P(dx, DACH, dz, S_);                          // das hohe Hallendach
+          if (((dx+dz)&1)===0) P(dx, DACH+1, dz, S_);   // Zinnen wie bei der Burg
         }
-        for (const [ex,ez] of [[-5,-5],[5,-5],[-5,5],[5,5]])   // vier Laternen an den Ecken
-          { P(RX+ex, by+1, RZ+ez, S_); P(RX+ex, by+2, RZ+ez, TORCH); }
-        P(RX-5, by+1, RZ, SIGN);
-        const rsig=(B.bx+RX-5)+','+(by+1)+','+(B.bz+RZ);
-        if (!signTexts.has(rsig)) signTexts.set(rsig,'🤖 ROBOTER-PLATZ: hier parkt dein Riesen-Roboter!');
+        // 🚪 DAS RIESEN-GARAGENTOR nach Westen (zur Festung hin): antippen = auf/zu!
+        for (let dz=RZ-4; dz<=RZ+4; dz++)
+          for (let y=by+1; y<=by+11; y++) P(RX-W, y, dz, GATE);
+        // ... und ein zweites Tor nach Osten, damit er auch nach draußen kann
+        for (let dz=RZ-4; dz<=RZ+4; dz++)
+          for (let y=by+1; y<=by+11; y++) P(RX+W, y, dz, GATE);
+        for (const [ex,ez] of [[-W+1,-W+1],[W-1,-W+1],[-W+1,W-1],[W-1,W-1]])
+          P(RX+ex, by+4, RZ+ez, TORCH);                 // Licht in den vier Ecken
+        P(RX-W+1, by+1, RZ+5, SIGN);
+        const rsig=(B.bx+RX-W+1)+','+(by+1)+','+(B.bz+RZ+5);
+        if (!signTexts.has(rsig))
+          signTexts.set(rsig,'🤖 ROBOTER-GARAGE: hier parkt dein Riesen-Roboter! (Tor antippen = auf/zu)');
       }
       // 15) die GROSSE BURG-MAUER 🧱: einmal rund um ALLES (Festung, Königs-Turm,
       // Freunde-Haus und Gehege) - mit Zinnen, 4 Torbögen und 4 Wach-Türmen!
@@ -5404,6 +5421,7 @@ function spawnTick() {
 const GARAGEN_PLATZ = { bagger:[25,9], jet:[18,9], heli:[18,16], dragon:[24,16], roboter:[48,0] };
 const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hubschrauber',
                        dragon:'Dein Drache', roboter:'🤖 Dein Riesen-Roboter' };
+const GARAGEN_TEXT = { roboter:'🤖🅿️ Dein Riesen-Roboter steht in seiner ROBOTER-GARAGE!' };
 function parkeInGarage(a, dt) {
   if (!imBurghof()) return false;       // erst hinter der Mauer fahren sie in die Garage
   const p = GARAGEN_PLATZ[a.type];
@@ -5417,7 +5435,7 @@ function parkeInGarage(a, dt) {
     a.vy=0; a.yaw=Math.PI/2; a.ferry=false; a.walking=false;
     if (!a.garage) {
       a.garage=true;
-      toast('🅿️ '+GARAGEN_NAME[a.type]+' parkt brav in der Garage!', 2500);
+      toast(GARAGEN_TEXT[a.type] || ('🅿️ '+GARAGEN_NAME[a.type]+' parkt brav in der Garage!'), 2800);
       blip(90,0.1); blip(70,0.12);
     }
     return true;
