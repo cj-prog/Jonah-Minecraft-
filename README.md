@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Die RIESENFAUST zertrümmert jetzt ganze WÄNDE (v189)! 🦾🧱 Bisher
+  hat der 🦾-Knopf nur Monster weggeboxt - ab sofort haut der
+  Riesen-Roboter damit auch BLÖCKE weg. Und zwar nicht einen
+  einzelnen: mit einem Schlag fliegt eine Fläche von FÜNF Blöcken
+  Breite, SIEBEN Blöcken Höhe und DREI Blöcken Tiefe auseinander -
+  über hundert Blöcke auf einmal! Trümmer wirbeln durch die Luft,
+  der Boden wackelt, und danach kannst du einfach durch das Loch
+  hindurchstapfen. Bäume, Hügel, Häuser, ganze Mauern: alles kein
+  Problem. Nur deine unkaputtbaren Schutz-Blöcke, Wasser, Lava und
+  TNT lässt die Faust in Ruhe - deine Festung bleibt also heil.
 - DIENER und HAUSMEISTER auf dem Jonah-Planeten (v188)! 🤵🔧 In
   deinem Königsschloss auf dem geheimen Planeten warten jetzt zwei
   Neue auf dich: DIENER ANTON im feinen Anzug mit Fliege und

@@ -543,7 +543,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 188 &middot; Diener und Hausmeister auf dem Jonah-Planeten! 🤵🔧</p>
+    Version 189 &middot; Die Riesenfaust zertrümmert ganze Wände! 🦾🧱</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -589,7 +589,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 188;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 189;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -11612,8 +11612,39 @@ function roboterFaust() {
       getroffen++;
     }
   }
-  toast(getroffen>0 ? '🦾💥 WUMMS!!! Die Riesenfaust hat ' + getroffen + ' Monster weggeboxt!'
-                    : '🦾💨 WUSCH! Die Riesenfaust saust durch die Luft!', 2200);
+  // 🧱 DIE FAUST HAUT AUCH BLÖCKE WEG! Eine ganze Wand auf einen Schlag:
+  // 5 breit, 7 hoch, 3 tief - Bäume, Häuser, Berge, alles fliegt zur Seite.
+  // (Deine unkaputtbaren Schutz-Blöcke, Wasser, Lava und TNT bleiben heil!)
+  const wCtr = {v:14};
+  const brx=Math.cos(a.yaw), brz=Math.sin(a.yaw);
+  const fy0 = Math.floor(a.y);
+  let weg = 0;
+  for (let tiefe=1; tiefe<=3; tiefe++)
+    for (let seite=-2; seite<=2; seite++)
+      for (let hoch=1; hoch<=7; hoch++) {
+        const qx=Math.floor(a.x+bfx*tiefe+brx*seite);
+        const qz=Math.floor(a.z+bfz*tiefe+brz*seite);
+        const qy=fy0+hoch;
+        if (qy<=CH_MIN || qy>=CH) continue;
+        const b=getBlock(qx,qy,qz);
+        if (b===AIR||b===WATER||b===LAVA||b===SCHUTZ||b===TNT||b===TNT_LIT) continue;
+        if (b===SIGN) removeSign(qx,qy,qz);
+        if (b===CABINET) removeCabinet(qx,qy,qz);
+        if (b>=PIC&&b<=PIC_W) removePainting(qx,qy,qz);
+        if (b>=CARROT0 && b<=WHEAT2) cropSet.delete(qx+','+qy+','+qz);
+        setBlock(qx,qy,qz,AIR); weg++;
+        weckeFluessigkeit(qx,qy,qz,wCtr);
+        pruefeNachbarn(qx,qy,qz);
+        if (weg<=14)                     // Trümmer fliegen durch die Gegend!
+          fireworks.push({x:qx+0.5, y:qy+0.5, z:qz+0.5,
+            vx:bfx*3+(Math.random()-0.5)*5, vy:2+Math.random()*4, vz:bfz*3+(Math.random()-0.5)*5,
+            tile:(BLOCKS[b]&&BLOCKS[b].tiles)?BLOCKS[b].tiles[1]:3, t:0.7});
+      }
+  if (weg>0) { blip(70,0.14); blip(110,0.1); shake = Math.max(shake, 0.65); }
+  toast(getroffen>0 && weg>0 ? '🦾💥 WUMMS!!! ' + getroffen + ' Monster weggeboxt und ' + weg + ' Blöcke zertrümmert!'
+      : getroffen>0 ? '🦾💥 WUMMS!!! Die Riesenfaust hat ' + getroffen + ' Monster weggeboxt!'
+      : weg>0       ? '🦾🧱 KRACH!!! Die Riesenfaust hat ' + weg + ' Blöcke weggeschlagen!'
+                    : '🦾💨 WUSCH! Die Riesenfaust saust durch die Luft!', 2400);
 }
 
 // ------------------------------ Boote ----------------------------------------
