@@ -572,7 +572,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 194 &middot; RIESEN-YACHT mit Pool + U-BOOT + Yachten auf dem Meer! 🛥️🟡</p>
+    Version 195 &middot; ZEPTER-GOLD: alles behält seine FORM und wird trotzdem GOLD! 🪄🟨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -618,7 +618,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 194;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 195;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -3191,6 +3191,18 @@ function isSolid(wx,wy,wz) {
   const b = getBlock(wx,wy,wz);
   return b!==AIR && BLOCKS[b].solid;
 }
+// ✨ GOLDEN VERZAUBERT: hier gemerkte Blöcke behalten ihre FORM, sehen aber
+// aus wie massives Gold - ein goldenes Bett bleibt also ein Bett!
+const goldSet = new Set();
+const GOLD_KACHEL = 115;
+// Den verzauberten Block (und seine Nachbar-Chunks) neu zeichnen lassen
+function goldNeuZeichnen(wx, wy, wz) {
+  const cx = wx>>4, cz = wz>>4, lx = wx&15, lz = wz&15;
+  const mark = (x,z) => { const c = getChunk(x,z); if (c) c.dirty = true; };
+  mark(cx, cz);
+  if (lx===0) mark(cx-1,cz); if (lx===15) mark(cx+1,cz);
+  if (lz===0) mark(cx,cz-1); if (lz===15) mark(cx,cz+1);
+}
 function setBlock(wx,wy,wz,v) {
   if (wy<=CH_MIN || wy>=CH) return;   // die unterste Schicht ist der Weltboden
   const cx=wx>>4, cz=wz>>4;
@@ -3206,6 +3218,7 @@ function setBlock(wx,wy,wz,v) {
   else if (GELD_BLOCK.has(vorher)) geldOrte.delete(gk);
   if (v===KANONE) kanonen.set(gk, 0);   // 💣 eine neue Wach-Kanone meldet sich zum Dienst
   else if (vorher===KANONE) kanonen.delete(gk);
+  if (goldSet.size) goldSet.delete(gk);              // ✨ der Goldzauber geht mit weg
   if (v===AIR) {
     rotations.delete(wx+','+wy+','+wz);              // Drehung mit wegräumen
     meldeSchaden(wx,wy,wz);            // 🔧 der Hausmeister spürt jedes Loch sofort!
@@ -3269,6 +3282,7 @@ function saveGame() {
       signs: Object.fromEntries(signTexts),
       paints: Object.fromEntries(paintings),
       rots: Object.fromEntries(rotations),
+      gold: [...goldSet],              // ✨ alles, was das Zepter vergoldet hat
       balls: animals.filter(a=>a.type==='ball' && a.own).map(a=>
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10]),
       statuen: animals.filter(a=>a.type==='statue').map(a=>
@@ -3342,6 +3356,7 @@ function loadGame() {
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.paints) for (const k in s.paints) paintings.set(k, s.paints[k]);
     if (s.rots) for (const k in s.rots) rotations.set(k, s.rots[k]);
+    if (s.gold) for (const k of s.gold) goldSet.add(k);   // ✨ goldene Sachen bleiben golden
     if (Array.isArray(s.balls)) savedBalls = s.balls;
     if (Array.isArray(s.statuen)) savedStatuen = s.statuen;
     if (Array.isArray(s.diebe)) savedDiebe = s.diebe;      // 💰 Räuber mit geklautem Geld
@@ -4098,6 +4113,7 @@ function buildMesh(ch) {
     if (b===AIR) continue;
     const def = BLOCKS[b];
     const wx=x0+lx, wz=z0+lz;
+    const golden = goldSet.size > 0 && goldSet.has(wx+','+y+','+wz);   // ✨ verzaubert?
     if (def.fence) {                    // Zaun: Pfosten + Latten zu den Nachbarn
       const boxes = [[0.4,0,0.4, 0.6,1,0.6]];
       const conn = (dx,dz) => {
@@ -4113,7 +4129,7 @@ function buildMesh(ch) {
           const F=FACES[f];
           for (let k=0;k<6;k++) {
             const c=F.c[TRI[k]];
-            const uv=tileUV(5, c[3], c[4]);
+            const uv=tileUV(golden ? GOLD_KACHEL : 5, c[3], c[4]);
             opq.push(wx+bx[0]+(bx[3]-bx[0])*c[0], y+bx[1]+(bx[4]-bx[1])*c[1], wz+bx[2]+(bx[5]-bx[2])*c[2],
                      uv[0], uv[1], F.s);
           }
@@ -4158,6 +4174,7 @@ function buildMesh(ch) {
           tl = 59 + Math.floor(hash2(wx+y*7, wz-y*5, 787)*4);
         if (b===BLUME && tl===25)          // jede Blume blüht in ihrer eigenen Farbe!
           tl = [25,30,51,10][Math.floor(hash2(wx*3+y, wz*5-y, 4242)*4)];
+        if (golden) tl = GOLD_KACHEL;      // ✨ ganz aus Gold - aber in seiner Form!
         // Kiste um die Block-Mitte drehen (je 90 Grad)
         let ax0=bx[0], az0=bx[2], ax1=bx[3], az1=bx[5];
         for (let r2=0; r2<drehung; r2++) {
@@ -4186,8 +4203,8 @@ function buildMesh(ch) {
       else if (b===GLASS) visible = (nb===AIR || nb===WATER || nbModel);
       else visible = (nb===AIR || nb===WATER || nb===GLASS || nbModel);
       if (!visible) continue;
-      const tile = def.tiles[f===2?1:f===3?2:0];
-      const arr = (b===WATER || b===GLASS) ? wat : opq;   // Glas ist durchsichtig
+      const tile = golden ? GOLD_KACHEL : def.tiles[f===2?1:f===3?2:0];
+      const arr = (b===WATER || b===GLASS) && !golden ? wat : opq;   // Glas ist durchsichtig
       const sh2 = b===LAVA ? 1.5 : F.s;   // Lava glüht von selbst, auch im Dunkeln!
       for (let k=0;k<6;k++) {
         const c = F.c[TRI[k]];
@@ -10370,9 +10387,12 @@ function zepterZaubern() {
   let bis = 22;
   if (hit && hit.block !== undefined) {
     bis = Math.min(bis, Math.hypot(hit.x+0.5-ex, hit.y+0.5-ey, hit.z+0.5-ez));
+    const gkey = hit.x+','+hit.y+','+hit.z;
     if (hit.block !== AIR && hit.block !== WATER && hit.block !== GOLD &&
-        !GELD_BLOCK.has(hit.block) && hit.block !== SCHUTZ) {
-      setBlock(hit.x, hit.y, hit.z, GOLD);          // ✨ zu GOLD verzaubert!
+        !GELD_BLOCK.has(hit.block) && hit.block !== SCHUTZ && !goldSet.has(gkey)) {
+      // ✨ Der Block behält seine FORM und wird trotzdem ganz aus Gold!
+      goldSet.add(gkey);
+      goldNeuZeichnen(hit.x, hit.y, hit.z);
       for (let n=0; n<16; n++)
         fireworks.push({x:hit.x+0.5, y:hit.y+0.5, z:hit.z+0.5, vx:(Math.random()-0.5)*4,
           vy:Math.random()*3, vz:(Math.random()-0.5)*4, tile:94, t:0.7});
@@ -10385,7 +10405,7 @@ function zepterZaubern() {
   }
   blip(1175,0.06); blip(880,0.06); blip(659,0.1);
   toast(getroffen ? '🪄✨ ZAUBER! ' + getroffen + ' Monster verschwunden!'
-                  : '🪄✨ Zauberstrahl! Was er trifft, wird zu GOLD!', 2600);
+                  : '🪄✨ Zauberstrahl! Was er trifft, wird GOLD - behält aber seine Form!', 2600);
   scheduleSave();
 }
 // ---------------------- 🦸 SUPER-JONAH: die Superkräfte -----------------------
