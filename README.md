@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- Tiefe Planeten, Mond und Sterne, mitreisende Gefährte und ein
+  Roboter zum Schrumpfen (v192)! 🕳️🌙🚀📏 Vier Sachen auf einmal:
+  (1) Auf allen Planeten geht es jetzt UNENDLICH TIEF hinunter -
+  vorher war nach neun Blöcken Schluss, jetzt reicht der Boden bis
+  ganz nach unten, mit Höhlen, Lava-Seen, GOLD-Adern und tief
+  vergrabenen Schatztruhen. (2) Nachts siehst du von der Erde aus
+  den MOND über den Himmel wandern, dazu Sterne und ein paar ferne
+  Planeten - und von jedem Planeten aus siehst du jetzt nicht nur
+  die Erde, sondern auch alle anderen Planeten (der geheime bleibt
+  natürlich geheim). Unter einem Dach siehst du keine Sterne, klar.
+  (3) ALLE deine Gefährte reisen mit: Jet, Hubschrauber, Drache,
+  Mähdrescher und der Riesen-Roboter stehen nach der Landung rund
+  um den Raketen-Parkplatz. (4) Mit dem neuen 📏-Knopf in der
+  Roboter-Kabine kannst du ihn SCHRUMPFEN und WACHSEN lassen: von
+  🐜 WINZIG über normal bis 🌋 GIGANTISCH (fünfmal so groß!). Alles
+  wächst mit - die Kabine, die Schritte, die Riesenfaust und das
+  Wackeln. Die Größe bleibt gespeichert.
 - Der HAUSMEISTER KANN FLIEGEN (v191)! 🔧✈️ Bisher hat Kurt nur
   Löcher geflickt, an die er zu Fuß herankam - Löcher weiter oben
   in Wänden, Türmen und Dächern blieben einfach kaputt. Jetzt
