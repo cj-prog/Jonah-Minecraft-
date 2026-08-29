@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIENER und HAUSMEISTER auf dem Jonah-Planeten (v188)! 🤵🔧 In
+  deinem Königsschloss auf dem geheimen Planeten warten jetzt zwei
+  Neue auf dich: DIENER ANTON im feinen Anzug mit Fliege und
+  Tablett, und HAUSMEISTER WILLI mit Mütze und Werkzeugkasten.
+  Tippe Anton an, dann sagst du ihm, was er tun soll - mitkommen,
+  warten, für dich bauen oder sogar tanzen. Und Willi läuft von
+  allein durchs Schloss, sucht Löcher in Wänden, Böden und Dächern
+  und flickt sie mit einem Funkeln wieder zu. Beide bleiben schön
+  auf dem Schlossgelände und gehen dir nicht verloren. Auf der Erde
+  passen wie immer Kurt und James auf deine Festung auf.
 - Der Roboter parkt in DEINER GARAGE - bei allen anderen Fahrzeugen
   (v187)! 🤖🅿️ Er steht jetzt genau da, wo auch dein Jet, dein
   Hubschrauber, dein Mähdrescher und dein Drache stehen. Damit der

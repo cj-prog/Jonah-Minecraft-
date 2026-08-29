@@ -543,7 +543,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 187 &middot; Der Roboter parkt jetzt IN DEINER GARAGE! 🤖🅿️</p>
+    Version 188 &middot; Diener und Hausmeister auf dem Jonah-Planeten! 🤵🔧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -589,7 +589,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 187;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 188;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -5082,10 +5082,18 @@ function updateFish(a, dt) {
 // 👑 Jonahs Hofstaat: Ritter am Tor und sein Volk im Schlosshof
 function hofstaatTick() {
   if (Math.hypot(player.x, player.z) > 90) return;         // nur beim Schloss
-  if (countType(a=>a.home==='koenigshof') >= 10) return;    // sind schon alle da
   const ch = getChunk(0, 0);
   if (!ch || !ch.data) return;                             // Schloss noch nicht geladen
   const by = KO_Y;
+  // 🤵🔧 König Jonah hat auch hier seinen eigenen DIENER und einen HAUSMEISTER!
+  for (const [typ, nm, dx3, dz3] of [['butler','Diener Anton',-6,-4], ['hausmeister','Hausmeister Willi',6,-4]]) {
+    if (animals.some(x => x.type===typ)) continue;
+    animals.push({ type: typ, name: nm, friend: 3,
+      x: dx3+0.5, y: by+1.1, z: dz3+0.5,
+      yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:5,
+      walking:false, t:2, ph:0, onGround:false });
+  }
+  if (countType(a=>a.home==='koenigshof') >= 10) return;    // sind schon alle da
   const RITTER = ['Ritter Max','Ritter Emil','Ritter Paul','Ritter Ben'];
   const VOLK   = ['Hofdame Lina','Bäcker Otto','Gärtner Fritz','Köchin Rosa',
                   'Spielmann Tom','Schmied Kurt'];
@@ -8729,9 +8737,16 @@ function sucheLoch(mx, my, mz, r) {     // fehlt irgendwo in der Nähe ein Block
       }
   return null;
 }
-function hausmeisterTick(a, dt) {
+// 🔧🤵 Wo wohnen Hausmeister und Diener? Auf der Erde in der Riesen-Festung -
+// und auf Jonahs geheimem Planeten im Königsschloss!
+function dienstHeim() {
+  if (weltDim === 9) return { hx: 0, hy: KO_Y, hz: 0, r: 46 };
   const B = burgPos();
-  a.heim = a.heim || [B.bx+6, B.base+1, B.bz+2];
+  return { hx: B.bx, hy: B.base, hz: B.bz, r: 26 };
+}
+function hausmeisterTick(a, dt) {
+  const B = dienstHeim();
+  a.heim = a.heim || [B.hx+6, B.hy+1, B.hz+2];
   if (a.pause) return;                  // Jonah hat ihm Pause gegeben
   a.repT = (a.repT===undefined ? 1.5 : a.repT-dt);
   if (a.ziel) {                         // er ist auf dem Weg zu einem Loch
@@ -8762,10 +8777,10 @@ function hausmeisterTick(a, dt) {
   }
   if (a.repT > 0) return;
   a.repT = 0.7;
-  if (weltDim !== 0) return;
+  if (weltDim !== 0 && weltDim !== 9) return;
   // 1) Gemeldete Schäden zuerst - egal wo im ganzen Burggelände sie sind!
   let versuche = 0;
-  while (schadenListe.length && versuche++ < 12) {
+  while (weltDim === 0 && schadenListe.length && versuche++ < 12) {
     const [sx,sy,sz] = schadenListe.shift();
     if (schadenArt(sx,sy,sz)) {
       a.ziel = [sx,sy,sz]; a.wegT = 0;
@@ -8774,12 +8789,14 @@ function hausmeisterTick(a, dt) {
     }
   }
   // 2) Sonst schaut er selbst nach: erst um sich herum, dann bei Jonah
-  if (Math.hypot(player.x-B.bx, player.z-B.bz) > 90) return;
+  if (Math.hypot(player.x-B.hx, player.z-B.hz) > 90) return;
   const loch = sucheLoch(Math.floor(a.x), Math.floor(a.y), Math.floor(a.z), 6) ||
                sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7);
   if (loch) { a.ziel = loch; a.wegT = 0; return; }
   // nichts kaputt: gemütlich patrouillieren - aber NIE aus der Mauer heraus!
-  const raus = a.x < B.bx-59 || a.x > B.bx+61 || a.z < B.bz-31 || a.z > B.bz+31;
+  const raus = weltDim === 9
+    ? Math.hypot(a.x-B.hx, a.z-B.hz) > B.r
+    : (a.x < B.hx-59 || a.x > B.hx+61 || a.z < B.hz-31 || a.z > B.hz+31);
   if (raus || Math.hypot(a.x-a.heim[0], a.z-a.heim[2]) > 34) {
     a.yaw = Math.atan2(a.heim[0]-a.x, -(a.heim[2]-a.z));
     a.walking = true; a.spd = raus ? 3.4 : 2.2; a.t = 4;
@@ -8795,7 +8812,7 @@ const BUTLER_TALK = [
   'Ich stehe zu Diensten!',
 ];
 function butlerTick(a, dt) {
-  const B = burgPos();
+  const B = dienstHeim();
   const dp = Math.hypot(player.x-a.x, player.z-a.z);
   if (a.bauPlan && a.bauPlan.length) {  // 🔨 er arbeitet einen Auftrag ab!
     const [bx,by2,bz] = a.bauPlan[0];
@@ -8853,11 +8870,16 @@ function butlerTick(a, dt) {
   } else if (a.befehl==='warten') {
     a.walking = false; a.t = 9;
     if (dp < 12) a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));   // schaut dich an
-  } else {                              // ohne Auftrag: er bleibt in der Festung
-    if (Math.hypot(a.x-B.bx, a.z-B.bz) > 26) {
-      a.yaw = Math.atan2(B.bx-a.x, -(B.bz-a.z));
+  } else {                              // ohne Auftrag: er bleibt beim Schloss
+    if (Math.hypot(a.x-B.hx, a.z-B.hz) > B.r) {
+      a.yaw = Math.atan2(B.hx-a.x, -(B.hz-a.z));
       a.walking = true; a.spd = 2.4; a.t = 4;
-    }
+      a.heimT = (a.heimT||0) + dt;      // hängt er an einer Mauer fest? Dann Abkürzung
+      if (a.heimT > 14) {
+        a.x = B.hx + (Math.random()*6-3); a.z = B.hz + (Math.random()*6-3);
+        a.y = B.hy + 1; a.vy = 0; a.heimT = 0;
+      }
+    } else a.heimT = 0;
   }
 }
 // Das Befehls-Menü: Jonah tippt den Butler an und sagt ihm, was er tun soll
