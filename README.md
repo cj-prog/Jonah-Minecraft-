@@ -221,6 +221,12 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RAKETE SELBER FLIEGEN (v196)! 🚀🌌 Im Bedienungsfeld gibt es jetzt
+  ganz oben "🕹️🚀 SELBER FLIEGEN". Kein Countdown, kein Autopilot: Jonah
+  sitzt selbst am Steuer. Joystick lenkt, ⬆ gibt Schub, ⬇ lässt ihn sinken.
+  Je höher er steigt, desto dunkler wird der Himmel - ab 120 Blöcken beginnt
+  das WELTALL mit Sternen, ab 152 ist er mitten drin. Die Rakete bleibt stehen,
+  wo er sie parkt, fährt auf andere Planeten mit und steht auf der Karte als 🚀.
 - ZEPTER-GOLD: alles behält jetzt seine FORM und wird trotzdem massiv Gold - ein goldenes Bett bleibt ein Bett (v195)!
 - RIESEN-YACHT mit Pool, U-BOOT und Yachten auf dem Meer (v194)!
   🛥️🟡 Drei Sachen fürs Wasser: (1) DEINE EIGENE RIESEN-YACHT -
