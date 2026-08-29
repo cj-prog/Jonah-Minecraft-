@@ -56,6 +56,19 @@
   #kroneBtn.an { background:rgba(255,215,60,.7); box-shadow:0 0 18px #ffd83c; }
   #zepterBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(358px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(190,120,255,.45); }
+  #tpBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:24px; background:rgba(80,220,255,.4); }
+  #tpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
+    border:3px solid rgba(90,225,255,.7); }
+  #tpBox h3 { font-size:18px; color:#7fe6ff; }
+  #tpBox p { font-size:12px; opacity:.9; max-width:270px; line-height:1.4; }
+  #tpEigen { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  #tpEigen input { font-size:17px; font-weight:bold; text-align:center; width:86px; padding:6px 6px;
+    border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  #tpClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#2196c8; color:#fff; }
   #zepterBtn.warte { opacity:.5; }
   #superBox { display:none; left:50%; transform:translateX(-50%); top:calc(56px + env(safe-area-inset-top));
     z-index:44; text-align:center; pointer-events:none; }
@@ -325,6 +338,7 @@
 <div class="hud btn" id="superBtn" title="Superkräfte!">🦸</div>
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
+<div class="hud btn" id="tpBtn" title="Teleport - wohin soll es gehen?">🛸</div>
 <div class="hud" id="superBox"><span id="superText"></span><div id="superBalken"><i id="superFuell"></i></div></div>
 <div class="hud" id="superFx"></div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
@@ -419,6 +433,18 @@
   <p id="raketeText">Wohin soll die Reise gehen, Kommandant Jonah?</p>
   <div id="planetListe"></div>
   <button id="raketeClose">Abbrechen</button>
+</div>
+
+<div class="hud" id="tpBox">
+  <h3>🛸 Teleport-Station</h3>
+  <p id="tpText">Wohin soll es gehen, Jonah? Tipp ein Ziel an - zack, bist du da!</p>
+  <div id="tpListe"></div>
+  <div id="tpEigen">
+    <input id="tpX" type="number" step="1" inputmode="numeric" placeholder="X">
+    <input id="tpZ" type="number" step="1" inputmode="numeric" placeholder="Z">
+  </div>
+  <div class="senderRow" id="tpEigenGo">✏️ Zu diesen Koordinaten!</div>
+  <button id="tpClose">Abbrechen</button>
 </div>
 
 <div class="hud" id="startBox">
@@ -543,7 +569,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 189 &middot; Die Riesenfaust zertrümmert ganze Wände! 🦾🧱</p>
+    Version 190 &middot; DER TELEPORT-KNOPF ist da! 🛸✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -589,7 +615,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 189;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 190;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -9757,6 +9783,99 @@ function raketeBauen(x, y, z) {
 // ------------------------- 🪑👑 DER KÖNIGSTHRON -----------------------------
 // Draufsetzen und Befehle geben: Fest feiern, Steuern einsammeln, Ritter
 // rufen, Wetter bestimmen und sein ganzes Volk zusammenrufen.
+// ----------------------- 🛸 DIE TELEPORT-STATION -----------------------------
+// Ein Knopf, ein Ziel antippen - zack, bist du da! Die Liste zeigt immer die
+// Orte der Welt, in der du gerade bist, dazu deine Fahrzeuge, deine gemerkten
+// Schilder - und ganz unten kannst du dir dein eigenes Ziel ausdenken.
+const TP_NAME = {
+  '👑':'Meine Riesen-Festung', '🚀':'Die Raketen-Station', '🏰':'Die alte Festung',
+  '🕹️':'Die Spielhalle',      '🏠':'Das nächste Dorf',    '🏦':'Die große Bank',
+  '⚽':'Der Fußballplatz',     '🕳️':'Der Höhlen-Eingang',  '⛰️':'Der große Berg',
+  '🌲':'Der Zauberwald',       '⚔️':'Die Ritterburg',
+  '🗼':'Der Wachturm',         '💰':'Die Schatzkammer',    '🗿':'Die Riesen-Statue',
+  '⛏️':'Die Gold-Mine',        '🌷':'Der Königsgarten',    '🏟️':'Die Arena',
+};
+const TP_FAHRZEUG = { roboter:'🤖 Mein Riesen-Roboter', dragon:'🐉 Mein Drache',
+                      jet:'✈️ Mein Privatjet', heli:'🚁 Mein Hubschrauber',
+                      bagger:'🚜 Mein Mähdrescher' };
+function teleportZiele() {
+  const ziele = [], px = Math.round(player.x), pz = Math.round(player.z);
+  if (weltDim === 9) ziele.push(['👑 Mein Königsschloss', 0, 14]);
+  // die bekannten Orte der Umgebung - immer der nächstgelegene pro Sorte
+  const beste = new Map();
+  for (const m of (weltDim === 1 ? [] : collectMarks(px, pz, 300))) {   // Wunderwelt: keine Orte
+    if (!TP_NAME[m.e]) continue;
+    const d = Math.hypot(m.x-px, m.z-pz);
+    const alt = beste.get(m.e);
+    if (!alt || d < alt.d) beste.set(m.e, { x:m.x, z:m.z, d });
+  }
+  for (const [e, o] of beste) {
+    if (weltDim === 9 && e === '👑') continue;          // steht schon oben
+    ziele.push([e + ' ' + TP_NAME[e], o.x, o.z]);
+  }
+  for (const a of animals)                              // zu deinen Fahrzeugen!
+    if (TP_FAHRZEUG[a.type]) ziele.push([TP_FAHRZEUG[a.type], Math.round(a.x), Math.round(a.z)]);
+  for (const t of customTargets)                        // deine gemerkten Schilder
+    ziele.push(['📍 ' + t.label, t.x, t.z]);
+  return ziele;
+}
+function teleportZu(zx, zz, label) {
+  if (flugT > 0) { toast('🚀 Nicht mitten im Raketenflug! Warte, bis du gelandet bist.', 2800); return; }
+  document.getElementById('tpBox').style.display = 'none';
+  const bx = Math.round(zx), bz = Math.round(zz);
+  for (let cx=(bx-16)>>4; cx<=(bx+16)>>4; cx++)         // die Welt dort erst mal bauen
+    for (let cz=(bz-16)>>4; cz<=(bz+16)>>4; cz++) ensureData(cx,cz);
+  // einen sicheren Stand suchen: vom Boden aufwärts, bis Jonah frei steht
+  let y = Math.max(terrainHeight(bx,bz) + 1, weltDim === 0 ? SEA + 1 : CH_MIN + 2);
+  let frei = false;
+  for (let t=0; t<50; t++) {
+    if (!collideBox(bx+0.5, y+0.05, bz+0.5, P_HALF, P_HEIGHT)) { frei = true; break; }
+    y++;
+  }
+  if (!frei) y = Math.min(CH-3, terrainHeight(bx,bz) + 3);
+  for (let s=0;s<22;s++)                                // ✨ Funkeln am ALTEN Platz
+    fireworks.push({x:player.x, y:player.y+Math.random()*1.8, z:player.z,
+      vx:(Math.random()-0.5)*4, vy:1+Math.random()*4, vz:(Math.random()-0.5)*4,
+      tile:s%2?73:48, t:0.7});
+  rideOff();                                            // erst absteigen!
+  sitting = null;
+  player.x = bx + 0.5; player.y = y + 0.05; player.z = bz + 0.5;
+  player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
+  player.onGround = false;
+  letzterBoden = { x: player.x, y: player.y, z: player.z };
+  for (let s=0;s<26;s++)                                // ✨ und Funkeln am NEUEN Platz
+    fireworks.push({x:player.x, y:player.y+Math.random()*2.2, z:player.z,
+      vx:(Math.random()-0.5)*5, vy:1+Math.random()*5, vz:(Math.random()-0.5)*5,
+      tile:s%2?73:48, t:0.8});
+  blip(300,0.06); blip(500,0.06); blip(750,0.07); blip(1000,0.12);
+  toast('🛸✨ ZACK! Du bist bei „' + label + '"  (X ' + bx + ' / Z ' + bz + ')', 3200);
+  scheduleSave();
+}
+function openTeleport() {
+  if (!started) return;
+  const liste = document.getElementById('tpListe');
+  liste.innerHTML = '';
+  const ziele = teleportZiele();
+  const px = Math.round(player.x), pz = Math.round(player.z);
+  document.getElementById('tpText').textContent =
+    'Du stehst bei X ' + px + ' / Z ' + pz + '. Wohin soll es gehen, Jonah?';
+  for (const [text, zx, zz] of ziele) {
+    const el = document.createElement('div');
+    el.className = 'senderRow';
+    const d = Math.round(Math.hypot(zx-px, zz-pz));
+    el.textContent = text + (d === 1 ? '  (1 Block)' : '  (' + d + ' Blöcke)');
+    const w = () => teleportZu(zx, zz, text);
+    el.addEventListener('click', w);
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+    liste.appendChild(el);
+  }
+  document.getElementById('tpX').value = px;
+  document.getElementById('tpZ').value = pz;
+  document.getElementById('tpBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700,0.06); blip(900,0.08);
+}
+
 const thronBox = document.getElementById('thronBox');
 let steuerZeit = 0;                     // wann gab es zuletzt Steuern? (Sekunden-Zähler)
 const STEUER_PAUSE = 120;               // alle 2 Minuten bringt das Volk wieder etwas
@@ -10170,6 +10289,27 @@ function raketeLanden(ziel) {
   scheduleSave();
 }
 document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.style.display='none'; });
+// 🛸 der Teleport-Knopf und das eigene Wunsch-Ziel
+{
+  const tb = document.getElementById('tpBtn');
+  tb.addEventListener('touchstart', e=>{ e.preventDefault(); openTeleport(); }, {passive:false});
+  tb.addEventListener('mousedown',  e=>{ e.preventDefault(); openTeleport(); });
+  document.getElementById('tpClose').addEventListener('click',
+    ()=>{ document.getElementById('tpBox').style.display='none'; blip(300,0.06); });
+  const eigen = () => {
+    const zx = parseInt(document.getElementById('tpX').value, 10);
+    const zz = parseInt(document.getElementById('tpZ').value, 10);
+    if (!Number.isFinite(zx) || !Number.isFinite(zz)) {
+      toast('🛸 Schreib erst zwei Zahlen in die Kästchen: X und Z!', 3000); return;
+    }
+    const GRENZE = 900000;              // so weit reicht die Welt allemal
+    teleportZu(Math.max(-GRENZE, Math.min(GRENZE, zx)),
+               Math.max(-GRENZE, Math.min(GRENZE, zz)), 'deinem eigenen Ziel');
+  };
+  const eg = document.getElementById('tpEigenGo');
+  eg.addEventListener('click', eigen);
+  eg.addEventListener('touchstart', e=>{ e.preventDefault(); eigen(); }, {passive:false});
+}
 document.getElementById('raketeClose').addEventListener('click', ()=>{ raketeBox.style.display='none'; });
 
 // ------------------------------- Bank 🏦 ------------------------------------
