@@ -221,6 +221,7 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ZEPTER-GOLD: alles behält jetzt seine FORM und wird trotzdem massiv Gold - ein goldenes Bett bleibt ein Bett (v195)!
 - RIESEN-YACHT mit Pool, U-BOOT und Yachten auf dem Meer (v194)!
   🛥️🟡 Drei Sachen fürs Wasser: (1) DEINE EIGENE RIESEN-YACHT -
   vierzehn Blöcke lang, weiß, mit Holzdeck, Reling rundherum,
