@@ -422,6 +422,7 @@
   <div class="foodChip" id="foodK"></div>
   <div class="foodChip" id="foodBo"></div>
   <div class="foodChip" id="foodM"></div>
+  <div class="foodChip" id="foodAn"></div>
 </div>
 
 <div class="hud" id="thronBox">
@@ -572,7 +573,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 196 &middot; DIE RAKETE SELBER FLIEGEN - hoch bis ins WELTALL! 🚀🌌</p>
+    Version 197 &middot; RAUMSTATIONEN im All: Anzug anziehen und rausschweben! 🛰️👨‍🚀</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -618,7 +619,10 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 196;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 197;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+// 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
+const RAUM_START = 120, RAUM_VOLL = 152;
+let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
 let newVersionBackup = false;
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
@@ -649,7 +653,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       STEUER=87, GOLD=88,               // 🎛️ Bedienungsfeld, 🟨 massives Gold zum Bauen
       STRASSE=89, STRASSE_M=90,         // 🛣️ Asphalt und Asphalt mit Mittelstreifen
       KRONE=91, ZEPTER=92,              // 👑🪄 die Königs-Sachen zum Mitnehmen
-      THRON=93;                         // 🪑 DER KÖNIGSTHRON: draufsetzen und befehlen!
+      THRON=93,                         // 🪑 DER KÖNIGSTHRON: draufsetzen und befehlen!
+      ANZUG=94, RAUMLUKE=95;            // 👨‍🚀 Astronautenanzug und 🚪 Luke ins Weltall
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -752,6 +757,21 @@ const BLOCKS = {
   [LAVA]: { name:'Lava 🌋 (heiß! bloß nicht reinfallen!)', tiles:[72,72,72], solid:false },
   [SCHUTZ]: { name:'Schutz-Block 🛡️ (unkaputtbar – nur DU kannst ihn wegnehmen!)', tiles:[80,80,80], solid:true },
   [BURGPLAN]: { name:'Burgplan 🗺️ (antippen und nie mehr verlaufen!)', tiles:[83,83,83], solid:true },
+  // 👨‍🚀 Der Astronautenanzug hängt an der Wand - antippen und anziehen!
+  [ANZUG]: { name:'Astronautenanzug 👨‍🚀 (antippen = anziehen!)', tiles:[125,125,125], solid:false, model:[
+    [0.60,0.62,0.30, 0.98,1.00,0.70, 126],          // der Helm mit goldenem Visier
+    [0.62,0.20,0.28, 0.96,0.64,0.72, 125],          // der Rumpf
+    [0.64,0.28,0.14, 0.94,0.62,0.30, 125],          // Arme
+    [0.64,0.28,0.70, 0.94,0.62,0.86, 125],
+    [0.66,0.00,0.32, 0.94,0.22,0.47, 125],          // Beine
+    [0.66,0.00,0.53, 0.94,0.22,0.68, 125],
+    [0.96,0.30,0.36, 1.00,0.60,0.64, 128],          // der Sauerstoff-Rucksack an der Wand
+    [0.92,0.86,0.42, 1.00,0.96,0.58, 128]] },       // der Haken an der Wand
+  // 🚪 Die Luke: antippen und hinaus ins Weltall schweben!
+  [RAUMLUKE]: { name:'Weltraum-Luke 🚪 (mit Anzug antippen = raus ins All!)', tiles:[127,127,127], solid:true, model:[
+    [0,0,0, 1,1,1, 128],                            // der Rahmen in der Wand
+    [0.86,0.06,0.06, 1.00,0.94,0.94, 127],          // der runde Lukendeckel nach außen
+    [0.00,0.06,0.06, 0.14,0.94,0.94, 127]] },       // ... und nach innen
   // Tunnel-Rutschen 🛝: geschlossene Röhren! Sie verbinden sich von allein
   // mit ihren Nachbarn (wie der Zaun) - das echte Modell baut der Mesher.
   [RUTSCHE_N]: { name:'Tunnel-Rutsche 🛝 (verbinde viele - und saus hindurch!)', tiles:[84,84,84], solid:true, model:[
@@ -1254,6 +1274,36 @@ function arcadePos() {                  // eine große Spielhalle pro Welt
   return _arc;
 }
 
+// ------------------- 🛰️ DIE RAUMSTATIONEN IM WELTALL -------------------------
+// Hoch über der Erde schweben Raumstationen. In jedem 288x288-Feld hängt genau
+// eine - immer auf Weltraum-Höhe, weit über den höchsten Bergen. Drinnen kann
+// man wohnen: Betten, Tisch, Truhe - und an der Wand hängen Astronautenanzüge.
+const RS_GRID = 288, RS_HALB_X = 8, RS_HALB_Z = 6, RS_HOCH = 9;
+function raumstationAt(gx, gz) {        // wo hängt die Station in diesem Feld?
+  return {
+    sx: gx*RS_GRID + 48 + Math.floor(hash2(gx, gz, 7101) * (RS_GRID - 96)),
+    sz: gz*RS_GRID + 48 + Math.floor(hash2(gx, gz, 7102) * (RS_GRID - 96)),
+    sy: 146 + Math.floor(hash2(gx, gz, 7103) * 16),
+    nr: 1 + Math.floor(hash2(gx, gz, 7104) * 9),
+  };
+}
+// alle Stationen, die diesen Chunk berühren könnten
+function raumstationenNah(x0, z0) {
+  const out = [];
+  for (let gz = Math.floor((z0-RS_GRID)/RS_GRID); gz <= Math.floor((z0+RS_GRID)/RS_GRID); gz++)
+    for (let gx = Math.floor((x0-RS_GRID)/RS_GRID); gx <= Math.floor((x0+RS_GRID)/RS_GRID); gx++)
+      out.push(raumstationAt(gx, gz));
+  return out;
+}
+// die nächste Station zu einem Punkt (für die Karte und den Bordcomputer)
+function naechsteStation(px, pz) {
+  let best = null, bd = 1e9;
+  for (const S of raumstationenNah(px, pz)) {
+    const d = Math.hypot(S.sx-px, S.sz-pz);
+    if (d < bd) { bd = d; best = S; }
+  }
+  return best ? { ...best, weit: Math.round(bd) } : null;
+}
 // --------------------- Jonahs RIESEN-FESTUNG 👑 -----------------------------
 let _burg = null, _burgSeed = null;
 function burgPos() {                    // eine riesige Festung pro Welt
@@ -2605,6 +2655,60 @@ function genChunkData(cx, cz, ohneEdits) {
       if (!signTexts.has(tkey)) signTexts.set(tkey,'König Jonahs Thron');
     }
   }
+  // 🛰️ DIE RAUMSTATIONEN hoch oben im Weltall bauen
+  for (const S of raumstationenNah(x0, z0)) {
+    if (S.sx+RS_HALB_X+7 < x0 || S.sx-RS_HALB_X-7 > x0+CS-1 ||
+        S.sz+RS_HALB_Z+1 < z0 || S.sz-RS_HALB_Z-1 > z0+CS-1) continue;
+    const sy = S.sy;
+    const R = (dx,y,dz,b) => put(S.sx+dx, y, S.sz+dz, b, false);
+    // 1) Zwei Wände: außen unkaputtbarer Schutz, innen weiße Verkleidung.
+    //    So sieht es drinnen hell und sauber aus - und man kann nicht hinausfallen.
+    for (let dx=-RS_HALB_X; dx<=RS_HALB_X; dx++)
+      for (let dz=-RS_HALB_Z; dz<=RS_HALB_Z; dz++)
+        for (let dy=0; dy<=RS_HOCH; dy++) {
+          const aussen = dx===-RS_HALB_X || dx===RS_HALB_X ||
+                         dz===-RS_HALB_Z || dz===RS_HALB_Z || dy===0 || dy===RS_HOCH;
+          const innen  = Math.abs(dx)===RS_HALB_X-1 || Math.abs(dz)===RS_HALB_Z-1 ||
+                         dy===1 || dy===RS_HOCH-1;
+          R(dx, sy+dy, dz, aussen ? SCHUTZ : innen ? WOOL : AIR);
+        }
+    // 2) große Panorama-Fenster nach vorne und hinten - der Blick auf die Erde!
+    for (let dx=-4; dx<=4; dx++) for (let dy=3; dy<=6; dy++) {
+      R(dx, sy+dy, -RS_HALB_Z, GLASS);   R(dx, sy+dy, -RS_HALB_Z+1, GLASS);
+      R(dx, sy+dy,  RS_HALB_Z, GLASS);   R(dx, sy+dy,  RS_HALB_Z-1, GLASS);
+    }
+    for (let dz=-2; dz<=2; dz++) {       // und ein Bullaugen-Band an der Seite
+      R(-RS_HALB_X, sy+5, dz, GLASS);    R(-RS_HALB_X+1, sy+5, dz, GLASS);
+    }
+    // 3) 👨‍🚀 DREI ASTRONAUTENANZÜGE hängen an der Wand, gleich neben der Luke
+    for (const dz of [-3, 0, 3]) R(RS_HALB_X-2, sy+2, dz, ANZUG);
+    // 4) 🚪 DIE LUKE ins Weltall - rechts in der Wand, direkt bei den Anzügen
+    R(RS_HALB_X-1, sy+2, 0, RAUMLUKE);
+    R(RS_HALB_X-1, sy+3, 0, GLASS);      // Fensterchen über der Luke
+    // 5) hier wohnt man wirklich: Betten, Tisch, Stühle, Truhen, Licht
+    R(-5, sy+2, -3, BED);   R(-3, sy+2, -3, BED);
+    R(-5, sy+2,  3, BED);   R(-3, sy+2,  3, BED);
+    R(0, sy+2, 0, TABLE);
+    R(-1, sy+2, 0, CHAIR);  R(1, sy+2, 0, CHAIR);
+    R(3, sy+2, -3, CHEST);  R(3, sy+2, 3, CHEST);
+    R(-6, sy+2, 0, TOILET); R(-6, sy+2, 1, SINK);
+    for (const dx of [-5,-1,3]) { R(dx, sy+RS_HOCH-2, -4, TORCH); R(dx, sy+RS_HOCH-2, 4, TORCH); }
+    R(-RS_HALB_X+1, sy+3, -2, SIGN);
+    const sk = (S.sx-RS_HALB_X+1)+','+(sy+3)+','+(S.sz-2);
+    if (!signTexts.has(sk)) signTexts.set(sk, 'Raumstation ' + S.nr);
+    // 6) die Solarflügel links und rechts - daran erkennt man sie von weitem
+    for (let f=1; f<=6; f++) for (let dz=-4; dz<=4; dz++) {
+      R(RS_HALB_X+f, sy+5, dz, GLASS);
+      R(-RS_HALB_X-f, sy+5, dz, GLASS);
+    }
+    for (let f=1; f<=6; f++) { R(RS_HALB_X+f, sy+4, 0, SCHUTZ); R(-RS_HALB_X-f, sy+4, 0, SCHUTZ); }
+    // 7) oben drauf der Landeplatz für die Rakete - mit Geländer und Dach-Luke
+    for (let dx=-4; dx<=4; dx++) { R(dx, sy+RS_HOCH+1, -3, FENCE); R(dx, sy+RS_HOCH+1, 3, FENCE); }
+    for (let dz=-3; dz<=3; dz++) { R(-4, sy+RS_HOCH+1, dz, FENCE); R(4, sy+RS_HOCH+1, dz, FENCE); }
+    R(0, sy+RS_HOCH, 0, RAUMLUKE);       // 🚪 die Dach-Luke: hier steigt man ein!
+    R(-3, sy+RS_HOCH+1, 0, TORCH);       // Landefeuer für die Rakete
+    R( 3, sy+RS_HOCH+1, 0, TORCH);
+  }
   // Jonahs RIESEN-FESTUNG bauen 👑: 3 Etagen, über 20 Räume,
   // KOMPLETT aus unzerstörbaren Schutz-Blöcken (Wände, Böden, Decken, Dach)!
   {
@@ -3082,7 +3186,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M, KRONE, ZEPTER, THRON]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M, KRONE, ZEPTER, THRON, ANZUG, RAUMLUKE]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -3309,6 +3413,7 @@ function saveGame() {
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
+      anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
@@ -3401,6 +3506,7 @@ function loadGame() {
     if (s.jub100) jub100 = true;
     if (s.sword) sword = true;
     if (typeof s.steuer === 'number') steuerZeit = s.steuer;
+    if (s.anzug) hatAnzug = true;
     if (s.krone) hatKrone = true;
     if (s.zepter) hatZepter = true;
     if (s.auf) traegtKrone = true;
@@ -3883,6 +3989,31 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 3.2) return 'rgba(0,0,0,0)';                            // in der Mitte ist ein Loch
     if (r > 7.6) return 'rgba(0,0,0,0)';
     return (Math.floor(r) % 2) ? vary(244,232,192,8) : vary(198,176,128,10);
+  });
+  tile(125,(x,y)=>{                                                 // 👨‍🚀 Anzug-Stoff: weiß mit blauen Streifen
+    if (y===3 || y===12) return vary(60,120,230,14);                // blaue Ringe an Arm und Bein
+    if (x===7 || x===8) return vary(226,230,238,10);                // heller Reißverschluss
+    return vary(238,240,246,12);
+  });
+  tile(126,(x,y)=>{                                                 // 👨‍🚀 der Helm mit goldenem Visier
+    const dx=x-7.5, dy=y-8.2, r=Math.hypot(dx,dy);
+    if (r < 4.6) return (dx+dy < -2.6) ? vary(255,246,190,10)       // Glanzpunkt im Visier
+                                       : vary(226,176,52,14);       // goldenes Visier
+    if (r < 6.4) return vary(240,242,248,10);                       // weißer Helm
+    return vary(212,216,226,10);
+  });
+  tile(127,(x,y)=>{                                                 // 🚪 Luken-Metall mit Handrad
+    const dx=x-7.5, dy=y-7.5, r=Math.hypot(dx,dy);
+    if (r < 1.3) return vary(210,60,50,10);                         // roter Knopf in der Mitte
+    if (r < 5.4 && r > 4.4) return vary(226,232,240,10);            // das Handrad
+    if (r < 5.0 && Math.min(Math.abs(dx),Math.abs(dy)) < 0.8) return vary(200,208,220,10);  // Speichen
+    if (r > 6.8) return vary(96,104,118,10);                        // Rahmen
+    return vary(140,150,166,12);                                    // Lukendeckel
+  });
+  tile(128,()=> vary(58,66,86,12));                                 // 🛰️ dunkle Stationswand
+  tile(129,(x,y)=>{                                                 // 🛰️ Solarzellen-Flügel
+    if (x%4===0 || y%4===0) return vary(190,196,210,8);             // silberne Streben
+    return vary(28,52,140,16);                                      // tiefblaue Zellen
   });
   tile(99,(x,y)=>{                                                  // Bank-Tresor 🏦: dicke Stahltür
     if (x===0||x===15||y===0||y===15) return vary(86,92,104,8);     // Rahmen
@@ -4471,7 +4602,10 @@ function physics(dt) {
     player.vy = Math.max(player.vy, -3.5);
   } else {
     // 🚀 Auf dem Mond ist die Schwerkraft viel kleiner - da hüpft man wie ein Floh!
-    const gPlanet = weltDim>=2 ? PLANET[weltDim].schwer : 1;
+    let gPlanet = weltDim>=2 ? PLANET[weltDim].schwer : 1;
+    // 👨‍🚀 Mit dem Astronautenanzug hoch im All ist man fast schwerelos -
+    // da fällt Jonah nicht herunter, sondern schwebt ganz sanft.
+    if (hatAnzug && player.y > RAUM_START) gPlanet *= 0.10;
     player.vy -= (balloonT>0 ? GRAVITY*0.22 : GRAVITY*gPlanet)*dt;   // 🎈 Ballon: fast schwerelos
     if ((jumpHeld || keys['Space']) && player.onGround) {
       // In einem engen Loch gefangen? Dann bekommt der Sprung SUPER-KRAFT!
@@ -7288,6 +7422,8 @@ function updateFoodHUD() {
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
   set('foodS','❄️',snowCnt); set('foodG','💎',gems); set('foodK','🍰',cakes);
   set('foodBo','🍬',bonbons); set('foodM','💶',money);
+  { const el=document.getElementById('foodAn');     // 👨‍🚀 der Anzug ist an
+    if (el) { el.textContent='👨‍🚀 AN'; el.style.display = hatAnzug ? 'flex' : 'none'; } }
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -11320,6 +11456,9 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   const A=arcadePos(); marks.push({x:A.ax, z:A.az, e:'🕹️'});
   const RS=raketenPos(); marks.push({x:RS.rx, z:RS.rz, e:'🚀'});
   const MB=burgPos(); marks.push({x:MB.bx, z:MB.bz, e:'👑'});
+  // 🛰️ die Raumstationen hoch oben im Weltall
+  if (weltDim === 0)
+    for (const S of raumstationenNah(cx0, cz0)) marks.push({x:S.sx, z:S.sz, e:'🛰️'});
   return marks;
 }
 function drawArrow(g, x, y, size) {     // roter Spieler-Pfeil in Blickrichtung
@@ -12771,7 +12910,6 @@ function jetPhysics(dt) {
 // Je höher er steigt, desto dunkler wird der Himmel - ab 120 Blöcken beginnt
 // das Weltall, und ab 152 ist er mitten drin zwischen den Sternen.
 let raumRiding = null, raumSchiff = null, raumTipp = 0;
-const RAUM_START = 120, RAUM_VOLL = 152;
 function hochRaum() {                   // 0 = normaler Himmel, 1 = tiefschwarzes All
   if (weltDim >= 2) return 0;           // auf fremden Planeten ist es sowieso schon dunkel
   return Math.max(0, Math.min(1, (player.y - RAUM_START) / (RAUM_VOLL - RAUM_START)));
@@ -12873,6 +13011,80 @@ function raumPhysics(dt) {
   // unterwegs sagt der Bordcomputer, wie hoch es schon geht
   raumTipp -= dt;
   if (raumTipp <= 0) { raumTipp = 4.5; toast(raumHoeheText(a.y), 3000); }
+}
+
+// ---------------- 👨‍🚀 ANZUG ANZIEHEN UND DURCH DIE LUKE SCHWEBEN --------------
+function anzugAnziehen() {
+  if (hatAnzug) {
+    hatAnzug = false;
+    updateFoodHUD();
+    toast('👕 Anzug wieder ausgezogen. Er hängt an seinem Haken.', 3000);
+    blip(330,0.1); blip(260,0.12);
+    scheduleSave();
+    return;
+  }
+  hatAnzug = true;
+  updateFoodHUD();
+  for (let n=0; n<22; n++)
+    fireworks.push({x:player.x+(Math.random()-0.5)*1.8, y:player.y+0.4+Math.random()*2,
+      z:player.z+(Math.random()-0.5)*1.8, vx:(Math.random()-0.5)*3, vy:0.5+Math.random()*2.5,
+      vz:(Math.random()-0.5)*3, tile:[126,125,10][n%3], t:0.9});
+  blip(440,0.09); blip(587,0.09); blip(784,0.14);
+  toast('👨‍🚀 ASTRONAUTENANZUG AN! Jetzt hältst du das Weltall aus. ' +
+        'Tipp die 🚪 LUKE an - dann schwebst du hinaus zu den Sternen!', 6000);
+  scheduleSave();
+}
+// zu welcher Station gehört diese Luke?
+function stationBeiLuke(lx, ly, lz) {
+  for (const S of raumstationenNah(lx, lz)) {
+    if (Math.abs(lx-S.sx) <= RS_HALB_X+1 && Math.abs(lz-S.sz) <= RS_HALB_Z+1 &&
+        ly >= S.sy && ly <= S.sy+RS_HOCH+2) return S;
+  }
+  return null;
+}
+function inStation(S) {                 // steht Jonah gerade DRINNEN?
+  return Math.abs(player.x-S.sx) < RS_HALB_X && Math.abs(player.z-S.sz) < RS_HALB_Z &&
+         player.y > S.sy && player.y < S.sy+RS_HOCH;
+}
+function lukeBenutzen(lx, ly, lz) {
+  const S = stationBeiLuke(lx, ly, lz);
+  if (!S) { toast('🚪 Diese Luke führt nirgendwohin.', 2500); return; }
+  if (inStation(S)) {                   // ➡️ HINAUS ins Weltall
+    if (!hatAnzug) {
+      toast('🚫 HALT! Ohne Anzug geht das nicht. Tipp erst einen 👨‍🚀 ' +
+            'ASTRONAUTENANZUG an der Wand an - dann darfst du raus!', 5500);
+      blip(220,0.16); blip(170,0.2);
+      return;
+    }
+    // einen freien Platz draußen suchen, in Richtung der Luke
+    const rx = lx - S.sx, rz = lz - S.sz, hoch = ly >= S.sy+RS_HOCH;
+    let zx = S.sx, zy = S.sy + RS_HOCH + 3, zz = S.sz;
+    if (!hoch) {
+      zx = S.sx + (rx > 0 ? RS_HALB_X+3 : rx < 0 ? -RS_HALB_X-3 : 0);
+      zz = S.sz + (rz > 0 ? RS_HALB_Z+3 : rz < 0 ? -RS_HALB_Z-3 : 0);
+      zy = ly;
+    }
+    player.x = zx + 0.5; player.y = zy; player.z = zz + 0.5;
+    player.vx = player.vy = player.vz = 0;
+    if (!flying) toggleFly();           // 🌌 im All schwebt man einfach
+    for (let n=0; n<28; n++)
+      fireworks.push({x:player.x+(Math.random()-0.5)*2.4, y:player.y+Math.random()*2,
+        z:player.z+(Math.random()-0.5)*2.4, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4,
+        vz:(Math.random()-0.5)*4, tile:[102,10,126][n%3], t:1.2});
+    blip(880,0.08); blip(1100,0.08); blip(1320,0.16);
+    toast('🌌👨‍🚀 DU SCHWEBST IM WELTALL! Ganz leicht und schwerelos. ' +
+          'Mit ⬆ und ⬇ schwebst du hoch und runter - die Luke bringt dich wieder rein!', 7000);
+    scheduleSave();
+    return;
+  }
+  // ⬅️ WIEDER HINEIN in die warme Station
+  player.x = S.sx + 0.5; player.y = S.sy + 2.05; player.z = S.sz + 3.5;
+  player.vx = player.vy = player.vz = 0;
+  if (flying) toggleFly();
+  blip(520,0.08); blip(392,0.1);
+  toast('🛰️ Willkommen zurück in Raumstation ' + S.nr + '! Hier kannst du wohnen: ' +
+        'Betten, Tisch, Truhen - und aus dem Fenster siehst du die Erde. 🌍', 6000);
+  scheduleSave();
 }
 
 function tryRelease(dir) {              // langes Drücken: freilassen / Freundschaft beenden
@@ -13586,6 +13798,8 @@ function doPlace(dir) {
     openLift();                         // 🛗 das Etagen-Menü!
     return;
   }
+  if (hit.block===ANZUG) { anzugAnziehen(); return; }        // 👨‍🚀 Anzug von der Wand
+  if (hit.block===RAUMLUKE) { lukeBenutzen(hit.x, hit.y, hit.z); return; }   // 🚪 raus ins All
   if (hit.block===RAKETE && HOTBAR_ITEMS[selSlot]!==RAKETE) {
     let pult = false;                   // gibt es in der Nähe ein Bedienungsfeld?
     for (let dx=-3; dx<=3 && !pult; dx++) for (let dy=-3; dy<=4 && !pult; dy++)

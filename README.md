@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RAUMSTATIONEN im Weltall (v197)! 🛰️👨‍🚀 Hoch über der Erde schweben
+  Raumstationen - jede steht als 🛰️ auf der Karte. Flieg mit deiner
+  eigenen Rakete hin und lande oben auf der Plattform, dann tipp die
+  🚪 Dach-Luke an. Drinnen kann man richtig wohnen: vier Betten, Tisch,
+  Stühle, Truhen, Klo und riesige Panorama-Fenster mit Blick auf die Erde.
+  An der Wand hängen drei 👨‍🚀 ASTRONAUTENANZÜGE - antippen und anziehen!
+  Nur mit Anzug lässt dich die 🚪 Luke hinaus: dann schwebst du fast
+  schwerelos zwischen den Sternen. Die Luke bringt dich auch wieder rein.
 - DIE RAKETE SELBER FLIEGEN (v196)! 🚀🌌 Im Bedienungsfeld gibt es jetzt
   ganz oben "🕹️🚀 SELBER FLIEGEN". Kein Countdown, kein Autopilot: Jonah
   sitzt selbst am Steuer. Joystick lenkt, ⬆ gibt Schub, ⬇ lässt ihn sinken.
