@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RAUMSTATION WIRD ECHT (v199)! 🚪👨‍🚀🌌 Vier Sachen auf einmal:
+  (1) Die Stationen schweben jetzt GANZ weit oben - die Erde ist so weit
+  weg, dass sie im Schwarzen verschwindet. Rundherum nur noch Sterne.
+  (2) Eine ECHTE SCHLEUSE: oben im Dach ist eine Luke. Antippen = sie geht
+  auf, nochmal antippen = du steigst hindurch und sie fällt hinter dir
+  wieder zu. Dann stehst du in einer kleinen Kammer, und unten im Boden
+  ist die zweite Luke in die warme Station. Es darf immer nur EINE Luke
+  offen sein - sonst pfeift die ganze Luft ins All!
+  (3) Der Astronautenanzug ist jetzt richtig an: drück den 🤳-Knopf und du
+  siehst dich selbst im weißen Anzug mit goldenem Visier und Sauerstoff-
+  Rucksack.
+  (4) Draußen im All bist du wirklich SCHWERELOS: du fällst nicht mehr,
+  sondern schwebst - mit ⬆ und ⬇ steuerst du, und wenn du den Joystick
+  loslässt, treibst du sanft weiter. Drinnen in der Station ist Luft,
+  da läufst du ganz normal.
 - ZWEI NEUE SACHEN (v198)! 🛰️📏 (1) Die Raketen-Steuerung hat ein neues
   Ziel: "🛰️ Zur RAUMSTATION". Der Autopilot fliegt hinauf und setzt dich
   oben auf der Landeplattform ab - und in der Station steht ein eigenes
