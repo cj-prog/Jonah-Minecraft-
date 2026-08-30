@@ -595,7 +595,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 200 &middot; Luken gehen nur noch auf und zu - und du kannst eigene bauen! 🚪🔒</p>
+    Version 201 &middot; STRASSEN-TUNNEL unter der Erde + GIGANTISCHE Raumstation! 🕳️🛰️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -641,7 +641,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 200;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 201;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1306,7 +1306,8 @@ function arcadePos() {                  // eine große Spielhalle pro Welt
 // Hoch über der Erde schweben Raumstationen. In jedem 288x288-Feld hängt genau
 // eine - immer auf Weltraum-Höhe, weit über den höchsten Bergen. Drinnen kann
 // man wohnen: Betten, Tisch, Truhe - und an der Wand hängen Astronautenanzüge.
-const RS_GRID = 288, RS_HALB_X = 8, RS_HALB_Z = 6, RS_HOCH = 9;
+const RS_GRID = 288, RS_HALB_X = 26, RS_HALB_Z = 18, RS_HOCH = 9;
+const RS_FLUEGEL = 14;                  // so weit ragen die Solarflügel hinaus
 // 🚪🚪 die Schleusen-Kammer in der Mitte: Boden auf +5, Kammer bis unters Dach
 const SL_R = 2, SL_BODEN = 5;
 function raumstationAt(gx, gz) {        // wo hängt die Station in diesem Feld?
@@ -1395,14 +1396,26 @@ function busHalteAn(wx, wz) {
   const laengs = st.achse==='x' ? wx : wz;
   const quer   = st.achse==='x' ? ((wz%VCELL)+VCELL)%VCELL - 40
                                 : ((wx%VCELL)+VCELL)%VCELL - 40;
-  return (((laengs % 48) + 48) % 48) === 0 && quer === STR_BREIT;
+  return (((laengs % 48) + 48) % 48) === 0 && quer === STR_BREIT-1;
 }
+// 🛣️🕳️ ALLE STRASSEN SIND TUNNEL: sie laufen tief unter der Erde, damit sie
+// nirgends mehr stören - keine Schneisen durch den Wald, keine Dämme im Meer.
+const TUNNEL_TIEF = 8;                  // so viele Blöcke unter der Oberfläche
 function strasseHoehe(wx, wz) {         // die Straße bleibt quer schön eben
   const st = strasseAn(wx, wz);
   if (!st) return null;
-  const gx = st.achse==='x' ? wx : Math.round(wx/VCELL)*VCELL + 40;
-  const gz = st.achse==='x' ? Math.round(wz/VCELL)*VCELL + 40 : wz;
-  return Math.max(SEA+1, terrainHeight0(gx, gz));
+  // genau die Straßenmitte treffen: dazu den Quer-Abstand einfach abziehen
+  const qx = ((wx % VCELL) + VCELL) % VCELL - 40;
+  const qz = ((wz % VCELL) + VCELL) % VCELL - 40;
+  const gx = st.achse==='x' ? wx : wx - qx;
+  const gz = st.achse==='x' ? wz - qz : wz;
+  return Math.max(CH_MIN + 12, terrainHeight0(gx, gz) - TUNNEL_TIEF);
+}
+// wie weit ist diese Stelle von der Straßenmitte weg? (0 = Mitte)
+function strasseQuer(wx, wz) {
+  const st = strasseAn(wx, wz);
+  if (!st) return null;
+  return st.achse==='x' ? ((wz%VCELL)+VCELL)%VCELL - 40 : ((wx%VCELL)+VCELL)%VCELL - 40;
 }
 // Fußballplätze: auf flachem Rasen, mit weißen Linien und zwei Toren
 const FCELL = 96;
@@ -1976,18 +1989,22 @@ function genChunkData(cx, cz, ohneEdits) {
       data[bidx(lx,y,lz)] = b;
     }
     for (let y=h+1; y<=SEA; y++) data[bidx(lx,y,lz)] = WATER;
-    const sh = strasseHoehe(wx, wz);    // 🛣️ läuft hier eine Straße lang?
-    if (sh !== null) {
-      for (let y=Math.min(h, sh); y<sh; y++) data[bidx(lx,y,lz)] = STONE;   // Damm auffüllen
+    const sh = strasseHoehe(wx, wz);    // 🛣️ läuft hier ein Straßen-TUNNEL lang?
+    if (sh !== null && sh > CH_MIN+3 && sh+6 < CH) {
       const st2 = strasseAn(wx, wz);
-      const strich = st2.mitte && !st2.quer && (((st2.achse==='x' ? wx : wz) % 6) < 3);
-      data[bidx(lx,sh,lz)] = strich ? STRASSE_M : STRASSE;
-      for (let y=sh+1; y<=sh+5; y++) data[bidx(lx,y,lz)] = AIR;             // Luft drüber
-      if (h > SEA && (((st2.achse==='x' ? wx : wz) % 24) === 0) &&
-          Math.abs((st2.achse==='x' ? ((wz%VCELL)+VCELL)%VCELL - 40
-                                    : ((wx%VCELL)+VCELL)%VCELL - 40)) === STR_BREIT) {
-        for (let y=sh+1; y<=sh+3; y++) data[bidx(lx,y,lz)] = STONE;         // Laternenmast
-        data[bidx(lx,sh+4,lz)] = TORCH;                                     // Laterne
+      const quer = Math.abs(strasseQuer(wx, wz));
+      const setz2 = (y,b2) => { data[bidx(lx,y,lz)] = b2; };
+      if (quer >= STR_BREIT) {          // die beiden Tunnelwände: dicker Fels
+        for (let y=sh-2; y<=sh+6; y++) setz2(y, STONE);
+      } else {
+        for (let y=sh-2; y<=sh-1; y++) setz2(y, STONE);                     // fester Unterbau
+        const strich = st2.mitte && !st2.quer && (((st2.achse==='x' ? wx : wz) % 6) < 3);
+        setz2(sh, strich ? STRASSE_M : STRASSE);                            // die Fahrbahn
+        for (let y=sh+1; y<=sh+4; y++) setz2(y, AIR);                       // der Tunnel
+        for (let y=sh+5; y<=sh+6; y++) setz2(y, STONE);                     // die Tunneldecke
+        // 💡 alle 8 Blöcke hängt eine Laterne unter der Decke
+        if (quer === STR_BREIT-1 && ((((st2.achse==='x' ? wx : wz) % 8)+8)%8) === 0)
+          setz2(sh+4, TORCH);
       }
     }
     if (hash2(wx,wz,4207) < 0.004) {    // tief vergrabene Schatztruhe! 💎
@@ -2002,33 +2019,57 @@ function genChunkData(cx, cz, ohneEdits) {
     if (onlyAir && data[i]!==AIR) return;
     data[i]=b;
   };
-  // 🚏 DIE BUSHALTESTELLEN am Straßenrand: Plattform, zwei Pfosten, Dach und Schild
-  for (let hz=-3; hz<CS+3; hz++) for (let hx=-3; hx<CS+3; hx++) {
+  // 🚏 DIE BUSHALTESTELLEN im Tunnel - mit einer TREPPE hinauf ans Tageslicht
+  for (let hz=-14; hz<CS+14; hz++) for (let hx=-14; hx<CS+14; hx++) {
     const wx = x0+hx, wz = z0+hz;
     if (!busHalteAn(wx, wz)) continue;
     const sh2 = strasseHoehe(wx, wz);
-    if (sh2 === null || terrainHeight0(wx, wz) <= SEA) continue;
+    if (sh2 === null || sh2 <= CH_MIN+3) continue;
     const st3 = strasseAn(wx, wz);
-    const qx = st3.achse==='x' ? 0 : 1, qz = st3.achse==='x' ? 1 : 0;   // quer zur Straße
-    const seite = (((st3.achse==='x' ? ((wz%VCELL)+VCELL)%VCELL - 40
-                                     : ((wx%VCELL)+VCELL)%VCELL - 40)) > 0) ? 1 : -1;
-    for (let d1=-1; d1<=1; d1++) for (let d2=1; d2<=2; d2++) {   // Wartefläche aus Platten
-      const bx = wx + (st3.achse==='x' ? d1 : seite*d2), bz = wz + (st3.achse==='x' ? seite*d2 : d1);
-      put(bx, sh2, bz, STONE, false);
-      for (let y=sh2+1; y<=sh2+3; y++) put(bx, y, bz, AIR, false);
+    const laengsX = st3.achse === 'x';                     // läuft die Straße in x?
+    const seite = strasseQuer(wx, wz) > 0 ? 1 : -1;        // an welcher Wand stehen wir?
+    // 1) eine helle Nische mit Bank und zwei Laternen
+    for (const d1 of [-2, 2]) {
+      const tx = wx + (laengsX ? d1 : 0), tz = wz + (laengsX ? 0 : d1);
+      put(tx, sh2+4, tz, TORCH, false);
     }
-    for (const d1 of [-1, 1]) {                                  // die zwei Pfosten
-      const bx = wx + (st3.achse==='x' ? d1 : seite*2), bz = wz + (st3.achse==='x' ? seite*2 : d1);
-      for (let y=sh2+1; y<=sh2+2; y++) put(bx, y, bz, FENCE, false);
+    put(wx + (laengsX ? -1 : 0), sh2+1, wz + (laengsX ? 0 : -1), CHAIR, false);
+    // 2) 🪜 DIE TREPPE: vom Tunnel schräg nach oben bis an die Oberfläche.
+    //    Sie geht seitlich aus der Tunnelwand heraus und endet in einem
+    //    kleinen Häuschen mit Schild - so findet Jonah den Eingang immer.
+    const rx = laengsX ? 0 : seite, rz = laengsX ? seite : 0;   // quer zur Straße
+    const px = laengsX ? 1 : 0,     pz = laengsX ? 0 : 1;       // längs zur Straße
+    let ty = sh2;
+    for (let i=1; i<=TUNNEL_TIEF+6; i++) {
+      const bx = wx + rx*i, bz = wz + rz*i;
+      ty = sh2 + i;
+      const boden = terrainHeight0(bx, bz);
+      put(bx, ty-1, bz, STONE, false);                     // die Stufe
+      for (let y=ty; y<=ty+2; y++) put(bx, y, bz, AIR, false);
+      for (const q of [-1, 1])                             // Seitenwände des Schachts
+        for (let y=ty-1; y<=ty+3; y++)
+          put(bx + px*q, y, bz + pz*q, STONE, true);       // nur wo Luft war
+      put(bx, ty+3, bz, ty >= boden ? AIR : STONE, false);  // Decke, oben offen
+      if (ty >= boden) break;                               // wir sind draußen!
     }
-    for (let d1=-1; d1<=1; d1++) for (let d2=1; d2<=2; d2++) {   // das Dach
-      const bx = wx + (st3.achse==='x' ? d1 : seite*d2), bz = wz + (st3.achse==='x' ? seite*d2 : d1);
-      put(bx, sh2+3, bz, PLANK, false);
-    }
-    const sgx = wx + (st3.achse==='x' ? 0 : seite), sgz = wz + (st3.achse==='x' ? seite : 0);
+    // 2b) das Schild an der Tunnelwand - neben dem Treppen-Eingang
+    const sgx = wx + rx + px, sgz = wz + rz + pz;
     put(sgx, sh2+1, sgz, SIGN, false);
     const bsig = sgx+','+(sh2+1)+','+sgz;
-    if (!signTexts.has(bsig)) signTexts.set(bsig, '🚏 Bushaltestelle - warte hier auf den Bus!');
+    if (!signTexts.has(bsig)) signTexts.set(bsig, '🚏 Bushaltestelle - da hoch geht es raus!');
+    // 3) das Häuschen oben am Ausgang
+    const ox = wx + rx*(TUNNEL_TIEF+6), oz = wz + rz*(TUNNEL_TIEF+6);
+    const oy = ty;
+    for (let d1=-1; d1<=1; d1++) for (let d2=-1; d2<=1; d2++) {
+      put(ox+d1, oy-1, oz+d2, STONE, false);
+      for (let y=oy; y<=oy+2; y++) put(ox+d1, y, oz+d2, AIR, false);
+    }
+    for (let d1=-1; d1<=1; d1++) for (let d2=-1; d2<=1; d2++)
+      if (Math.abs(d1)===1 || Math.abs(d2)===1) put(ox+d1, oy+2, oz+d2, FENCE, false);
+    put(ox, oy+2, oz, TORCH, false);
+    const hs = ox+','+(oy+1)+','+(oz+1);
+    put(ox, oy+1, oz+1, SIGN, false);
+    if (!signTexts.has(hs)) signTexts.set(hs, '🚏 Hier geht es runter zum Bus-Tunnel!');
   }
   // Monster-Höhlen graben: Tunnel + Schatzkammer
   const hc0x=Math.floor((x0-45)/CAVE_CELL), hc1x=Math.floor((x0+CS+45)/CAVE_CELL);
@@ -2687,7 +2728,7 @@ function genChunkData(cx, cz, ohneEdits) {
   }
   // 🛰️ DIE RAUMSTATIONEN hoch oben im Weltall bauen
   for (const S of raumstationenNah(x0, z0)) {
-    if (S.sx+RS_HALB_X+7 < x0 || S.sx-RS_HALB_X-7 > x0+CS-1 ||
+    if (S.sx+RS_HALB_X+RS_FLUEGEL+1 < x0 || S.sx-RS_HALB_X-RS_FLUEGEL-1 > x0+CS-1 ||
         S.sz+RS_HALB_Z+1 < z0 || S.sz-RS_HALB_Z-1 > z0+CS-1) continue;
     const sy = S.sy;
     const R = (dx,y,dz,b) => put(S.sx+dx, y, S.sz+dz, b, false);
@@ -2702,13 +2743,14 @@ function genChunkData(cx, cz, ohneEdits) {
                          dy===1 || dy===RS_HOCH-1;
           R(dx, sy+dy, dz, aussen ? SCHUTZ : innen ? WOOL : AIR);
         }
-    // 2) große Panorama-Fenster nach vorne und hinten - der Blick auf die Erde!
-    for (let dx=-4; dx<=4; dx++) for (let dy=3; dy<=6; dy++) {
+    // 2) RIESIGE Panorama-Fenster ringsum - der Blick ins Weltall!
+    for (let dx=-RS_HALB_X+3; dx<=RS_HALB_X-3; dx++) for (let dy=3; dy<=6; dy++) {
       R(dx, sy+dy, -RS_HALB_Z, GLASS);   R(dx, sy+dy, -RS_HALB_Z+1, GLASS);
       R(dx, sy+dy,  RS_HALB_Z, GLASS);   R(dx, sy+dy,  RS_HALB_Z-1, GLASS);
     }
-    for (let dz=-2; dz<=2; dz++) {       // und ein Bullaugen-Band an der Seite
-      R(-RS_HALB_X, sy+5, dz, GLASS);    R(-RS_HALB_X+1, sy+5, dz, GLASS);
+    for (let dz=-RS_HALB_Z+3; dz<=RS_HALB_Z-3; dz++) for (let dy=4; dy<=5; dy++) {
+      R(-RS_HALB_X, sy+dy, dz, GLASS);   R(-RS_HALB_X+1, sy+dy, dz, GLASS);
+      R( RS_HALB_X, sy+dy, dz, GLASS);   R( RS_HALB_X-1, sy+dy, dz, GLASS);
     }
     // 3) 🚪🚪 DIE SCHLEUSE mitten in der Station: eine kleine Kammer mit ZWEI
     //    Luken. Oben im Dach die Außenluke (da landet die Rakete drauf), unten
@@ -2725,30 +2767,73 @@ function genChunkData(cx, cz, ohneEdits) {
     R(0, sy+SL_BODEN, 0, RAUMLUKE);      // 🚪 die INNENLUKE im Kammerboden
     R(0, sy+RS_HOCH,  0, RAUMLUKE);      // 🚪 die AUSSENLUKE oben im Dach
     R(SL_R-1, sy+RS_HOCH-1, SL_R-1, TORCH);                 // Licht in der Schleuse
-    // 4) 👨‍🚀 DREI ASTRONAUTENANZÜGE hängen an der Wand
-    for (const dz of [-3, 0, 3]) R(RS_HALB_X-2, sy+2, dz, ANZUG);
-    // 5) hier wohnt man wirklich: Betten, Tisch, Stühle, Truhen, Licht
-    R(-5, sy+2, -3, BED);   R(-3, sy+2, -3, BED);
-    R(-5, sy+2,  3, BED);   R(-3, sy+2,  3, BED);
-    R(0, sy+2, -4, TABLE);
-    R(-1, sy+2, -4, CHAIR); R(1, sy+2, -4, CHAIR);
-    R(3, sy+2, -3, CHEST);  R(3, sy+2, 3, CHEST);
-    R(-6, sy+2, 0, TOILET); R(-6, sy+2, 1, SINK);
-    for (const dx of [-5,-1,3]) { R(dx, sy+RS_HOCH-2, -4, TORCH); R(dx, sy+RS_HOCH-2, 4, TORCH); }
-    R(-RS_HALB_X+1, sy+3, -2, SIGN);
-    const sk = (S.sx-RS_HALB_X+1)+','+(sy+3)+','+(S.sz-2);
-    if (!signTexts.has(sk)) signTexts.set(sk, 'Raumstation ' + S.nr);
-    // 🎛️ das Bedienungsfeld: damit Jonah von hier auch wieder heimfliegen kann
+    // 4) 🧱 ZWISCHENWÄNDE: aus der Riesenhalle werden richtige Räume.
+    //    Links die Schlafkabinen, rechts Werkstatt und Gewächshaus.
+    for (let dz=-RS_HALB_Z+2; dz<=RS_HALB_Z-2; dz++) {
+      for (let dy=2; dy<=RS_HOCH-2; dy++) {
+        if (dz > -3 && dz < 3) continue;                    // Durchgang in der Mitte
+        R(-10, sy+dy, dz, WOOL);
+        R( 10, sy+dy, dz, WOOL);
+      }
+    }
+    for (let dx=-9; dx<=9; dx++) for (let dy=2; dy<=RS_HOCH-2; dy++) {
+      if (dx > -4 && dx < 4) continue;                      // Durchgang in der Mitte
+      R(dx, sy+dy, -8, WOOL);
+      R(dx, sy+dy,  8, WOOL);
+    }
+    // 5) 🛏️ DIE SCHLAFKABINEN links: acht Betten mit Truhen und Lampen
+    for (let i=0; i<4; i++) {
+      const bx = -RS_HALB_X + 4 + i*4;
+      R(bx, sy+2, -RS_HALB_Z+3, BED);   R(bx, sy+2, RS_HALB_Z-3, BED);
+      R(bx+1, sy+2, -RS_HALB_Z+3, CHEST); R(bx+1, sy+2, RS_HALB_Z-3, CHEST);
+      R(bx, sy+RS_HOCH-2, -RS_HALB_Z+4, TORCH);
+      R(bx, sy+RS_HOCH-2,  RS_HALB_Z-4, TORCH);
+    }
+    R(-RS_HALB_X+2, sy+2, 0, TOILET); R(-RS_HALB_X+2, sy+2, 1, SINK);
+    R(-RS_HALB_X+2, sy+2, -1, TOILET); R(-RS_HALB_X+2, sy+2, -2, SINK);
+    // 6) 🍽️ DIE KANTINE in der Mitte: lange Tafel mit vielen Stühlen
+    for (let dx=-6; dx<=6; dx++) {
+      R(dx, sy+2, -5, TABLE);
+      R(dx, sy+2, -6, CHAIR);  R(dx, sy+2, -4, CHAIR);
+    }
+    for (const dx of [-6,0,6]) R(dx, sy+RS_HOCH-2, -6, TORCH);
+    // 🏋️ die Sporthalle: hier bleibt man im Weltall fit
+    R(-6, sy+2, 5, HANTEL);  R(-4, sy+2, 5, LAUFBAND);  R(-2, sy+2, 5, TRAMPOLIN);
+    R( 2, sy+2, 5, HANTEL);  R( 4, sy+2, 5, LAUFBAND);  R( 6, sy+2, 5, POKAL);
+    for (const dx of [-5,0,5]) R(dx, sy+RS_HOCH-2, 6, TORCH);
+    // 7) 👨‍🚀 DIE ANZUG-KAMMER rechts: acht Anzüge hängen an der Wand
+    for (let i=0; i<8; i++) R(RS_HALB_X-2, sy+2, -14+i*4, ANZUG);
+    for (let i=0; i<3; i++) R(RS_HALB_X-2, sy+RS_HOCH-2, -6+i*6, TORCH);
+    // 🌱 das GEWÄCHSHAUS: hier wächst das Essen für die Astronauten
+    for (let dx=13; dx<=RS_HALB_X-3; dx++) for (let dz=-RS_HALB_Z+3; dz<=-9; dz++) {
+      R(dx, sy+1, dz, DIRT);
+      R(dx, sy+2, dz, ((dx+dz) % 3 === 0) ? WHEAT0 : ((dx+dz) % 3 === 1) ? CARROT0 : TOMATO0);
+    }
+    for (const dx of [14, 20, 24]) R(dx, sy+RS_HOCH-2, -12, TORCH);
+    // 🕹️ die Spielecke: damit auf der langen Reise keine Langeweile aufkommt
+    R(14, sy+2, 12, SCREEN_BOWL);  R(16, sy+2, 12, SCREEN_RACE);
+    R(18, sy+2, 12, SCREEN_SNAKE); R(20, sy+2, 12, SCREEN_INV);
+    R(15, sy+2, 10, CHAIR); R(17, sy+2, 10, CHAIR); R(19, sy+2, 10, CHAIR);
+    for (const dx of [15, 21]) R(dx, sy+RS_HOCH-2, 13, TORCH);
+    // 8) 🎛️ DER KOMMANDORAUM: von hier fliegt Jonah wieder zur Erde
     R(-RS_HALB_X+2, sy+2, 3, STEUER);
     R(-RS_HALB_X+1, sy+3, 3, SIGN);
     const bk = (S.sx-RS_HALB_X+1)+','+(sy+3)+','+(S.sz+3);
     if (!signTexts.has(bk)) signTexts.set(bk, 'Bedienungsfeld: zurueck zur Erde');
-    // 6) die Solarflügel links und rechts - daran erkennt man sie von weitem
-    for (let f=1; f<=6; f++) for (let dz=-4; dz<=4; dz++) {
+    R(-RS_HALB_X+1, sy+3, -2, SIGN);
+    const sk = (S.sx-RS_HALB_X+1)+','+(sy+3)+','+(S.sz-2);
+    if (!signTexts.has(sk)) signTexts.set(sk, 'Raumstation ' + S.nr);
+    R(3, sy+3, 3, SIGN);
+    const mk = (S.sx+3)+','+(sy+3)+','+(S.sz+3);
+    if (!signTexts.has(mk)) signTexts.set(mk, 'Schleuse: Luke antippen = auf, nochmal = zu');
+    // 9) die RIESIGEN Solarflügel links und rechts
+    for (let f=1; f<=RS_FLUEGEL; f++) for (let dz=-8; dz<=8; dz++) {
       R(RS_HALB_X+f, sy+5, dz, GLASS);
       R(-RS_HALB_X-f, sy+5, dz, GLASS);
     }
-    for (let f=1; f<=6; f++) { R(RS_HALB_X+f, sy+4, 0, SCHUTZ); R(-RS_HALB_X-f, sy+4, 0, SCHUTZ); }
+    for (let f=1; f<=RS_FLUEGEL; f++) {
+      R(RS_HALB_X+f, sy+4, 0, SCHUTZ);  R(-RS_HALB_X-f, sy+4, 0, SCHUTZ);
+    }
     // 7) oben drauf der Landeplatz für die Rakete - mit Geländer und Dach-Luke
     for (let h2=1; h2<=2; h2++) {        // zwei Reihen hoch, damit niemand herunterfällt
       for (let dx=-4; dx<=4; dx++) { R(dx, sy+RS_HOCH+h2, -3, FENCE); R(dx, sy+RS_HOCH+h2, 3, FENCE); }
