@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS SURFBRETT (v202)! 🏄🌊🌋 In deiner Werkzeugleiste liegt jetzt ein
+  buntes Surfbrett. Leg es aufs WASSER oder mitten auf einen LAVASEE und
+  tipp es an - schon surfst du los! Es gleitet immer genau auf der
+  Oberfläche, egal wie hoch der See liegt, und hinter dir spritzt Gischt
+  (im Wasser blau, in der Lava als Funkenregen). Solange du auf dem Brett
+  stehst, kann dir die Lava nichts anhaben - steigst du ab, ist sie aber
+  wieder heiß! An Land schiebst du das Brett langsam weiter. Beim
+  Absteigen wird es wieder ein Block und bleibt liegen, wo du es lässt.
 - STRASSEN-TUNNEL + GIGANTISCHE RAUMSTATION (v201)! 🕳️🛰️
   (1) Alle Straßen laufen jetzt als TUNNEL acht Blöcke unter der Erde.
   Oben ist die Landschaft wieder unberührt - keine Schneisen durch den
