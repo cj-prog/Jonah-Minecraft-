@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- LUKEN RICHTIG GEMACHT (v200)! 🚪🔒 Jonah hat gemeldet: wenn er in der
+  Schleuse die Luke über sich zumachen wollte, stand er plötzlich wieder
+  draußen. Das ist jetzt weg: Antippen macht die Luke NUR auf oder zu -
+  sie schiebt dich nie mehr irgendwohin. Ist sie offen, ist da einfach ein
+  Loch: nach unten steigst du hinein und fällst hindurch, nach oben hältst
+  du ⬆ gedrückt, dann trägt dich ein Luftstrom sanft hinauf (und zieht dich
+  dabei von allein in die Mitte der Luke). Außerdem gibt es den 🚪 LUKEN-
+  BLOCK jetzt in der Werkzeugleiste - damit baust du dir überall eigene
+  Luken, Geheimgänge und Aufzüge. Das Geländer auf der Landeplattform ist
+  doppelt so hoch, damit niemand herunterfällt.
 - DIE RAUMSTATION WIRD ECHT (v199)! 🚪👨‍🚀🌌 Vier Sachen auf einmal:
   (1) Die Stationen schweben jetzt GANZ weit oben - die Erde ist so weit
   weg, dass sie im Schwarzen verschwindet. Rundherum nur noch Sterne.

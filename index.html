@@ -595,7 +595,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 199 &middot; Echte SCHLEUSE, Anzug zum Sehen und SCHWERELOS im All! 🚪👨‍🚀🌌</p>
+    Version 200 &middot; Luken gehen nur noch auf und zu - und du kannst eigene bauen! 🚪🔒</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -641,7 +641,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 199;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 200;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1026,7 +1026,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -2750,8 +2750,10 @@ function genChunkData(cx, cz, ohneEdits) {
     }
     for (let f=1; f<=6; f++) { R(RS_HALB_X+f, sy+4, 0, SCHUTZ); R(-RS_HALB_X-f, sy+4, 0, SCHUTZ); }
     // 7) oben drauf der Landeplatz für die Rakete - mit Geländer und Dach-Luke
-    for (let dx=-4; dx<=4; dx++) { R(dx, sy+RS_HOCH+1, -3, FENCE); R(dx, sy+RS_HOCH+1, 3, FENCE); }
-    for (let dz=-3; dz<=3; dz++) { R(-4, sy+RS_HOCH+1, dz, FENCE); R(4, sy+RS_HOCH+1, dz, FENCE); }
+    for (let h2=1; h2<=2; h2++) {        // zwei Reihen hoch, damit niemand herunterfällt
+      for (let dx=-4; dx<=4; dx++) { R(dx, sy+RS_HOCH+h2, -3, FENCE); R(dx, sy+RS_HOCH+h2, 3, FENCE); }
+      for (let dz=-3; dz<=3; dz++) { R(-4, sy+RS_HOCH+h2, dz, FENCE); R(4, sy+RS_HOCH+h2, dz, FENCE); }
+    }
     R(-3, sy+RS_HOCH+1, 0, TORCH);       // Landefeuer für die Rakete
     R( 3, sy+RS_HOCH+1, 0, TORCH);
   }
@@ -4638,6 +4640,7 @@ function physics(dt) {
   const ml = Math.hypot(mf,ms);
   if (ml>1) { mf/=ml; ms/=ml; }
   const schwerelos = schwerelosAn();
+  let lukeZug = null;                   // 🚪 zieht gerade eine offene Luke an Jonah?
   const speed = schwerelos ? 3.4 : swim ? 3.0 : superT > 0 ? 11.5 : (boostT > 0 ? 6.6 : WALK_SPEED);   // 🦸 Super-Speed!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   if (schwerelos) {
@@ -4674,6 +4677,14 @@ function physics(dt) {
     player.vy -= 9*dt;
     if (jumpHeld || keys['Space']) player.vy = Math.min(player.vy+30*dt, 3.5);
     player.vy = Math.max(player.vy, -3.5);
+  } else if ((jumpHeld||keys['Space']) && (lukeZug = lukenSchacht())) {
+    // 🎈 durch die offene Luke nach oben: sanft und gleichmäßig, wie ein Aufzug -
+    // und der Strom zieht Jonah dabei genau in die Mitte der Luke
+    player.vy = 6;
+    if (player.y < lukeZug[1] + 0.6) {   // noch UNTER der Luke: der Strom führt
+      player.vx = (lukeZug[0] + 0.5 - player.x) * 8;   // ihn genau in die Mitte,
+      player.vz = (lukeZug[2] + 0.5 - player.z) * 8;   // damit er nicht anstößt
+    }                                    // oben drüber lenkt Jonah wieder selbst
   } else if (schwerelos) {
     // 🌌 KEINE Schwerkraft: mit ⬆ schwebst du hoch, mit ⬇ sinkst du, und
     // sonst treibst du einfach weiter, ganz langsam ausschwingend.
@@ -13302,62 +13313,60 @@ function inSchleuse(S) {                // ... oder in der kleinen Schleusen-Kam
   return Math.abs(player.x-S.sx) <= SL_R && Math.abs(player.z-S.sz) <= SL_R &&
          player.y >= S.sy + SL_BODEN && player.y < S.sy + RS_HOCH;
 }
-// 🚪🚪 DIE SCHLEUSE: erst antippen = aufmachen, nochmal antippen = durchsteigen.
-// Hinter Jonah fällt die Luke dann von allein wieder zu - klack! So bleibt in
-// der Station immer die Luft drin. Und aufmachen darf man immer nur EINE Luke.
+// 🚪🚪 DIE LUKE: antippen = aufmachen, nochmal antippen = wieder zumachen.
+// Sie schiebt dich NIE irgendwohin! Ist sie offen, ist da einfach ein Loch:
+// nach unten steigst du hinein und fällst hindurch, nach oben hältst du ⬆
+// gedrückt - dann trägt dich der Luftstrom durch die Luke hinauf.
 function lukeBenutzen(lx, ly, lz) {
-  const S = stationBeiLuke(lx, ly, lz);
-  if (!S) { toast('🚪 Diese Luke führt nirgendwohin.', 2500); return; }
-  const aussen = ly >= S.sy + RS_HOCH;             // die obere Luke im Dach?
-  const andereY = aussen ? S.sy + SL_BODEN : S.sy + RS_HOCH;
   const jetzt = getBlock(lx, ly, lz);
-  const andere = getBlock(S.sx, andereY, S.sz);
-  const name = aussen ? 'obere' : 'untere';
-  const andersName = aussen ? 'untere' : 'obere';
-  if (jetzt === RAUMLUKE) {                        // ---- Luke aufmachen ----
-    if (andere === RAUMLUKE_AUF) {
-      toast('🚫 Erst die ' + andersName + ' Luke wieder zumachen! In einer Schleuse ' +
-            'darf immer nur EINE Luke offen sein - sonst pfeift die ganze Luft ins All!', 6000);
-      blip(200,0.16); blip(150,0.2);
-      return;
+  if (jetzt === RAUMLUKE) {                        // ---- aufmachen ----
+    const S = stationBeiLuke(lx, ly, lz);
+    if (S) {   // in der Raumstation gilt die Schleusen-Regel: nur EINE Luke offen
+      const aussen = ly >= S.sy + RS_HOCH;
+      const andereY = aussen ? S.sy + SL_BODEN : S.sy + RS_HOCH;
+      if (getBlock(S.sx, andereY, S.sz) === RAUMLUKE_AUF) {
+        toast('🚫 Erst die ' + (aussen ? 'untere' : 'obere') + ' Luke wieder zumachen! ' +
+              'In einer Schleuse darf immer nur EINE Luke offen sein - sonst pfeift ' +
+              'die ganze Luft ins All!', 6000);
+        blip(200,0.16); blip(150,0.2);
+        return;
+      }
     }
     setBlock(lx, ly, lz, RAUMLUKE_AUF);
     blip(240,0.1); blip(330,0.08); blip(420,0.12);
     for (let n=0; n<12; n++)
       fireworks.push({x:lx+0.5+(Math.random()-0.5)*1.2, y:ly+0.5, z:lz+0.5+(Math.random()-0.5)*1.2,
         vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2, vz:(Math.random()-0.5)*2, tile:10, t:0.5});
-    toast('🚪 KNARZ - die ' + name + ' Luke ist offen! Tipp sie nochmal an, dann ' +
-          'steigst du hindurch (und sie macht sich hinter dir wieder zu).', 6000);
+    toast('🚪 KNARZ - die Luke ist offen! Nach UNTEN: stell dich einfach hinein. ' +
+          'Nach OBEN: stell dich darunter und halt ⬆ gedrückt - der Luftstrom trägt dich hoch! ' +
+          'Nochmal antippen macht sie wieder zu.', 7000);
     scheduleSave();
     return;
   }
-  if (jetzt !== RAUMLUKE_AUF) { toast('🚪 Hier ist keine Luke.', 2000); return; }
-  // ---- durch die offene Luke steigen ----
-  const inKammer = inSchleuse(S);
-  let zx = S.sx + 0.5, zy, zz = S.sz + 0.5, wohin;
-  if (aussen) {
-    if (inKammer) { zy = S.sy + RS_HOCH + 1.05; zz = S.sz + 2.5;
-                    wohin = '🌌 Du stehst auf der Landeplattform - über dir nur Sterne!'; }
-    else          { zy = S.sy + SL_BODEN + 1.05;
-                    wohin = '🚪 Du bist in der SCHLEUSE. Unten im Boden ist die zweite Luke - ' +
-                            'die bringt dich in die warme Station!'; }
-  } else {
-    if (inKammer) { zx = S.sx + 4.5; zy = S.sy + 2.05; zz = S.sz + 0.5;
-                    wohin = '🛰️ Willkommen in Raumstation ' + S.nr + '! Hier kannst du wohnen: ' +
-                            'Betten, Tisch, Truhen - und die 👨‍🚀 Anzüge hängen an der Wand.'; }
-    else          { zy = S.sy + SL_BODEN + 1.05;
-                    wohin = '🚪 Du bist in der SCHLEUSE. Oben im Dach ist die zweite Luke - ' +
-                            'die führt hinaus ins Weltall!'; }
+  if (jetzt === RAUMLUKE_AUF) {                    // ---- zumachen ----
+    setBlock(lx, ly, lz, RAUMLUKE);
+    blip(520,0.07); blip(300,0.12);
+    toast('🚪 KLACK - die Luke ist wieder zu. Jetzt ist alles dicht! 🔒', 3500);
+    scheduleSave();
+    return;
   }
-  player.x = zx; player.y = zy; player.z = zz;
-  player.vx = player.vy = player.vz = 0;
-  driftX = driftZ = 0;
-  if (flying) toggleFly();
-  setBlock(lx, ly, lz, RAUMLUKE);        // klack - hinter Jonah fällt sie wieder zu
-  blip(520,0.07); blip(300,0.12);
-  toast(wohin + '  (klack - die Luke ist hinter dir wieder zu)', 6500);
-  scheduleSave();
+  toast('🚪 Hier ist keine Luke.', 2000);
 }
+// 🎈 Ist über (oder knapp neben) Jonah eine offene Luke? Dann trägt ihn ⬆ hinauf.
+// Er muss nicht millimetergenau darunter stehen: der Luftstrom zieht ihn von
+// selbst in die Mitte der Luke und dann hindurch.
+function lukenSchacht() {
+  const px = Math.floor(player.x), pz = Math.floor(player.z), by = Math.floor(player.y);
+  let best = null, bd = 99;
+  for (let ox=-1; ox<=1; ox++) for (let oz=-1; oz<=1; oz++)
+    for (let dy=-3; dy<=5; dy++) {
+      if (getBlock(px+ox, by+dy, pz+oz) !== RAUMLUKE_AUF) continue;
+      const d = Math.abs(ox) + Math.abs(oz) + Math.abs(dy)*0.01;
+      if (d < bd) { bd = d; best = [px+ox, by+dy, pz+oz]; }
+    }
+  return best;
+}
+function inLukenschacht() { return !!lukenSchacht(); }
 
 function tryRelease(dir) {              // langes Drücken: freilassen / Freundschaft beenden
   const e=eyePos();
@@ -14071,7 +14080,8 @@ function doPlace(dir) {
     return;
   }
   if (hit.block===ANZUG) { anzugAnziehen(); return; }        // 👨‍🚀 Anzug von der Wand
-  if (hit.block===RAUMLUKE || hit.block===RAUMLUKE_AUF) {   // 🚪 auf, durch, zu
+  if ((hit.block===RAUMLUKE && HOTBAR_ITEMS[selSlot]!==RAUMLUKE) ||
+      hit.block===RAUMLUKE_AUF) {                  // 🚪 aufmachen / zumachen
     lukeBenutzen(hit.x, hit.y, hit.z); return;
   }
   if (hit.block===RAKETE && HOTBAR_ITEMS[selSlot]!==RAKETE) {
@@ -14364,6 +14374,8 @@ function doPlace(dir) {
   }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===STEUER) toast('🎛️ Bedienungsfeld eingebaut! Bau eine Rakete drumherum, steig ein und tipp es an - dann geht es ins Weltall! 🚀', 5000);
+  if (b===RAUMLUKE) toast('🚪 Luke eingebaut! Antippen = aufmachen, nochmal antippen = zumachen. ' +
+    'Ist sie offen, steigst du nach unten einfach hinein - und nach oben hältst du ⬆ gedrückt!', 6000);
   if (b===RAKETE) toast('🚀 Raketen-Luke eingebaut! Bau eine Rakete drumherum und tipp die Luke an (mit einem anderen Block in der Hand) - dann geht es ins Weltall!', 5000);
   if (b===BANK) toast('🏦 Bank-Tresor aufgestellt! Tipp ihn an (mit einem anderen Block in der Hand): Geld einzahlen, abheben – und Zinsen kassieren! 💶', 4600);
   if (b===RADIO) toast('📻 Radio aufgestellt! Tipp es an (mit einem anderen Block in der Hand) und such dir einen Sender aus. 🎶', 4200);
