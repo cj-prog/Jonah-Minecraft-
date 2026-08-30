@@ -64,6 +64,17 @@
     align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
     border:3px solid rgba(90,225,255,.7); }
+  #robBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(10,30,20,.96); padding:14px 18px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
+    border:3px solid rgba(120,255,180,.7); }
+  #robBox h3 { font-size:18px; color:#8dffc0; }
+  #robBox p { font-size:12px; opacity:.9; max-width:270px; line-height:1.4; }
+  #robEigen { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  #robEigen input { font-size:19px; font-weight:bold; text-align:center; width:96px; padding:6px 6px;
+    border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  #robClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#28a06a; color:#fff; }
   #tpBox h3 { font-size:18px; color:#7fe6ff; }
   #tpBox p { font-size:12px; opacity:.9; max-width:270px; line-height:1.4; }
   #tpEigen { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap; }
@@ -451,6 +462,17 @@
   <button id="tpClose">Abbrechen</button>
 </div>
 
+<div class="hud" id="robBox">
+  <h3>📏 Wie groß soll dein Roboter sein?</h3>
+  <p id="robText">Tipp eine Größe an - oder schreib selbst hin, wie viele Blöcke hoch er werden soll!</p>
+  <div id="robListe"></div>
+  <div id="robEigen">
+    <input id="robHoch" type="number" step="1" min="1" max="60" inputmode="numeric" placeholder="Blöcke">
+  </div>
+  <div class="senderRow" id="robEigenGo">✏️ So viele Blöcke hoch!</div>
+  <button id="robClose">Abbrechen</button>
+</div>
+
 <div class="hud" id="startBox">
   <div id="startText"></div>
   <div id="flugInfo"></div>
@@ -573,7 +595,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 197 &middot; RAUMSTATIONEN im All: Anzug anziehen und rausschweben! 🛰️👨‍🚀</p>
+    Version 198 &middot; Rakete fliegt zur RAUMSTATION + Roboter-Höhe selbst eintippen! 🛰️📏</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -619,7 +641,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 197;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 198;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -2696,6 +2718,11 @@ function genChunkData(cx, cz, ohneEdits) {
     R(-RS_HALB_X+1, sy+3, -2, SIGN);
     const sk = (S.sx-RS_HALB_X+1)+','+(sy+3)+','+(S.sz-2);
     if (!signTexts.has(sk)) signTexts.set(sk, 'Raumstation ' + S.nr);
+    // 🎛️ das Bedienungsfeld: damit Jonah von hier auch wieder heimfliegen kann
+    R(-RS_HALB_X+2, sy+2, 3, STEUER);
+    R(-RS_HALB_X+1, sy+3, 3, SIGN);
+    const bk = (S.sx-RS_HALB_X+1)+','+(sy+3)+','+(S.sz+3);
+    if (!signTexts.has(bk)) signTexts.set(bk, 'Bedienungsfeld: zurueck zur Erde');
     // 6) die Solarflügel links und rechts - daran erkennt man sie von weitem
     for (let f=1; f<=6; f++) for (let dz=-4; dz<=4; dz++) {
       R(RS_HALB_X+f, sy+5, dz, GLASS);
@@ -3364,7 +3391,8 @@ function saveGame() {
     const limA = animals.find(a=>a.type==='limo');
     const limSave = limA ? [Math.round(limA.x*10)/10, Math.round(limA.y*10)/10, Math.round(limA.z*10)/10] : null;
     const robSave = robA ? [Math.round(robA.x*10)/10, Math.round(robA.y*10)/10,
-                            Math.round(robA.z*10)/10, robA.grStufe===undefined?2:robA.grStufe] : null;
+                            Math.round(robA.z*10)/10, robA.grStufe===undefined?2:robA.grStufe,
+                            Math.round((robA.gr===undefined?1:robA.gr)*1000)/1000] : null;   // 📏 auch die Wunschgröße
     const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
@@ -10110,6 +10138,7 @@ const raketeBox = document.getElementById('raketeBox');
 // Der Flug hat vier Abschnitte: Countdown, Abheben, Reise, Landung.
 // Die ganze Zeit sitzt Jonah angeschnallt in seiner Rakete und schaut raus.
 let flugZiel = null, flugT = 0, flugGesamt = 0, flugSitz = null, flugVon = 0, flugTon = 0;
+let flugStation = null, flugHeim = false;   // 🛰️ Sonderziel: hinauf zur Raumstation / heim
 const FLUG_ZAEHL = 4, FLUG_ABHEB = 5, FLUG_LAND = 4;    // Sekunden pro Abschnitt
 function flugReise() { return flugGesamt - FLUG_ZAEHL - FLUG_ABHEB - FLUG_LAND; }
 function flugPhase() {                  // in welchem Abschnitt sind wir gerade?
@@ -10132,6 +10161,7 @@ function flugRaum() {                   // 0 = noch am Boden, 1 = mitten im schw
   if (!p || p === 'zaehl') return 0;
   if (p === 'abheb') return Math.min(1, flugAnteil()*1.2);
   if (p === 'reise') return 1;
+  if (flugStation) return 1;                       // 🛰️ oben im All bleibt es schwarz
   return flugZiel >= 2 ? 1 : Math.max(0, 1 - flugAnteil()*1.15);   // heim zur Erde wird es wieder hell
 }
 function himmelFarbe(dim) {             // die Himmelsfarbe einer Welt
@@ -10157,6 +10187,22 @@ function openRakete() {
     'Du bist gerade auf: ' + planetName(weltDim) + '. Wohin soll die Reise gehen, Kommandant Jonah?' +
     (geheimOffen() ? '' : ' 🤫 Gerüchte sagen: Wer auf ALLEN sieben Planeten war, findet einen geheimen achten... noch ' +
       geheimFehlt() + ' zu besuchen!');
+  // 🛰️ Ziel RAUMSTATION: der Autopilot bringt Jonah direkt hinauf ins All
+  if (weltDim === 0) {
+    const S = naechsteStation(player.x, player.z);
+    const drauf = aufStation();
+    const el = document.createElement('div');
+    el.className = 'senderRow';
+    el.style.background = 'rgba(140,255,200,.3)';
+    el.textContent = drauf
+      ? '🌍 Zurück zur Erde  (' + (FLUG_ZAEHL + FLUG_ABHEB + 5 + FLUG_LAND) + ' Sek.)'
+      : '🛰️ Zur RAUMSTATION ' + S.nr + '  (' + (FLUG_ZAEHL + FLUG_ABHEB + 5 + FLUG_LAND) + ' Sek.)';
+    const wS = () => { raketeBox.style.display='none';
+                       if (drauf) raketeStartHeim(); else raketeStartStation(S); };
+    el.addEventListener('click', wS);
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); wS(); }, {passive:false});
+    liste.appendChild(el);
+  }
   // 🕹️ ganz oben: SELBER FLIEGEN - ohne Autopilot, ohne Ziel, einfach los!
   {
     const el = document.createElement('div');
@@ -10189,6 +10235,75 @@ function openRakete() {
   if (document.exitPointerLock) document.exitPointerLock();
   blip(300,0.08); blip(420,0.08); blip(560,0.1);
 }
+// 🛰️ Sitzt Jonah gerade oben auf einer Raumstation (oder mitten drin)?
+function aufStation() {
+  if (weltDim !== 0 || player.y < RAUM_START) return null;
+  for (const S of raumstationenNah(player.x, player.z))
+    if (Math.abs(player.x-S.sx) <= RS_HALB_X+8 && Math.abs(player.z-S.sz) <= RS_HALB_Z+8 &&
+        player.y >= S.sy-2 && player.y <= S.sy+RS_HOCH+8) return S;
+  return null;
+}
+// 🚀🛰️ Der Autopilot fliegt zur Raumstation hinauf - genau wie zu einem Planeten
+function raketeStartStation(S) {
+  if (flugT > 0) return;
+  flugStation = S || naechsteStation(player.x, player.z);
+  flugZiel = 0; flugVon = 0;
+  flugGesamt = FLUG_ZAEHL + FLUG_ABHEB + 5 + FLUG_LAND;
+  flugT = flugGesamt; flugTon = 0;
+  flugSitz = { x: player.x, y: player.y, z: player.z };
+  sitting = null;
+  document.getElementById('startBox').style.display = 'block';
+  document.getElementById('startText').textContent = String(FLUG_ZAEHL);
+  document.getElementById('flugFuell').style.width = '0%';
+  blip(200,0.25);
+  toast('🔒🛰️ Angeschnallt! Der Countdown läuft - wir fliegen hinauf zur Raumstation ' +
+        flugStation.nr + '!', 4500);
+}
+// 🚀🌍 ... und wieder herunter zur Erde
+function raketeStartHeim() {
+  if (flugT > 0) return;
+  flugStation = null; flugHeim = true;
+  flugZiel = 0; flugVon = 0;
+  flugGesamt = FLUG_ZAEHL + FLUG_ABHEB + 5 + FLUG_LAND;
+  flugT = flugGesamt; flugTon = 0;
+  flugSitz = { x: player.x, y: player.y, z: player.z };
+  sitting = null;
+  document.getElementById('startBox').style.display = 'block';
+  document.getElementById('startText').textContent = String(FLUG_ZAEHL);
+  document.getElementById('flugFuell').style.width = '0%';
+  blip(200,0.25);
+  toast('🔒🌍 Angeschnallt! Wir fliegen zurück nach Hause zur Erde.', 4500);
+}
+// 🛬 Ankunft: oben auf der Landeplattform der Raumstation
+function landeAufStation(S) {
+  for (let cx=(S.sx-20)>>4; cx<=(S.sx+20)>>4; cx++)
+    for (let cz=(S.sz-14)>>4; cz<=(S.sz+14)>>4; cz++) ensureData(cx,cz);
+  player.x = S.sx + 0.5; player.y = S.sy + RS_HOCH + 1.05; player.z = S.sz + 2.5;
+  player.vx = player.vy = player.vz = 0;
+  if (flying) toggleFly();
+  for (let n=0; n<36; n++)
+    fireworks.push({x:player.x+(Math.random()-0.5)*5, y:player.y+Math.random()*3,
+      z:player.z+(Math.random()-0.5)*5, vx:(Math.random()-0.5)*5, vy:1+Math.random()*3,
+      vz:(Math.random()-0.5)*5, tile:[102,10,94][n%3], t:1.1});
+  shake = 0.4;
+  blip(300,0.08); blip(600,0.08); blip(900,0.12);
+  toast('🛰️ GELANDET auf Raumstation ' + S.nr + '! Du stehst auf der Plattform. ' +
+        'Tipp die 🚪 Dach-Luke an - dann bist du drinnen!', 7000);
+  scheduleSave();
+}
+// 🛬 Ankunft zurück auf der Erde: am Raketen-Parkplatz
+function landeAufErde() {
+  const R = raketenPos();
+  for (let cx=(R.rx-20)>>4; cx<=(R.rx+20)>>4; cx++)
+    for (let cz=(R.rz-20)>>4; cz<=(R.rz+20)>>4; cz++) ensureData(cx,cz);
+  player.x = R.rx + 0.5; player.y = R.base + 2; player.z = R.rz + 0.5;
+  player.vx = player.vy = player.vz = 0;
+  if (flying) toggleFly();
+  shake = 0.4;
+  blip(300,0.08); blip(500,0.08); blip(700,0.12);
+  toast('🌍 Wieder daheim auf der Erde! Du sitzt in deiner großen Rakete auf der Raketenstation.', 6000);
+  scheduleSave();
+}
 // 🕹️ Jonah steigt in seine eigene kleine Rakete und fliegt selbst los
 function selberFliegen() {
   if (flugT > 0) return;
@@ -10216,7 +10331,8 @@ function flugTick(dt) {
   const txt  = document.getElementById('startText');
   const info = document.getElementById('flugInfo');
   const p = flugPhase(), u = flugAnteil();
-  const zn = planetName(flugZiel);
+  const zn = flugStation ? ('🛰️ Raumstation ' + flugStation.nr)
+           : flugHeim   ? '🌍 Erde' : planetName(flugZiel);
   if (p === 'zaehl') {                  // 3 ... 2 ... 1 ...
     const n = Math.max(1, Math.ceil(flugT - (flugGesamt - FLUG_ZAEHL)));
     if (txt.textContent !== String(n)) { txt.textContent = String(n); blip(200+(FLUG_ZAEHL-n)*45, 0.25); shake = 0.14; }
@@ -10229,7 +10345,8 @@ function flugTick(dt) {
     shake = 0.5;
   } else if (p === 'reise') {           // ✨ schwerelos durchs Weltall
     txt.textContent = '';
-    const km = Math.round(u * (flugZiel>=2 ? PLANET[flugZiel].km : (PLANET[flugVon] ? PLANET[flugVon].km : 384400)));
+    const km = (flugStation || flugHeim) ? Math.round(u * 420)
+             : Math.round(u * (flugZiel>=2 ? PLANET[flugZiel].km : (PLANET[flugVon] ? PLANET[flugVon].km : 384400)));
     const REISE_TEXT = [
       '✨ Schwerelos unterwegs zum ', '🌌 Mitten im Sternenmeer zum ', '🪐 Wir fliegen an fremden Welten vorbei - Ziel: ',
       '⭐ Halbzeit! Weiter geht es zum ', '🔭 Da vorne wird es schon größer: ', '🚀 Fast geschafft! Gleich sind wir am ',
@@ -10261,9 +10378,11 @@ function flugTick(dt) {
   if (flugT <= 0) {                     // angekommen!
     flugT = 0;
     document.getElementById('startBox').style.display = 'none';
-    const z = flugZiel;
-    flugZiel = null; flugSitz = null;
-    raketeLanden(z);
+    const z = flugZiel, st = flugStation, heim = flugHeim;
+    flugZiel = null; flugSitz = null; flugStation = null; flugHeim = false;
+    if (st) landeAufStation(st);         // 🛰️ hinauf zur Raumstation
+    else if (heim) landeAufErde();       // 🌍 und wieder herunter
+    else raketeLanden(z);
   }
 }
 // Die Landerakete: genau wie die große Rakete zum REINSTEIGEN, nur kleiner.
@@ -10825,6 +10944,16 @@ function raketeLanden(ziel) {
   scheduleSave();
 }
 document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.style.display='none'; });
+// 📏 das Roboter-Größen-Fenster: Abbrechen und die eigene Wunsch-Höhe
+{
+  document.getElementById('robClose').addEventListener('click',
+    ()=>{ document.getElementById('robBox').style.display='none'; blip(300,0.06); });
+  const go = document.getElementById('robEigenGo');
+  go.addEventListener('click', roboterEigeneHoehe);
+  go.addEventListener('touchstart', e=>{ e.preventDefault(); roboterEigeneHoehe(); }, {passive:false});
+  document.getElementById('robHoch').addEventListener('keydown',
+    e=>{ if (e.key === 'Enter') roboterEigeneHoehe(); });
+}
 // 🛸 der Teleport-Knopf und das eigene Wunsch-Ziel
 {
   const tb = document.getElementById('tpBtn');
@@ -12383,18 +12512,62 @@ const ROB_GROESSEN = [
   [3,    '🏔️ RIESIG',   'DREIMAL so groß! Häuser reichen dir nur bis zum Knie.'],
   [5,    '🌋 GIGANTISCH','FÜNFMAL so groß!! Du überragst sogar deine Festung!'],
 ];
+// Wie hoch ist der Roboter bei dieser Größe? (normal = 9 Blöcke)
+const ROB_NORMAL_HOCH = 9;
+function robBlockHoch(g) { return Math.max(1, Math.round(g * ROB_NORMAL_HOCH)); }
+// 📏 Das Größen-Fenster: fertige Größen antippen ODER selbst eintippen,
+// wie viele Blöcke hoch der Roboter werden soll.
 function roboterGroesse() {
   if (!roboterRiding) return;
   const a = roboterRiding;
-  a.grStufe = ((a.grStufe === undefined ? 2 : a.grStufe) + 1) % ROB_GROESSEN.length;
-  const [g, name, text] = ROB_GROESSEN[a.grStufe];
+  const liste = document.getElementById('robListe');
+  liste.innerHTML = '';
+  document.getElementById('robText').textContent =
+    'Dein Roboter ist gerade ' + robBlockHoch(a.gr || 1) + ' Blöcke hoch. ' +
+    'Tipp eine Größe an - oder schreib unten selbst hin, wie viele Blöcke hoch er werden soll (1 bis 60)!';
+  for (let i=0; i<ROB_GROESSEN.length; i++) {
+    const [g, name] = ROB_GROESSEN[i];
+    const el = document.createElement('div');
+    el.className = 'senderRow';
+    el.textContent = name + '  (' + robBlockHoch(g) + ' Blöcke hoch)';
+    if (Math.abs((a.gr || 1) - g) < 0.001) el.style.background = 'rgba(120,255,180,.3)';
+    const w = () => { document.getElementById('robBox').style.display='none'; setzeRoboterGroesse(g, name); };
+    el.addEventListener('click', w);
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+    liste.appendChild(el);
+  }
+  document.getElementById('robHoch').value = robBlockHoch(a.gr || 1);
+  document.getElementById('robBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(440,0.07); blip(587,0.09);
+}
+// Der eigene Wunsch: so und so viele Blöcke hoch!
+function roboterEigeneHoehe() {
+  if (!roboterRiding) return;
+  const feld = document.getElementById('robHoch');
+  let h = Math.round(parseFloat(feld.value));
+  if (!isFinite(h)) { toast('📏 Schreib eine Zahl hin - zum Beispiel 20!', 3000); return; }
+  h = Math.max(1, Math.min(60, h));       // unter 1 und über 60 wird es zu wild
+  document.getElementById('robBox').style.display = 'none';
+  setzeRoboterGroesse(h / ROB_NORMAL_HOCH, 'Genau ' + h + ' Blöcke - dein Wunsch!');
+}
+function setzeRoboterGroesse(g, name) {
+  if (!roboterRiding) return;
+  const a = roboterRiding;
   a.gr = g;
-  a.y += 0.4;                           // ein Hauch Luft, damit er nicht im Boden klemmt
+  // die passende Stufe merken (für den Knopf und zum Speichern)
+  let beste = 2, bd = 1e9;
+  for (let i=0; i<ROB_GROESSEN.length; i++) {
+    const d = Math.abs(ROB_GROESSEN[i][0] - g);
+    if (d < bd) { bd = d; beste = i; }
+  }
+  a.grStufe = bd < 0.001 ? beste : -1;    // -1 = eine ganz eigene Wunschgröße
+  a.y += 0.4;                             // ein Hauch Luft, damit er nicht im Boden klemmt
   document.getElementById('groesseBtn').textContent = g < 1 ? '🔽' : g > 1 ? '🔼' : '📏';
-  for (let s2=0;s2<24;s2++)             // ✨ Zauber-Funken beim Verwandeln
+  for (let s2=0;s2<24;s2++)               // ✨ Zauber-Funken beim Verwandeln
     fireworks.push({x:a.x+(Math.random()-0.5)*4*g, y:a.y+Math.random()*9*g, z:a.z+(Math.random()-0.5)*4*g,
       vx:(Math.random()-0.5)*3, vy:1+Math.random()*3, vz:(Math.random()-0.5)*3, tile:73, t:0.7});
-  toast('📏 ' + name + '! ' + text, 3200);
+  toast('📏 ' + name + '! Dein Roboter ist jetzt ' + robBlockHoch(g) + ' Blöcke hoch.', 3600);
   blip(g<1 ? 900 : 200, 0.1); blip(g<1 ? 600 : 350, 0.1); blip(g<1 ? 400 : 520, 0.14);
   scheduleSave();
 }
@@ -15202,8 +15375,11 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     let ry2 = savedRoboter[1];
     if (ry2 <= CH_MIN+3) ry2 = terrainHeight(Math.floor(savedRoboter[0]), Math.floor(savedRoboter[2])) + 1;
     const gst = typeof savedRoboter[3] === 'number' ? savedRoboter[3] : 2;
+    // 📏 die genaue Größe zählt: so bleibt auch eine eigene Wunsch-Höhe erhalten
+    const gr2 = typeof savedRoboter[4] === 'number' && savedRoboter[4] > 0 ? savedRoboter[4]
+              : (ROB_GROESSEN[gst] ? ROB_GROESSEN[gst][0] : 1);
     animals.push({type:'roboter', x:savedRoboter[0], y:ry2, z:savedRoboter[2],
-      grStufe: gst, gr: ROB_GROESSEN[gst] ? ROB_GROESSEN[gst][0] : 1,
+      grStufe: gst, gr: gr2,
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
   } else {
     let rx2=Math.floor(player.x)-10, rz2=Math.floor(player.z)+10;
