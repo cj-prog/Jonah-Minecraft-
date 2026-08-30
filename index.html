@@ -6101,7 +6101,7 @@ function updateAnimals(dt) {
     if (a.type==='surfbrett') {         // 🏄 das Surfbrett hat keine eigene KI
       if (a===surfRiding) continue;     // Jonah steht gerade drauf
       const fl3 = fluessigOben(a.x, a.y + 0.6, a.z);
-      if (fl3) a.y = fl3.hoehe - 0.55;  // es treibt einfach auf der Oberfläche
+      if (fl3) a.y = fl3.hoehe - 0.10;  // es treibt einfach auf der Oberfläche
       continue;
     }
     if (a.type==='raumschiff') {        // 🚀 Jonahs eigene Rakete
@@ -13357,7 +13357,8 @@ function surfPhysics(dt) {
   // immer schön auf der Oberfläche schwimmen - und dabei sanft schaukeln
   const fl2 = fluessigOben(a.x, a.y + 0.6, a.z);
   if (fl2) {
-    const ziel = fl2.hoehe - 0.55 + Math.sin(performance.now()*0.004)*0.05;
+    // das Brett liegt OBEN AUF der Oberfläche und schaukelt sanft
+    const ziel = fl2.hoehe - 0.10 + Math.sin(performance.now()*0.004)*0.05;
     a.y += (ziel - a.y) * Math.min(1, 9*dt);
     a.lava = fl2.lava;
   } else {                              // kein Wasser drunter: sanft absetzen
@@ -13366,7 +13367,7 @@ function surfPhysics(dt) {
     const ny = a.y + a.vy*dt;
     if (!collideBox(a.x, ny, a.z, 0.45, 0.6)) a.y = ny; else a.vy = 0;
   }
-  player.x = a.x; player.z = a.z; player.y = a.y + 0.55;
+  player.x = a.x; player.z = a.z; player.y = a.y + 0.18;   // Jonah steht auf dem Brett
   player.vx = player.vy = player.vz = 0;
   // 💦🔥 die Gischt hinter dem Brett - Wasser spritzt, Lava sprüht Funken
   surfSpritz -= dt;
