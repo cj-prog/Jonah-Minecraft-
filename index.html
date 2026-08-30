@@ -595,7 +595,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 201 &middot; STRASSEN-TUNNEL unter der Erde + GIGANTISCHE Raumstation! 🕳️🛰️</p>
+    Version 202 &middot; SURFBRETT: auf Wasser UND auf LAVA surfen! 🏄🌊🌋</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -641,7 +641,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 201;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 202;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -677,7 +677,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       STRASSE=89, STRASSE_M=90,         // 🛣️ Asphalt und Asphalt mit Mittelstreifen
       KRONE=91, ZEPTER=92,              // 👑🪄 die Königs-Sachen zum Mitnehmen
       THRON=93,                         // 🪑 DER KÖNIGSTHRON: draufsetzen und befehlen!
-      ANZUG=94, RAUMLUKE=95, RAUMLUKE_AUF=96;   // 👨‍🚀 Anzug, 🚪 Luke zu und Luke offen
+      ANZUG=94, RAUMLUKE=95, RAUMLUKE_AUF=96,   // 👨‍🚀 Anzug, 🚪 Luke zu und Luke offen
+      SURFBRETT=97;                     // 🏄 das Surfbrett für Wasser UND Lava!
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -800,6 +801,12 @@ const BLOCKS = {
     [0.14,0.02,0.14, 0.30,0.30,0.86, 127],          // der Deckel steht offen an der Seite
     [0.14,0.70,0.14, 0.30,0.98,0.86, 127]] },
   [RAUMLUKE]: { name:'Weltraum-Luke 🚪 (antippen = aufmachen!)', tiles:[127,127,127], solid:true },
+  // 🏄 DAS SURFBRETT: aufs Wasser ODER auf die Lava legen und antippen!
+  [SURFBRETT]: { name:'Surfbrett 🏄 (auf Wasser oder Lava legen und antippen!)',
+    tiles:[130,130,130], solid:true, model:[
+    [0.10,0.00,0.02, 0.90,0.13,0.98, 130],          // das Brett
+    [0.30,0.13,0.14, 0.70,0.16,0.86, 25],           // roter Streifen obendrauf
+    [0.45,0.13,0.72, 0.55,0.30,0.90, 3]] },         // die kleine Finne hinten
   // Tunnel-Rutschen 🛝: geschlossene Röhren! Sie verbinden sich von allein
   // mit ihren Nachbarn (wie der Zaun) - das echte Modell baut der Mesher.
   [RUTSCHE_N]: { name:'Tunnel-Rutsche 🛝 (verbinde viele - und saus hindurch!)', tiles:[84,84,84], solid:true, model:[
@@ -1026,7 +1033,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -3319,7 +3326,7 @@ function _pureAt(wx, wy, wz) {
 const BAU_BLOCK = new Set([PLANK, GLASS, WOOL, BRICK, FENCE, GATE, GATE_OPEN, TORCH, SIGN,
   DOOR, DOOR_TOP, CHEST, TABLE, CHAIR, BED, CABINET, TOILET, SINK, GITTER, FAHRSTUHL,
   SCHUTZ, BURGPLAN, POKAL, PIC, PIC_N, PIC_E, PIC_W, TREP_N, TREP_S, TREP_E, TREP_W,
-  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M, KRONE, ZEPTER, THRON, ANZUG, RAUMLUKE, RAUMLUKE_AUF]);
+  RUTSCHE_N, RUTSCHE_E, RUTSCHE_S, RUTSCHE_W, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, STRASSE_M, KRONE, ZEPTER, THRON, ANZUG, RAUMLUKE, RAUMLUKE_AUF, SURFBRETT]);
 function _lochArt(wx, wy, wz) {         // fehlt hier ein Block? Und was für einer?
   if (getBlock(wx,wy,wz)!==AIR) return null;
   const b = _pureAt(wx,wy,wz);
@@ -4124,6 +4131,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r > 7.6) return 'rgba(0,0,0,0)';
     return (Math.floor(r) % 2) ? vary(244,232,192,8) : vary(198,176,128,10);
   });
+  tile(130,(x,y)=>{                                                 // 🏄 Surfbrett: bunt gestreift
+    if (y < 2 || y > 13) return vary(240,244,250,8);                // weiße Spitze und Ende
+    if (x >= 7 && x <= 8) return vary(230,60,70,12);                // roter Mittelstreifen
+    if (x === 4 || x === 11) return vary(250,190,50,12);            // gelbe Linien
+    if ((y >> 1) % 2 === 0) return vary(60,170,230,14);             // blaue Wellen
+    return vary(90,200,240,14);
+  });
   tile(125,(x,y)=>{                                                 // 👨‍🚀 Anzug-Stoff: weiß mit blauen Streifen
     if (y===3 || y===12) return vary(60,120,230,14);                // blaue Ringe an Arm und Bein
     if (x===7 || x===8) return vary(226,230,238,10);                // heller Reißverschluss
@@ -4623,6 +4637,7 @@ function physics(dt) {
     player.vx = player.vy = player.vz = 0;
     return;
   }
+  if (surfRiding) { surfPhysics(dt); return; }        // 🏄 auf Wasser und Lava surfen!
   if (raumRiding) { raumPhysics(dt); return; }        // 🚀 die Rakete SELBER fliegen!
   if (jetRiding) { jetPhysics(dt); return; }
   if (heliRiding) { heliPhysics(dt); return; }
@@ -4894,6 +4909,7 @@ const ANIMAL_KIND = {
   slime:    { speed:1.4, half:0.35, height:0.7,  tile:53, face:54 },
   jet:      { speed:0,   half:1.4,  height:1.3,  tile:49, face:49 },
   raumschiff:{speed:0,   half:1.0,  height:2.2,  tile:49, face:49 },   // 🚀 die eigene Rakete
+  surfbrett:{ speed:0,   half:0.5,  height:0.4,  tile:130, face:130 },  // 🏄 Wasser UND Lava
   car:      { speed:3.2, half:0.6,  height:1.0,  tile:25, face:25 },
   limo:     { speed:0,   half:0.7,  height:1.3,  tile:3,  face:3  },
   bus:      { speed:3.0, half:0.9,  height:2.6,  tile:73, face:73 },
@@ -6082,6 +6098,12 @@ function updateAnimals(dt) {
       }
       continue;
     }
+    if (a.type==='surfbrett') {         // 🏄 das Surfbrett hat keine eigene KI
+      if (a===surfRiding) continue;     // Jonah steht gerade drauf
+      const fl3 = fluessigOben(a.x, a.y + 0.6, a.z);
+      if (fl3) a.y = fl3.hoehe - 0.55;  // es treibt einfach auf der Oberfläche
+      continue;
+    }
     if (a.type==='raumschiff') {        // 🚀 Jonahs eigene Rakete
       if (a===raumRiding) continue;     // er steuert sie gerade selbst
       a.ph += dt*3; a.schub = 0;
@@ -6906,6 +6928,12 @@ function drawAnimals() {
       const rotEnt = { x: a.x+0.25*Math.sin(a.yaw), y: a.y, z: a.z-0.25*Math.cos(a.yaw), yaw: a.rot||0 };
       pushBox(arr,rotEnt, 0,1.45,0, 2.9,0.06,0.24, 49);
       pushBox(arr,rotEnt, 0,1.45,0, 0.24,0.06,2.9, 49);
+    } else if (a.type==='surfbrett') {
+      // 🏄 DAS SURFBRETT: ein buntes Brett mit rotem Streifen und einer Finne
+      pushBox(arr,a, 0,0.08,0, 0.85,0.16,2.5, 130);
+      pushBox(arr,a, 0,0.17,0, 0.42,0.04,2.1, 25);                 // roter Streifen
+      pushBox(arr,a, 0,0.17,-1.15, 0.60,0.03,0.22, 49);            // weiße Spitze
+      pushBox(arr,a, 0,-0.10,1.00, 0.10,0.26,0.5, 3);              // die Finne unten
     } else if (a.type==='raumschiff') {
       // 🚀 JONAHS EIGENE RAKETE: weißer Rumpf, rote Spitze, Fenster und Flossen.
       // Sie steht aufrecht - und wenn die Triebwerke brennen, lodert es unten!
@@ -13252,6 +13280,116 @@ function jetPhysics(dt) {
   }
 }
 
+// ------------------------ 🏄 DAS SURFBRETT ------------------------------------
+// Aufs Wasser ODER auf die Lava legen, antippen - und los! Das Brett gleitet
+// immer genau auf der Oberfläche, egal ob Meer, See oder Lavasee. Und wer
+// darauf steht, dem passiert in der Lava nichts.
+let surfRiding = null, surfSpritz = 0;
+// Wo ist unter dieser Stelle die Oberfläche einer Flüssigkeit?
+function fluessigOben(x, y, z) {
+  const bx = Math.floor(x), bz = Math.floor(z), by = Math.floor(y);
+  for (let dy = 2; dy >= -6; dy--) {
+    const b = getBlock(bx, by+dy, bz);
+    if (b === WATER || b === LAVA) return { hoehe: by+dy+1, lava: b === LAVA };
+    if (b !== AIR && dy < 0) return null;        // fester Boden: hier ist nichts flüssig
+  }
+  return null;
+}
+function enterSurf(a) {
+  if (riding) dismount();
+  if (flying) toggleFly();
+  sitting = null;
+  surfRiding = a;
+  const rb = document.getElementById('rideBtn');
+  rb.style.display = 'flex'; rb.textContent = '🏄';
+  blip(660,0.07); blip(880,0.07); blip(1100,0.12);
+  toast('🏄 SURFEN! Mit dem Joystick lenkst du. Es geht auf Wasser UND auf ' +
+        'LAVA - da passiert dir nichts! (🏄 = absteigen)', 5500);
+}
+function exitSurf() {
+  const a = surfRiding;
+  surfRiding = null;
+  const rb = document.getElementById('rideBtn');
+  rb.style.display = 'none'; rb.textContent = '🐴';
+  if (a) {
+    // Das Brett wird wieder zu einem Block - so bleibt es liegen, wo du es lässt
+    const bx = Math.floor(a.x), by = Math.round(a.y), bz = Math.floor(a.z);
+    let gelegt = false;
+    for (let dy=0; dy<=2 && !gelegt; dy++)
+      if (getBlock(bx, by+dy, bz) === AIR) { setBlock(bx, by+dy, bz, SURFBRETT); gelegt = true; }
+    const i2 = animals.indexOf(a);
+    if (i2 >= 0) animals.splice(i2, 1);
+    // Jonah an Land setzen, sonst bleibt er auf dem Brett stehen
+    let anLand = false;
+    for (const [ox,oz] of [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2],[2,2],[-2,-2]]) {
+      const lx = bx+ox, lz = bz+oz, th = terrainHeight(lx,lz);
+      if (th >= SEA && !collide(lx+0.5, th+1, lz+0.5)) {
+        player.x = lx+0.5; player.z = lz+0.5; player.y = th+1; anLand = true; break;
+      }
+    }
+    if (!anLand) { player.x = a.x; player.y = a.y + 1.1; player.z = a.z; }
+    player.vx = player.vy = player.vz = 0;
+    toast(gelegt ? '🏄 Abgestiegen - dein Brett liegt hier und wartet auf dich!'
+                 : '🏄 Abgestiegen!', 3000);
+  }
+  blip(400,0.08);
+  scheduleSave();
+}
+function surfPhysics(dt) {
+  const a = surfRiding;
+  let mf=0, ms=0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf,ms);
+  if (ml>1) { mf/=ml; ms/=ml; }
+  const fl = fluessigOben(a.x, a.y + 0.6, a.z);
+  const speed = fl ? 12 : 2.6;          // auf dem Wasser flitzt es, an Land schiebt man
+  const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
+  const vx=(fx*mf+rx*ms)*speed, vz=(fz*mf+rz*ms)*speed;
+  if (ml>0.05) a.yaw = Math.atan2(vx,-vz);
+  const nx = a.x + vx*dt;
+  if (!collideBox(nx, a.y+0.2, a.z, 0.45, 0.6)) a.x = nx;
+  const nz = a.z + vz*dt;
+  if (!collideBox(a.x, a.y+0.2, nz, 0.45, 0.6)) a.z = nz;
+  // immer schön auf der Oberfläche schwimmen - und dabei sanft schaukeln
+  const fl2 = fluessigOben(a.x, a.y + 0.6, a.z);
+  if (fl2) {
+    const ziel = fl2.hoehe - 0.55 + Math.sin(performance.now()*0.004)*0.05;
+    a.y += (ziel - a.y) * Math.min(1, 9*dt);
+    a.lava = fl2.lava;
+  } else {                              // kein Wasser drunter: sanft absetzen
+    a.lava = false;
+    a.vy = Math.max((a.vy||0) - 22*dt, -14);
+    const ny = a.y + a.vy*dt;
+    if (!collideBox(a.x, ny, a.z, 0.45, 0.6)) a.y = ny; else a.vy = 0;
+  }
+  player.x = a.x; player.z = a.z; player.y = a.y + 0.55;
+  player.vx = player.vy = player.vz = 0;
+  // 💦🔥 die Gischt hinter dem Brett - Wasser spritzt, Lava sprüht Funken
+  surfSpritz -= dt;
+  if (ml > 0.05 && fl2 && surfSpritz <= 0) {
+    surfSpritz = 0.05;
+    const hx = a.x - Math.sin(a.yaw)*1.3, hz = a.z + Math.cos(a.yaw)*1.3;
+    for (let n=0; n<2; n++)
+      fireworks.push({x:hx+(Math.random()-0.5)*1.2, y:a.y+0.5, z:hz+(Math.random()-0.5)*1.2,
+        vx:(Math.random()-0.5)*3, vy:1+Math.random()*2.5, vz:(Math.random()-0.5)*3,
+        tile: fl2.lava ? (n?27:72) : 9, t:0.5});
+    if (Math.random() < dt*8) blip(fl2.lava ? 180+Math.random()*90 : 620+Math.random()*260, 0.04);
+  }
+}
+// Das Brett anfassen: aus dem Block wird ein Brett zum Draufstellen
+function surfStart(bx, by, bz) {
+  if (surfRiding) return;
+  setBlock(bx, by, bz, AIR);
+  const a = { type:'surfbrett', x:bx+0.5, y:by-0.05, z:bz+0.5, yaw:yaw, ph:0,
+              vy:0, own:true, hp:99, walking:false, t:9, onGround:false };
+  animals.push(a);
+  enterSurf(a);
+}
+
 // ------------------- 🚀 DIE RAKETE SELBER FLIEGEN -----------------------------
 // Kein Countdown, kein Autopilot: Jonah setzt sich rein und steuert selbst.
 // Der Joystick lenkt, ⬆ gibt Schub nach oben, ⬇ bremst sanft nach unten.
@@ -13551,6 +13689,12 @@ function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
   return false;
 }
 function hitEntity(a, dir) {
+  if (a.type==='surfbrett') {           // 🏄 rauf aufs Brett!
+    if (surfRiding || riding || jetRiding || carRiding || heliRiding ||
+        dragonRiding || baggerRiding || boatRiding) return;
+    enterSurf(a);
+    return;
+  }
   if (a.type==='raumschiff') {          // 🚀 einsteigen und SELBER fliegen!
     if (raumRiding || jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
     enterRaum(a);
@@ -14164,6 +14308,9 @@ function doPlace(dir) {
     openLift();                         // 🛗 das Etagen-Menü!
     return;
   }
+  if (hit.block===SURFBRETT && HOTBAR_ITEMS[selSlot]!==SURFBRETT) {   // 🏄 losSURFEN!
+    surfStart(hit.x, hit.y, hit.z); return;
+  }
   if (hit.block===ANZUG) { anzugAnziehen(); return; }        // 👨‍🚀 Anzug von der Wand
   if ((hit.block===RAUMLUKE && HOTBAR_ITEMS[selSlot]!==RAUMLUKE) ||
       hit.block===RAUMLUKE_AUF) {                  // 🚪 aufmachen / zumachen
@@ -14459,6 +14606,8 @@ function doPlace(dir) {
   }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
   if (b===STEUER) toast('🎛️ Bedienungsfeld eingebaut! Bau eine Rakete drumherum, steig ein und tipp es an - dann geht es ins Weltall! 🚀', 5000);
+  if (b===SURFBRETT) toast('🏄 Surfbrett hingelegt! Leg es auf WASSER oder auf LAVA ' +
+    'und tipp es an - dann surfst du los. In der Lava passiert dir nichts!', 6000);
   if (b===RAUMLUKE) toast('🚪 Luke eingebaut! Antippen = aufmachen, nochmal antippen = zumachen. ' +
     'Ist sie offen, steigst du nach unten einfach hinein - und nach oben hältst du ⬆ gedrückt!', 6000);
   if (b===RAKETE) toast('🚀 Raketen-Luke eingebaut! Bau eine Rakete drumherum und tipp die Luke an (mit einem anderen Block in der Hand) - dann geht es ins Weltall!', 5000);
@@ -14930,7 +15079,7 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-const rideOff = ()=>{ if (raumRiding) exitRaum(); else if (ubootRiding) exitUboot(); else if (busRiding) busAussteigen(); else if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
+const rideOff = ()=>{ if (surfRiding) exitSurf(); else if (raumRiding) exitRaum(); else if (ubootRiding) exitUboot(); else if (busRiding) busAussteigen(); else if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
