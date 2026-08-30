@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- STRASSEN-TUNNEL + GIGANTISCHE RAUMSTATION (v201)! 🕳️🛰️
+  (1) Alle Straßen laufen jetzt als TUNNEL acht Blöcke unter der Erde.
+  Oben ist die Landschaft wieder unberührt - keine Schneisen durch den
+  Wald, keine Dämme mehr. Unten fahren Autos und Busse durch beleuchtete
+  Felstunnel. Alle 48 Blöcke gibt es eine Haltestelle mit Bank, Schild und
+  einer TREPPE, die hinauf ans Tageslicht führt - oben steht ein kleines
+  Häuschen mit Laterne, damit man den Eingang immer wiederfindet.
+  (2) Die Raumstation ist jetzt GIGANTISCH: 53 x 37 Blöcke statt 17 x 13,
+  mit 81 Blöcken Spannweite samt Solarflügeln. Drinnen gibt es richtige
+  Räume: acht Schlafkabinen mit Betten und Truhen, eine lange Kantine mit
+  13 Tischen, eine Sporthalle, ein Gewächshaus mit Weizen, Karotten und
+  Tomaten, eine Spielecke mit vier Automaten, eine Anzug-Kammer mit acht
+  👨‍🚀 Anzügen und den Kommandoraum. Die Schleuse in der Mitte bleibt gleich.
 - LUKEN RICHTIG GEMACHT (v200)! 🚪🔒 Jonah hat gemeldet: wenn er in der
   Schleuse die Luke über sich zumachen wollte, stand er plötzlich wieder
   draußen. Das ist jetzt weg: Antippen macht die Luke NUR auf oder zu -
