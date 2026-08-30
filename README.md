@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ZWEI NEUE SACHEN (v198)! 🛰️📏 (1) Die Raketen-Steuerung hat ein neues
+  Ziel: "🛰️ Zur RAUMSTATION". Der Autopilot fliegt hinauf und setzt dich
+  oben auf der Landeplattform ab - und in der Station steht ein eigenes
+  🎛️ Bedienungsfeld, mit dem du wieder zur Erde zurückfliegst.
+  (2) Beim Roboter tippst du jetzt selbst ein, wie viele Blöcke hoch er
+  sein soll: der 📏-Knopf öffnet ein Fenster mit fertigen Größen (jede
+  mit Block-Angabe) und einem Feld für deine eigene Wunsch-Höhe von 1 bis 60.
 - RAUMSTATIONEN im Weltall (v197)! 🛰️👨‍🚀 Hoch über der Erde schweben
   Raumstationen - jede steht als 🛰️ auf der Karte. Flieg mit deiner
   eigenen Rakete hin und lande oben auf der Plattform, dann tipp die
