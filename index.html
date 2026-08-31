@@ -64,6 +64,29 @@
     align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
     border:3px solid rgba(90,225,255,.7); }
+  /* 🧮 Das Einmaleins-Fenster: es legt sich ueber ALLES und pausiert das Spiel */
+  #matheBox { left:0; top:0; width:100%; height:100%; display:none;
+    flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    background:rgba(6,18,34,.93); z-index:60; color:#fff; text-align:center;
+    padding:8px; box-sizing:border-box; overflow-y:auto; }
+  #matheKopf { font-size:min(3.4vw,14px); color:#8fd8ff; font-weight:bold; }
+  #matheAufgabe { font-size:min(10vw,42px); font-weight:bold; letter-spacing:2px;
+    text-shadow:0 3px 10px #000; }
+  #matheFeld { font-size:min(8vw,32px); font-weight:bold; min-width:130px;
+    min-height:44px; line-height:44px; border-radius:10px; background:#fff; color:#123;
+    border:3px solid #7fe6ff; }
+  #matheHinweis { font-size:min(3.4vw,14px); opacity:.95; max-width:330px;
+    line-height:1.4; min-height:34px; }
+  #matheTasten { display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+    width:min(64vw,230px); }
+  #matheTasten div { font-size:min(5.5vw,23px); font-weight:bold; padding:8px 0;
+    border-radius:10px; background:rgba(255,255,255,.16);
+    border:2px solid rgba(255,255,255,.35);
+    user-select:none; -webkit-user-select:none; }
+  #matheTasten div:active { background:rgba(255,255,255,.4); }
+  #matheTasten .ok { background:rgba(90,220,130,.45); border-color:#7fe6a0; }
+  #matheTasten .weg { background:rgba(255,150,150,.3); border-color:#ffb0b0; }
+  #matheStern { font-size:min(3.4vw,14px); color:#ffe07a; }
   #robBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(10,30,20,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
@@ -462,6 +485,15 @@
   <button id="tpClose">Abbrechen</button>
 </div>
 
+<div class="hud" id="matheBox">
+  <div id="matheKopf"></div>
+  <div id="matheAufgabe"></div>
+  <div id="matheFeld"></div>
+  <div id="matheHinweis"></div>
+  <div id="matheTasten"></div>
+  <div id="matheStern"></div>
+</div>
+
 <div class="hud" id="robBox">
   <h3>📏 Wie groß soll dein Roboter sein?</h3>
   <p id="robText">Tipp eine Größe an - oder schreib selbst hin, wie viele Blöcke hoch er werden soll!</p>
@@ -595,7 +627,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 202 &middot; SURFBRETT: auf Wasser UND auf LAVA surfen! 🏄🌊🌋</p>
+    Version 203 &middot; Alle 4 Minuten eine EINMALEINS-Aufgabe - sie wird langsam schwerer! 🧮⭐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -641,7 +673,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 202;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 203;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3555,6 +3587,8 @@ function saveGame() {
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
+      mathe: { stufe: matheStufe, gesamt: matheGesamt, inStufe: matheInStufe,
+               letzte: matheLetzte.slice(-10), fehler: matheFehler },   // 🧮 der Rechen-Stand
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
@@ -3648,6 +3682,13 @@ function loadGame() {
     if (s.sword) sword = true;
     if (typeof s.steuer === 'number') steuerZeit = s.steuer;
     if (s.anzug) hatAnzug = true;
+    if (s.mathe) {                       // 🧮 da wusste Jonah schon eine Menge
+      matheStufe = Math.max(0, Math.min(MATHE_STUFEN.length-1, s.mathe.stufe|0));
+      matheGesamt = s.mathe.gesamt|0;
+      matheInStufe = s.mathe.inStufe|0;
+      if (Array.isArray(s.mathe.letzte)) matheLetzte = s.mathe.letzte.slice(-10);
+      if (s.mathe.fehler && typeof s.mathe.fehler === 'object') matheFehler = s.mathe.fehler;
+    }
     if (s.krone) hatKrone = true;
     if (s.zepter) hatZepter = true;
     if (s.auf) traegtKrone = true;
@@ -13280,6 +13321,183 @@ function jetPhysics(dt) {
   }
 }
 
+// ====================== 🧮 DIE EINMALEINS-PAUSE ===============================
+// Alle vier Minuten macht das Spiel eine kurze Pause und stellt eine
+// Einmaleins-Aufgabe. Erst wenn sie gelöst ist, geht es weiter. Die Aufgaben
+// werden ganz langsam schwerer: Jonah muss eine Stufe richtig sicher können,
+// bevor die nächste Reihe dazukommt - und alte Reihen kommen immer wieder dran.
+const MATHE_ABSTAND = 240;              // alle 4 Minuten eine Aufgabe
+const MATHE_STUFEN = [
+  { reihen:[1,2,10],                 neu:[2],  name:'Die 1er-, 2er- und 10er-Reihe' },
+  { reihen:[1,2,5,10],               neu:[5],  name:'Jetzt auch die 5er-Reihe' },
+  { reihen:[1,2,3,5,10],             neu:[3],  name:'Jetzt auch die 3er-Reihe' },
+  { reihen:[1,2,3,4,5,10],           neu:[4],  name:'Jetzt auch die 4er-Reihe' },
+  { reihen:[1,2,3,4,5,6,10],         neu:[6],  name:'Jetzt auch die 6er-Reihe' },
+  { reihen:[1,2,3,4,5,6,7,10],       neu:[7],  name:'Jetzt auch die 7er-Reihe' },
+  { reihen:[1,2,3,4,5,6,7,8,10],     neu:[8],  name:'Jetzt auch die 8er-Reihe' },
+  { reihen:[1,2,3,4,5,6,7,8,9,10],   neu:[9],  name:'Jetzt auch die 9er-Reihe' },
+  { reihen:[1,2,3,4,5,6,7,8,9,10],   neu:[],   name:'Das ganze Einmaleins', umkehr:true },
+];
+let matheZeit = MATHE_ABSTAND;          // Sekunden bis zur nächsten Aufgabe
+let mathePause = false;                 // steht das Spiel gerade still?
+let matheStufe = 0;                     // welche Stufe ist dran?
+let matheGesamt = 0;                    // wie viele Aufgaben insgesamt richtig?
+let matheInStufe = 0;                   // wie viele richtig auf DIESER Stufe?
+let matheLetzte = [];                   // die letzten Ergebnisse (1 = auf Anhieb richtig)
+let matheFehler = {};                   // "7x8" -> wie oft daneben
+let matheJetzt = null;                  // die Aufgabe, die gerade dransteht
+let matheEingabe = '';                  // was Jonah bisher getippt hat
+let matheVersuch = 0;                   // wievielter Versuch bei dieser Aufgabe
+
+function matheSchluessel(a2, b2) { return a2 + 'x' + b2; }
+// Eine Aufgabe aussuchen: neue Reihe oft, alte Fehler oft, sonst gemischt.
+function matheWaehlen() {
+  const st = MATHE_STUFEN[Math.min(matheStufe, MATHE_STUFEN.length-1)];
+  const w = Math.random();
+  let a2, b2;
+  const fehlerListe = Object.keys(matheFehler).filter(k => matheFehler[k] > 0);
+  if (w < 0.45 && st.neu.length) {                  // die neueste Reihe üben
+    a2 = st.neu[Math.floor(Math.random()*st.neu.length)];
+    b2 = 1 + Math.floor(Math.random()*10);
+  } else if (w < 0.70 && fehlerListe.length) {      // was letztes Mal danebenging
+    const k = fehlerListe[Math.floor(Math.random()*fehlerListe.length)];
+    const t = k.split('x');
+    a2 = parseInt(t[0],10); b2 = parseInt(t[1],10);
+    if (!st.reihen.includes(a2)) { a2 = st.reihen[Math.floor(Math.random()*st.reihen.length)]; }
+  } else {                                          // alles Gelernte gemischt
+    a2 = st.reihen[Math.floor(Math.random()*st.reihen.length)];
+    b2 = 1 + Math.floor(Math.random()*10);
+  }
+  if (Math.random() < 0.5) { const h2 = a2; a2 = b2; b2 = h2; }   // mal andersherum
+  // 🔄 Auf der letzten Stufe kommen auch Umkehraufgaben dran: 7 · ? = 42
+  const umkehr = !!st.umkehr && Math.random() < 0.3;
+  return { a: a2, b: b2, loesung: umkehr ? b2 : a2*b2, umkehr,
+           text: umkehr ? (a2 + ' · ? = ' + (a2*b2)) : (a2 + ' · ' + b2 + ' = ?') };
+}
+function matheStellen() {
+  if (mathePause || !started) return;
+  matheJetzt = matheWaehlen();
+  matheEingabe = ''; matheVersuch = 0;
+  mathePause = true;
+  document.getElementById('matheBox').style.display = 'flex';
+  matheZeichnen('Tipp die Zahl ein und drück auf ✓');
+  matheTastenBauen();
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(660,0.09); blip(880,0.12);
+}
+function matheZeichnen(hinweis) {
+  const st = MATHE_STUFEN[Math.min(matheStufe, MATHE_STUFEN.length-1)];
+  document.getElementById('matheKopf').textContent =
+    '🧮 Rechen-Pause · Stufe ' + (matheStufe+1) + ': ' + st.name;
+  document.getElementById('matheAufgabe').textContent = matheJetzt.text;
+  document.getElementById('matheFeld').textContent = matheEingabe || '?';
+  document.getElementById('matheHinweis').textContent = hinweis;
+  document.getElementById('matheStern').textContent =
+    '⭐ Schon ' + matheGesamt + ' Aufgaben geschafft!';
+}
+function matheTastenBauen() {
+  const feld = document.getElementById('matheTasten');
+  if (feld.childElementCount) return;                // nur einmal bauen
+  const tasten = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
+  for (const t of tasten) {
+    const el = document.createElement('div');
+    el.textContent = t;
+    if (t === '✓') el.className = 'ok';
+    if (t === '⌫') el.className = 'weg';
+    const w2 = () => matheTaste(t);
+    el.addEventListener('click', w2);
+    el.addEventListener('touchstart', e => { e.preventDefault(); w2(); }, {passive:false});
+    feld.appendChild(el);
+  }
+}
+function matheTaste(t) {
+  if (!mathePause) return;
+  if (t === '⌫') { matheEingabe = matheEingabe.slice(0, -1); blip(300,0.04); matheZeichnen(document.getElementById('matheHinweis').textContent); return; }
+  if (t === '✓') { mathePruefen(); return; }
+  if (matheEingabe.length < 3) { matheEingabe += t; blip(700+Number(t)*30, 0.03); }
+  matheZeichnen(document.getElementById('matheHinweis').textContent);
+}
+function mathePruefen() {
+  if (!matheEingabe) { matheZeichnen('Tipp erst eine Zahl ein! 🔢'); blip(240,0.1); return; }
+  const zahl = parseInt(matheEingabe, 10);
+  const k = matheSchluessel(matheJetzt.a, matheJetzt.b);
+  if (zahl === matheJetzt.loesung) {
+    if (matheVersuch === 0) {                        // auf Anhieb richtig!
+      matheLetzte.push(1);
+      matheInStufe++;
+      matheFehler[k] = Math.max(0, (matheFehler[k]||0) - 1);
+    } else {
+      matheLetzte.push(0);
+    }
+    matheGesamt++;
+    matheFertig();
+    return;
+  }
+  // daneben - aber freundlich bleiben und beim nächsten Mal wieder üben
+  matheVersuch++;
+  if (matheVersuch === 1) { matheLetzte.push(0); matheFehler[k] = (matheFehler[k]||0) + 2; }
+  matheEingabe = '';
+  blip(220,0.1); blip(170,0.14);
+  const A = matheJetzt.a, B = matheJetzt.b;
+  if (matheVersuch === 1) {
+    matheZeichnen('Fast! Probier es nochmal. 😊');
+  } else if (matheVersuch === 2) {
+    matheZeichnen('Tipp: ' + A + ' · ' + B + ' ist ' + B + ' mal die ' + A +
+                  ' — also ' + A + ' + ' + A + ' + ... (' + B + ' Stück).');
+  } else {
+    matheZeichnen('Kein Problem! Die Lösung ist ' + matheJetzt.loesung +
+                  '. Tipp sie einmal ein, dann geht es weiter. 💪');
+  }
+}
+function matheFertig() {
+  if (matheLetzte.length > 10) matheLetzte = matheLetzte.slice(-10);
+  const box = document.getElementById('matheBox');
+  // 🎉 Jubel und eine kleine Belohnung
+  money += 2; updateFoodHUD();
+  blip(660,0.07); blip(880,0.07); blip(1180,0.16);
+  for (let n=0; n<26; n++)
+    fireworks.push({x:player.x+(Math.random()-0.5)*4, y:player.y+1+Math.random()*3,
+      z:player.z+(Math.random()-0.5)*4, vx:(Math.random()-0.5)*4, vy:1+Math.random()*3,
+      vz:(Math.random()-0.5)*4, tile:[27,30,94][n%3], t:1});
+  const aufgestiegen = matheStufeCheck();
+  box.style.display = 'none';
+  mathePause = false;
+  matheJetzt = null;
+  matheZeit = MATHE_ABSTAND;
+  if (!aufgestiegen)
+    toast('🧮✅ RICHTIG! Super gemacht - und 2 € dazu. Spiel weiter! 🎉', 3500);
+  scheduleSave();
+}
+// Aufsteigen nur, wenn es wirklich sitzt - und bei Bedarf auch wieder zurück.
+function matheStufeCheck() {
+  const letzte = matheLetzte.slice(-10);
+  const richtig = letzte.reduce((s2,v)=>s2+v, 0);
+  if (matheStufe < MATHE_STUFEN.length-1 && matheInStufe >= 15 &&
+      letzte.length >= 10 && richtig >= 9) {
+    matheStufe++;
+    matheInStufe = 0; matheLetzte = [];
+    money += 20; updateFoodHUD();
+    blip(523,0.1); blip(659,0.1); blip(784,0.1); blip(1047,0.25);
+    toast('🧮🏆 STUFE GESCHAFFT! Du kannst das jetzt richtig gut. Neue Stufe: ' +
+          MATHE_STUFEN[matheStufe].name + ' - und 20 € Belohnung!', 7000);
+    return true;
+  }
+  if (matheStufe > 0 && letzte.length >= 6 &&
+      letzte.slice(-6).reduce((s2,v)=>s2+v, 0) <= 2) {
+    matheStufe--;                       // lieber nochmal sicher üben
+    matheInStufe = 0; matheLetzte = [];
+    toast('🧮 Wir üben nochmal in Ruhe: ' + MATHE_STUFEN[matheStufe].name +
+          '. Das schaffst du! 💪', 6000);
+    return true;
+  }
+  return false;
+}
+function matheTick(dt) {
+  if (mathePause || !started || flugT > 0) return;   // nicht mitten im Raketenflug
+  matheZeit -= dt;
+  if (matheZeit <= 0) matheStellen();
+}
+
 // ------------------------ 🏄 DAS SURFBRETT ------------------------------------
 // Aufs Wasser ODER auf die Lava legen, antippen - und los! Das Brett gleitet
 // immer genau auf der Oberfläche, egal ob Meer, See oder Lavasee. Und wer
@@ -15344,10 +15562,14 @@ const waterFx=document.getElementById('waterFx');
 
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt=Math.min((now-lastT)/1000, 0.05);
+  let dt=Math.min((now-lastT)/1000, 0.05);
   lastT=now; frameNo++;
   if (!started) return;
 
+  matheTick(dt);                        // 🧮 ist wieder eine Rechen-Pause dran?
+  // Während der Rechen-Aufgabe bleibt die ganze Welt stehen: nichts bewegt
+  // sich, nichts fällt, kein Monster kommt näher. Nur das Bild läuft weiter.
+  if (mathePause) dt = 0;
   streamChunks();
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
   portalTick(dt);                       // ✨ ab in die andere Welt?
