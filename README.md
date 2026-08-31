@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE EINMALEINS-PAUSE (v203)! 🧮⭐ Alle 4 Minuten hält das Spiel kurz an und
+  stellt eine Einmaleins-Aufgabe. Solange steht die ganze Welt still - nichts
+  fällt, kein Monster kommt näher, Jonah macht genau da weiter, wo er war.
+  Die Zahl tippt er auf einem großen Zahlenfeld ein.
+  Es wird nur GANZ langsam schwerer: Stufe 1 sind die 1er-, 2er- und
+  10er-Reihe, dann kommen nacheinander 5er, 3er, 4er, 6er, 7er, 8er und 9er
+  dazu - und auf der letzten Stufe auch Umkehraufgaben wie "8 · ? = 56".
+  Eine neue Stufe gibt es erst nach 15 richtigen Aufgaben UND wenn 9 von 10
+  auf Anhieb saßen. Läuft es mal nicht, geht es freundlich eine Stufe zurück,
+  damit alles sicher sitzt. Aufgaben, die danebengingen, kommen öfter wieder.
+  Falsch antworten ist nie schlimm: erst "Fast!", dann ein Tipp, dann wird die
+  Lösung gezeigt - man kommt immer weiter. Für jede Aufgabe gibt es 2 €, für
+  eine neue Stufe 20 € und eine dicke Gratulation.
 - DAS SURFBRETT (v202)! 🏄🌊🌋 In deiner Werkzeugleiste liegt jetzt ein
   buntes Surfbrett. Leg es aufs WASSER oder mitten auf einen LAVASEE und
   tipp es an - schon surfst du los! Es gleitet immer genau auf der
