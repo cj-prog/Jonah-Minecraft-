@@ -221,22 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
-- DIE GROSSE AUFGABE (v204)! 🌟🏆 Wenn ALLE Missionen geschafft sind, war
-  vorher Schluss - jetzt fängt erst die echte Heldenreise an: acht dicke
-  Etappen, für die Jonah alles braucht, was er hat.
-  1. 🌋 Die Feuerprobe - 10 Sekunden auf einem Lava-See surfen
-  2. 🤖 Der Koloss - im 25 Blöcke hohen Roboter herumstapfen
-  3. 🪄 Die goldene Hand - 10 Sachen mit dem Zepter vergolden
-  4. 🕳️ Der Tunnelfahrer - 20 Sekunden durch einen Straßen-Tunnel
-  5. 🚀 Der Sternenflieger - mit der EIGENEN Rakete ins Weltall
-  6. 🛰️ Der Stationsgast - durch die Schleuse in die Raumstation
-  7. 👨‍🚀 Der Weltraumspaziergang - 10 Sekunden schwerelos draußen
-  8. 👑 Der geheime Planet - zum Schluss auf den Jonah-Planeten
-  Oben links steht immer, was gerade dran ist, und der Zähler tickt live
-  mit. Pro Etappe gibt es 25 € und ein Feuerwerk. Zum Schluss wartet der
-  Schatz der sieben Welten: 500 €, 20 Diamanten, ein RIESEN-Feuerwerk und
-  ein goldener Pokal, der direkt neben Jonah aufgestellt wird. Danach heißt
-  er für immer HELD DER SIEBEN WELTEN.
+- DIE GROSSE SCHLACHT (v205)! ⚔️👑 Wenn ALLE Missionen geschafft sind,
+  erscheint oben der ⚔️-Knopf - und dann geht die eine, große Aufgabe los:
+  sieben Wellen Monster, die Jonah wirklich angreifen und ihn wegschubsen.
+  Erst 4 Zombies, dann Schleime dazu, dann die Räuberbande, dann der erste
+  RIESE, dann zwei Riesen, dann der Sturmangriff mit 18 Monstern - und ganz
+  zum Schluss der MONSTERKÖNIG 👑 persönlich mit seinen Leibwachen. Der
+  König hält richtig viel aus, ein Treffer reicht bei weitem nicht!
+  Die Schlacht-Monster sind anders als normale: sie versteinern nicht in
+  der Sonne, sie verschwinden nie, sie kommen aus jeder Entfernung auf
+  Jonah zu - und wer zurückfällt, taucht einfach wieder vor ihm auf.
+  Zwischen zwei Wellen gibt es 12 Sekunden Verschnaufpause und 20 €. Oben
+  links steht immer, welche Welle dran ist und wie viele Monster noch
+  stehen. Wer alle sieben Wellen schafft, bekommt 500 €, 25 Diamanten, ein
+  RIESEN-Feuerwerk und einen goldenen Pokal neben sich aufgestellt - und
+  heißt für immer SIEGER DER GROSSEN SCHLACHT. Mit dem 🛑-Knopf kann Jonah
+  jederzeit abbrechen und später neu anfangen.
 - DIE EINMALEINS-PAUSE (v203)! 🧮⭐ Alle 4 Minuten hält das Spiel kurz an und
   stellt eine Einmaleins-Aufgabe. Solange steht die ganze Welt still - nichts
   fällt, kein Monster kommt näher, Jonah macht genau da weiter, wo er war.
