@@ -627,7 +627,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 203 &middot; Alle 4 Minuten eine EINMALEINS-Aufgabe - sie wird langsam schwerer! 🧮⭐</p>
+    Version 204 &middot; DIE GROSSE AUFGABE: acht Heldentaten in acht Welten! 🌟🏆</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -673,7 +673,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 203;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 204;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3544,6 +3544,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
       missIdx, missZahl,                // 📜 wie weit ist Jonah mit den Missionen?
+      gross: { idx: grossIdx, zahl: Math.round(grossZahl*10)/10, fertig: grossFertig?1:0 },
       dim: weltDim,                     // ✨ in welcher Welt ist Jonah gerade?
       // ... und die Änderungen ALLER anderen Welten (Wunderwelt und Planeten)
       lager: (()=>{ const alle={};
@@ -3613,6 +3614,11 @@ function loadGame() {
     }
     if (typeof s.missIdx === 'number') missIdx = s.missIdx;   // 📜 Missions-Stand
     if (typeof s.missZahl === 'number') missZahl = s.missZahl;
+    if (s.gross) {                       // 🌟 wie weit ist die große Aufgabe?
+      grossIdx = Math.max(0, Math.min(GROSSE_AUFGABE.length, s.gross.idx|0));
+      grossZahl = Number(s.gross.zahl) || 0;
+      grossFertig = !!s.gross.fertig;
+    }
     if (typeof s.dim === 'number') weltDim = s.dim;        // ✨ welche Welt?
     for (const k in (s.edits2||{})) {                      // alte Speicherstände: die andere Welt
       const a=s.edits2[k], m=new Map();
@@ -10091,13 +10097,109 @@ const MISSIONEN = [
       return [3,4,5].every(d => besuchtePlaneten.has(d)); } },
 ];
 const besuchtePlaneten = new Set();     // 🚀 wo warst du schon überall?
+
+// ==================== 🌟 DIE GROSSE AUFGABE ==================================
+// Wenn ALLE Missionen geschafft sind, fängt die große Heldenreise an: acht
+// richtig dicke Etappen, für die Jonah alles braucht, was er hat - Surfbrett,
+// Roboter, Zepter, Tunnel, Rakete, Raumstation und den geheimen Planeten.
+// Am Ende wartet der Schatz der sieben Welten.
+function imTunnel() {                   // steckt Jonah gerade in einem Straßentunnel?
+  if (weltDim !== 0) return false;
+  const sh = strasseHoehe(Math.floor(player.x), Math.floor(player.z));
+  return sh !== null && player.y > sh - 1 && player.y < sh + 4;
+}
+const GROSSE_AUFGABE = [
+  { t:'🌋 Die Feuerprobe', ziel:10, einheit:'Sek.',
+    txt:'Leg dein 🏄 Surfbrett auf einen LAVA-See und surf 10 Sekunden darauf',
+    pruef:()=> !!(surfRiding && surfRiding.lava) },
+  { t:'🤖 Der Koloss', ziel:10, einheit:'Sek.',
+    txt:'Steig in deinen Roboter, mach ihn mit 📏 mindestens 25 Blöcke hoch und lauf 10 Sekunden damit',
+    pruef:()=> !!(roboterRiding && robBlockHoch(roboterRiding.gr || 1) >= 25) },
+  { t:'🪄 Die goldene Hand', ziel:10, einheit:'Sachen',
+    txt:'Verwandle 10 Sachen mit dem Zepter in GOLD',
+    zaehler:()=> goldSet.size },
+  { t:'🕳️ Der Tunnelfahrer', ziel:20, einheit:'Sek.',
+    txt:'Fahr oder lauf 20 Sekunden lang durch einen Straßen-TUNNEL tief unter der Erde',
+    pruef:()=> imTunnel() },
+  { t:'🚀 Der Sternenflieger', ziel:1, einmal:true,
+    txt:'Flieg mit deiner EIGENEN Rakete selbst hinauf bis ins Weltall',
+    pruef:()=> !!(raumRiding && player.y > RAUM_VOLL) },
+  { t:'🛰️ Der Stationsgast', ziel:1, einmal:true,
+    txt:'Geh durch die Schleuse hinein in eine RAUMSTATION',
+    pruef:()=> imLuftraum() },
+  { t:'👨‍🚀 Der Weltraumspaziergang', ziel:10, einheit:'Sek.',
+    txt:'Zieh einen Astronautenanzug an und schweb 10 Sekunden draußen im All',
+    pruef:()=> schwerelosAn() },
+  { t:'👑 Der geheime Planet', ziel:1, einmal:true,
+    txt:'Flieg zum Schluss auf deinen geheimen 👑 Jonah-Planeten',
+    pruef:()=> weltDim === 9 },
+];
+let grossIdx = 0, grossZahl = 0, grossFertig = false;
+function grossAktiv() { return missIdx >= MISSIONEN.length && !grossFertig; }
+function grossText() {
+  if (grossFertig)
+    return '🌟🏆 HELD DER SIEBEN WELTEN! Du hast die GROSSE AUFGABE geschafft, König Jonah!';
+  const g = GROSSE_AUFGABE[grossIdx];
+  return '🌟 GROSSE AUFGABE ' + (grossIdx+1) + '/' + GROSSE_AUFGABE.length + ' · ' +
+         g.t + ': ' + g.txt +
+         (g.einmal ? '' : '  (' + Math.min(Math.floor(grossZahl), g.ziel) + '/' + g.ziel +
+                          ' ' + (g.einheit || '') + ')');
+}
+function grossGeschafft() {
+  const g = GROSSE_AUFGABE[grossIdx];
+  grossIdx++; grossZahl = 0;
+  money += 25; updateFoodHUD();
+  for (let s2=0; s2<40; s2++)
+    fireworks.push({x:player.x+(Math.random()-0.5)*5, y:player.y+1.5+Math.random()*4,
+      z:player.z+(Math.random()-0.5)*5, vx:(Math.random()-0.5)*5, vy:2+Math.random()*4,
+      vz:(Math.random()-0.5)*5, tile:[25,73,53,40,94][s2%5], t:1.2});
+  for (const f of [523,659,784,1047,1319]) blip(f,0.11);
+  shake = Math.max(shake, 0.3);
+  if (grossIdx >= GROSSE_AUFGABE.length) grossFinale();
+  else toast('🌟 ETAPPE GESCHAFFT: ' + g.t + '! +25 € 💶\nJetzt kommt: ' +
+             GROSSE_AUFGABE[grossIdx].t + ' - ' + GROSSE_AUFGABE[grossIdx].txt, 9000);
+  missAnzeige(); scheduleSave();
+}
+// 🏆 Das große Finale: der Schatz der sieben Welten
+function grossFinale() {
+  grossFertig = true;
+  money += 500; gems += 20; updateFoodHUD();
+  // ein goldenes Denkmal direkt neben Jonah - aber nur da, wo Luft ist
+  const bx = Math.floor(player.x) + 2, bz = Math.floor(player.z), by = Math.floor(player.y);
+  let gebaut = false;
+  for (let dy=0; dy<=2; dy++) {
+    if (getBlock(bx, by+dy, bz) !== AIR) continue;
+    setBlock(bx, by+dy, bz, GOLD);
+    if (getBlock(bx, by+dy+1, bz) === AIR) { setBlock(bx, by+dy+1, bz, POKAL); gebaut = true; }
+    break;
+  }
+  for (let s2=0; s2<140; s2++)          // ein RIESEN-Feuerwerk!
+    fireworks.push({x:player.x+(Math.random()-0.5)*12, y:player.y+1+Math.random()*10,
+      z:player.z+(Math.random()-0.5)*12, vx:(Math.random()-0.5)*7, vy:2+Math.random()*6,
+      vz:(Math.random()-0.5)*7, tile:[25,73,53,40,94,30,27][s2%7], t:2});
+  for (const f of [523,659,784,1047,1319,1568,2093]) blip(f,0.16);
+  shake = 0.7;
+  toast('🌟🏆 DU HAST ES GESCHAFFT! Alle acht Etappen der GROSSEN AUFGABE! ' +
+        'Du bist jetzt HELD DER SIEBEN WELTEN, König Jonah! ' +
+        'Dein Schatz: 500 € 💶 und 20 Diamanten 💎' +
+        (gebaut ? ' - und neben dir steht dein goldener Pokal! 🏆' : ''), 12000);
+}
+function grossTick(dt) {
+  if (!grossAktiv()) return;
+  const g = GROSSE_AUFGABE[grossIdx];
+  const vorher = Math.floor(grossZahl);
+  if (g.zaehler) grossZahl = Math.max(grossZahl, g.zaehler());
+  else if (g.pruef()) grossZahl += (g.einmal ? g.ziel : dt);
+  if (grossZahl >= g.ziel) { grossGeschafft(); return; }
+  if (Math.floor(grossZahl) !== vorher) missAnzeige();   // der Zähler tickt sichtbar hoch
+}
 let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
   const el = document.getElementById('missBox'), tx = document.getElementById('missText');
   if (!el) return;
-  if (missIdx >= MISSIONEN.length) {
+  if (missIdx >= MISSIONEN.length) {    // 🌟 jetzt läuft DIE GROSSE AUFGABE
     el.style.display = 'flex';
-    tx.textContent = '🏆 ALLE MISSIONEN GESCHAFFT! Du bist der Größte, König Jonah!';
+    tx.textContent = grossText();
     return;
   }
   const m = MISSIONEN[missIdx];
@@ -10123,7 +10225,9 @@ function missGeschafft() {
       vz:(Math.random()-0.5)*4, tile:[25,73,53,40][s2%4], t:0.9});
   for (const f of [523,659,784,1047]) blip(f,0.1);
   if (missIdx >= MISSIONEN.length)
-    toast('🏆🎉 GESCHAFFT! Du hast ALLE Missionen erfüllt, König Jonah! Du bist ein echter Held!', 7000);
+    toast('🏆🎉 GESCHAFFT! Du hast ALLE Missionen erfüllt, König Jonah!\n\n' +
+          '🌟 Und jetzt beginnt DIE GROSSE AUFGABE: acht Heldentaten in acht Welten! ' +
+          'Deine erste: ' + GROSSE_AUFGABE[0].t + ' - ' + GROSSE_AUFGABE[0].txt, 12000);
   else
     toast('✅ Mission geschafft: ' + m.t + '! +5 € 💶  Neue Mission: ' +
           MISSIONEN[missIdx].t + ' - ' + MISSIONEN[missIdx].txt, 6000);
@@ -15574,6 +15678,7 @@ function frame(now) {
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
+  try { grossTick(dt); } catch(e) {}    // 🌟 läuft schon DIE GROSSE AUFGABE?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
