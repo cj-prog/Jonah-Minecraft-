@@ -60,6 +60,11 @@
     width:54px; height:54px; font-size:22px; background:rgba(120,220,160,.45); }
   #tpBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
     width:54px; height:54px; font-size:24px; background:rgba(80,220,255,.4); }
+  /* ⚔️ Der Knopf für DIE GROSSE SCHLACHT - er kommt erst nach allen Missionen */
+  #schlachtBtn { right:calc(28px + env(safe-area-inset-right));
+    bottom:calc(354px + env(safe-area-inset-bottom));
+    width:54px; height:54px; font-size:26px; background:rgba(230,70,70,.45);
+    border-color:rgba(255,190,190,.7); }
   #tpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
@@ -376,6 +381,7 @@
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
 <div class="hud btn" id="tpBtn" title="Teleport - wohin soll es gehen?">🛸</div>
+<div class="hud btn" id="schlachtBtn" style="display:none" title="Die große Schlacht">⚔️</div>
 <div class="hud" id="superBox"><span id="superText"></span><div id="superBalken"><i id="superFuell"></i></div></div>
 <div class="hud" id="superFx"></div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
@@ -627,7 +633,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 204 &middot; DIE GROSSE AUFGABE: acht Heldentaten in acht Welten! 🌟🏆</p>
+    Version 205 &middot; DIE GROSSE SCHLACHT: 7 Wellen Monster und der MONSTERKÖNIG! ⚔️👑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -673,7 +679,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 204;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 205;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3544,7 +3550,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
       missIdx, missZahl,                // 📜 wie weit ist Jonah mit den Missionen?
-      gross: { idx: grossIdx, zahl: Math.round(grossZahl*10)/10, fertig: grossFertig?1:0 },
+      schlacht: { welle: schlachtWelle, laeuft: schlachtLaeuft?1:0, gewonnen: schlachtGewonnen?1:0 },
       dim: weltDim,                     // ✨ in welcher Welt ist Jonah gerade?
       // ... und die Änderungen ALLER anderen Welten (Wunderwelt und Planeten)
       lager: (()=>{ const alle={};
@@ -3614,10 +3620,11 @@ function loadGame() {
     }
     if (typeof s.missIdx === 'number') missIdx = s.missIdx;   // 📜 Missions-Stand
     if (typeof s.missZahl === 'number') missZahl = s.missZahl;
-    if (s.gross) {                       // 🌟 wie weit ist die große Aufgabe?
-      grossIdx = Math.max(0, Math.min(GROSSE_AUFGABE.length, s.gross.idx|0));
-      grossZahl = Number(s.gross.zahl) || 0;
-      grossFertig = !!s.gross.fertig;
+    if (s.schlacht) {                    // ⚔️ wie weit ist die große Schlacht?
+      schlachtGewonnen = !!s.schlacht.gewonnen;
+      // eine laufende Schlacht wird nicht mitgenommen: die Monster sind ja weg.
+      // Jonah fängt beim nächsten Antippen einfach wieder bei Welle 1 an.
+      schlachtWelle = 0; schlachtLaeuft = false; schlachtPause = 0;
     }
     if (typeof s.dim === 'number') weltDim = s.dim;        // ✨ welche Welt?
     for (const k in (s.edits2||{})) {                      // alte Speicherstände: die andere Welt
@@ -6272,7 +6279,7 @@ function updateAnimals(dt) {
       }
       continue;
     }
-    if (!a.tame && !a.follow && a.type!=='dragon' && a.type!=='statue' &&
+    if (!a.tame && !a.follow && a.type!=='dragon' && a.type!=='statue' && !a.schlacht &&
         !MITREISER.has(a.type) && a !== busRiding &&        // deine Fahrzeuge bleiben immer!
         !(a.type==='uboot') && !(a.type==='yacht' && !a.fremd) &&
         !(a.type==='butler' && a.befehl==='folgen') &&      // der Butler kommt überall mit!
@@ -6455,9 +6462,10 @@ function updateAnimals(dt) {
     if (a.type==='slime' || a.type==='zombie' || a.type==='boss' || a.type==='raeuber' || a.type==='riese') {
       // Sonnenaufgang: Zombies erstarren im Licht zu Stein-Statuen! 🗿
       // (friedliche Spazier-Monster sind davon ausgenommen - die dürfen bleiben!)
-      if (a.type==='zombie' && !isNight() && !a.friedlich) { werdeStatue(a); continue; }
+      // ⚔️ Monster aus der GROSSEN SCHLACHT kämpfen weiter - auch am hellen Tag!
+      if (a.type==='zombie' && !isNight() && !a.friedlich && !a.schlacht) { werdeStatue(a); continue; }
       // ... der Monster-König wird vom Sonnenlicht zur RIESEN-Statue!
-      if (a.type==='boss' && !isNight()) { werdeStatue(a); continue; }
+      if (a.type==='boss' && !isNight() && !a.schlacht) { werdeStatue(a); continue; }
       // (Räuber versteinern NICHT mehr - Jonahs Wunsch! Sie bleiben
       //  einfach freche Räuber, die man fangen und einsperren kann.)
       // Lava tut Monstern richtig weh: Zisch, autsch!
@@ -6490,7 +6498,10 @@ function updateAnimals(dt) {
       // 💰 Räuber lieben herumliegendes Geld noch mehr als Jonah!
       const klaut = a.type==='raeuber' && !a.friedlich && geldKlau(a, dt);
       // Friedliche Monster jagen NIEMANDEN - sie spazieren nur herum
+      // In der GROSSEN SCHLACHT kennen die Monster kein Pardon: sie kommen
+      // von überall her auf Jonah zu, egal wie weit sie noch weg sind.
       const jagd = a.friedlich || klaut ? -1
+                 : a.schlacht ? 90
                  : a.type==='riese' ? 26 : a.type==='boss' ? 15 : a.type==='zombie' ? 13 : a.type==='raeuber' ? 12 : 9;
       const dx=player.x-a.x, dz=player.z-a.z, dp=Math.hypot(dx,dz);
       if (a.friedlich && dp<10 && Math.random()<dt*0.04)
@@ -10098,73 +10109,143 @@ const MISSIONEN = [
 ];
 const besuchtePlaneten = new Set();     // 🚀 wo warst du schon überall?
 
-// ==================== 🌟 DIE GROSSE AUFGABE ==================================
-// Wenn ALLE Missionen geschafft sind, fängt die große Heldenreise an: acht
-// richtig dicke Etappen, für die Jonah alles braucht, was er hat - Surfbrett,
-// Roboter, Zepter, Tunnel, Rakete, Raumstation und den geheimen Planeten.
-// Am Ende wartet der Schatz der sieben Welten.
-function imTunnel() {                   // steckt Jonah gerade in einem Straßentunnel?
-  if (weltDim !== 0) return false;
-  const sh = strasseHoehe(Math.floor(player.x), Math.floor(player.z));
-  return sh !== null && player.y > sh - 1 && player.y < sh + 4;
-}
-const GROSSE_AUFGABE = [
-  { t:'🌋 Die Feuerprobe', ziel:10, einheit:'Sek.',
-    txt:'Leg dein 🏄 Surfbrett auf einen LAVA-See und surf 10 Sekunden darauf',
-    pruef:()=> !!(surfRiding && surfRiding.lava) },
-  { t:'🤖 Der Koloss', ziel:10, einheit:'Sek.',
-    txt:'Steig in deinen Roboter, mach ihn mit 📏 mindestens 25 Blöcke hoch und lauf 10 Sekunden damit',
-    pruef:()=> !!(roboterRiding && robBlockHoch(roboterRiding.gr || 1) >= 25) },
-  { t:'🪄 Die goldene Hand', ziel:10, einheit:'Sachen',
-    txt:'Verwandle 10 Sachen mit dem Zepter in GOLD',
-    zaehler:()=> goldSet.size },
-  { t:'🕳️ Der Tunnelfahrer', ziel:20, einheit:'Sek.',
-    txt:'Fahr oder lauf 20 Sekunden lang durch einen Straßen-TUNNEL tief unter der Erde',
-    pruef:()=> imTunnel() },
-  { t:'🚀 Der Sternenflieger', ziel:1, einmal:true,
-    txt:'Flieg mit deiner EIGENEN Rakete selbst hinauf bis ins Weltall',
-    pruef:()=> !!(raumRiding && player.y > RAUM_VOLL) },
-  { t:'🛰️ Der Stationsgast', ziel:1, einmal:true,
-    txt:'Geh durch die Schleuse hinein in eine RAUMSTATION',
-    pruef:()=> imLuftraum() },
-  { t:'👨‍🚀 Der Weltraumspaziergang', ziel:10, einheit:'Sek.',
-    txt:'Zieh einen Astronautenanzug an und schweb 10 Sekunden draußen im All',
-    pruef:()=> schwerelosAn() },
-  { t:'👑 Der geheime Planet', ziel:1, einmal:true,
-    txt:'Flieg zum Schluss auf deinen geheimen 👑 Jonah-Planeten',
-    pruef:()=> weltDim === 9 },
+// ==================== ⚔️ DIE GROSSE SCHLACHT =================================
+// EINE einzige, richtig große Aufgabe: sieben Wellen Monster stürmen auf Jonah
+// zu und greifen ihn wirklich an. Nach jeder Welle wird es schlimmer - und ganz
+// am Ende kommt der MONSTERKÖNIG persönlich, mit seinen Leibwachen.
+// Das dauert eine ganze Weile und man muss richtig kämpfen.
+const SCHLACHT_WELLEN = [
+  { name:'Die ersten Zombies',   mobs:{ zombie:4 } },
+  { name:'Zombies und Schleime', mobs:{ zombie:5, slime:3 } },
+  { name:'Die Räuberbande',      mobs:{ zombie:5, raeuber:4 } },
+  { name:'Der erste RIESE',      mobs:{ zombie:6, slime:3, riese:1 } },
+  { name:'Zwei Riesen!',         mobs:{ zombie:6, raeuber:4, riese:2 } },
+  { name:'Der Sturmangriff',     mobs:{ zombie:8, slime:4, raeuber:4, riese:2 } },
+  { name:'DER MONSTERKÖNIG',     mobs:{ boss:1, riese:2, zombie:6, raeuber:3 }, koenig:true },
 ];
-let grossIdx = 0, grossZahl = 0, grossFertig = false;
-function grossAktiv() { return missIdx >= MISSIONEN.length && !grossFertig; }
-function grossText() {
-  if (grossFertig)
-    return '🌟🏆 HELD DER SIEBEN WELTEN! Du hast die GROSSE AUFGABE geschafft, König Jonah!';
-  const g = GROSSE_AUFGABE[grossIdx];
-  return '🌟 GROSSE AUFGABE ' + (grossIdx+1) + '/' + GROSSE_AUFGABE.length + ' · ' +
-         g.t + ': ' + g.txt +
-         (g.einmal ? '' : '  (' + Math.min(Math.floor(grossZahl), g.ziel) + '/' + g.ziel +
-                          ' ' + (g.einheit || '') + ')');
+const SCHLACHT_PAUSE = 12;              // Sekunden Verschnaufpause zwischen den Wellen
+let schlachtWelle = 0;                  // welche Welle läuft gerade? (0 = keine)
+let schlachtLaeuft = false;
+let schlachtPause = 0;                  // Countdown bis zur nächsten Welle
+let schlachtGewonnen = false;
+let schlachtHolT = 0;                   // damit Ausreißer wieder herangeholt werden
+
+function schlachtOffen() { return missIdx >= MISSIONEN.length && !schlachtGewonnen; }
+function schlachtFeinde() { return animals.filter(a => a.schlacht); }
+function schlachtText() {
+  if (schlachtGewonnen)
+    return '⚔️🏆 SIEGER DER GROSSEN SCHLACHT! Du hast den Monsterkönig besiegt, König Jonah!';
+  if (!schlachtLaeuft)
+    return '⚔️ DIE GROSSE SCHLACHT wartet auf dich! Tipp den ⚔️-Knopf an - dann greifen ' +
+           SCHLACHT_WELLEN.length + ' Wellen Monster an, zuletzt der MONSTERKÖNIG.';
+  const w = SCHLACHT_WELLEN[schlachtWelle-1];
+  if (schlachtPause > 0)
+    return '⚔️ Welle ' + schlachtWelle + '/' + SCHLACHT_WELLEN.length +
+           ' geschafft! Die nächste kommt in ' + Math.ceil(schlachtPause) + ' Sek. - ' +
+           'schnell verschnaufen! 😤';
+  return '⚔️ DIE GROSSE SCHLACHT · Welle ' + schlachtWelle + '/' + SCHLACHT_WELLEN.length +
+         ': ' + w.name + ' · noch ' + schlachtFeinde().length + ' Monster!';
 }
-function grossGeschafft() {
-  const g = GROSSE_AUFGABE[grossIdx];
-  grossIdx++; grossZahl = 0;
-  money += 25; updateFoodHUD();
-  for (let s2=0; s2<40; s2++)
-    fireworks.push({x:player.x+(Math.random()-0.5)*5, y:player.y+1.5+Math.random()*4,
-      z:player.z+(Math.random()-0.5)*5, vx:(Math.random()-0.5)*5, vy:2+Math.random()*4,
-      vz:(Math.random()-0.5)*5, tile:[25,73,53,40,94][s2%5], t:1.2});
-  for (const f of [523,659,784,1047,1319]) blip(f,0.11);
-  shake = Math.max(shake, 0.3);
-  if (grossIdx >= GROSSE_AUFGABE.length) grossFinale();
-  else toast('🌟 ETAPPE GESCHAFFT: ' + g.t + '! +25 € 💶\nJetzt kommt: ' +
-             GROSSE_AUFGABE[grossIdx].t + ' - ' + GROSSE_AUFGABE[grossIdx].txt, 9000);
-  missAnzeige(); scheduleSave();
+// Wo genau kann hier ein Monster stehen? Wir schauen die ECHTEN Blöcke an -
+// so klappt es auch mitten auf Jonahs selbstgebauter Burg-Plattform.
+function schlachtPlatz(mx, mz) {
+  const oben = Math.floor(player.y) + 6, unten = Math.floor(player.y) - 12;
+  for (let y = oben; y >= unten; y--) {
+    if (!isSolid(mx, y, mz)) continue;
+    if (collideBox(mx+0.5, y+1, mz+0.5, 0.4, 1.8)) continue;
+    return y + 1;
+  }
+  return null;
 }
-// 🏆 Das große Finale: der Schatz der sieben Welten
-function grossFinale() {
-  grossFertig = true;
-  money += 500; gems += 20; updateFoodHUD();
-  // ein goldenes Denkmal direkt neben Jonah - aber nur da, wo Luft ist
+// Einen freien Platz im Ring um Jonah suchen - erst richtig auf dem Boden,
+// und wenn das nirgends klappt, notfalls einfach auf Jonahs eigener Höhe.
+function schlachtOrt() {
+  for (let v=0; v<60; v++) {
+    const ang = Math.random()*Math.PI*2;
+    const d = 12 + Math.random()*12;
+    const mx = Math.floor(player.x + Math.cos(ang)*d);
+    const mz = Math.floor(player.z + Math.sin(ang)*d);
+    const ch = getChunk(mx>>4, mz>>4);
+    if (!ch || !ch.data) continue;
+    const my = schlachtPlatz(mx, mz);
+    if (my === null) continue;
+    return [mx+0.5, my, mz+0.5];
+  }
+  // Notfall: nirgends ein guter Platz? Dann direkt auf Jonahs eigener Höhe,
+  // ein Stück von ihm weg - Hauptsache, die Monster sind da.
+  for (let v=0; v<30; v++) {
+    const ang = Math.random()*Math.PI*2;
+    const d = 9 + Math.random()*9;
+    const mx = Math.floor(player.x + Math.cos(ang)*d);
+    const mz = Math.floor(player.z + Math.sin(ang)*d);
+    const ch = getChunk(mx>>4, mz>>4);
+    if (!ch || !ch.data) continue;
+    const my = Math.floor(player.y);
+    if (collideBox(mx+0.5, my, mz+0.5, 0.4, 1.8)) continue;
+    return [mx+0.5, my, mz+0.5];
+  }
+  return null;
+}
+// Ein Monster mitten in die Schlacht setzen - im Ring um Jonah herum
+function schlachtSpawn(typ, hp) {
+  const ort = schlachtOrt();
+  if (!ort) return false;
+  const a = { type:typ, x:ort[0], y:ort[1], z:ort[2], yaw:Math.random()*Math.PI*2,
+              vy:0, kx:0, kz:0, hp, walking:false, t:Math.random()*2, ph:0,
+              onGround:false, schlacht:true, friedlich:false };
+  animals.push(a);
+  for (let n=0; n<10; n++)              // eine kleine Rauchwolke beim Auftauchen
+    fireworks.push({x:a.x, y:a.y+0.5, z:a.z, vx:(Math.random()-0.5)*3,
+      vy:1+Math.random()*2, vz:(Math.random()-0.5)*3, tile:53, t:0.7});
+  return true;
+}
+function schlachtWelleStarten() {
+  const w = SCHLACHT_WELLEN[schlachtWelle-1];
+  let gespawnt = 0;
+  for (const typ in w.mobs) {
+    const hp = typ==='boss' ? 40 : typ==='riese' ? 14 : typ==='raeuber' ? 6 : 5;
+    for (let i=0; i<w.mobs[typ]; i++) if (schlachtSpawn(typ, hp)) gespawnt++;
+  }
+  // Ganz wichtig: kam KEIN Monster durch (zu eng, alles zugebaut), dann gilt die
+  // Welle NICHT als geschafft - sonst wäre die Schlacht in einer Sekunde vorbei.
+  if (!gespawnt) {
+    schlachtPause = 2;
+    toast('⚔️ Die Monster finden hier keinen Platz! Geh ein Stück ins Freie - ' +
+          'gleich versuchen sie es nochmal.', 4000);
+    missAnzeige();
+    return;
+  }
+  shake = Math.max(shake, 0.45);
+  for (const f of [110, 90, 70]) blip(f, 0.28);
+  toast('⚔️ WELLE ' + schlachtWelle + ' VON ' + SCHLACHT_WELLEN.length + ': ' + w.name +
+        '!' + (w.koenig ? ' 👑 DER MONSTERKÖNIG SELBST IST DA - er hält viel aus, hau kräftig drauf!'
+                        : ' Sie kommen von allen Seiten!'), 6000);
+  missAnzeige();
+}
+function schlachtStart() {
+  if (!schlachtOffen()) return;
+  if (schlachtLaeuft) { schlachtAbbrechen(); return; }
+  schlachtLaeuft = true; schlachtWelle = 1; schlachtPause = 0;
+  toast('⚔️🔥 DIE GROSSE SCHLACHT BEGINNT! Halte durch - ' + SCHLACHT_WELLEN.length +
+        ' Wellen, und ganz zum Schluss der MONSTERKÖNIG. Du schaffst das! 💪', 7000);
+  schlachtWelleStarten();
+  schlachtKnopf();                      // der Knopf wird jetzt zum 🛑-Abbruchknopf
+  scheduleSave();
+}
+function schlachtAbbrechen() {
+  if (!confirm('Die große Schlacht wirklich abbrechen? Alle Monster verschwinden und du fängst später wieder bei Welle 1 an.')) return;
+  for (const a of schlachtFeinde()) {
+    const i = animals.indexOf(a);
+    if (i >= 0) animals.splice(i, 1);
+  }
+  schlachtLaeuft = false; schlachtWelle = 0; schlachtPause = 0;
+  toast('🕊️ Schlacht abgebrochen - alle Monster sind weg. Du kannst jederzeit neu anfangen!', 4500);
+  missAnzeige(); schlachtKnopf(); scheduleSave();
+}
+function schlachtSieg() {
+  schlachtLaeuft = false; schlachtGewonnen = true; schlachtWelle = 0;
+  money += 500; gems += 25; updateFoodHUD();
+  // ein goldener Pokal als Denkmal - aber nur da, wo Luft ist
   const bx = Math.floor(player.x) + 2, bz = Math.floor(player.z), by = Math.floor(player.y);
   let gebaut = false;
   for (let dy=0; dy<=2; dy++) {
@@ -10173,33 +10254,68 @@ function grossFinale() {
     if (getBlock(bx, by+dy+1, bz) === AIR) { setBlock(bx, by+dy+1, bz, POKAL); gebaut = true; }
     break;
   }
-  for (let s2=0; s2<140; s2++)          // ein RIESEN-Feuerwerk!
+  for (let s2=0; s2<150; s2++)
     fireworks.push({x:player.x+(Math.random()-0.5)*12, y:player.y+1+Math.random()*10,
       z:player.z+(Math.random()-0.5)*12, vx:(Math.random()-0.5)*7, vy:2+Math.random()*6,
       vz:(Math.random()-0.5)*7, tile:[25,73,53,40,94,30,27][s2%7], t:2});
   for (const f of [523,659,784,1047,1319,1568,2093]) blip(f,0.16);
-  shake = 0.7;
-  toast('🌟🏆 DU HAST ES GESCHAFFT! Alle acht Etappen der GROSSEN AUFGABE! ' +
-        'Du bist jetzt HELD DER SIEBEN WELTEN, König Jonah! ' +
-        'Dein Schatz: 500 € 💶 und 20 Diamanten 💎' +
-        (gebaut ? ' - und neben dir steht dein goldener Pokal! 🏆' : ''), 12000);
+  shake = 0.8;
+  toast('⚔️🏆 GESCHAFFT!!! Du hast ALLE ' + SCHLACHT_WELLEN.length + ' Wellen besiegt und ' +
+        'den MONSTERKÖNIG bezwungen! Du bist der SIEGER DER GROSSEN SCHLACHT, König Jonah! ' +
+        'Dein Siegerlohn: 500 € 💶 und 25 Diamanten 💎' +
+        (gebaut ? ' - und neben dir steht dein Sieger-Pokal! 🏆' : ''), 14000);
+  missAnzeige(); schlachtKnopf(); scheduleSave();
 }
-function grossTick(dt) {
-  if (!grossAktiv()) return;
-  const g = GROSSE_AUFGABE[grossIdx];
-  const vorher = Math.floor(grossZahl);
-  if (g.zaehler) grossZahl = Math.max(grossZahl, g.zaehler());
-  else if (g.pruef()) grossZahl += (g.einmal ? g.ziel : dt);
-  if (grossZahl >= g.ziel) { grossGeschafft(); return; }
-  if (Math.floor(grossZahl) !== vorher) missAnzeige();   // der Zähler tickt sichtbar hoch
+function schlachtTick(dt) {
+  if (!schlachtLaeuft) return;
+  if (schlachtPause > 0) {              // Verschnaufpause zwischen zwei Wellen
+    schlachtPause -= dt;
+    if (schlachtPause <= 0) { schlachtPause = 0; schlachtWelleStarten(); }
+    else if (Math.ceil(schlachtPause + dt) !== Math.ceil(schlachtPause)) missAnzeige();
+    return;
+  }
+  const feinde = schlachtFeinde();
+  if (!feinde.length) {                 // Welle geschafft!
+    money += 20; updateFoodHUD();
+    for (let s2=0; s2<30; s2++)
+      fireworks.push({x:player.x+(Math.random()-0.5)*5, y:player.y+1+Math.random()*4,
+        z:player.z+(Math.random()-0.5)*5, vx:(Math.random()-0.5)*5, vy:2+Math.random()*4,
+        vz:(Math.random()-0.5)*5, tile:[25,73,40,94][s2%4], t:1.1});
+    for (const f of [523,659,784,1047]) blip(f,0.1);
+    if (schlachtWelle >= SCHLACHT_WELLEN.length) { schlachtSieg(); return; }
+    schlachtWelle++;
+    schlachtPause = SCHLACHT_PAUSE;
+    toast('✅ WELLE GESCHAFFT! +20 € 💶  Schnauf durch - in ' + SCHLACHT_PAUSE +
+          ' Sekunden kommt Welle ' + schlachtWelle + '! 😤', 5500);
+    missAnzeige(); scheduleSave();
+    return;
+  }
+  // Kein Weglaufen: Monster, die zu weit zurückfallen, tauchen wieder vor Jonah auf
+  schlachtHolT -= dt;
+  if (schlachtHolT <= 0) {
+    schlachtHolT = 2;
+    for (const a of feinde) {
+      if (Math.hypot(a.x-player.x, a.z-player.z) < 60 && Math.abs(a.y-player.y) < 40) continue;
+      const ort = schlachtOrt();
+      if (ort) { a.x = ort[0]; a.y = ort[1]; a.z = ort[2]; a.vy = 0; a.kx = 0; a.kz = 0; }
+    }
+  }
+  if (Math.random() < dt*1.5) missAnzeige();   // die Monster-Zahl tickt runter
+}
+// ⚔️ Der Knopf: er zeigt sich erst, wenn alle Missionen geschafft sind
+function schlachtKnopf() {
+  const b = document.getElementById('schlachtBtn');
+  if (!b) return;
+  b.style.display = schlachtOffen() ? 'flex' : 'none';
+  b.textContent = schlachtLaeuft ? '🛑' : '⚔️';
 }
 let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
   const el = document.getElementById('missBox'), tx = document.getElementById('missText');
   if (!el) return;
-  if (missIdx >= MISSIONEN.length) {    // 🌟 jetzt läuft DIE GROSSE AUFGABE
+  if (missIdx >= MISSIONEN.length) {    // ⚔️ jetzt wartet DIE GROSSE SCHLACHT
     el.style.display = 'flex';
-    tx.textContent = grossText();
+    tx.textContent = schlachtText();
     return;
   }
   const m = MISSIONEN[missIdx];
@@ -10224,10 +10340,12 @@ function missGeschafft() {
       z:player.z+(Math.random()-0.5)*3, vx:(Math.random()-0.5)*4, vy:2+Math.random()*3,
       vz:(Math.random()-0.5)*4, tile:[25,73,53,40][s2%4], t:0.9});
   for (const f of [523,659,784,1047]) blip(f,0.1);
-  if (missIdx >= MISSIONEN.length)
+  if (missIdx >= MISSIONEN.length) {
     toast('🏆🎉 GESCHAFFT! Du hast ALLE Missionen erfüllt, König Jonah!\n\n' +
-          '🌟 Und jetzt beginnt DIE GROSSE AUFGABE: acht Heldentaten in acht Welten! ' +
-          'Deine erste: ' + GROSSE_AUFGABE[0].t + ' - ' + GROSSE_AUFGABE[0].txt, 12000);
+          '⚔️ Und jetzt kommt DIE GROSSE SCHLACHT: sieben Wellen Monster greifen dich an, ' +
+          'zuletzt der MONSTERKÖNIG. Tipp den ⚔️-Knopf an, wenn du bereit bist!', 12000);
+    schlachtKnopf();
+  }
   else
     toast('✅ Mission geschafft: ' + m.t + '! +5 € 💶  Neue Mission: ' +
           MISSIONEN[missIdx].t + ' - ' + MISSIONEN[missIdx].txt, 6000);
@@ -11301,6 +11419,21 @@ document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.s
   go.addEventListener('touchstart', e=>{ e.preventDefault(); roboterEigeneHoehe(); }, {passive:false});
   document.getElementById('robHoch').addEventListener('keydown',
     e=>{ if (e.key === 'Enter') roboterEigeneHoehe(); });
+}
+// ⚔️ der Knopf für DIE GROSSE SCHLACHT
+{
+  const sb = document.getElementById('schlachtBtn');
+  const los = () => {
+    if (!schlachtLaeuft) {
+      if (!confirm('DIE GROSSE SCHLACHT starten?\n\n' + SCHLACHT_WELLEN.length +
+                   ' Wellen Monster greifen dich an - zuletzt der MONSTERKÖNIG. ' +
+                   'Das dauert eine Weile und wird richtig schwer!')) return;
+    }
+    schlachtStart();
+    schlachtKnopf();
+  };
+  sb.addEventListener('touchstart', e=>{ e.preventDefault(); los(); }, {passive:false});
+  sb.addEventListener('mousedown',  e=>{ e.preventDefault(); los(); });
 }
 // 🛸 der Teleport-Knopf und das eigene Wunsch-Ziel
 {
@@ -15678,7 +15811,7 @@ function frame(now) {
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
-  try { grossTick(dt); } catch(e) {}    // 🌟 läuft schon DIE GROSSE AUFGABE?
+  try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
@@ -15948,6 +16081,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   portalKuehl = 3;                      // beim Start nicht sofort ins Portal gesaugt werden
   updateFoodHUD();
   missAnzeige();
+  schlachtKnopf();                      // ⚔️ wartet die große Schlacht schon?
   document.getElementById('miniMap').style.display='block';
   if (bow) document.getElementById('bowBtn').style.display='flex';
   saveGame();                           // beim Start sofort speichern
