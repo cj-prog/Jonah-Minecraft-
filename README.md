@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- AUFGERÄUMTE KNÖPFE (v206)! 🎛️ Jonah hat gemeldet, dass die Knöpfe
+  durcheinander waren: der Teleport-Knopf 🛸 lag genau auf dem 1×1-Knopf und
+  der Schlacht-Knopf ⚔️ genau auf dem Wirbel-Knopf 🌀 - man hat immer den
+  falschen erwischt. Jetzt sind alle Knöpfe in einem festen Raster aus drei
+  Spalten und fünf Reihen angeordnet, und jeder hat seinen eigenen Platz.
+  Beim Handy quer (kurzer Bildschirm) rücken alle Reihen automatisch enger
+  zusammen, damit die oberste Reihe nicht mehr in die Symbolleiste oben
+  stößt; bei ganz kleinen Bildschirmen kommt sogar eine vierte Spalte dazu.
+  Ein neuer Test prüft in vier Bildschirmgrößen und in vier Spielsituationen
+  (normal, alles freigeschaltet, im Roboter, auf dem Drachen), dass sich
+  wirklich KEINE zwei Knöpfe überlappen.
 - DIE GROSSE SCHLACHT (v205)! ⚔️👑 Wenn ALLE Missionen geschafft sind,
   erscheint oben der ⚔️-Knopf - und dann geht die eine, große Aufgabe los:
   sieben Wellen Monster, die Jonah wirklich angreifen und ihn wegschubsen.

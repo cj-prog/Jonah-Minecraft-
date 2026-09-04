@@ -32,38 +32,56 @@
   .slot.sel { border-color:#fff; background:rgba(255,255,255,.25); }
   @media (max-width:430px){ #hotbar{ gap:3px; } .slot{ width:34px; height:34px; } .slot img{ width:27px; height:27px; } }
 
+  /* 🎛️ DAS KNOPF-RASTER rechts - jeder Knopf hat seinen EIGENEN Platz!
+     Drei Spalten (--c1/--c2/--c3) und fünf Reihen (--r1 unten bis --r5 oben):
+       Spalte 1:  ⛏️r1   ✈️r2   1×1 r3   🌀r4   🦸r5
+       Spalte 2:  🐴r1   🆘r2   👑r3     🪄r4
+       Spalte 3:  🔥/🦾r1  📏r2  🛸r3     ⚔️r4
+     Wer einen neuen Knopf dazutut, nimmt ein FREIES Feld - sonst liegen zwei
+     Knöpfe aufeinander (genau das war bis v205 kaputt).
+     Auf kurzen Bildschirmen (Handy quer) rücken alle Reihen automatisch
+     zusammen, damit die oberste Reihe nicht in die Symbolleiste stößt. */
+  :root { --c1:28px; --c2:92px; --c3:156px;
+          --r1:160px; --r2:226px; --r3:292px; --r4:358px; --r5:424px; --bs:54px; }
+  @media (max-height:600px) {
+    :root { --r1:142px; --r2:194px; --r3:246px; --r4:298px; --r5:350px; --bs:46px; }
+  }
   .btn { display:flex; align-items:center; justify-content:center; border-radius:50%;
     background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
+  /* alle Raster-Knöpfe sind gleich groß */
+  #modeBtn, #rideBtn, #fireBtn, #flyBtn, #rufBtn, #faustBtn, #superBtn, #kroneBtn,
+  #zepterBtn, #groesseBtn, #tpBtn, #schlachtBtn, #brushBtn, #lassoBtn {
+    width:var(--bs); height:var(--bs); }
   #jumpBtn { right:calc(18px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:64px; height:64px; font-size:30px; }
   #bowBtn  { right:calc(94px + env(safe-area-inset-right)); bottom:calc(82px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:26px; display:none; }
-  #modeBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
-  #rideBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom)); width:54px; height:54px; }
-  #fireBtn { right:calc(156px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom));
-    width:54px; height:54px; display:none; background:rgba(255,120,30,.35); }
-  #flyBtn  { right:calc(28px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:24px; }
+  #modeBtn { right:calc(var(--c1) + env(safe-area-inset-right)); bottom:calc(var(--r1) + env(safe-area-inset-bottom)); }
+  #rideBtn { right:calc(var(--c2) + env(safe-area-inset-right)); bottom:calc(var(--r1) + env(safe-area-inset-bottom)); }
+  #fireBtn { right:calc(var(--c3) + env(safe-area-inset-right)); bottom:calc(var(--r1) + env(safe-area-inset-bottom));
+    display:none; background:rgba(255,120,30,.35); }
+  #flyBtn  { right:calc(var(--c1) + env(safe-area-inset-right)); bottom:calc(var(--r2) + env(safe-area-inset-bottom)); font-size:24px; }
   #flyBtn.on { background:rgba(110,190,255,.55); }
-  #rufBtn  { right:calc(92px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; background:rgba(255,90,60,.45); }
-  #faustBtn { right:calc(156px + env(safe-area-inset-right)); bottom:calc(160px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; background:rgba(120,160,220,.5); }
+  #rufBtn  { right:calc(var(--c2) + env(safe-area-inset-right)); bottom:calc(var(--r2) + env(safe-area-inset-bottom));
+    font-size:24px; background:rgba(255,90,60,.45); }
+  #faustBtn { right:calc(var(--c3) + env(safe-area-inset-right)); bottom:calc(var(--r1) + env(safe-area-inset-bottom));
+    font-size:24px; background:rgba(120,160,220,.5); }
   #faustBtn.warte { opacity:.5; }
-  #superBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(424px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; background:rgba(255,60,180,.4); }
+  #superBtn { right:calc(var(--c1) + env(safe-area-inset-right)); bottom:calc(var(--r5) + env(safe-area-inset-bottom));
+    font-size:24px; background:rgba(255,60,180,.4); }
   #superBtn.an { background:rgba(255,215,60,.75); box-shadow:0 0 22px #ffd83c; }
   #superBtn.warte { opacity:.55; font-size:18px; font-weight:bold; }
-  #kroneBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; }
+  #kroneBtn { right:calc(var(--c2) + env(safe-area-inset-right)); bottom:calc(var(--r3) + env(safe-area-inset-bottom));
+    font-size:24px; }
   #kroneBtn.an { background:rgba(255,215,60,.7); box-shadow:0 0 18px #ffd83c; }
-  #zepterBtn { right:calc(92px + env(safe-area-inset-right)); bottom:calc(358px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; background:rgba(190,120,255,.45); }
-  #groesseBtn { right:calc(156px + env(safe-area-inset-right)); bottom:calc(226px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:22px; background:rgba(120,220,160,.45); }
-  #tpBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; background:rgba(80,220,255,.4); }
+  #zepterBtn { right:calc(var(--c2) + env(safe-area-inset-right)); bottom:calc(var(--r4) + env(safe-area-inset-bottom));
+    font-size:24px; background:rgba(190,120,255,.45); }
+  #groesseBtn { right:calc(var(--c3) + env(safe-area-inset-right)); bottom:calc(var(--r2) + env(safe-area-inset-bottom));
+    font-size:22px; background:rgba(120,220,160,.45); }
+  #tpBtn { right:calc(var(--c3) + env(safe-area-inset-right)); bottom:calc(var(--r3) + env(safe-area-inset-bottom));
+    font-size:24px; background:rgba(80,220,255,.4); }
   /* ⚔️ Der Knopf für DIE GROSSE SCHLACHT - er kommt erst nach allen Missionen */
-  #schlachtBtn { right:calc(28px + env(safe-area-inset-right));
-    bottom:calc(354px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:26px; background:rgba(230,70,70,.45);
+  #schlachtBtn { right:calc(var(--c3) + env(safe-area-inset-right));
+    bottom:calc(var(--r4) + env(safe-area-inset-bottom));
+    font-size:26px; background:rgba(230,70,70,.45);
     border-color:rgba(255,190,190,.7); }
   #tpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
@@ -122,11 +140,11 @@
   #superFx { display:none; left:0; top:0; right:0; bottom:0; z-index:9; pointer-events:none;
     box-shadow:inset 0 0 130px 44px rgba(255,90,215,.55);
     border:4px solid rgba(255,180,240,.6); box-sizing:border-box; }
-  #brushBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(292px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:16px; font-weight:bold; color:#fff; }
+  #brushBtn { right:calc(var(--c1) + env(safe-area-inset-right)); bottom:calc(var(--r3) + env(safe-area-inset-bottom));
+    font-size:16px; font-weight:bold; color:#fff; }
   #brushBtn.on { background:rgba(255,200,90,.5); }
-  #lassoBtn { right:calc(28px + env(safe-area-inset-right)); bottom:calc(358px + env(safe-area-inset-bottom));
-    width:54px; height:54px; font-size:24px; }
+  #lassoBtn { right:calc(var(--c1) + env(safe-area-inset-right)); bottom:calc(var(--r4) + env(safe-area-inset-bottom));
+    font-size:24px; }
   #lassoBtn.on { background:rgba(190,120,255,.55); }
   #lassoCanvas { left:0; top:0; pointer-events:none; z-index:12; display:none; }
   #downBtn { right:calc(94px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:56px; height:56px; font-size:26px; }
@@ -147,6 +165,22 @@
   #repBtn.on { background:rgba(255,170,80,.55); }
   #lookBtn { right:calc(462px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #lookBtn.on { background:rgba(255,150,220,.5); }
+  /* Ganz kurzer Bildschirm (kleines Handy quer): fünf Reihen passen nicht mehr
+     übereinander. Dann gibt es eine VIERTE Spalte und nur noch vier Reihen -
+     🦸 zieht dorthin um. Sprung- und Runter-Knopf und die obere Leiste rücken
+     enger zusammen. Steht ganz unten, damit es die Regeln oben überschreibt! */
+  @media (max-height:420px) {
+    :root { --c1:24px; --c2:76px; --c3:128px; --c4:180px;
+            --r1:126px; --r2:176px; --r3:226px; --r4:276px; --bs:44px; }
+    /* 🦸 steht in der obersten Reihe direkt neben ⚔️ - dann hängt er am
+       Knopf-Block dran und schwebt nicht allein mitten im Bild herum */
+    #superBtn { right:calc(var(--c4) + env(safe-area-inset-right));
+                bottom:calc(var(--r4) + env(safe-area-inset-bottom)); }
+    #jumpBtn { bottom:calc(66px + env(safe-area-inset-bottom)); width:52px; height:52px; font-size:26px; }
+    #downBtn, #bowBtn { bottom:calc(70px + env(safe-area-inset-bottom)); width:48px; height:48px; font-size:22px; }
+    #fsBtn, #resetBtn, #chatBtn, #navBtn, #mpBtn, #mapBtn, #selfieBtn,
+    #rotBtn, #schwebBtn, #repBtn, #lookBtn { width:34px; height:34px; font-size:17px; }
+  }
   #lookBox { left:calc(10px + env(safe-area-inset-left)); top:50%; transform:translateY(-50%);
     display:none; flex-direction:column; gap:9px; background:rgba(40,28,52,.94);
     padding:12px 14px; border-radius:14px; color:#fff; z-index:45; }
@@ -633,7 +667,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 205 &middot; DIE GROSSE SCHLACHT: 7 Wellen Monster und der MONSTERKÖNIG! ⚔️👑</p>
+    Version 206 &middot; Aufgeräumte Knöpfe: jeder Knopf hat jetzt seinen eigenen Platz! 🎛️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -679,7 +713,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 205;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 206;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
