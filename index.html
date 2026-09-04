@@ -667,7 +667,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 206 &middot; Aufgeräumte Knöpfe: jeder Knopf hat jetzt seinen eigenen Platz! 🎛️</p>
+    Version 207 &middot; Räuberbanden überfallen mit ihrem Bulli die Bank! 🚐🏦</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -713,7 +713,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 206;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 207;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1458,6 +1458,39 @@ function villageAt(cellX, cellZ) {
     vz: cellZ*VCELL + 20 + Math.floor(hash2(cellX,cellZ,4444)*40),
   };
 }
+// 🏦 Wo genau steht die Bank dieses Dorfes? Gibt null zurück, wenn der Platz
+// zu schief oder zu tief liegt - dann wird dort auch keine Bank gebaut.
+// WICHTIG: sowohl das Bauen als auch die Räuberbande fragen hier - so können
+// die beiden nie auseinanderlaufen.
+function bankAt(v) {
+  if (terrainHeight(v.vx, v.vz) <= SEA) return null;
+  const bx0 = v.vx-22, bz0 = v.vz+20, BW = 15, BD = 13;
+  let bmin=999, bmax=-999;
+  for (const [px2,pz2] of [[bx0,bz0],[bx0+BW-1,bz0],[bx0,bz0+BD-1],[bx0+BW-1,bz0+BD-1],[bx0+7,bz0+6]]) {
+    const h2 = terrainHeight(px2,pz2);
+    bmin = Math.min(bmin,h2); bmax = Math.max(bmax,h2);
+  }
+  if (!(bmin > SEA && bmax-bmin <= 10)) return null;
+  return { bx0, bz0, BW, BD, by: bmax,
+    tuerX: bx0+7,  tuerZ: bz0,        // das große Eingangs-Portal (Mitte)
+    parkX: bx0+7,  parkZ: bz0-7,      // hier parkt der Räuber-Bulli
+    tresorX: bx0+2, tresorZ: bz0+10,  // vor dem Tresor stehen die Räuber
+  };
+}
+// Die nächste Bank in der Nähe eines Punktes (oder null)
+function bankNah(x, z, weite) {
+  let best = null, bd = weite;
+  const c0x = Math.floor(x/VCELL), c0z = Math.floor(z/VCELL);
+  for (let cx = c0x-2; cx <= c0x+2; cx++) for (let cz = c0z-2; cz <= c0z+2; cz++) {
+    const v = villageAt(cx, cz);
+    if (!v) continue;
+    const b = bankAt(v);
+    if (!b) continue;
+    const d = Math.hypot(b.tuerX - x, b.tuerZ - z);
+    if (d < bd) { bd = d; best = b; }
+  }
+  return best;
+}
 // 🛣️ DAS STRASSENNETZ: alle 80 Blöcke eine Straße, quer durch die Dörfer.
 // Auf ihr fahren die Autos doppelt so schnell!
 const STR_BREIT = 2;                    // 2 Blöcke links und rechts der Mitte = 5 breit
@@ -2098,6 +2131,20 @@ function genChunkData(cx, cz, ohneEdits) {
     if (onlyAir && data[i]!==AIR) return;
     data[i]=b;
   };
+  const hol = (wx,wy,wz) => {           // was steht hier schon? (-1 = anderer Chunk)
+    const lx=wx-x0, lz=wz-z0;
+    if (lx<0||lx>=CS||lz<0||lz>=CS||wy<=CH_MIN||wy>=CH) return -1;
+    return data[bidx(lx,wy,lz)];
+  };
+  // Steht in dieser Säule schon ein HAUS? Dann darf nichts weggeräumt werden.
+  // Bäume (Holz und Blätter) dürfen weg, Hauswände nicht.
+  const hausDa = (wx,wz,y0h,y1h) => {
+    for (let y=y0h; y<=y1h; y++) {
+      const b = hol(wx,y,wz);
+      if (b===PLANK || b===BRICK || b===GLASS || b===DOOR || b===DOOR_TOP) return true;
+    }
+    return false;
+  };
   // 🚏 DIE BUSHALTESTELLEN im Tunnel - mit einer TREPPE hinauf ans Tageslicht
   for (let hz=-14; hz<CS+14; hz++) for (let hx=-14; hx<CS+14; hx++) {
     const wx = x0+hx, wz = z0+hz;
@@ -2388,15 +2435,10 @@ function genChunkData(cx, cz, ohneEdits) {
       }
     }
     // Die DORF-BANK 🏦: eine RIESIGE Halle mit Schaltern, Bankleuten und Tresoren
-    if (wh>SEA) {
-      const bx0=v.vx-22, bz0=v.vz+20, BW=15, BD=13;
-      let bmin=999, bmax=-999;                                   // steht der Platz eben genug?
-      for (const [px2,pz2] of [[bx0,bz0],[bx0+BW-1,bz0],[bx0,bz0+BD-1],[bx0+BW-1,bz0+BD-1],[bx0+7,bz0+6]]) {
-        const h2=terrainHeight(px2,pz2);
-        bmin=Math.min(bmin,h2); bmax=Math.max(bmax,h2);
-      }
-      if (bmin>SEA && bmax-bmin<=10) {
-        const by=bmax;
+    {
+      const bnk = bankAt(v);                                     // steht der Platz eben genug?
+      if (bnk) {
+        const bx0=bnk.bx0, bz0=bnk.bz0, BW=bnk.BW, BD=bnk.BD, by=bnk.by;
         // Hülle: Boden, hohe Wände (5 Blöcke!), Fenster, Dach
         for (let lx=0;lx<BW;lx++) for (let lz=0;lz<BD;lz++) {
           const wx=bx0+lx, wz=bz0+lz;
@@ -2433,6 +2475,24 @@ function genChunkData(cx, cz, ohneEdits) {
         // zwei Flügeltüren im Portal (in der Mitte bleibt es offen)
         put(bx0+6,by+1,bz0,DOOR,false); put(bx0+6,by+2,bz0,DOOR_TOP,false);
         put(bx0+8,by+1,bz0,DOOR,false); put(bx0+8,by+2,bz0,DOOR_TOP,false);
+        // 🅿️ DER VORPLATZ: gepflasterter Parkplatz vor der Bank. Hier parken
+        // die Autos - und hier stellt sich auch der Räuber-Bulli hin.
+        // Wo schon ein Dorfhaus steht, wird NICHTS weggeräumt - sonst hätte
+        // Jonah plötzlich Häuser mit Löchern drin.
+        for (let lx=-2; lx<=BW+1; lx++) for (let lz=-10; lz<=-4; lz++) {
+          const wx = bx0+lx, wz = bz0+lz;
+          if (hausDa(wx, wz, by-3, by+5)) continue;
+          const th8 = terrainHeight(wx, wz);
+          for (let y=th8; y<by-3; y++) put(wx,y,wz,STONE,false);   // auffüllen
+          put(wx, by-3, wz, STRASSE, false);                        // Pflaster
+          for (let y=by-2; y<=by+5; y++) put(wx,y,wz,AIR,false);    // Bäume weg
+        }
+        // zwei Parkplatz-Laternen
+        for (const lx of [1, BW-2]) {
+          if (hausDa(bx0+lx, bz0-7, by-3, by+5)) continue;
+          put(bx0+lx, by-2, bz0-7, WOOD,false); put(bx0+lx, by-1, bz0-7, WOOD,false);
+          put(bx0+lx, by,   bz0-7, TORCH,false);
+        }
         // eine breite Freitreppe vor dem Portal
         for (let s=1; s<=3; s++) {
           const zz = bz0-s, stufe = by-s+1;
@@ -5001,6 +5061,7 @@ const ANIMAL_KIND = {
   car:      { speed:3.2, half:0.6,  height:1.0,  tile:25, face:25 },
   limo:     { speed:0,   half:0.7,  height:1.3,  tile:3,  face:3  },
   bus:      { speed:3.0, half:0.9,  height:2.6,  tile:73, face:73 },
+  bulli:    { speed:0,   half:0.85, height:2.0,  tile:3,  face:3  },   // 🚐 der Räuber-Bulli
   bagger:   { speed:0,   half:1.5,  height:2.8,  tile:53, face:53 },
   heli:     { speed:0,   half:0.9,  height:1.6,  tile:25, face:25 },
   dragon:   { speed:0,   half:0.95, height:1.8,  tile:53, face:53 },
@@ -6090,6 +6151,7 @@ function updateAnimals(dt) {
     const a = animals[i];
     if (a===riding || a===carRiding) continue;   // wird gerade vom Spieler gesteuert
     if (a.type==='kabine') continue;     // 🛗 die Kabine fährt in liftTick()
+    if (a.raub) continue;                // 🚐 die Räuberbande steuert raubTick()
     if (a.type==='ball') {              // der Fußball: rollt, hüpft, fliegt! ⚽
       const dx=a.x-player.x, dz=a.z-player.z, dp=Math.hypot(dx,dz);
       if (dp<0.85 && Math.abs(player.y-a.y)<1.7) {       // Reinlaufen = Kick!
@@ -6931,6 +6993,27 @@ function drawAnimals() {
       pushBox(arr,a, -0.35,1.35,-2.5, 0.34,0.44,0.24, 40);
       pushBox(arr,a, -0.35,1.7,-2.5, 0.3,0.3,0.3, 22, 23);
       pushBox(arr,a, -0.35,1.88,-2.5, 0.36,0.1,0.36, 42);
+    } else if (a.type==='bulli') {                                 // 🚐 DER RÄUBER-BULLI
+      pushBox(arr,a, 0,1.0,0, 1.05,1.3,3.1, 3);                    // dunkler Kasten
+      pushBox(arr,a, 0,1.7,0.3, 1.0,0.14,2.4, 55);                 // Dach
+      pushBox(arr,a, 0,1.15,-1.58, 0.86,0.5,0.06, 48);             // Frontscheibe
+      pushBox(arr,a, -0.54,1.18,-0.9, 0.06,0.44,0.7, 48);          // Seitenfenster vorn
+      pushBox(arr,a,  0.54,1.18,-0.9, 0.06,0.44,0.7, 48);
+      pushBox(arr,a, 0.55,0.85,0.9, 0.08,0.9,1.1, 55);             // Schiebetür hinten
+      pushBox(arr,a, -0.54,0.62,0.3, 0.06,0.34,2.2, 82);           // Räuber-Streifen längs
+      pushBox(arr,a,  0.54,0.62,0.3, 0.06,0.34,2.2, 82);
+      // die Räuber-Maske aufs Auto gemalt, damit man die Bande sofort erkennt
+      pushBox(arr,a, 0,1.05,1.58, 0.62,0.2,0.05, 21);
+      pushBox(arr,a, -0.17,1.05,1.62, 0.12,0.1,0.04, 3);
+      pushBox(arr,a,  0.17,1.05,1.62, 0.12,0.1,0.04, 3);
+      for (const wz3 of [-1.0, 1.1]) {                             // vier Räder
+        pushBox(arr,a, -0.55,0.35,wz3, 0.16,0.62,0.62, 55);
+        pushBox(arr,a,  0.55,0.35,wz3, 0.16,0.62,0.62, 55);
+      }
+      pushBox(arr,a, -0.32,0.72,-1.6, 0.22,0.18,0.06, 37);         // Scheinwerfer
+      pushBox(arr,a,  0.32,0.72,-1.6, 0.22,0.18,0.06, 37);
+      if (a.blink && Math.floor(performance.now()/220)%2===0)       // Warnblinker beim Einbruch
+        pushBox(arr,a, 0,1.85,0.3, 0.3,0.2,0.3, 25);
     } else if (a.type==='bagger') {                                // der RIESEN-MÄHDRESCHER! 🌾🚜
       const dreh = performance.now() * (a===baggerRiding ? 0.012 : 0.002);
       pushBox(arr,a, -1.45,0.8,-0.9, 0.6,1.6,1.6, 55);             // RIESIGE Vorderräder
@@ -10143,6 +10226,204 @@ const MISSIONEN = [
 ];
 const besuchtePlaneten = new Set();     // 🚀 wo warst du schon überall?
 
+// ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
+// Manchmal tun sich mehrere Räuber zu einer Bande zusammen: sie kommen in
+// ihrem Räuber-Bulli angefahren, parken vor der Dorfbank, brechen ein, schleppen
+// die Beute raus und brausen davon. Jonah kann sie aufhalten!
+const RAUB_RAEUBER = 4;                 // so viele Räuber sitzen im Bulli
+const RAUB_BEUTE_PRO = 4;               // so viel klaut jeder aus dem Tresor
+let raubBank = null;                    // welche Bank wird gerade überfallen?
+let raubPhase = '';                     // '' | 'anfahrt' | 'parken' | 'einbruch' | 'flucht'
+let raubT = 0;                          // Timer der aktuellen Phase
+let raubBulli = null;
+let raubBande = [];
+let raubPause = 100;                    // erst nach einer Weile geht es los
+let raubBeute = 0;                      // wie viel schon im Bulli liegt
+
+// Auf welcher Höhe steht hier der Boden? Schaut die ECHTEN Blöcke an - so
+// klappt es auch auf gebauten Plätzen. Baumkronen zählen NICHT als Boden
+// (sonst klettert der Bulli über die Wipfel), darum gehen wir höchstens drei
+// Blöcke über das Ur-Gelände hinauf.
+function bodenBei(mx, mz, yRef) {
+  const oben = Math.min(Math.floor(yRef) + 4, terrainHeight(mx, mz) + 3);
+  const unten = Math.floor(yRef) - 8;
+  for (let y = oben; y >= unten; y--) if (isSolid(mx, y, mz)) return y + 1;
+  return null;
+}
+// Einen Räuber (oder den Bulli) Richtung Ziel schieben. Gibt zurück, wie weit
+// es noch ist - so merkt der Aufrufer, wann jemand angekommen ist.
+function raubGehen(a, tx, tz, sp, dt) {
+  const dx = tx - a.x, dz = tz - a.z, d = Math.hypot(dx, dz);
+  if (d < 0.001) return 0;
+  a.yaw = Math.atan2(dx, -dz);
+  a.walking = true; a.ph += dt*6;
+  const s = Math.min(sp*dt, d);
+  const nx = a.x + dx/d*s, nz = a.z + dz/d*s;
+  ensureData(Math.floor(nx)>>4, Math.floor(nz)>>4);
+  const bo = bodenBei(Math.floor(nx), Math.floor(nz), a.y);
+  a.x = nx; a.z = nz;
+  if (bo !== null) a.y += Math.max(-6*dt, Math.min(6*dt, bo - a.y));
+  a.vy = 0;
+  return d - s;
+}
+function raubLaeuft() { return raubPhase !== ''; }
+// Die überlebenden Räuber der Bande (Jonah kann welche besiegen!)
+function raubLebende() { return raubBande.filter(a => animals.includes(a)); }
+function raubAufraeumen() {
+  for (const a of raubBande) { const i = animals.indexOf(a); if (i>=0) animals.splice(i,1); }
+  if (raubBulli) { const i = animals.indexOf(raubBulli); if (i>=0) animals.splice(i,1); }
+  raubBande = []; raubBulli = null; raubBank = null; raubPhase = ''; raubBeute = 0;
+}
+// 🅿️ Wo genau kann der Bulli stehen? Vor mancher Bank steht schon ein Dorfhaus
+// auf dem Vorplatz - darum suchen wir uns einen wirklich FREIEN Platz, so nah
+// am Portal wie möglich.
+function raubParkplatz(b) {
+  let best = null, bd = 1e9;
+  for (let lz=-10; lz<=-4; lz++) for (let lx=2; lx<=12; lx++) {
+    const x = b.bx0+lx+0.5, z = b.bz0+lz+0.5;
+    ensureData(Math.floor(x)>>4, Math.floor(z)>>4);
+    const y = bodenBei(Math.floor(x), Math.floor(z), b.by);
+    if (y === null) continue;
+    if (collideBox(x, y, z, 1.0, 2.2)) continue;      // hier steht schon etwas
+    const d = Math.abs(lx-7) + Math.abs(lz+6)*0.7;    // möglichst mittig vorm Portal
+    if (d < bd) { bd = d; best = { x, y, z }; }
+  }
+  return best;
+}
+function raubStarten() {
+  if (raubLaeuft() || isNight()) return false;
+  const b = bankNah(player.x, player.z, 170);
+  if (!b) return false;
+  const p = raubParkplatz(b);
+  if (!p) return false;
+  b.parkX = p.x - 0.5; b.parkZ = p.z - 0.5; b.parkY = p.y;   // hier wird geparkt
+  // Der Bulli kommt von vorne auf die Bank zugefahren
+  const sx = p.x, sz = p.z - 20;
+  ensureData(Math.floor(sx)>>4, Math.floor(sz)>>4);
+  const sy = bodenBei(Math.floor(sx), Math.floor(sz), b.by);
+  if (sy === null) return false;
+  raubBank = b; raubPhase = 'anfahrt'; raubT = 0; raubBeute = 0;
+  raubBulli = { type:'bulli', x:sx, y:sy, z:sz, yaw:0, vy:0, kx:0, kz:0, hp:99,
+                walking:true, t:0, ph:0, onGround:true, raub:true, blink:false };
+  animals.push(raubBulli);
+  raubBande = [];
+  for (let i=0; i<RAUB_RAEUBER; i++) {
+    const r = { type:'raeuber', x:sx, y:sy, z:sz, yaw:0, vy:0, kx:0, kz:0, hp:3,
+                walking:false, t:0, ph:0, onGround:true, raub:true, imBulli:true,
+                beute:0, bandeNr:i, friedlich:false };
+    animals.push(r); raubBande.push(r);
+  }
+  toast('🚨🚐 EIN RÄUBER-BULLI RAST ZUR BANK! Eine ganze Räuberbande will den ' +
+        'Tresor ausräumen - halt sie auf! 😤', 6000);
+  blip(300,0.18); blip(240,0.18); blip(300,0.18);
+  return true;
+}
+// Die Räuber sitzen im Bulli und fahren mit
+function raubMitfahren() {
+  for (const a of raubLebende()) if (a.imBulli) {
+    a.x = raubBulli.x; a.z = raubBulli.z; a.y = raubBulli.y + 0.4;
+    a.walking = false; a.vy = 0;
+  }
+}
+function raubTick(dt) {
+  if (!raubLaeuft()) {                  // gerade kein Überfall: irgendwann kommt einer
+    raubPause -= dt;
+    if (raubPause <= 0) { raubPause = 150 + Math.random()*210; raubStarten(); }
+    return;
+  }
+  const b = raubBank, lebende = raubLebende();
+  // Der Bulli ist weg (z.B. abgeräumt)? Dann ist der Überfall vorbei.
+  if (!raubBulli || !animals.includes(raubBulli)) { raubAufraeumen(); return; }
+  // 🦸 ALLE Räuber besiegt: Jonah hat die Bank gerettet!
+  if (!lebende.length && raubPhase !== 'flucht') {
+    money += 30; gems += 2; updateFoodHUD();
+    for (let s=0; s<26; s++)
+      fireworks.push({x:raubBulli.x+(Math.random()-0.5)*4, y:raubBulli.y+1+Math.random()*3,
+        z:raubBulli.z+(Math.random()-0.5)*4, vx:(Math.random()-0.5)*4, vy:2+Math.random()*3,
+        vz:(Math.random()-0.5)*4, tile:[25,73,40,94][s%4], t:1.1});
+    for (const f of [523,659,784,1047]) blip(f,0.1);
+    toast('🦸🏦 BANKRAUB VERHINDERT! Du hast die ganze Räuberbande erwischt! ' +
+          'Das Dorf schenkt dir 30 € 💶 und 2 Diamanten 💎', 6500);
+    raubPhase = 'flucht'; raubT = 0; raubBulli.blink = false;
+    scheduleSave();
+    return;
+  }
+  raubT += dt;
+
+  if (raubPhase === 'anfahrt') {                    // 🚐 hinfahren
+    const rest = raubGehen(raubBulli, b.parkX+0.5, b.parkZ+0.5, 7, dt);
+    raubMitfahren();
+    if (rest < 1.2 || raubT > 30) {
+      raubPhase = 'parken'; raubT = 0; raubBulli.blink = true;
+      // sauber einparken: genau auf den geprüften freien Platz stellen
+      raubBulli.x = b.parkX+0.5; raubBulli.z = b.parkZ+0.5;
+      if (b.parkY !== undefined) raubBulli.y = b.parkY;
+      raubBulli.yaw = 0;                            // mit der Schnauze zur Straße: Fluchtauto!
+      blip(440,0.12); blip(330,0.12);
+      if (Math.hypot(player.x-b.parkX, player.z-b.parkZ) < 60)
+        toast('🚐 Der Bulli parkt vor der Bank und die Räuber steigen aus! 😱', 4500);
+    }
+    return;
+  }
+  if (raubPhase === 'parken') {                     // 🚪 aussteigen
+    raubMitfahren();
+    if (raubT > 2.2) {
+      lebende.forEach((a, i) => {
+        a.imBulli = false;
+        a.x = raubBulli.x + 1.4 + i*0.5; a.z = raubBulli.z + 1.2;
+        a.weg = [[b.tuerX+0.5, b.tuerZ-3.5], [b.tuerX+0.5, b.tuerZ+1.5],
+                 [b.tresorX+0.5, b.tresorZ+0.5]];
+        a.wegI = 0; a.zustand = 'rein';
+      });
+      raubPhase = 'einbruch'; raubT = 0;
+      blip(520,0.1); blip(390,0.14);
+    }
+    return;
+  }
+  if (raubPhase === 'einbruch') {                   // 💰 rein, klauen, raus
+    let alleWieder = true;
+    for (const a of lebende) {
+      if (a.imBulli) continue;
+      alleWieder = false;
+      const ziel = a.weg[a.wegI];
+      if (!ziel) continue;
+      const rest = raubGehen(a, ziel[0], ziel[1], 2.6, dt);
+      if (rest > 1.1) continue;
+      a.wegI++;
+      if (a.wegI < a.weg.length) continue;
+      if (a.zustand === 'rein') {                   // am Tresor angekommen!
+        a.beute = (a.beute||0) + RAUB_BEUTE_PRO;
+        a.zustand = 'raus';
+        a.weg = [[b.tuerX+0.5, b.tuerZ+1.5], [b.tuerX+0.5, b.tuerZ-3.5],
+                 [raubBulli.x, raubBulli.z + 1.2]];
+        a.wegI = 0;
+        sagen(a, 'Hehe, der Tresor! 💰', 2.5);
+        blip(880,0.07); blip(660,0.07);
+        if (Math.hypot(player.x-a.x, player.z-a.z) < 55)
+          toast('💰 Ein Räuber hat den Tresor geknackt! Hau ihn um, dann lässt er ' +
+                'die Beute fallen! 👊', 4500);
+      } else {                                      // wieder am Bulli: Beute rein
+        raubBeute += a.beute||0; a.beute = 0;
+        a.imBulli = true;
+      }
+    }
+    if (alleWieder || raubT > 95) {
+      raubPhase = 'flucht'; raubT = 0; raubBulli.blink = false;
+      if (raubBeute > 0)
+        toast('🚐💨 Die Bande braust mit ' + raubBeute + ' € Beute davon! ' +
+              'Beim nächsten Mal erwischst du sie! 😤', 5500);
+      blip(300,0.2); blip(240,0.2);
+    }
+    return;
+  }
+  if (raubPhase === 'flucht') {                     // 💨 abhauen und verschwinden
+    raubGehen(raubBulli, b.parkX+0.5, b.parkZ-60.5, 11, dt);
+    raubMitfahren();
+    if (raubT > 12 || Math.hypot(raubBulli.x-b.parkX, raubBulli.z-b.parkZ) > 45)
+      raubAufraeumen();
+  }
+}
+
 // ==================== ⚔️ DIE GROSSE SCHLACHT =================================
 // EINE einzige, richtig große Aufgabe: sieben Wellen Monster stürmen auf Jonah
 // zu und greifen ihn wirklich an. Nach jeder Welle wird es schlimmer - und ganz
@@ -12147,6 +12428,7 @@ function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der 
     if (a.type==='bagger') out.push({x:a.x, z:a.z, e:'🚜'});
     else if (a.type==='limo') out.push({x:a.x, z:a.z, e:'🚙'});
     else if (a.type==='bus') out.push({x:a.x, z:a.z, e:'🚌'});
+    else if (a.type==='bulli') out.push({x:a.x, z:a.z, e:'🚐'});   // der Räuber-Bulli!
     else if (a.type==='yacht' && !a.fremd) out.push({x:a.x, z:a.z, e:'🛥️'});
     else if (a.type==='uboot') out.push({x:a.x, z:a.z, e:'🟡'});
     else if (a.type==='roboter') out.push({x:a.x, z:a.z, e:'🤖'});
@@ -15846,6 +16128,7 @@ function frame(now) {
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
+  try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?

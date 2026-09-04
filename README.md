@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK (v207)! 🚐🏦 Manchmal tun sich mehrere
+  Räuber zu einer richtigen Bande zusammen. Dann kommt ihr Räuber-Bulli
+  angefahren - ein Kastenwagen mit Räuber-Streifen an der Seite und einer
+  Räubermaske hinten drauf. Er parkt mit Warnblinker direkt vor der Dorfbank,
+  die Schiebetür geht auf, und vier Räuber stürmen die Treppe hoch, durch das
+  Portal, quer durch die Schalterhalle bis zum Tresor. Jeder schnappt sich
+  Beute, rennt zurück zum Bulli - und dann brausen sie davon.
+  Jonah kann sie aufhalten! Wer einen Räuber umhaut, dem fällt die Beute aus
+  der Hand. Erwischt Jonah die GANZE Bande, ist der Bankraub verhindert und
+  das Dorf schenkt ihm 30 € 💶 und 2 Diamanten 💎 mit Feuerwerk.
+  Auf der Karte sieht man den 🚐 und die Diebe mit 💰. Überfälle gibt es nur
+  am Tag und nur ab und zu - Räuber sind eben Tagediebe.
+  Jede Dorfbank hat jetzt außerdem einen gepflasterten Vorplatz mit Laternen
+  zum Parken. Wo schon ein Dorfhaus steht, wird dabei nichts weggeräumt.
 - AUFGERÄUMTE KNÖPFE (v206)! 🎛️ Jonah hat gemeldet, dass die Knöpfe
   durcheinander waren: der Teleport-Knopf 🛸 lag genau auf dem 1×1-Knopf und
   der Schlacht-Knopf ⚔️ genau auf dem Wirbel-Knopf 🌀 - man hat immer den
