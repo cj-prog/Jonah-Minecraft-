@@ -221,6 +221,27 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE HALLE DER AUFGABEN (v208)! 🏟️🚩 Wenn alle Missionen geschafft sind,
+  erscheint neben dem ⚔️-Knopf ein zweiter Knopf: 🏟️. Ein Tipp darauf, und
+  Jonah wird in eine RIESIGE geschlossene Halle befördert - weit weg von der
+  normalen Welt, mit Boden, hohen Glasfenstern und Deckenlampen. Drinnen ist
+  immer ein anderer Parcours aufgebaut:
+  1. 🗼 Die Turm-Treppe - von Turm zu Turm springen, jeder ist einen Block höher
+  2. 🌉 Die schmalen Brücken - über schmale Stege, unten ist nur Wasser
+  3. 🪞 Das Glas-Labyrinth - den Weg bis in die Mitte finden
+  4. 🏝️ Die schwebenden Inseln - von Insel zu Insel springen
+  Ganz oben (oder ganz hinten) steht auf einem goldenen Podest die 🚩 FAHNE.
+  Antippen - dann hat Jonah sie in der Hand! Damit muss er wieder zurück und
+  auf das goldene 🟨 Ziel-Feld beim Eingang. Geschafft: 40 € 💶, 1 Diamant 💎,
+  ein Feuerwerk - und sofort wird das nächste Level aufgebaut. Und so weiter,
+  immer schwerer, ohne Ende.
+  Wer runterfällt, landet einfach wieder am Start - nichts geht kaputt.
+  In der Halle stört auch niemand: keine Monster, keine Bankräuber.
+  Mit dem 🚪-Knopf geht es jederzeit zurück, genau an die Stelle, wo Jonah
+  vorher stand. Das erreichte Level wird gespeichert.
+  Damit die Halle immer FAIR bleibt, rechnet ein Test nach, wie hoch (1,41
+  Blöcke) und wie weit (2,3 Blöcke) Jonah wirklich springen kann - und prüft
+  für die ersten zwölf Level, dass jedes Podest auch wirklich erreichbar ist.
 - DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK (v207)! 🚐🏦 Manchmal tun sich mehrere
   Räuber zu einer richtigen Bande zusammen. Dann kommt ihr Räuber-Bulli
   angefahren - ein Kastenwagen mit Räuber-Streifen an der Seite und einer
