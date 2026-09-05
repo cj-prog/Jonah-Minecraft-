@@ -676,7 +676,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 209 &middot; Halle repariert: scharfe Wände, Zeitlimit, Kämpfe und kein Schummeln! 🏟️⏱️⚔️</p>
+    Version 210 &middot; DAS HOLODECK: weiße Halle, roter Knopf, Laser und Seil-Schaukel! 🤍🔴🪢</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -722,7 +722,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 209;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 210;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -760,7 +760,9 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       THRON=93,                         // 🪑 DER KÖNIGSTHRON: draufsetzen und befehlen!
       ANZUG=94, RAUMLUKE=95, RAUMLUKE_AUF=96,   // 👨‍🚀 Anzug, 🚪 Luke zu und Luke offen
       SURFBRETT=97,                     // 🏄 das Surfbrett für Wasser UND Lava!
-      FAHNE=98, ZIEL=99;                // 🚩 die Fahne und 🟨 das Ziel-Feld in der Halle
+      FAHNE=98, ZIEL=99,                // 🚩 die Fahne und 🟨 das Ziel-Feld in der Halle
+      HOLOKNOPF=100,                    // 🔴 der große rote Startknopf an der Hallenwand
+      SEIL=101;                         // 🪢 ein Seil von der Decke: antippen = schwingen!
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1003,6 +1005,17 @@ const BLOCKS = {
     [0.4,0.98,0.4, 0.6,1.06,0.6, 30, 1.7]] },           // goldene Spitze
   // 🟨 DAS ZIEL-FELD: hier muss die Fahne hin
   [ZIEL]: { name:'Ziel-Feld 🎯', tiles:[30,30,30], solid:true },
+  // 🔴 DER STARTKNOPF an der Wand der weißen Halle: antippen = Programm starten
+  // Die Wand liegt bei kleinem z, der Raum bei großem z - der rote Knopf muss
+  // also nach VORNE (großes z) herausragen, sonst verdeckt ihn seine Platte.
+  [HOLOKNOPF]: { name:'Start-Knopf 🔴 (antippen = das nächste Level laden!)',
+    tiles:[49,49,49], solid:false, model:[
+    [0.05,0.05,0.0, 0.95,0.95,0.2, 55],                 // dunkle Platte an der Wand
+    [0.24,0.24,0.2, 0.76,0.76,0.66, 25],                // der große rote Knopf
+    [0.32,0.32,0.66, 0.68,0.68,0.74, 25, 1.9]] },       // vorne leuchtet er
+  // 🪢 EIN SEIL von der Decke: antippen und rüberschwingen!
+  [SEIL]: { name:'Seil 🪢 (antippen = rüberschwingen!)', tiles:[3,3,3], solid:false, model:[
+    [0.44,0,0.44, 0.56,1,0.56, 3, 0.85]] },
   // Fitnessgeräte: Sport machen! 💪
   [HANTEL]: { name:'Hantel 💪 (antippen = Krafttraining!)', tiles:[55,55,55], solid:false, model:[
     [0.2,0.1,0.44, 0.8,0.2,0.56, 3],                    // Stange
@@ -1194,14 +1207,28 @@ const HALLE_SOCKEL = 3;                     // so dick ist der Boden (mehr brauc
                                             // es nicht - darunter ist einfach Luft,
                                             // sonst wäre die Halle riesig schwer)
 const HALLE_Y = 70;                         // auf dieser Höhe steht man drin
+// 🏟️ DIE PROGRAMME DES HOLODECKS.
+// "landschaft" heißt: die Wände erzeugen eine ganze Landschaft drumherum, damit
+// es sich anfühlt, als wäre Jonah wirklich draußen. Ohne "landschaft" bleibt
+// der weiße Raum weiß und die Aufgabe wird direkt aus Wänden und Boden gebaut.
 const HALLE_LEVELS = [
-  { name:'Die Turm-Treppe',      tipp:'Spring von Turm zu Turm bis ganz nach oben!' },
-  { name:'Die schmalen Brücken', tipp:'Balanciere über die schmalen Brücken - ins Wasser fallen ist nicht schlimm!' },
-  { name:'Das Glas-Labyrinth',   tipp:'Finde den Weg durch das Labyrinth bis in die Mitte!' },
-  { name:'Die schwebenden Inseln', tipp:'Spring von Insel zu Insel!' },
-  { name:'Die Kampf-Arena',      tipp:'Besiege ERST alle Wächter - dann erscheint die Fahne!', arena:true },
+  { typ:'tuerme',    name:'Die Turm-Treppe',        landschaft:true,
+    tipp:'Spring von Turm zu Turm bis ganz nach oben!' },
+  { typ:'bruecken',  name:'Die schmalen Brücken',   landschaft:true,
+    tipp:'Balanciere über die schmalen Brücken - ins Wasser fallen ist nicht schlimm!' },
+  { typ:'laser',     name:'Der Laser-Gang',
+    tipp:'Weich den roten Laserstrahlen aus! Sie gehen im Takt an und aus.' },
+  { typ:'labyrinth', name:'Das Glas-Labyrinth',
+    tipp:'Finde den Weg durch das Labyrinth bis in die Mitte!' },
+  { typ:'seile',     name:'Die Seil-Schaukel',      landschaft:true,
+    tipp:'Tipp die Seile an und schwing dich über die Lavagrube!' },
+  { typ:'inseln',    name:'Die schwebenden Inseln', landschaft:true,
+    tipp:'Spring von Insel zu Insel!' },
+  { typ:'arena',     name:'Die Kampf-Arena',        arena:true,
+    tipp:'Besiege ERST alle Wächter - dann erscheint die Fahne!' },
 ];
 let halleAn = false;        // ist Jonah gerade drin?
+let halleProgramm = false;  // läuft gerade ein Level, oder ist die Halle noch weiß?
 let halleLevel = 0;         // das wievielte Level (zählt immer weiter hoch)
 let halleFahne = false;     // hat er die Fahne in der Hand?
 let halleHeim = null;       // wo stand er vorher? {x,y,z,dim}
@@ -1211,6 +1238,9 @@ let halleZeit = 0;          // ⏱️ so viele Sekunden bleiben noch
 let halleLimit = 0;         // so viel Zeit gab es für dieses Level
 let halleWachenDa = 0;      // wie viele Wächter waren es am Anfang?
 let halleSchummelT = 0;     // damit die Warnung nicht dauernd kommt
+let halleTrefferT = 0;      // kurze Pause nach einem Laser-Treffer
+
+function halleArt() { return HALLE_LEVELS[halleLevel % HALLE_LEVELS.length]; }
 
 // ⏱️ Wie viel Zeit gibt es für dieses Level? Je weiter hinten, desto knapper -
 // aber nie unter einer guten halben Minute, damit es fair bleibt.
@@ -1232,9 +1262,11 @@ function halleWachen() {
   if (halleLevel < 4) return 0;         // die ersten vier Level bleiben friedlich
   return Math.min(5, stufe);
 }
-function halleWaechter() { return animals.filter(a => a.halle); }
+// Nur die KÄMPFENDEN Wächter - die Laserstrahlen tragen auch a.halle,
+// zählen aber natürlich nicht als Gegner, die man besiegen könnte.
+function halleWaechter() { return animals.filter(a => a.halle === 'wache'); }
 function halleWachenWeg() {
-  for (const a of halleWaechter()) { const i = animals.indexOf(a); if (i>=0) animals.splice(i,1); }
+  for (let i=animals.length-1; i>=0; i--) if (animals[i].halle === 'wache') animals.splice(i,1);
 }
 // Die Fahne liegt erst bereit, wenn in der Kampf-Arena alle Wächter besiegt sind
 function halleFahneBereit() {
@@ -1275,12 +1307,13 @@ const HALLE_ABSTAND = 4;                // Abstand der Podest-Mitten: bei 3x3-Po
                                         // Jonah nicht mehr hinüber - der Test rechnet
                                         // das nach!)
 let halleCacheLvl = -1, halleCache = null;
+let halleFeld = new Map(), halleSeilFeld = new Set();
 function halleParcours() {
   if (halleCacheLvl === halleLevel && halleCache) return halleCache;
   const stufe = Math.floor(halleLevel/HALLE_LEVELS.length);
-  const art = halleLevel % HALLE_LEVELS.length;
+  const typ = halleArt().typ;
   const mx = HALLE_W>>1, mz = HALLE_D>>1, p = [];
-  if (art === 0) {                      // 🗼 DIE TURM-TREPPE
+  if (typ === 'tuerme') {               // 🗼 DIE TURM-TREPPE
     const proReihe = 12, n = Math.min(24, 12 + stufe*4);
     for (let i=0; i<n; i++) {
       const reihe = Math.floor(i/proReihe), sp = i%proReihe;
@@ -1288,12 +1321,24 @@ function halleParcours() {
       p.push({ x: 10 + c*HALLE_ABSTAND, y: HALLE_Y + 1 + i*HALLE_STEIG,
                z: 16 + reihe*HALLE_ABSTAND, r: 1, turm: true });
     }
-  } else if (art === 1) {               // 🌉 DIE SCHMALEN BRÜCKEN (Podest am Ende)
+  } else if (typ === 'bruecken') {      // 🌉 DIE SCHMALEN BRÜCKEN (Podest am Ende)
     p.push({ x: mx, y: HALLE_Y+1, z: HALLE_D-8, r: 2 });
-  } else if (art === 2) {               // 🪞 DAS GLAS-LABYRINTH (Podest in der Mitte)
+  } else if (typ === 'labyrinth') {     // 🪞 DAS GLAS-LABYRINTH (Podest in der Mitte)
     p.push({ x: mx, y: HALLE_Y+1, z: HALLE_D>>1, r: 1 });
-  } else if (art === 4) {               // ⚔️ DIE KAMPF-ARENA (Podest in der Mitte)
+  } else if (typ === 'arena') {         // ⚔️ DIE KAMPF-ARENA (Podest in der Mitte)
     p.push({ x: mx, y: HALLE_Y+1, z: mz, r: 2, turm: true });   // nur EINEN Block hoch!
+  } else if (typ === 'laser') {         // 🔴 DER LASER-GANG (Podest ganz hinten)
+    p.push({ x: mx, y: HALLE_Y+1, z: HALLE_D-8, r: 2, turm: true });
+  } else if (typ === 'seile') {         // 🪢 DIE SEIL-SCHAUKEL
+    // Über der Lava schweben kleine Podeste, über jedem hängt ein Seil.
+    // Der Abstand ist mit Absicht ZU GROSS zum Springen (5 Blöcke Mitte zu
+    // Mitte = 3 Blöcke Lücke, gesprungen schafft man nur 2,96) - Jonah MUSS
+    // also die Seile benutzen. Der Schwung trägt ihn gut 5,9 Blöcke weit.
+    for (const [sx,sz] of halleSeilOrte())
+      p.push({ x: sx, y: HALLE_Y+1, z: sz, r: 1, schwung: true });
+    // Auch der letzte Sprung aufs Zielpodest muss ein SCHWUNG sein - sonst
+    // wäre das letzte Seil überflüssig (genau das hat der Test gemeldet).
+    p.push({ x: mx, y: HALLE_Y+1, z: HALLE_D-9, r: 2, turm: true });
   } else {                              // 🏝️ DIE SCHWEBENDEN INSELN
     const proReihe = 10, n = 10 + stufe*2;   // später kommen mehr Inseln dazu
     const schritt = HALLE_ABSTAND;
@@ -1304,55 +1349,95 @@ function halleParcours() {
                z: 16 + reihe*schritt, r: 1 });
     }
   }
+  // 🔎 Nachschlagetabelle: welches Podest steht auf welchem Feld? Ohne die
+  // müsste halleBlock für JEDEN einzelnen Block alle Podeste durchgehen -
+  // beim Aufbauen der Halle sind das Millionen Vergleiche.
+  halleFeld = new Map();
+  for (let i=0; i<p.length; i++) {
+    const q = p[i];
+    q.letztes = i === p.length-1;
+    for (let dx=-q.r; dx<=q.r; dx++) for (let dz=-q.r; dz<=q.r; dz++)
+      halleFeld.set((q.x+dx) + ',' + (q.z+dz), q);
+  }
+  halleSeilFeld = new Set();
+  if (typ === 'seile') for (const s of halleSeilOrte()) halleSeilFeld.add(s[0]+','+s[1]);
   halleCacheLvl = halleLevel; halleCache = p;
   return p;
+}
+// Wo hängt der rote Startknopf? Immer an derselben Wand, gleich neben dem
+// Ziel-Feld - so findet Jonah ihn sofort wieder.
+function halleKnopfOrt() {
+  return [HALLE_X + (HALLE_W>>1) + 3, HALLE_Y + 1, HALLE_Z];
 }
 // Welcher Block steht an dieser Stelle IN der Halle? (lx/lz von 0 bis HALLE_W)
 function halleBlock(lx, ly, lz) {
   const rand = lx < 0 || lz < 0 || lx >= HALLE_W || lz >= HALLE_D;
   const stufe = Math.floor(halleLevel/HALLE_LEVELS.length);   // wie oft schon durch?
-  const art = halleLevel % HALLE_LEVELS.length;
+  const l = halleArt(), typ = l.typ;
   const mx = HALLE_W>>1, mz = HALLE_D>>1;
+  // 🤍 RUHEZUSTAND: solange kein Programm läuft, ist die Halle einfach WEISS.
+  const weiss = !halleProgramm;
   if (ly < HALLE_Y-HALLE_SOCKEL) return AIR;               // darunter: nichts
+
+  // ---- Hülle: Boden, Wände, Decke -----------------------------------------
   if (ly === HALLE_Y-1 && !rand) {                        // der Hallenboden
+    if (weiss) return WOOL;
     // 🌉 Bei den schmalen Brücken ist der Boden WASSER: runterfallen tut nicht
     // weh, man klettert einfach wieder heraus. Nur das Ziel-Feld bleibt trocken.
-    if (art === 1 && !(Math.abs(lx-mx) <= 2 && lz >= 2 && lz <= 8)) return WATER;
-    return BRICK;
+    if (typ === 'bruecken' && !(Math.abs(lx-mx) <= 2 && lz >= 2 && lz <= 8)) return WATER;
+    // 🌋 Bei der Seil-Schaukel ist in der Mitte eine LAVAGRUBE
+    if (typ === 'seile' && lz >= 14 && lz <= HALLE_D-14) return LAVA;
+    return l.landschaft ? GRASS : WOOL;   // Landschaft: Gras. Sonst: weiß.
   }
   if (rand) {                                             // Wände rundherum
     if (ly < HALLE_Y-1) return STONE;
-    if (ly <= HALLE_Y+HALLE_H) {
-      // hohe Fenster, damit es drinnen hell und freundlich ist
-      const hoch = ly-HALLE_Y;
-      if (hoch > 3 && hoch < HALLE_H-3 && ((lx+lz) % 6 < 3)) return GLASS;
-      return STONE;
+    if (ly > HALLE_Y+HALLE_H) return AIR;
+    if (weiss) return WOOL;                               // ganz weiße Halle
+    // Landschafts-Programme: unten grüne "Ferne", oben heller Himmel-Dunst.
+    // So sieht es aus, als ginge die Landschaft einfach weiter, statt dass man
+    // vor einer Wand steht.
+    if (l.landschaft) {
+      const hoch = ly - HALLE_Y;
+      if (hoch <= 1) return GRASS;                        // die Wiese läuft weiter
+      if (hoch <= 3) return LEAF;                         // Büsche am Horizont
+      return WOOL;                                        // heller Dunst darüber
     }
-    return AIR;
+    return WOOL;
   }
   if (ly < HALLE_Y-1) return STONE;                        // der dünne Sockel
-  if (ly === HALLE_Y+HALLE_H) return STONE;                // die Decke
+  if (ly === HALLE_Y+HALLE_H) return weiss || !l.landschaft ? WOOL : GLASS;  // Decke
   if (ly > HALLE_Y+HALLE_H) return AIR;
   // Lampen unter der Decke
   if (ly === HALLE_Y+HALLE_H-1 && lx%8===4 && lz%8===4) return TORCH;
+
+  // 🔴 Der große rote Startknopf hängt an der Wand
+  const [kx,ky,kz] = halleKnopfOrt();
+  if (HALLE_X+lx === kx && ly === ky && HALLE_Z+lz === kz) return HOLOKNOPF;
+
+  if (weiss) return AIR;                  // im Ruhezustand steht sonst nichts drin
+
   // 🟨 Das Ziel-Feld liegt immer gleich beim Eingang
   if (ly === HALLE_Y-1 && Math.abs(lx-mx) <= 1 && lz >= 3 && lz <= 5) return ZIEL;
 
+  halleParcours();                        // sorgt dafür, dass die Tabellen stimmen
+  const feld = lx + ',' + lz;
+
+  // 🪢 Die Seile hängen GENAU über den Podesten - darum müssen sie vor den
+  // Podesten drankommen, sonst würden die sie wieder wegradieren.
+  if (ly >= HALLE_Y+4 && ly <= HALLE_Y+9 && halleSeilFeld.has(feld)) return SEIL;
+
   // Die Podeste des Parcours: Türme stehen bis auf den Boden, Inseln schweben
-  const bahn = halleParcours();
-  for (let i=0; i<bahn.length; i++) {
-    const p = bahn[i];
-    if (Math.abs(lx-p.x) > p.r || Math.abs(lz-p.z) > p.r) continue;
-    const letztes = i === bahn.length-1;
+  const p = halleFeld.get(feld);
+  if (p) {
     if (p.turm) {                         // ein Turm bis hinunter zum Boden
-      if (ly < p.y) return letztes ? GOLD : PLANK;
+      if (ly < p.y) return p.letztes ? GOLD : PLANK;
     } else {                              // eine schwebende Platte
-      if (ly === p.y-1) return letztes ? GOLD : PLANK;
+      if (ly === p.y-1) return p.letztes ? GOLD : PLANK;
     }
     return AIR;
   }
 
-  if (art === 4) {                        // ⚔️ DIE KAMPF-ARENA: Säulen zum Verstecken
+  if (typ === 'arena') {                  // ⚔️ DIE KAMPF-ARENA: Säulen zum Verstecken
     if (ly > HALLE_Y+2) return AIR;
     const sx2 = (lx-8) % 12, sz2 = (lz-8) % 12;
     if (lx >= 8 && lz >= 8 && lx < HALLE_W-8 && lz < HALLE_D-8 &&
@@ -1360,8 +1445,7 @@ function halleBlock(lx, ly, lz) {
         !(Math.abs(lx-mx) <= 5 && Math.abs(lz-mz) <= 5)) return STONE;
     return AIR;
   }
-  if (art === 1) {                        // 🌉 DIE SCHMALEN BRÜCKEN
-    if (ly === HALLE_Y-1) return WATER;   // unten Wasser: fallen tut nicht weh
+  if (typ === 'bruecken') {               // 🌉 DIE SCHMALEN BRÜCKEN
     if (ly !== HALLE_Y) return AIR;
     const bahnen = 4 + stufe;
     const schrittZ = Math.floor((HALLE_D-24)/bahnen);
@@ -1376,7 +1460,7 @@ function halleBlock(lx, ly, lz) {
     if (lx === mx && lz >= 4 && lz <= 12) return PLANK;
     return AIR;
   }
-  if (art === 2) {                        // 🪞 DAS GLAS-LABYRINTH
+  if (typ === 'labyrinth') {              // 🪞 DAS GLAS-LABYRINTH
     if (ly > HALLE_Y+2) return AIR;
     if (lx < 4 || lz < 4 || lx >= HALLE_W-4 || lz >= HALLE_D-4) return AIR;
     const zelle = 4;
@@ -1387,7 +1471,29 @@ function halleBlock(lx, ly, lz) {
     if (wandX || wandZ) return GLASS;
     return AIR;
   }
+  if (typ === 'laser') {                  // 🔴 DER LASER-GANG
+    // Ein gerader Gang mit Wänden links und rechts - die Strahler sitzen
+    // in den Wänden (die Strahlen selbst sind keine Blöcke, sondern werden
+    // gezeichnet, damit die Halle nicht dauernd neu gebaut werden muss).
+    if (ly > HALLE_Y+3) return AIR;
+    if (lz < 8 || lz > HALLE_D-10) return AIR;
+    if (Math.abs(lx-mx) === 6) return WOOL;              // die Gangwände
+    return AIR;
+  }
+  if (typ === 'seile') {                  // 🪢 DIE SEIL-SCHAUKEL
+    // ein Anlauf-Steg vom Eingang bis an den Rand der Lavagrube
+    if (ly === HALLE_Y && lx >= mx-3 && lx <= mx+3 && lz >= 4 && lz <= 13) return GRASS;
+    return AIR;
+  }
   return AIR;
+}
+// 🪢 Wo hängen die Seile? Der Abstand ist so gewählt, dass Jonah mit einem
+// Schwung genau bis zum nächsten Seil kommt (siehe halleSchwingen).
+const HALLE_SEIL_WEIT = 5;
+function halleSeilOrte() {
+  const mx = HALLE_W>>1, orte = [];
+  for (let z = 16; z <= HALLE_D-16; z += HALLE_SEIL_WEIT) orte.push([mx, z]);
+  return orte;
 }
 // Wo sitzt in diesem Level die Fahne? Immer auf dem LETZTEN Podest - so kann
 // sie nie irgendwo in der Luft hängen.
@@ -1409,17 +1515,19 @@ function genHalleChunk(cx, cz, ohneEdits) {
       if (b !== AIR) data[bidx(lx2,y,lz2)] = b;
     }
   }
-  // die Fahne steht dort, wo sie hingehört - aber nur, wenn Jonah sie noch
-  // nicht eingesammelt hat
-  if (!halleFahne && halleFahneBereit()) {
-    const [fx,fy,fz] = halleFahnenOrt();
-    const flx = fx-x0, flz = fz-z0;
-    if (flx>=0 && flx<CS && flz>=0 && flz<CS) data[bidx(flx,fy,flz)] = FAHNE;
-  }
-  const [zx,zy,zz] = halleZielOrt();      // das Ziel-Feld leuchtet golden
-  for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++) {
-    const zlx = zx+dx-x0, zlz = zz+dz-z0;
-    if (zlx>=0 && zlx<CS && zlz>=0 && zlz<CS) data[bidx(zlx,zy-1,zlz)] = ZIEL;
+  if (halleProgramm) {                     // nur wenn ein Level läuft
+    // die Fahne steht dort, wo sie hingehört - aber nur, wenn Jonah sie noch
+    // nicht eingesammelt hat
+    if (!halleFahne && halleFahneBereit()) {
+      const [fx,fy,fz] = halleFahnenOrt();
+      const flx = fx-x0, flz = fz-z0;
+      if (flx>=0 && flx<CS && flz>=0 && flz<CS) data[bidx(flx,fy,flz)] = FAHNE;
+    }
+    const [zx,zy,zz] = halleZielOrt();     // das Ziel-Feld leuchtet golden
+    for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++) {
+      const zlx = zx+dx-x0, zlz = zz+dz-z0;
+      if (zlx>=0 && zlx<CS && zlz>=0 && zlz<CS) data[bidx(zlx,zy-1,zlz)] = ZIEL;
+    }
   }
   const e = ohneEdits ? null : edits.get(ckey(cx,cz));
   if (e) for (const [i,v] of e) data[i] = v;
@@ -1450,15 +1558,38 @@ function halleStart() {
   halleHeim = { x:player.x, y:player.y, z:player.z, dim:weltDim };
   if (weltDim !== 0) weltWechsel(0);
   halleAn = true; halleT = 0;
-  halleLevelStarten(true);
-  halleKnopf();
-  const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
-  toast('🏟️ WILLKOMMEN IN DER HALLE DER AUFGABEN! Level ' + (halleLevel+1) + ': ' +
-        l.name + ' - ' + l.tipp +
-        ' Hol die 🚩 Fahne und bring sie auf das goldene 🟨 Ziel-Feld - ' +
-        'und zwar in ' + Math.round(halleLimit) + ' Sekunden! ⏱️ ' +
-        'Fliegen gilt nicht. Mit dem 🚪-Knopf kommst du jederzeit heraus.', 12000);
+  halleProgramm = false;                  // erst mal ganz weiß und still
+  halleFahne = false; halleZeit = 0;
+  halleWachenWeg(); halleLaserWeg();
+  halleNeuBauen();
+  halleHinstellen();
+  halleKnopf(); missAnzeige();
+  toast('🏟️ WILLKOMMEN IN DER HALLE! Alles ist weiß und leer. ' +
+        'Rechts an der Wand ist ein großer roter Knopf 🔴 - tipp ihn an, ' +
+        'dann baut die Halle dein nächstes Level auf! ' +
+        'Mit dem 🚪-Knopf kommst du jederzeit wieder heraus.', 11000);
   for (const f of [523,659,784]) blip(f,0.12);
+}
+// 🔴 Der rote Knopf an der Wand: das Programm läuft los!
+function halleProgrammStarten() {
+  if (!halleAn || halleProgramm) return;
+  halleProgramm = true;
+  halleLevelStarten(true);
+  const l = halleArt();
+  toast('🏟️✨ PROGRAMM LÄUFT! Level ' + (halleLevel+1) + ': ' + l.name + ' - ' +
+        l.tipp + ' Hol die 🚩 Fahne und bring sie auf das goldene 🟨 Ziel-Feld - ' +
+        'und zwar in ' + Math.round(halleLimit) + ' Sekunden! ⏱️ Fliegen gilt nicht.', 12000);
+  for (const f of [392,523,659,784]) blip(f,0.1);
+  shake = Math.max(shake, 0.3);
+}
+// Zurück in den weißen Ruhezustand (nach einem geschafften Level)
+function halleRuhe() {
+  halleProgramm = false;
+  halleFahne = false; halleZeit = 0;
+  halleWachenWeg(); halleLaserWeg();
+  halleNeuBauen();
+  halleHinstellen();
+  missAnzeige();
 }
 function halleHinstellen() {              // Jonah an den Start stellen
   const [zx,zy,zz] = halleZielOrt();
@@ -1468,6 +1599,50 @@ function halleHinstellen() {              // Jonah an den Start stellen
   balloonT = 0;                           // 🎈 auch der Ballon zählt als Schummeln
   player.x = zx + 0.5; player.z = zz - 2.5; player.y = HALLE_Y;
   player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
+}
+// 🔴 DIE LASERSTRAHLEN. Sie sind KEINE Blöcke, sondern werden als Figuren
+// gezeichnet - sonst müsste die halbe Halle jedes Mal neu gebaut werden, wenn
+// ein Strahl an- oder ausgeht. Jeder Strahl geht im eigenen Takt an und aus.
+function halleLaser() { return animals.filter(a => a.halle === 'laser'); }
+function halleLaserWeg() {
+  for (const a of halleLaser()) { const i = animals.indexOf(a); if (i>=0) animals.splice(i,1); }
+}
+function halleLaserSetzen() {
+  halleLaserWeg();
+  if (halleArt().typ !== 'laser') return;
+  const stufe = Math.floor(halleLevel/HALLE_LEVELS.length);
+  const mx = HALLE_X + (HALLE_W>>1);
+  const vonZ = HALLE_Z + 12, bisZ = HALLE_Z + HALLE_D - 14;
+  const abstand = Math.max(3, 5 - Math.min(2, stufe));   // später stehen sie enger
+  let i = 0;
+  for (let z = vonZ; z <= bisZ; z += abstand, i++) {
+    animals.push({ type:'laser', halle:'laser', x: mx+0.5, y: HALLE_Y + (i%2 ? 0.6 : 1.6),
+                   z: z+0.5, yaw:0, vy:0, hp:99, walking:false, t:0, ph:0,
+                   laenge: 5.5,                       // reicht von Wand zu Wand
+                   takt: 1.6 + (i%3)*0.35,            // jeder blinkt anders
+                   phase: (i*0.7) % 2, an: true });
+  }
+}
+// Ist der Strahl gerade an?
+function halleLaserAn(a) {
+  return ((halleT + a.phase*a.takt) % (a.takt*2)) < a.takt;
+}
+// 🪢 Der Seil-Schwung: antippen und in Blickrichtung nach vorne katapultiert
+// werden. Die Wurfweite passt genau zum Seil-Abstand (siehe HALLE_SEIL_WEIT).
+function halleSchwingen(x, y, z) {
+  const dx = player.x - (x+0.5), dz = player.z - (z+0.5);
+  if (Math.hypot(dx, dz) > 3.2) {
+    toast('🪢 Geh noch ein Stückchen näher ans Seil heran! ', 2500);
+    return;
+  }
+  // in Blickrichtung nach vorne (yaw = 0 schaut nach -z)
+  const vx = Math.sin(yaw), vz = -Math.cos(yaw);
+  const tempo = HALLE_SEIL_WEIT * 1.55;   // reicht bis zum nächsten Seil
+  player.vy = 9.5;
+  player.kx = vx * tempo; player.kz = vz * tempo;
+  player.onGround = false;
+  blip(660,0.08); blip(880,0.1);
+  toast('🪢 Wusch! Schwing weiter zum nächsten Seil! 🎯', 2200);
 }
 // ⚔️ Die Wächter der Halle: sie greifen Jonah wirklich an. Sie bekommen die
 // Schlacht-Markierung, damit sie ihn aus jeder Entfernung suchen, am Tag nicht
@@ -1492,7 +1667,7 @@ function halleWachenSetzen() {
       if (collideBox(x, HALLE_Y, z, 0.5, 2)) continue;
       animals.push({ type:typ, x, y:HALLE_Y, z, yaw:Math.random()*Math.PI*2,
                      vy:0, kx:0, kz:0, hp, walking:false, t:Math.random()*2, ph:0,
-                     onGround:false, schlacht:true, halle:true, friedlich:false });
+                     onGround:false, schlacht:true, halle:'wache', friedlich:false });
       gesetzt++;
       break;
     }
@@ -1513,14 +1688,15 @@ function halleLevelStarten(neuAufbauen) {
     ensureData(fx>>4, fz>>4);
     if (getBlock(fx,fy,fz) === FAHNE) setBlock(fx, fy, fz, AIR);
   }
+  halleLaserSetzen();
   halleLimit = halleZeitLimit();
   halleZeit = halleLimit;
   missAnzeige();
 }
 function halleEnde() {
   if (!halleAn) return;
-  halleAn = false; halleFahne = false;
-  halleWachenWeg();                       // die Wächter bleiben in der Halle
+  halleAn = false; halleProgramm = false; halleFahne = false;
+  halleWachenWeg(); halleLaserWeg();      // Wächter und Laser bleiben in der Halle
   halleZeit = 0;
   if (halleHeim) {
     if (halleHeim.dim !== weltDim) weltWechsel(halleHeim.dim);
@@ -1554,11 +1730,14 @@ function halleGeschafft() {
       vz:(Math.random()-0.5)*5, tile:[25,73,40,94,30][s%5], t:1.3});
   for (const f of [523,659,784,1047,1319]) blip(f,0.1);
   const naechste = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
-  halleLevelStarten(true);
+  // Nach jedem Level wird die Halle wieder ganz weiß - und Jonah drückt selbst
+  // auf den roten Knopf, wenn er bereit fürs nächste Programm ist.
+  halleRuhe();
   toast('🏆 LEVEL ' + halleLevel + ' GESCHAFFT! +' + (40+restZeit) + ' € 💶 ' +
         '(40 plus ' + restZeit + ' € Zeit-Bonus!) +1 Diamant 💎  ' +
-        'Jetzt kommt Level ' + (halleLevel+1) + ': ' + naechste.name + ' - ' +
-        naechste.tipp + ' Zeit: ' + Math.round(halleLimit) + ' Sekunden ⏱️', 10000);
+        'Die Halle ist wieder weiß. Wenn du bereit bist, tipp den roten Knopf 🔴 ' +
+        'an der Wand an - dann kommt Level ' + (halleLevel+1) + ': ' +
+        naechste.name + '!', 11000);
   scheduleSave();
 }
 function halleTick(dt) {
@@ -1583,6 +1762,37 @@ function halleTick(dt) {
   }
   // Wer aus der Halle fällt, kommt einfach zurück an den Start
   if (player.y < HALLE_Y-6) { halleHinstellen(); blip(220,0.12); return; }
+  if (!halleProgramm) return;             // die weiße Halle: nur der Knopf wartet
+
+  // 🌋 In die Lavagrube gefallen? In der Halle tut das NICHT weh - man wird
+  // einfach zurück an den Start gestellt.
+  const fussB = getBlock(Math.floor(player.x), Math.floor(player.y+0.2), Math.floor(player.z));
+  if (fussB === LAVA) {
+    lavaHurtT = 0;
+    toast('🌋 Plumps! In der Halle ist das nicht schlimm - nochmal von vorn! 💪', 3500);
+    blip(220,0.14);
+    halleHinstellen();
+    return;
+  }
+
+  // 🔴 DIE LASERSTRAHLEN: erwischt einer Jonah, geht es zurück zum Anfang
+  halleTrefferT -= dt;
+  if (halleTrefferT <= 0) {
+    for (const a of halleLaser()) {
+      if (!halleLaserAn(a)) continue;
+      // Der Strahl läuft in x-Richtung: passt Jonah in Höhe und Tiefe hinein?
+      if (Math.abs(player.z - a.z) > 0.5) continue;
+      if (Math.abs(player.x - a.x) > a.laenge/2) continue;
+      if (player.y + 1.7 < a.y - 0.25 || player.y > a.y + 0.25) continue;
+      halleTrefferT = 1.5;
+      toast('🔴 Erwischt! Der Laser hat dich getroffen - zurück zum Anfang. ' +
+            'Warte, bis der Strahl ausgeht! 😜', 4000);
+      blip(180,0.14); blip(120,0.16);
+      shake = Math.max(shake, 0.35);
+      halleHinstellen();
+      return;
+    }
+  }
 
   // ⚔️ In der Kampf-Arena erscheint die Fahne erst, wenn alle Wächter weg sind
   if (halleWachenDa > 0 && !halleFahne) {
@@ -5546,6 +5756,7 @@ const ANIMAL_KIND = {
   limo:     { speed:0,   half:0.7,  height:1.3,  tile:3,  face:3  },
   bus:      { speed:3.0, half:0.9,  height:2.6,  tile:73, face:73 },
   bulli:    { speed:0,   half:0.85, height:2.0,  tile:3,  face:3  },   // 🚐 der Räuber-Bulli
+  laser:    { speed:0,   half:0.1,  height:0.2,  tile:25, face:25 },   // 🔴 ein Laserstrahl
   bagger:   { speed:0,   half:1.5,  height:2.8,  tile:53, face:53 },
   heli:     { speed:0,   half:0.9,  height:1.6,  tile:25, face:25 },
   dragon:   { speed:0,   half:0.95, height:1.8,  tile:53, face:53 },
@@ -6645,6 +6856,7 @@ function updateAnimals(dt) {
     if (a===riding || a===carRiding) continue;   // wird gerade vom Spieler gesteuert
     if (a.type==='kabine') continue;     // 🛗 die Kabine fährt in liftTick()
     if (a.raub) continue;                // 🚐 die Räuberbande steuert raubTick()
+    if (a.halle === 'laser') continue;   // 🔴 Laserstrahlen hängen fest in der Luft
     if (a.type==='ball') {              // der Fußball: rollt, hüpft, fliegt! ⚽
       const dx=a.x-player.x, dz=a.z-player.z, dp=Math.hypot(dx,dz);
       if (dp<0.85 && Math.abs(player.y-a.y)<1.7) {       // Reinlaufen = Kick!
@@ -7486,6 +7698,13 @@ function drawAnimals() {
       pushBox(arr,a, -0.35,1.35,-2.5, 0.34,0.44,0.24, 40);
       pushBox(arr,a, -0.35,1.7,-2.5, 0.3,0.3,0.3, 22, 23);
       pushBox(arr,a, -0.35,1.88,-2.5, 0.36,0.1,0.36, 42);
+    } else if (a.type==='laser') {                                 // 🔴 EIN LASERSTRAHL
+      const an = halleLaserAn(a);
+      // ACHTUNG: der letzte Wert von pushBox ist eine KACHEL, keine Helligkeit!
+      const dick = an ? 0.18 : 0.04;                               // aus = nur ein Fädchen
+      pushBox(arr,a, -a.laenge/2,0,0, 0.22,0.34,0.34, 55);         // Strahler links
+      pushBox(arr,a,  a.laenge/2,0,0, 0.22,0.34,0.34, 55);         // Strahler rechts
+      pushBox(arr,a, 0,0,0, a.laenge, dick, dick, an ? 25 : 55);
     } else if (a.type==='bulli') {                                 // 🚐 DER RÄUBER-BULLI
       pushBox(arr,a, 0,1.0,0, 1.05,1.3,3.1, 3);                    // dunkler Kasten
       pushBox(arr,a, 0,1.7,0.3, 1.0,0.14,2.4, 55);                 // Dach
@@ -11130,9 +11349,15 @@ let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
   const el = document.getElementById('missBox'), tx = document.getElementById('missText');
   if (!el) return;
+  if (halleAn && !halleProgramm) {      // 🤍 die weiße Halle wartet auf den Knopf
+    el.style.display = 'flex';
+    tx.textContent = '🏟️ DIE WEISSE HALLE · Tipp den roten Knopf 🔴 an der Wand an - ' +
+      'dann baut sie Level ' + (halleLevel+1) + ' auf: ' + halleArt().name;
+    return;
+  }
   if (halleAn) {                        // 🏟️ Jonah übt gerade in der Halle
     el.style.display = 'flex';
-    const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
+    const l = halleArt();
     const wachen = halleWaechter().length;
     tx.textContent = '🏟️ HALLE · Level ' + (halleLevel+1) + ': ' + l.name +
       ' · ⏱️ ' + Math.ceil(Math.max(0, halleZeit)) + ' s' +
@@ -15623,6 +15848,14 @@ function doPlace(dir) {
   }
   if (hit.block===FAHNE) {                // 🚩 die Fahne aus der Halle mitnehmen!
     halleFahneNehmen(hit.x, hit.y, hit.z);
+    return;
+  }
+  if (hit.block===HOLOKNOPF) {            // 🔴 der Startknopf an der Hallenwand
+    halleProgrammStarten();
+    return;
+  }
+  if (hit.block===SEIL) {                 // 🪢 am Seil rüberschwingen!
+    halleSchwingen(hit.x, hit.y, hit.z);
     return;
   }
   if (hit.block===KRONE && HOTBAR_ITEMS[selSlot]!==KRONE) {
