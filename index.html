@@ -676,7 +676,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 208 &middot; DIE HALLE DER AUFGABEN: Level für Level ein neuer Parcours! 🏟️🚩</p>
+    Version 209 &middot; Halle repariert: scharfe Wände, Zeitlimit, Kämpfe und kein Schummeln! 🏟️⏱️⚔️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -722,7 +722,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 208;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 209;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1183,7 +1183,11 @@ function terrainHeight(x, z) {
 // Immer gilt: die 🚩 Fahne holen und aufs 🟨 Ziel-Feld bringen. Dann kommt das
 // nächste Level. Weil die Halle GEBAUT wird wie Gelände (und nicht als
 // Änderungen gespeichert), kostet sie keinen Speicherplatz.
-const HALLE_X = 500000, HALLE_Z = 500000;   // so weit weg kommt Jonah nie hin
+// Weit weg - aber NICHT zu weit! Die Bilder werden mit 32-Bit-Kommazahlen
+// gerechnet. Bei 500000 Blöcken Entfernung ist die Genauigkeit nur noch
+// 0,06 Blöcke - dann zittern und verschwimmen Wände und Boden. Bei 20000
+// sind es 0,002 Blöcke, und alles steht gestochen scharf.
+const HALLE_X = 20000, HALLE_Z = 20000;
 const HALLE_W = 72, HALLE_D = 72;           // Innenmaß der Halle
 const HALLE_H = 30;                         // wie hoch die Halle ist
 const HALLE_SOCKEL = 3;                     // so dick ist der Boden (mehr braucht
@@ -1194,7 +1198,8 @@ const HALLE_LEVELS = [
   { name:'Die Turm-Treppe',      tipp:'Spring von Turm zu Turm bis ganz nach oben!' },
   { name:'Die schmalen Brücken', tipp:'Balanciere über die schmalen Brücken - ins Wasser fallen ist nicht schlimm!' },
   { name:'Das Glas-Labyrinth',   tipp:'Finde den Weg durch das Labyrinth bis in die Mitte!' },
-  { name:'Die schwebenden Inseln', tipp:'Spring von Insel zu Insel - die Lücken werden größer!' },
+  { name:'Die schwebenden Inseln', tipp:'Spring von Insel zu Insel!' },
+  { name:'Die Kampf-Arena',      tipp:'Besiege ERST alle Wächter - dann erscheint die Fahne!', arena:true },
 ];
 let halleAn = false;        // ist Jonah gerade drin?
 let halleLevel = 0;         // das wievielte Level (zählt immer weiter hoch)
@@ -1202,13 +1207,54 @@ let halleFahne = false;     // hat er die Fahne in der Hand?
 let halleHeim = null;       // wo stand er vorher? {x,y,z,dim}
 let halleBest = 0;          // das höchste jemals geschaffte Level (wird gespeichert)
 let halleT = 0;
+let halleZeit = 0;          // ⏱️ so viele Sekunden bleiben noch
+let halleLimit = 0;         // so viel Zeit gab es für dieses Level
+let halleWachenDa = 0;      // wie viele Wächter waren es am Anfang?
+let halleSchummelT = 0;     // damit die Warnung nicht dauernd kommt
+
+// ⏱️ Wie viel Zeit gibt es für dieses Level? Je weiter hinten, desto knapper -
+// aber nie unter einer guten halben Minute, damit es fair bleibt.
+function halleZeitLimit() {
+  const stufe = Math.floor(halleLevel/HALLE_LEVELS.length);
+  const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
+  const podeste = halleParcours().length;
+  const grund = (l.arena ? 90 : 55) + podeste*4 + halleWachen()*8;
+  // Je öfter Jonah schon durch ist, desto knapper wird die Zeit - aber nie
+  // unter 35 Sekunden, damit es fair bleibt.
+  return Math.max(35, Math.round(grund * (1 - Math.min(0.5, stufe*0.09))));
+}
+// ⚔️ Wie viele Wächter kämpfen in diesem Level mit? Am Anfang keine, später
+// immer mehr - und in der Kampf-Arena sind es besonders viele.
+function halleWachen() {
+  const stufe = Math.floor(halleLevel/HALLE_LEVELS.length);
+  const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
+  if (l.arena) return Math.min(10, 3 + stufe*2);
+  if (halleLevel < 4) return 0;         // die ersten vier Level bleiben friedlich
+  return Math.min(5, stufe);
+}
+function halleWaechter() { return animals.filter(a => a.halle); }
+function halleWachenWeg() {
+  for (const a of halleWaechter()) { const i = animals.indexOf(a); if (i>=0) animals.splice(i,1); }
+}
+// Die Fahne liegt erst bereit, wenn in der Kampf-Arena alle Wächter besiegt sind
+function halleFahneBereit() {
+  const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
+  return !l.arena || halleWaechter().length === 0;
+}
 
 function inHalleGebiet(x, z) {
   return x >= HALLE_X-3 && x < HALLE_X+HALLE_W+3 &&
          z >= HALLE_Z-3 && z < HALLE_Z+HALLE_D+3;
 }
+// ACHTUNG: hier muss das GANZE Chunk-Rechteck gegen das Hallen-Rechteck
+// geprüft werden. Früher wurden nur zwei gegenüberliegende Ecken getestet -
+// dadurch fehlten an den Hallen-Ecken die Wände (man konnte hinauslaufen!)
+// und beim Level-Wechsel wurden nicht alle Chunks neu gebaut (die Fahne
+// blieb verschwunden).
 function halleChunk(cx, cz) {
-  return inHalleGebiet(cx*CS, cz*CS) || inHalleGebiet(cx*CS+CS-1, cz*CS+CS-1);
+  const x0 = cx*CS, z0 = cz*CS, x1 = x0+CS-1, z1 = z0+CS-1;
+  return x1 >= HALLE_X-3 && x0 <= HALLE_X+HALLE_W+3 &&
+         z1 >= HALLE_Z-3 && z0 <= HALLE_Z+HALLE_D+3;
 }
 // Damit die Türme jedes Level anders stehen, aber immer gleich bleiben,
 // solange man im selben Level ist:
@@ -1233,7 +1279,7 @@ function halleParcours() {
   if (halleCacheLvl === halleLevel && halleCache) return halleCache;
   const stufe = Math.floor(halleLevel/HALLE_LEVELS.length);
   const art = halleLevel % HALLE_LEVELS.length;
-  const mx = HALLE_W>>1, p = [];
+  const mx = HALLE_W>>1, mz = HALLE_D>>1, p = [];
   if (art === 0) {                      // 🗼 DIE TURM-TREPPE
     const proReihe = 12, n = Math.min(24, 12 + stufe*4);
     for (let i=0; i<n; i++) {
@@ -1246,6 +1292,8 @@ function halleParcours() {
     p.push({ x: mx, y: HALLE_Y+1, z: HALLE_D-8, r: 2 });
   } else if (art === 2) {               // 🪞 DAS GLAS-LABYRINTH (Podest in der Mitte)
     p.push({ x: mx, y: HALLE_Y+1, z: HALLE_D>>1, r: 1 });
+  } else if (art === 4) {               // ⚔️ DIE KAMPF-ARENA (Podest in der Mitte)
+    p.push({ x: mx, y: HALLE_Y+1, z: mz, r: 2, turm: true });   // nur EINEN Block hoch!
   } else {                              // 🏝️ DIE SCHWEBENDEN INSELN
     const proReihe = 10, n = 10 + stufe*2;   // später kommen mehr Inseln dazu
     const schritt = HALLE_ABSTAND;
@@ -1304,6 +1352,14 @@ function halleBlock(lx, ly, lz) {
     return AIR;
   }
 
+  if (art === 4) {                        // ⚔️ DIE KAMPF-ARENA: Säulen zum Verstecken
+    if (ly > HALLE_Y+2) return AIR;
+    const sx2 = (lx-8) % 12, sz2 = (lz-8) % 12;
+    if (lx >= 8 && lz >= 8 && lx < HALLE_W-8 && lz < HALLE_D-8 &&
+        sx2 >= 0 && sx2 <= 1 && sz2 >= 0 && sz2 <= 1 &&
+        !(Math.abs(lx-mx) <= 5 && Math.abs(lz-mz) <= 5)) return STONE;
+    return AIR;
+  }
   if (art === 1) {                        // 🌉 DIE SCHMALEN BRÜCKEN
     if (ly === HALLE_Y-1) return WATER;   // unten Wasser: fallen tut nicht weh
     if (ly !== HALLE_Y) return AIR;
@@ -1355,7 +1411,7 @@ function genHalleChunk(cx, cz, ohneEdits) {
   }
   // die Fahne steht dort, wo sie hingehört - aber nur, wenn Jonah sie noch
   // nicht eingesammelt hat
-  if (!halleFahne) {
+  if (!halleFahne && halleFahneBereit()) {
     const [fx,fy,fz] = halleFahnenOrt();
     const flx = fx-x0, flz = fz-z0;
     if (flx>=0 && flx<CS && flz>=0 && flz<CS) data[bidx(flx,fy,flz)] = FAHNE;
@@ -1369,25 +1425,39 @@ function genHalleChunk(cx, cz, ohneEdits) {
   if (e) for (const [i,v] of e) data[i] = v;
   return data;
 }
-// Die Halle neu aufbauen (nach einem Level-Wechsel)
+// Die Halle neu aufbauen (nach einem Level-Wechsel).
+// Dabei werden auch alle Änderungen in der Halle gelöscht: sonst bliebe das
+// Loch von der letzten Fahne für immer stehen - und Jonah könnte sich auch
+// einfach eine Treppe bauen und alles wegbaggern.
 function halleNeuBauen() {
+  for (const [k, v] of [...edits]) {
+    const p = k.split(',');
+    if (halleChunk(+p[0], +p[1])) edits.delete(k);
+  }
   for (const ch of [...chunks.values()]) {
     if (halleChunk(ch.cx, ch.cz)) freeChunk(ch);
   }
 }
 function halleStart() {
   if (halleAn) { halleEnde(); return; }
+  // Während der großen Schlacht geht es nicht - sonst würden die Monster
+  // hinter Jonah her in die Halle nachgeholt.
+  if (schlachtLaeuft) {
+    toast('⚔️ Erst die große Schlacht zu Ende bringen (oder mit 🛑 abbrechen) - ' +
+          'dann geht es in die Halle! 🏟️', 5000);
+    return;
+  }
   halleHeim = { x:player.x, y:player.y, z:player.z, dim:weltDim };
   if (weltDim !== 0) weltWechsel(0);
-  halleAn = true; halleFahne = false; halleT = 0;
-  halleNeuBauen();
-  halleHinstellen();
-  halleKnopf(); missAnzeige();
+  halleAn = true; halleT = 0;
+  halleLevelStarten(true);
+  halleKnopf();
+  const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
   toast('🏟️ WILLKOMMEN IN DER HALLE DER AUFGABEN! Level ' + (halleLevel+1) + ': ' +
-        HALLE_LEVELS[halleLevel % HALLE_LEVELS.length].name + ' - ' +
-        HALLE_LEVELS[halleLevel % HALLE_LEVELS.length].tipp +
-        ' Hol die 🚩 Fahne und bring sie auf das goldene 🟨 Ziel-Feld! ' +
-        'Mit dem 🚪-Knopf kommst du jederzeit wieder heraus.', 11000);
+        l.name + ' - ' + l.tipp +
+        ' Hol die 🚩 Fahne und bring sie auf das goldene 🟨 Ziel-Feld - ' +
+        'und zwar in ' + Math.round(halleLimit) + ' Sekunden! ⏱️ ' +
+        'Fliegen gilt nicht. Mit dem 🚪-Knopf kommst du jederzeit heraus.', 12000);
   for (const f of [523,659,784]) blip(f,0.12);
 }
 function halleHinstellen() {              // Jonah an den Start stellen
@@ -1395,12 +1465,63 @@ function halleHinstellen() {              // Jonah an den Start stellen
   for (let cx=(zx-24)>>4; cx<=(zx+24)>>4; cx++)
     for (let cz=(zz-8)>>4; cz<=(zz+40)>>4; cz++) ensureData(cx,cz);
   if (flying) toggleFly();
+  balloonT = 0;                           // 🎈 auch der Ballon zählt als Schummeln
   player.x = zx + 0.5; player.z = zz - 2.5; player.y = HALLE_Y;
   player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
+}
+// ⚔️ Die Wächter der Halle: sie greifen Jonah wirklich an. Sie bekommen die
+// Schlacht-Markierung, damit sie ihn aus jeder Entfernung suchen, am Tag nicht
+// versteinern und nicht verschwinden - und dazu ihre eigene Halle-Markierung,
+// damit wir sie beim Level-Wechsel wieder einsammeln können.
+function halleWachenSetzen() {
+  halleWachenWeg();
+  const n = halleWachen();
+  if (!n) { halleWachenDa = 0; return; }
+  const [zx,zy,zz] = halleZielOrt();
+  const mx = HALLE_X + (HALLE_W>>1), mz = HALLE_Z + (HALLE_D>>1);
+  let gesetzt = 0;
+  for (let i=0; i<n; i++) {
+    const typ = i%4===3 ? 'riese' : i%3===0 ? 'raeuber' : 'zombie';
+    const hp  = typ==='riese' ? 10 : typ==='raeuber' ? 5 : 4;
+    for (let v=0; v<40; v++) {            // einen freien Platz suchen
+      const ang = Math.random()*Math.PI*2, d = 10 + Math.random()*18;
+      const x = mx + Math.cos(ang)*d, z = mz + Math.sin(ang)*d;
+      if (x < HALLE_X+3 || x > HALLE_X+HALLE_W-3) continue;
+      if (z < HALLE_Z+3 || z > HALLE_Z+HALLE_D-3) continue;
+      if (Math.hypot(x-zx, z-zz) < 12) continue;   // nicht direkt am Start
+      if (collideBox(x, HALLE_Y, z, 0.5, 2)) continue;
+      animals.push({ type:typ, x, y:HALLE_Y, z, yaw:Math.random()*Math.PI*2,
+                     vy:0, kx:0, kz:0, hp, walking:false, t:Math.random()*2, ph:0,
+                     onGround:false, schlacht:true, halle:true, friedlich:false });
+      gesetzt++;
+      break;
+    }
+  }
+  halleWachenDa = gesetzt;
+}
+// Ein Level (neu) starten: bauen, hinstellen, Wächter setzen, Uhr stellen
+function halleLevelStarten(neuAufbauen) {
+  halleFahne = false;
+  if (neuAufbauen) halleNeuBauen();
+  halleHinstellen();
+  halleWachenSetzen();
+  // In der Kampf-Arena muss die Fahne noch weg: die Chunks werden beim
+  // Hinstellen gebaut, da stehen die Wächter noch gar nicht. Darum hier
+  // nochmal nachsehen - so kann Jonah sie nie vorher schnappen.
+  if (!halleFahneBereit()) {
+    const [fx,fy,fz] = halleFahnenOrt();
+    ensureData(fx>>4, fz>>4);
+    if (getBlock(fx,fy,fz) === FAHNE) setBlock(fx, fy, fz, AIR);
+  }
+  halleLimit = halleZeitLimit();
+  halleZeit = halleLimit;
+  missAnzeige();
 }
 function halleEnde() {
   if (!halleAn) return;
   halleAn = false; halleFahne = false;
+  halleWachenWeg();                       // die Wächter bleiben in der Halle
+  halleZeit = 0;
   if (halleHeim) {
     if (halleHeim.dim !== weltDim) weltWechsel(halleHeim.dim);
     ensureData(Math.floor(halleHeim.x)>>4, Math.floor(halleHeim.z)>>4);
@@ -1422,28 +1543,79 @@ function halleFahneNehmen(x, y, z) {
         'goldene 🟨 Ziel-Feld beim Eingang! 🏃', 6000);
 }
 function halleGeschafft() {
+  const restZeit = Math.max(0, Math.round(halleZeit));
   halleLevel++;
   if (halleLevel > halleBest) halleBest = halleLevel;
   halleFahne = false;
-  money += 40; gems += 1; updateFoodHUD();
+  money += 40 + restZeit; gems += 1; updateFoodHUD();   // ⏱️ schnell sein lohnt sich!
   for (let s=0; s<40; s++)
     fireworks.push({x:player.x+(Math.random()-0.5)*5, y:player.y+1+Math.random()*5,
       z:player.z+(Math.random()-0.5)*5, vx:(Math.random()-0.5)*5, vy:2+Math.random()*4,
       vz:(Math.random()-0.5)*5, tile:[25,73,40,94,30][s%5], t:1.3});
   for (const f of [523,659,784,1047,1319]) blip(f,0.1);
   const naechste = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
-  toast('🏆 LEVEL ' + halleLevel + ' GESCHAFFT! +40 € 💶 +1 Diamant 💎  ' +
+  halleLevelStarten(true);
+  toast('🏆 LEVEL ' + halleLevel + ' GESCHAFFT! +' + (40+restZeit) + ' € 💶 ' +
+        '(40 plus ' + restZeit + ' € Zeit-Bonus!) +1 Diamant 💎  ' +
         'Jetzt kommt Level ' + (halleLevel+1) + ': ' + naechste.name + ' - ' +
-        naechste.tipp, 9000);
-  halleNeuBauen();
-  halleHinstellen();
-  missAnzeige(); scheduleSave();
+        naechste.tipp + ' Zeit: ' + Math.round(halleLimit) + ' Sekunden ⏱️', 10000);
+  scheduleSave();
 }
 function halleTick(dt) {
   if (!halleAn) return;
   halleT += dt;
+  // 🚫 KEIN SCHUMMELN: In der Halle wird nicht geflogen und nicht geschwebt.
+  // Wer es doch versucht, wird sofort erwischt und fängt das Level neu an.
+  halleSchummelT -= dt;
+  if (flying || balloonT > 0) {
+    if (flying) toggleFly();
+    balloonT = 0;
+    if (halleSchummelT <= 0) {
+      halleSchummelT = 3;
+      toast('🚫 Kein Schummeln! In der Halle wird geklettert und gesprungen, ' +
+            'nicht geflogen. Zurück an den Start! 😜', 4500);
+      blip(200,0.16); blip(150,0.18);
+    }
+    halleFahne = false;                   // die Fahne kommt zurück auf ihren Platz
+    halleNeuBauen(); halleHinstellen();
+    missAnzeige();
+    return;
+  }
   // Wer aus der Halle fällt, kommt einfach zurück an den Start
   if (player.y < HALLE_Y-6) { halleHinstellen(); blip(220,0.12); return; }
+
+  // ⚔️ In der Kampf-Arena erscheint die Fahne erst, wenn alle Wächter weg sind
+  if (halleWachenDa > 0 && !halleFahne) {
+    const jetzt = halleWaechter().length;
+    if (jetzt === 0) {
+      halleWachenDa = 0;
+      const [fx,fy,fz] = halleFahnenOrt();
+      if (getBlock(fx,fy,fz) !== FAHNE) setBlock(fx, fy, fz, FAHNE);
+      toast('⚔️✅ Alle Wächter besiegt! Jetzt ist die 🚩 Fahne da - hol sie dir!', 5000);
+      for (const f of [523,659,784]) blip(f,0.1);
+      missAnzeige();
+    }
+  }
+
+  // ⏱️ Die Uhr läuft
+  if (halleZeit > 0) {
+    const vorher = Math.ceil(halleZeit);
+    halleZeit -= dt;
+    const jetzt = Math.ceil(halleZeit);
+    if (jetzt !== vorher) {
+      missAnzeige();
+      if (jetzt <= 5 && jetzt > 0) blip(880, 0.06);     // die letzten Sekunden ticken
+    }
+    if (halleZeit <= 0) {                 // Zeit um - aber ganz ohne Strafe!
+      halleZeit = 0;
+      toast('⏱️ Die Zeit ist um! Halb so wild - das Level fängt einfach ' +
+            'nochmal von vorne an. Du schaffst das! 💪', 5500);
+      blip(300,0.2); blip(220,0.24);
+      halleLevelStarten(true);
+      return;
+    }
+  }
+
   if (!halleFahne) return;
   const [zx,zy,zz] = halleZielOrt();      // mit der Fahne aufs Ziel-Feld!
   if (Math.abs(player.x-(zx+0.5)) <= 2 && Math.abs(player.z-(zz+0.5)) <= 2 &&
@@ -5842,6 +6014,14 @@ let wfSoundT = 0;                       // Wasserfall-Rauschen-Takt
 let downHeld = false;
 
 function toggleFly() {
+  // 🏟️🚫 In der Halle der Aufgaben wird nicht geflogen - sonst könnte man
+  // ja einfach über das Labyrinth und die Türme drüberschweben.
+  if (halleAn && !flying) {
+    toast('🚫 In der Halle gilt Fliegen nicht! Hier musst du wirklich ' +
+          'springen und klettern. 💪', 3500);
+    blip(200,0.12);
+    return;
+  }
   if (roboterRiding) {                  // 🤖🚀 DER FLIEGENDE RIESEN-ROBOTER!
     const r = roboterRiding;
     r.flug = !r.flug;
@@ -9448,7 +9628,10 @@ function shopBuy(what) {
     if (w===7) { money += 2;   toast('🎁 Im Paket waren: 💶 2 Euro zurück!', 3200); }
     blip(659,0.07); blip(880,0.09);
   }
-  if (what==='balloon') { balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800); }
+  if (what==='balloon') {
+    if (halleAn) { toast('🚫 In der Halle gilt Schweben nicht - hier zählt nur echtes Springen! 💪', 3500); return; }
+    balloonT = 30; toast('🎈 Luftballon! 30 Sekunden lang schwebst du ganz sanft – spring von etwas Hohem!', 3800);
+  }
   if (what==='fw') { launchFirework(); toast('🎆 Feuerwerk! Schau in den Himmel!', 3000); }
   if (what==='ball') {
     animals.push({type:'ball', own:true, x:player.x+Math.sin(yaw)*2.5, y:player.y+1.5,
@@ -10853,6 +11036,11 @@ function schlachtWelleStarten() {
 }
 function schlachtStart() {
   if (!schlachtOffen()) return;
+  if (halleAn) {                        // 🏟️ nicht mitten in der Halle!
+    toast('🏟️ Erst mit dem 🚪-Knopf aus der Halle heraus - dann kann die ' +
+          'große Schlacht losgehen! ⚔️', 5000);
+    return;
+  }
   if (schlachtLaeuft) { schlachtAbbrechen(); return; }
   schlachtLaeuft = true; schlachtWelle = 1; schlachtPause = 0;
   toast('⚔️🔥 DIE GROSSE SCHLACHT BEGINNT! Halte durch - ' + SCHLACHT_WELLEN.length +
@@ -10945,9 +11133,13 @@ function missAnzeige() {
   if (halleAn) {                        // 🏟️ Jonah übt gerade in der Halle
     el.style.display = 'flex';
     const l = HALLE_LEVELS[halleLevel % HALLE_LEVELS.length];
-    tx.textContent = '🏟️ HALLE · Level ' + (halleLevel+1) + ': ' + l.name + ' · ' +
+    const wachen = halleWaechter().length;
+    tx.textContent = '🏟️ HALLE · Level ' + (halleLevel+1) + ': ' + l.name +
+      ' · ⏱️ ' + Math.ceil(Math.max(0, halleZeit)) + ' s' +
+      (wachen ? ' · ⚔️ noch ' + wachen + ' Wächter!' : '') + ' · ' +
       (halleFahne ? '🚩 Du hast die Fahne! Schnell aufs goldene 🟨 Ziel-Feld!'
-                  : 'Hol die 🚩 Fahne!');
+       : wachen && l.arena ? 'Besiege erst alle Wächter!'
+       : 'Hol die 🚩 Fahne!');
     return;
   }
   if (missIdx >= MISSIONEN.length) {    // ⚔️ jetzt wartet DIE GROSSE SCHLACHT

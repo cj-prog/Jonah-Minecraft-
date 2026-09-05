@@ -221,6 +221,35 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE HALLE WIRD RICHTIG GUT (v209)! 🏟️⏱️⚔️ Jonah hat gespielt und drei
+  Fehler gefunden - alle drei sind weg:
+  * Die Wände, das Glas und der Boden haben gezittert und verschwommen
+    ausgesehen. Grund: die Halle stand 500.000 Blöcke weit weg, und so weit
+    draußen können die 32-Bit-Kommazahlen im Bild nur noch auf 0,06 Blöcke
+    genau rechnen. Jetzt steht die Halle bei 20.000 - da sind es 0,004
+    Blöcke, und alles ist gestochen scharf.
+  * An den Ecken fehlten die Wände, man konnte hinauslaufen und fiel in ein
+    tiefes Loch. Grund: beim Prüfen, welche Chunks zur Halle gehören, wurden
+    nur zwei gegenüberliegende Ecken getestet. Jetzt wird das ganze Rechteck
+    geprüft - rundherum ist alles dicht.
+  * Nach vier Leveln fing es von vorne an und die Fahne war weg. Das war
+    derselbe Fehler: die Chunks mit der Fahne wurden beim Level-Wechsel gar
+    nicht neu gebaut. Ein Test spielt jetzt zehn Level durch und schaut nach.
+  Und das ist neu dazugekommen:
+  * ⏱️ ZEITLIMIT: Für jedes Level läuft eine Uhr (oben in der Anzeige). Wer
+    es rechtzeitig schafft, bekommt für jede übrige Sekunde 1 € extra! Läuft
+    die Zeit ab, passiert nichts Schlimmes - das Level fängt einfach neu an.
+  * 🚫 KEIN SCHUMMELN: In der Halle kann man nicht mehr fliegen und nicht
+    schweben. Wer es doch schafft, wird sofort erwischt und muss von vorne
+    anfangen. Auch selbstgebaute Treppen verschwinden beim Level-Wechsel.
+  * ⚔️ KÄMPFE: Ab Level 5 sind Wächter in der Halle, die Jonah wirklich
+    angreifen - und es werden immer mehr. Ganz neu ist die KAMPF-ARENA (jedes
+    fünfte Level): dort erscheint die Fahne erst, wenn ALLE Wächter besiegt
+    sind. Säulen zum Verstecken gibt es auch.
+  * 📈 IMMER SCHWERER: Mehr Türme, mehr Inseln, mehr Wächter - und die Zeit
+    pro Podest wird von Runde zu Runde knapper.
+  Ein Test rechnet weiterhin nach, dass Jonah jedes Podest der ersten zwanzig
+  Level wirklich erspringen kann.
 - DIE HALLE DER AUFGABEN (v208)! 🏟️🚩 Wenn alle Missionen geschafft sind,
   erscheint neben dem ⚔️-Knopf ein zweiter Knopf: 🏟️. Ein Tipp darauf, und
   Jonah wird in eine RIESIGE geschlossene Halle befördert - weit weg von der
