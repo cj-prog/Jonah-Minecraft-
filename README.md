@@ -221,6 +221,30 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS HOLODECK (v210)! 🤍🔴 Jonah wollte es genau so: Wenn er den
+  🏟️-Knopf drückt, steht er in einer GANZ WEISSEN Halle aus Wolle - Boden,
+  Wände, Decke, alles weiß und leer. An der Wand hängt ein großer roter
+  Knopf 🔴. Erst wenn er den antippt, baut die Halle das Level auf. Nach
+  jedem geschafften Level wird sie wieder weiß, und er drückt selbst, wenn
+  er bereit für das nächste ist.
+  Die Wände \"erzeugen\" bei den Landschafts-Programmen eine Landschaft:
+  unten läuft die Wiese in der Wand weiter, darüber stehen Büsche, und ganz
+  oben ist heller Dunst. So läuft man nicht mehr gegen eine kahle graue
+  Wand, sondern es sieht aus, als ginge es einfach weiter.
+  Zwei nagelneue Programme sind dazugekommen - genau Jonahs Ideen:
+  * 🔴 DER LASER-GANG: In einem Gang schießen rote Laserstrahlen aus den
+    Wänden, mal höher, mal tiefer, und jeder blinkt in seinem eigenen Takt.
+    Wer getroffen wird, muss von vorne anfangen - also abwarten und im
+    richtigen Moment durchflitzen!
+  * 🪢 DIE SEIL-SCHAUKEL: Über einer riesigen Lavagrube schweben kleine
+    Podeste, über jedem hängt ein Seil von der Decke. Antippen - und Jonah
+    schwingt zum nächsten Podest. Die Lücken sind mit Absicht 3 Blöcke
+    breit: springen schafft nur 2,96 Blöcke, ein Schwung trägt 5,9. Man MUSS
+    also die Seile benutzen. In die Lava fallen tut in der Halle nicht weh -
+    man steht einfach wieder am Anfang.
+  Damit sind es jetzt sieben Programme, die sich abwechseln: Turm-Treppe,
+  schmale Brücken, Laser-Gang, Glas-Labyrinth, Seil-Schaukel, schwebende
+  Inseln und die Kampf-Arena.
 - DIE HALLE WIRD RICHTIG GUT (v209)! 🏟️⏱️⚔️ Jonah hat gespielt und drei
   Fehler gefunden - alle drei sind weg:
   * Die Wände, das Glas und der Boden haben gezittert und verschwommen
