@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JEDES LEVEL SIEHT ANDERS AUS (v212)! 🎲🎨 Weil ja seit v211 jeder Besuch
+  bei Level 1 anfängt, war es vorher immer dasselbe. Jetzt wird bei jedem
+  Besuch UND bei jedem roten Knopfdruck neu gewürfelt:
+  * 🔀 Die REIHENFOLGE der sieben Programme wird gemischt - mal fängt es mit
+    dem Laser-Gang an, mal mit der Kampf-Arena, mal mit den Inseln.
+  * 🎨 Jedes Level bekommt eins von fünf THEMEN: Wiese 🌱, Schneeland ❄️,
+    Wüste 🏜️, Vulkan 🌋 oder Ziegelstadt 🧱. Das färbt den Boden, den
+    Horizont in den Wänden UND die Podeste. Der Name steht oben in der
+    Anzeige.
+  * 🏗️ Auch der AUFBAU wird gewürfelt: mal 8, mal 12 Türme pro Reihe, mal
+    von links, mal von rechts, die Treppe steht woanders in der Halle, die
+    Inseln steigen mal flacher, mal steiler, es gibt mehr oder weniger
+    Brücken, die Laser stehen enger oder weiter und auf drei verschiedenen
+    Höhen - und das Ziel liegt jedes Mal woanders.
+  Ein Test würfelt 200 Zufalls-Level durch und rechnet für jedes einzelne
+  nach, dass Jonah wirklich jedes Podest erreichen kann und nichts in der
+  Wand steckt. Außerdem prüft er, dass acht Besuche hintereinander acht
+  verschiedene Level 1 ergeben.
 - JEDER BESUCH FÄNGT VON VORNE AN (v211)! 🔁🏅 Jonahs Wunsch: Wer die Halle
   verlässt und später wieder hineingeht, muss die Level wieder von vorne
   machen. Genau so ist es jetzt - der 🚪-Knopf beendet den Lauf, und beim
