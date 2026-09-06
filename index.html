@@ -50,7 +50,7 @@
     background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
   /* alle Raster-Knöpfe sind gleich groß */
   #modeBtn, #rideBtn, #fireBtn, #flyBtn, #rufBtn, #faustBtn, #superBtn, #kroneBtn,
-  #zepterBtn, #groesseBtn, #tpBtn, #schlachtBtn, #halleBtn, #brushBtn, #lassoBtn {
+  #zepterBtn, #groesseBtn, #tpBtn, #schlachtBtn, #halleBtn, #msgrBtn, #brushBtn, #lassoBtn {
     width:var(--bs); height:var(--bs); }
   #jumpBtn { right:calc(18px + env(safe-area-inset-right)); bottom:calc(78px + env(safe-area-inset-bottom)); width:64px; height:64px; font-size:30px; }
   #bowBtn  { right:calc(94px + env(safe-area-inset-right)); bottom:calc(82px + env(safe-area-inset-bottom)); width:54px; height:54px; font-size:26px; display:none; }
@@ -170,6 +170,51 @@
   #repBtn.on { background:rgba(255,170,80,.55); }
   #lookBtn { right:calc(462px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top)); width:40px; height:40px; font-size:20px; }
   #lookBtn.on { background:rgba(255,150,220,.5); }
+  /* 📱 DER FREUNDE-MESSENGER: dieselben Freunde wie in der Englisch-App */
+  #msgrBtn { right:calc(var(--c3) + env(safe-area-inset-right));
+    bottom:calc(var(--r5) + env(safe-area-inset-bottom));
+    font-size:24px; background:rgba(80,200,120,.45);
+    border-color:rgba(190,255,210,.75); }
+  #msgrPunkt { position:absolute; top:-3px; right:-3px; min-width:18px; height:18px;
+    border-radius:9px; background:#e03a3a; color:#fff; font-size:11px; font-weight:bold;
+    display:none; align-items:center; justify-content:center; padding:0 4px; }
+  #msgrBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; gap:8px; background:rgba(12,24,40,.97); padding:12px;
+    border-radius:16px; color:#fff; z-index:46; width:min(94vw,430px);
+    max-height:88vh; }
+  #msgrBox h3 { font-size:17px; text-align:center; margin:0; }
+  #msgrListe { display:flex; flex-direction:column; gap:6px; overflow-y:auto; max-height:56vh; }
+  .msgrZeile { display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.1);
+    border:none; border-radius:12px; padding:8px 10px; color:#fff; text-align:left;
+    font-size:14px; cursor:pointer; }
+  .msgrZeile.neu { background:rgba(90,220,130,.28); }
+  .msgrAva { width:38px; height:38px; border-radius:50%; flex:none; font-size:22px;
+    display:flex; align-items:center; justify-content:center; }
+  .msgrName { font-weight:bold; font-size:15px; }
+  .msgrVor { font-size:12px; opacity:.8; display:block; max-width:250px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #msgrChat { display:none; flex-direction:column; gap:7px; }
+  #msgrVerlauf { display:flex; flex-direction:column; gap:8px; overflow-y:auto;
+    max-height:44vh; padding:2px; }
+  .msgrBlase { max-width:88%; padding:8px 11px; border-radius:14px; font-size:14px;
+    line-height:1.35; }
+  .msgrBlase.f { background:rgba(255,255,255,.16); align-self:flex-start; }
+  .msgrBlase.k { background:rgba(90,170,255,.35); align-self:flex-end; }
+  .msgrDe { display:block; font-size:11px; opacity:.75; margin-top:4px; }
+  .msgrWerkzeug { display:flex; gap:5px; margin-top:5px; }
+  .msgrMini { font-size:11px; padding:3px 7px; border-radius:7px; border:none;
+    background:rgba(255,255,255,.22); color:#fff; cursor:pointer; }
+  #msgrHilfen { display:flex; flex-direction:column; gap:5px; }
+  .msgrTipp { background:rgba(255,225,120,.22); border:1px solid rgba(255,225,120,.5);
+    border-radius:10px; padding:7px 10px; color:#fff; font-size:14px; text-align:left;
+    cursor:pointer; }
+  .msgrTipp small { display:block; font-size:11px; opacity:.75; }
+  #msgrEingabe { display:flex; gap:6px; }
+  #msgrText { flex:1; font-size:15px; padding:8px; border-radius:9px; border:none; }
+  #msgrSenden, #msgrZurueck, #msgrZu { font-size:14px; font-weight:bold; padding:7px 14px;
+    border-radius:9px; border:none; background:#4caf50; color:#fff; cursor:pointer; }
+  #msgrZurueck, #msgrZu { background:#5a6a80; }
+
   /* Ganz kurzer Bildschirm (kleines Handy quer): fünf Reihen passen nicht mehr
      übereinander. Dann gibt es eine VIERTE Spalte und nur noch vier Reihen -
      🦸 zieht dorthin um. Sprung- und Runter-Knopf und die obere Leiste rücken
@@ -181,9 +226,12 @@
        Knopf-Block dran und schwebt nicht allein mitten im Bild herum */
     #superBtn { right:calc(var(--c4) + env(safe-area-inset-right));
                 bottom:calc(var(--r4) + env(safe-area-inset-bottom)); }
-    /* 🏟️ rutscht mit in die vierte Spalte, weil es hier keine fünfte Reihe gibt */
+    /* 🏟️ und 📱 rutschen mit in die vierte Spalte, weil es hier keine
+       fünfte Reihe gibt */
     #halleBtn { right:calc(var(--c4) + env(safe-area-inset-right));
                 bottom:calc(var(--r3) + env(safe-area-inset-bottom)); }
+    #msgrBtn  { right:calc(var(--c4) + env(safe-area-inset-right));
+                bottom:calc(var(--r2) + env(safe-area-inset-bottom)); }
     #jumpBtn { bottom:calc(66px + env(safe-area-inset-bottom)); width:52px; height:52px; font-size:26px; }
     #downBtn, #bowBtn { bottom:calc(70px + env(safe-area-inset-bottom)); width:48px; height:48px; font-size:22px; }
     #fsBtn, #resetBtn, #chatBtn, #navBtn, #mpBtn, #mapBtn, #selfieBtn,
@@ -425,6 +473,21 @@
 <div class="hud btn" id="tpBtn" title="Teleport - wohin soll es gehen?">🛸</div>
 <div class="hud btn" id="schlachtBtn" style="display:none" title="Die große Schlacht">⚔️</div>
 <div class="hud btn" id="halleBtn" style="display:none" title="Die Halle der Aufgaben">🏟️</div>
+<div class="hud btn" id="msgrBtn" title="Deine englischen Freunde">📱<span id="msgrPunkt">0</span></div>
+<div class="hud" id="msgrBox">
+  <h3 id="msgrKopf">📱 Deine englischen Freunde</h3>
+  <div id="msgrListe"></div>
+  <div id="msgrChat">
+    <div id="msgrVerlauf"></div>
+    <div id="msgrHilfen"></div>
+    <div id="msgrEingabe">
+      <input id="msgrText" type="text" maxlength="120" placeholder="Write in English..." autocomplete="off">
+      <button id="msgrSenden">📨</button>
+    </div>
+    <button id="msgrZurueck">← Alle Freunde</button>
+  </div>
+  <button id="msgrZu">✔ Fertig</button>
+</div>
 <div class="hud" id="superBox"><span id="superText"></span><div id="superBalken"><i id="superFuell"></i></div></div>
 <div class="hud" id="superFx"></div>
 <div class="hud btn" id="downBtn" style="display:none">⬇</div>
@@ -676,7 +739,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 214 &middot; Jeder Mensch nimmt jetzt auch eigene Aufträge an! 👑✏️</p>
+    Version 215 &middot; Deine englischen Freunde schreiben dir jetzt auch in JonahCraft! 📱🦊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -722,7 +785,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 214;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 215;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1829,6 +1892,8 @@ function halleGeschafft() {
         'Die Halle ist wieder weiß. Wenn du bereit bist, tipp den roten Knopf 🔴 ' +
         'an der Wand an - dann kommt Level ' + (halleLevel+1) + ': ' +
         naechste.name + '!', 11000);
+  spielEreignis("Jonah finished level " + halleLevel + " in the training hall!",
+                "Jonah hat Level " + halleLevel + " in der Trainingshalle geschafft!");
   scheduleSave();
 }
 function halleTick(dt) {
@@ -11270,6 +11335,350 @@ const MISSIONEN = [
 ];
 const besuchtePlaneten = new Set();     // 🚀 wo warst du schon überall?
 
+// ========= 📱 DIE ENGLISCHEN FREUNDE - gemeinsam mit der Englisch-App =========
+// Beide Apps liegen unter cj-prog.github.io und teilen sich deshalb denselben
+// localStorage. Die Englisch-App speichert ALLES unter dem Schlüssel "fredapp1".
+// Wir docken genau da an: dieselben Freunde, derselbe Chatverlauf, derselbe
+// KI-Schlüssel. So geht ein Gespräch, das im Messenger angefangen hat, hier
+// einfach weiter - und umgekehrt.
+const ENG_KEY = 'fredapp1';
+const FREUNDE = [
+  { id:'fred',   name:'Fred',   emoji:'🦊', farbe:'#F08A24',
+    persona:'You are Fred, a friendly, funny 9-year-old fox boy from England. You love Minecraft (JonahCraft), animals, karate and building things',
+    tun:[['I am building a big castle!','Ich baue eine große Burg!'],
+         ['I am doing karate in the garden.','Ich mache Karate im Garten.'],
+         ['I am playing JonahCraft too!','Ich spiele auch JonahCraft!']] },
+  { id:'lucy',   name:'Lucy',   emoji:'🐺', farbe:'#8AA2B8',
+    persona:'You are Lucy, a cheerful, curious 9-year-old wolf girl from America. You love animals, football, climbing trees and you also play JonahCraft',
+    tun:[['I am playing football with my dog.','Ich spiele Fußball mit meinem Hund.'],
+         ['I am climbing a big tree!','Ich klettere auf einen großen Baum!'],
+         ['I am feeding my cat.','Ich füttere meine Katze.']] },
+  { id:'koko',   name:'Koko',   emoji:'🐨', farbe:'#9C8F7F',
+    persona:'You are Koko, a relaxed, funny 9-year-old koala boy from Australia. You love climbing trees, napping, snacks and animals, and you also play JonahCraft',
+    tun:[['I am eating leaves. Yummy!','Ich esse Blätter. Lecker!'],
+         ['I am having a nap in a tree.','Ich mache ein Nickerchen im Baum.'],
+         ['I am watching the kangaroos.','Ich schaue den Kängurus zu.']] },
+  { id:'pip',    name:'Pip',    emoji:'🐧', farbe:'#5C7A9E',
+    persona:'You are Pip, a giggly 9-year-old penguin girl from the South Pole. You love swimming, sliding on ice, fish and snowmen, and you also play JonahCraft',
+    tun:[['I am sliding on the ice!','Ich rutsche auf dem Eis!'],
+         ['I am building a snowman.','Ich baue einen Schneemann.'],
+         ['I am swimming with the fish.','Ich schwimme mit den Fischen.']] },
+  { id:'rex',    name:'Rex',    emoji:'🦖', farbe:'#3FA96F',
+    persona:'You are Rex, a mighty but very kind 9-year-old dino boy from Dino Island. You love stomping, roaring (RAWR!), big numbers and animals, and you also play JonahCraft',
+    tun:[['RAWR! I am stomping in the mud!','RAWR! Ich stampfe im Schlamm!'],
+         ['I am counting my rocks. Sixty-two!','Ich zähle meine Steine. Zweiundsechzig!'],
+         ['I am running very fast!','Ich renne ganz schnell!']] },
+  { id:'milo',   name:'Milo',   emoji:'🐵', farbe:'#B98A4C',
+    persona:'You are Milo, a silly, joke-loving 9-year-old monkey boy from the jungle. You love bananas, climbing, funny sounds and animals, and you also play JonahCraft',
+    tun:[['I am eating a banana. Ooh ooh!','Ich esse eine Banane. Uh uh!'],
+         ['I am swinging on a rope!','Ich schwinge an einem Seil!'],
+         ['I am telling my monkey friends a joke.','Ich erzähle meinen Affen-Freunden einen Witz.']] },
+  { id:'stella', name:'Stella', emoji:'🦄', farbe:'#E2618B',
+    persona:'You are Stella, a sparkly, kind 9-year-old unicorn girl from Rainbow Land. You love colours, painting, glitter and animals, and you also play JonahCraft',
+    tun:[['I am painting a rainbow.','Ich male einen Regenbogen.'],
+         ['I am making glitter stars!','Ich mache Glitzer-Sterne!'],
+         ['I am brushing my pink hair.','Ich bürste meine rosa Haare.']] },
+  { id:'sparky', name:'Sparky', emoji:'🤖', farbe:'#7C8CA6',
+    persona:"You are Sparky, a friendly little 9-year-old robot from the future. You sometimes say 'Beep boop!', you love computers, building things and JonahCraft",
+    tun:[['Beep boop! I am fixing my robot arm.','Piep bup! Ich repariere meinen Roboterarm.'],
+         ['I am building a small rocket.','Ich baue eine kleine Rakete.'],
+         ['I am charging my battery.','Ich lade meinen Akku auf.']] },
+];
+function freundVon(id) { return FREUNDE.find(f => f.id === id) || FREUNDE[0]; }
+
+// ---- der gemeinsame Speicher --------------------------------------------
+function engLaden() {
+  try { const r = localStorage.getItem(ENG_KEY); return r ? JSON.parse(r) : {}; }
+  catch(e) { return {}; }
+}
+function engSpeichern(s) {
+  try { localStorage.setItem(ENG_KEY, JSON.stringify(s)); } catch(e) {}
+}
+function engChat(id) { const s = engLaden(); return ((s.chats||{})[id]) || []; }
+// Eine Nachricht in den GEMEINSAMEN Verlauf schreiben (w:'f' = Freund, 'k' = Jonah)
+function engSchreiben(id, w, text, de, ungelesen) {
+  const s = engLaden();
+  if (!s.chats) s.chats = {};
+  if (!s.chats[id]) s.chats[id] = [];
+  s.chats[id].push(de ? { w, t:text, d:de } : { w, t:text });
+  if (s.chats[id].length > 30) s.chats[id] = s.chats[id].slice(-30);
+  if (!s.unread) s.unread = {};
+  if (ungelesen) s.unread[id] = { topic:'jonahcraft' }; else delete s.unread[id];
+  engSpeichern(s);
+}
+function engUngelesen() { return Object.keys(engLaden().unread || {}); }
+
+// 🎮 WAS MACHT JONAH GERADE? Damit die Freunde wirklich danach fragen können -
+// so gehen die Gespräche in beiden Apps ineinander über.
+function spielKontext() {
+  if (halleAn && halleProgramm)
+    return { en:'you are in the training hall doing a parkour level',
+             frage:'Are you in the training hall again?',
+             de:'Bist du wieder in der Trainingshalle?' };
+  if (halleAn) return { en:'you are in the big white hall',
+             frage:'What are you doing in the white hall?',
+             de:'Was machst du in der weißen Halle?' };
+  if (schlachtLaeuft) return { en:'you are fighting monsters in the great battle',
+             frage:'Are you fighting the monsters?', de:'Kämpfst du gegen die Monster?' };
+  if (raubLaeuft && raubLaeuft()) return { en:'robbers are attacking the village bank',
+             frage:'Are you catching the robbers?', de:'Fängst du die Räuber?' };
+  if (weltDim >= 2) return { en:'you are on another planet in space',
+             frage:'Are you in space right now?', de:'Bist du gerade im Weltall?' };
+  if (weltDim === 1) return { en:'you are in the magic cloud world',
+             frage:'Are you in the cloud world?', de:'Bist du in der Wolkenwelt?' };
+  if (raumRiding || jetRiding || heliRiding || dragonRiding)
+    return { en:'you are flying', frage:'Are you flying right now?', de:'Fliegst du gerade?' };
+  if (carRiding || busRiding || riding || surfRiding)
+    return { en:'you are riding something', frage:'What are you riding?', de:'Womit fährst du gerade?' };
+  if (player.y < 20) return { en:'you are deep in a cave',
+             frage:'Are you in a cave? Is it dark?', de:'Bist du in einer Höhle? Ist es dunkel?' };
+  return { en:'you are building and exploring in your world',
+           frage:'What are you building today?', de:'Was baust du heute?' };
+}
+// 🏆 ETWAS GROSSES IST PASSIERT! Das schreiben wir in den gemeinsamen Speicher.
+// So wissen die Freunde HIER davon - und die Englisch-App kann es auch lesen.
+function spielEreignis(en, de) {
+  const s = engLaden();
+  if (!s.spielLog) s.spielLog = [];
+  s.spielLog.push({ t: Date.now(), en, de, wo:"jonahcraft" });
+  if (s.spielLog.length > 20) s.spielLog = s.spielLog.slice(-20);
+  engSpeichern(s);
+}
+function spielLogSchreiben(en, de) { spielEreignis(en, de); }
+// Das neueste Ereignis, über das noch KEIN Freund gesprochen hat.
+function neuesEreignis() {
+  const s = engLaden(), log = s.spielLog || [];
+  const letzte = log[log.length-1];
+  if (!letzte) return null;
+  return (s.logGesagt || 0) >= letzte.t ? null : letzte;
+}
+function ereignisGesagt(e) {
+  const s = engLaden(); s.logGesagt = e.t; engSpeichern(s);
+}
+
+// ---- die Freunde melden sich von allein ---------------------------------
+let msgrT = 150;                        // die erste Nachricht kommt nach 2-3 Minuten
+let msgrOffen = null;                   // mit wem chattet Jonah gerade?
+function freundeTick(dt) {
+  if (mathePause) return;
+  msgrT -= dt;
+  if (msgrT > 0) return;
+  msgrT = 180 + Math.random()*180;      // alle 3-6 Minuten meldet sich einer
+  const offen = engUngelesen();
+  const frei = FREUNDE.filter(f => offen.indexOf(f.id) < 0 && f.id !== msgrOffen);
+  if (!frei.length) return;
+  const f = frei[Math.floor(Math.random()*frei.length)];
+  const k = spielKontext();
+  const tun = f.tun[Math.floor(Math.random()*f.tun.length)];
+  // Ist gerade etwas Großes passiert? Dann redet der Freund GENAU darüber -
+  // so wie ein echter Freund, der mitbekommen hat, was du geschafft hast.
+  const er = neuesEreignis();
+  if (er) {
+    ereignisGesagt(er);
+    engSchreiben(f.id, 'f',
+      'Wow! I heard it: ' + er.en + ' Well done! ' + tun[0],
+      'Wow! Ich hab es gehört: ' + er.de + ' Gut gemacht! ' + tun[1], true);
+  } else {
+    // "Hey Jonah! Was machst du? Ich mache gerade ..."
+    engSchreiben(f.id, 'f', 'Hi Jonah! ' + k.frage + ' ' + tun[0],
+                 'Hi Jonah! ' + k.de + ' ' + tun[1], true);
+  }
+  msgrKnopf();
+  toast('📱 ' + f.emoji + ' ' + f.name + ' hat dir geschrieben! Tipp den 📱-Knopf an. 💬', 5000);
+  blip(880,0.08); blip(1175,0.1);
+}
+function msgrKnopf() {
+  const b = document.getElementById('msgrBtn'), p = document.getElementById('msgrPunkt');
+  if (!b || !p) return;
+  const n = engUngelesen().length;
+  p.textContent = n;
+  p.style.display = n ? 'flex' : 'none';
+}
+
+// ---- der Messenger: Liste, Chat und die Englisch-Hilfen -----------------
+function msgrAuf() {
+  msgrOffen = null;
+  document.getElementById('msgrChat').style.display = 'none';
+  document.getElementById('msgrListe').style.display = 'flex';
+  document.getElementById('msgrKopf').textContent = '📱 Deine englischen Freunde';
+  const liste = document.getElementById('msgrListe');
+  liste.innerHTML = '';
+  const offen = engUngelesen();
+  for (const f of FREUNDE) {
+    const log = engChat(f.id), letzte = log[log.length-1];
+    const neu = offen.indexOf(f.id) >= 0;
+    const vor = letzte ? (letzte.w === 'k' ? 'Du: ' : '') + letzte.t
+                       : 'Say hello! · Sag mal Hallo!';
+    const z = document.createElement('button');
+    z.className = 'msgrZeile' + (neu ? ' neu' : '');
+    z.innerHTML = '<span class="msgrAva" style="background:'+f.farbe+'">'+f.emoji+'</span>' +
+      '<span><span class="msgrName">'+f.name+(neu?' 🟢 NEU':'')+'</span>' +
+      '<span class="msgrVor"></span></span>';
+    z.querySelector('.msgrVor').textContent = vor;
+    z.addEventListener('click', () => msgrChatAuf(f.id));
+    liste.appendChild(z);
+  }
+  document.getElementById('msgrBox').style.display = 'flex';
+  blip(700,0.05); blip(880,0.05);
+}
+function msgrChatAuf(id) {
+  msgrOffen = id;
+  const f = freundVon(id);
+  // als gelesen markieren
+  const s = engLaden(); if (s.unread) { delete s.unread[id]; engSpeichern(s); }
+  msgrKnopf();
+  document.getElementById('msgrListe').style.display = 'none';
+  document.getElementById('msgrChat').style.display = 'flex';
+  document.getElementById('msgrKopf').textContent = f.emoji + ' ' + f.name;
+  msgrVerlaufZeigen();
+  msgrHilfenZeigen();
+}
+function msgrVerlaufZeigen() {
+  const v = document.getElementById('msgrVerlauf');
+  v.innerHTML = '';
+  const log = engChat(msgrOffen);
+  if (!log.length) {
+    const f = freundVon(msgrOffen);
+    engSchreiben(msgrOffen, 'f', 'Hello Jonah! ' + spielKontext().frage,
+                 'Hallo Jonah! ' + spielKontext().de, false);
+  }
+  for (const m of engChat(msgrOffen)) {
+    const d = document.createElement('div');
+    d.className = 'msgrBlase ' + (m.w === 'k' ? 'k' : 'f');
+    d.textContent = m.t;
+    if (m.w !== 'k') {
+      const w = document.createElement('div');
+      w.className = 'msgrWerkzeug';
+      const b1 = document.createElement('button');
+      b1.className = 'msgrMini'; b1.textContent = '🔊 nochmal';
+      b1.addEventListener('click', () => msgrSprich(m.t));
+      w.appendChild(b1);
+      if (m.d) {
+        const b2 = document.createElement('button');
+        b2.className = 'msgrMini'; b2.textContent = '🇩🇪 Was heißt das?';
+        b2.addEventListener('click', () => {
+          const de = document.createElement('span');
+          de.className = 'msgrDe'; de.textContent = m.d;
+          b2.replaceWith(de);
+        });
+        w.appendChild(b2);
+      }
+      d.appendChild(w);
+    }
+    v.appendChild(d);
+  }
+  v.scrollTop = v.scrollHeight;
+}
+// 🗣️ Vorlesen - genau wie in der Englisch-App
+function msgrSprich(text) {
+  try {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; u.rate = 0.85;
+    speechSynthesis.speak(u);
+  } catch(e) {}
+}
+// 💡 DIE ENGLISCH-HILFE: fertige Sätze zum Antippen, mit deutscher Bedeutung.
+// Sie passen zu dem, was Jonah GERADE im Spiel macht.
+function msgrHilfen() {
+  const k = spielKontext();
+  const h = [];
+  if (halleAn) h.push(['I am in the training hall.','Ich bin in der Trainingshalle.']);
+  else if (schlachtLaeuft) h.push(['I am fighting monsters!','Ich kämpfe gegen Monster!']);
+  else if (weltDim >= 2) h.push(['I am in space!','Ich bin im Weltall!']);
+  else if (raumRiding || jetRiding || heliRiding || dragonRiding)
+    h.push(['I am flying!','Ich fliege!']);
+  else h.push(['I am building a house.','Ich baue ein Haus.']);
+  h.push(['I am playing JonahCraft.','Ich spiele JonahCraft.']);
+  h.push(['That is cool! What about you?','Das ist cool! Und du?']);
+  h.push(['Yes! And you?','Ja! Und du?']);
+  return h;
+}
+function msgrHilfenZeigen() {
+  const box = document.getElementById('msgrHilfen');
+  box.innerHTML = '';
+  for (const [en, de] of msgrHilfen()) {
+    const b = document.createElement('button');
+    b.className = 'msgrTipp';
+    b.innerHTML = '<span></span><small></small>';
+    b.querySelector('span').textContent = en;
+    b.querySelector('small').textContent = de;
+    b.addEventListener('click', () => msgrSenden(en));
+    box.appendChild(b);
+  }
+}
+// 📨 Jonah antwortet - und der Freund antwortet zurück
+function msgrSenden(text) {
+  const t = (text || document.getElementById('msgrText').value || '').trim();
+  if (!t || !msgrOffen) return;
+  document.getElementById('msgrText').value = '';
+  engSchreiben(msgrOffen, 'k', t, '', false);
+  msgrVerlaufZeigen();
+  blip(660,0.06);
+  const f = freundVon(msgrOffen);
+  const s = engLaden();
+  if (s.apiKey) msgrKiAntwort(f, t, s);       // mit Schlüssel: echte KI-Antwort
+  else setTimeout(() => msgrEinfachAntwort(f), 900);
+}
+// Ohne KI-Schlüssel: freundliche, einfache Antwort mit Übersetzung
+function msgrEinfachAntwort(f) {
+  const tun = f.tun[Math.floor(Math.random()*f.tun.length)];
+  const k = spielKontext();
+  const antworten = [
+    ['Cool! ' + tun[0], 'Cool! ' + tun[1]],
+    ['Nice! ' + k.frage, 'Schön! ' + k.de],
+    ['Wow! I like that. ' + tun[0], 'Wow! Das mag ich. ' + tun[1]],
+  ];
+  const a = antworten[Math.floor(Math.random()*antworten.length)];
+  engSchreiben(f.id, 'f', a[0], a[1], false);
+  if (msgrOffen === f.id) msgrVerlaufZeigen();
+  blip(880,0.07);
+}
+// Mit dem KI-Schlüssel aus der Englisch-App: eine echte Unterhaltung,
+// die weiß, was Jonah gerade im Spiel macht.
+async function msgrKiAntwort(f, text, s) {
+  const k = spielKontext();
+  const verlauf = engChat(f.id).slice(-12).map(m => ({
+    role: m.w === 'k' ? 'user' : 'assistant', content: m.t }));
+  // Was ist zuletzt im Spiel passiert? Das darf der Freund wissen -
+  // dann geht das Gespräch nahtlos weiter, in beiden Apps.
+  const log = (s.spielLog || []).slice(-5).map(e => '- ' + e.en).join('\n');
+  const system = [
+    f.persona + '.',
+    'You are chatting with ' + (s.name || 'Jonah') + ', a 9-year-old German child who is just starting to learn English.',
+    'RIGHT NOW he is playing JonahCraft, his own Minecraft-style game, and ' + k.en + '.',
+    log ? 'Things he did lately (you know about these, you may mention them):\n' + log : '',
+    'RULES:',
+    '- Very simple English: short sentences (max 8 words), present tense, beginner words.',
+    '- Maximum 2 short sentences. Ask one simple question most of the time.',
+    '- Ask about what he is doing in JonahCraft and tell him what YOU are doing.',
+    '- Never criticize mistakes; repeat the sentence correctly inside a friendly reply.',
+    '- Stay strictly kid-safe. Never ask for personal information. Never suggest meeting in real life.',
+    'OUTPUT: only minified JSON: {"reply":"English reply","de":"German translation"}',
+  ].join('\n');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', 'x-api-key': s.apiKey,
+                'anthropic-version':'2023-06-01',
+                'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model: s.model || 'claude-opus-5', max_tokens: 300,
+                             system, messages: verlauf.length ? verlauf
+                               : [{ role:'user', content:text }] })
+    });
+    if (!res.ok) throw new Error('http');
+    const data = await res.json();
+    const roh = (data.content||[]).map(c=>c.text||'').join('');
+    const j = JSON.parse(roh.slice(roh.indexOf('{'), roh.lastIndexOf('}')+1));
+    engSchreiben(f.id, 'f', j.reply, j.de || '', false);
+  } catch(e) {
+    msgrEinfachAntwort(f); return;       // kein Netz? Dann die einfache Antwort
+  }
+  if (msgrOffen === f.id) msgrVerlaufZeigen();
+  blip(880,0.07);
+}
+
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
 // Manchmal tun sich mehrere Räuber zu einer Bande zusammen: sie kommen in
 // ihrem Räuber-Bulli angefahren, parken vor der Dorfbank, brechen ein, schleppen
@@ -11630,6 +12039,8 @@ function schlachtSieg() {
         'Dein Siegerlohn: 500 € 💶 und 25 Diamanten 💎' +
         (gebaut ? ' - und neben dir steht dein Sieger-Pokal! 🏆' : ''), 14000);
   missAnzeige(); schlachtKnopf(); scheduleSave();
+  spielEreignis("Jonah won the great battle and beat the monster king!",
+                "Jonah hat die große Schlacht gewonnen und den Monsterkönig besiegt!");
 }
 function schlachtTick(dt) {
   if (!schlachtLaeuft) return;
@@ -11719,6 +12130,8 @@ function missEvent(name, n) {
 }
 function missGeschafft() {
   const m = MISSIONEN[missIdx];
+  spielEreignis("Jonah finished a mission: " + m.t + "!",
+                "Jonah hat eine Mission geschafft: " + m.t + "!");
   missIdx++; missZahl = 0;
   money += 5; updateFoodHUD();
   for (let s2=0; s2<24; s2++)           // Feuerwerk zur Belohnung! 🎆
@@ -12829,6 +13242,27 @@ document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.s
   const los = () => { halleStart(); halleKnopf(); };
   hb.addEventListener('touchstart', e=>{ e.preventDefault(); los(); }, {passive:false});
   hb.addEventListener('mousedown',  e=>{ e.preventDefault(); los(); });
+}
+// 📱 der Messenger-Knopf: zu deinen englischen Freunden
+{
+  const mb = document.getElementById("msgrBtn");
+  mb.addEventListener("touchstart", e=>{ e.preventDefault(); msgrAuf(); }, {passive:false});
+  mb.addEventListener("mousedown",  e=>{ e.preventDefault(); msgrAuf(); });
+  document.getElementById("msgrZu").addEventListener("click", () => {
+    document.getElementById("msgrBox").style.display = "none";
+    msgrOffen = null; msgrKnopf(); blip(300,0.06);
+  });
+  document.getElementById("msgrZurueck").addEventListener("click", () => msgrAuf());
+  document.getElementById("msgrSenden").addEventListener("click", () => msgrSenden());
+  document.getElementById("msgrText").addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); msgrSenden(); }
+  });
+  // Beim Tippen im Chat soll sich Jonah nicht bewegen
+  for (const id of ["msgrText"]) {
+    const el = document.getElementById(id);
+    el.addEventListener("keydown", e => e.stopPropagation());
+    el.addEventListener("keyup",   e => e.stopPropagation());
+  }
 }
 // 🛸 der Teleport-Knopf und das eigene Wunsch-Ziel
 {
@@ -17222,6 +17656,7 @@ function frame(now) {
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
+  try { freundeTick(dt); } catch(e) {}   // 📱 schreibt dir gerade ein englischer Freund?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
@@ -17493,6 +17928,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   missAnzeige();
   schlachtKnopf();                      // ⚔️ wartet die große Schlacht schon?
   halleKnopf();                         // 🏟️ und die Halle der Aufgaben?
+  msgrKnopf();                          // 📱 haben dir Freunde geschrieben?
   document.getElementById('miniMap').style.display='block';
   if (bow) document.getElementById('bowBtn').style.display='flex';
   saveGame();                           // beim Start sofort speichern
