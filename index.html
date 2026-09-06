@@ -676,7 +676,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 212 &middot; Halle: jedes Level sieht anders aus - Wiese, Schnee, Wüste, Vulkan! 🎲🎨</p>
+    Version 213 &middot; Alle Menschen gehorchen dir, der Butler versteht dich genau! 👑🤵</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -722,7 +722,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 212;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 213;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1443,7 +1443,10 @@ function halleBlock(lx, ly, lz) {
     if (weiss) return WOOL;
     // 🌉 Bei den schmalen Brücken ist der Boden WASSER: runterfallen tut nicht
     // weh, man klettert einfach wieder heraus. Nur das Ziel-Feld bleibt trocken.
-    if (typ === 'bruecken' && !(Math.abs(lx-mx) <= 2 && lz >= 2 && lz <= 8)) return WATER;
+    // Bei den Brücken ist alles Wasser - AUSSER der trockenen Startinsel.
+    // Sie reicht bis unter den Anfang des Stegs, damit Jonah nicht im Wasser
+    // startet und nicht mehr herauskommt.
+    if (typ === 'bruecken' && !(Math.abs(lx-mx) <= 3 && lz >= 1 && lz <= 13)) return WATER;
     // 🌋 Bei der Seil-Schaukel ist in der Mitte eine LAVAGRUBE
     if (typ === 'seile' && lz >= 14 && lz <= HALLE_D-14) return LAVA;
     // 🎨 Der Boden bekommt die Farbe des Themas (Wiese, Schnee, Wüste ...)
@@ -1664,7 +1667,18 @@ function halleHinstellen() {              // Jonah an den Start stellen
     for (let cz=(zz-8)>>4; cz<=(zz+40)>>4; cz++) ensureData(cx,cz);
   if (flying) toggleFly();
   balloonT = 0;                           // 🎈 auch der Ballon zählt als Schummeln
-  player.x = zx + 0.5; player.z = zz - 2.5; player.y = HALLE_Y;
+  // Einen Platz suchen, unter dem WIRKLICH fester Boden ist. Beim Brücken-
+  // Level stand Jonah sonst im Wasser und kam nicht mehr auf den Steg.
+  let sx = zx + 0.5, sz = zz + 1.5;
+  for (const dz of [1, 2, 0, 3, -1, 4, 5]) {
+    const px = zx, pz = zz + dz;
+    const unten = getBlock(px, HALLE_Y-1, pz);
+    if (unten === AIR || unten === WATER || unten === LAVA) continue;
+    if (collideBox(px+0.5, HALLE_Y, pz+0.5, P_HALF, P_HEIGHT)) continue;
+    sx = px + 0.5; sz = pz + 0.5;
+    break;
+  }
+  player.x = sx; player.z = sz; player.y = HALLE_Y;
   player.vx = player.vy = player.vz = 0; player.kx = player.kz = 0;
 }
 // 🔴 DIE LASERSTRAHLEN. Sie sind KEINE Blöcke, sondern werden als Figuren
@@ -7161,7 +7175,7 @@ function updateAnimals(dt) {
     if (!a.tame && !a.follow && a.type!=='dragon' && a.type!=='statue' && !a.schlacht &&
         !MITREISER.has(a.type) && a !== busRiding &&        // deine Fahrzeuge bleiben immer!
         !(a.type==='uboot') && !(a.type==='yacht' && !a.fremd) &&
-        !(a.type==='butler' && a.befehl==='folgen') &&      // der Butler kommt überall mit!
+        !(a.befehl==='folgen' || a.befehl==='hierher') &&   // 👑 wer mitkommen soll, bleibt!
         !a.beute &&                       // 💰 ein Räuber mit deiner Beute verschwindet NIE!
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.type==='statue') {            // Stein-Statuen stehen einfach still da
@@ -7208,6 +7222,11 @@ function updateAnimals(dt) {
 
     if (a.type==='hausmeister') hausmeisterTick(a, dt);   // 🔧 flickt, was kaputt ist
     if (a.type==='butler') butlerTick(a, dt);             // 🤵 macht, was Jonah sagt
+    // 👑 KÖNIG JONAH HAT GESPROCHEN: wer einen Befehl hat, macht GENAU den.
+    // Das muss hier stehen - nach der normalen KI, aber VOR dem Laufen -,
+    // damit es die normale KI überschreibt und die Beine sich auch bewegen.
+    if (a.befehl && a.type !== 'butler' && MENSCH_TYPEN.has(a.type))
+      gehorcheTick(a, dt);
 
     // Freunde freuen sich und kommen angelaufen, wenn sie dich sehen
     if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
@@ -10528,6 +10547,115 @@ function hausmeisterTick(a, dt) {
     if (a.wegT > 12) { a.x = a.heim[0]; a.z = a.heim[2]; a.y = a.heim[1]; a.vy=0; a.wegT=0; }
   }
 }
+// 👑 ALLE MENSCHEN HÖREN AUF KÖNIG JONAH
+// Diese Leute kann Jonah antippen und ihnen etwas sagen:
+const MENSCH_TYPEN = new Set(['villager','kid','trader','knight','hausmeister',
+                              'bankier','butler']);
+const MENSCH_JA = [
+  'Ja, König Jonah!', 'Sofort, Majestät! 👑', 'Wie Ihr befiehlt!',
+  'Zu Befehl!', 'Sehr wohl, mein König!',
+];
+// Der gemeinsame Gehorsam-Tick: folgen, warten oder tanzen
+function gehorcheTick(a, dt) {
+  const dp = Math.hypot(player.x-a.x, player.z-a.z);
+  a.t = 9;
+  if (a.tanzT > 0) {                    // 💃 tanzt gerade für Jonah
+    a.tanzT -= dt;
+    a.walking = false;
+    a.yaw += dt*7;
+    if (a.onGround) { a.vy = 5.0; if (Math.random()<0.35) blip(400+Math.random()*400,0.05); }
+    return;
+  }
+  if (a.befehl === 'folgen') {
+    a.spd = 0;
+    if (dp > 30) {                      // abgehängt? Dann eben abkürzen
+      a.x = player.x + (Math.random()*2-1); a.z = player.z + (Math.random()*2-1);
+      a.y = player.y + 1; a.vy = 0;
+    } else if (dp > 2.6) {
+      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+      a.walking = true; a.spd = 3.2;
+    } else {
+      a.walking = false; a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    }
+    if (Math.random() < dt*0.008)
+      sagen(a, MENSCH_JA[Math.floor(Math.random()*MENSCH_JA.length)], 3);
+    return;
+  }
+  if (a.befehl === 'warten') {
+    a.walking = false; a.spd = 0;
+    if (dp < 14) a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    return;
+  }
+  if (a.befehl === 'hierher') {         // "Komm her!" - und dann bleibt er stehen
+    if (dp > 2.2) {
+      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+      a.walking = true; a.spd = 3.6;
+    } else {
+      a.befehl = 'warten'; a.walking = false;
+      sagen(a, 'Ich bin da, König Jonah! 👑', 3);
+    }
+    return;
+  }
+  a.befehl = null;                      // unbekannter Befehl: wieder frei
+}
+// Was Jonah einem Menschen sagen kann (Butler hat sein eigenes, größeres Menü)
+function openMensch(a) {
+  menschAktiv = a;
+  const list = document.getElementById('butlerList');
+  const wer = a.name || MENSCH_NAME[a.type] || 'Der Dorfbewohner';
+  document.getElementById('butlerBox').querySelector('h3').textContent =
+    '👑 ' + wer + ' hört auf dich';
+  list.innerHTML = '';
+  const BEFEHLE = [];
+  // 🏦🔧🛒 Erst die Extras, die nur bestimmte Leute können
+  if (a.type === 'bankier')
+    BEFEHLE.push(['🏦 Ich will zur Bank!', () => openBank(a)]);
+  if (a.type === 'trader')
+    BEFEHLE.push(['🛒 Zeig mir deinen Laden!', () => openShop(a)]);
+  if (a.type === 'hausmeister')
+    BEFEHLE.push([a.pause ? '🔧 Arbeite wieder!' : '☕ Mach mal Pause!', () => {
+      a.pause = !a.pause;
+      if (a.pause) { a.ziel = null; sagen(a,'Alles klar, ich mache Pause! ☕',4);
+        toast('🔧 Hausmeister: „Alles klar, ich repariere erst mal nichts mehr!"',4000); blip(392,0.1); }
+      else { sagen(a,'Ich flicke wieder alles! 🔧',4);
+        toast('🔧 Hausmeister: „Ich bin zurück! Alles, was kaputtgeht, mache ich wieder heil!"',4000);
+        blip(523,0.08); blip(659,0.1); }
+    }]);
+  BEFEHLE.push(
+    ['🚶 Komm mit!',      () => { a.befehl='folgen'; a.tanzT=0;
+      sagen(a,'Ja, König Jonah - ich komme mit! 🚶',3);
+      toast('👑 '+wer+': „Ja, König Jonah - ich komme mit!"',3000); }],
+    ['👉 Komm her!',      () => { a.befehl='hierher'; a.tanzT=0;
+      sagen(a,'Ich komme sofort! 👑',3);
+      toast('👑 '+wer+': „Ich komme sofort!"',3000); }],
+    ['🛑 Warte hier!',    () => { a.befehl='warten'; a.tanzT=0;
+      sagen(a,'Ich warte genau hier!',3);
+      toast('👑 '+wer+': „Ich warte genau hier!"',3000); }],
+    ['💃 Tanz mal!',      () => { a.befehl='warten'; a.tanzT=6;
+      sagen(a,'Sehr gerne, Majestät! 💃',4);
+      toast('👑💃 '+wer+' tanzt für dich!',3000);
+      for (const f of [523,659,784,1047]) blip(f,0.09); }],
+    ['🙌 Du darfst gehen', () => { a.befehl=null; a.tanzT=0;
+      sagen(a,'Danke, König Jonah! 👋',3);
+      toast('👑 '+wer+' geht wieder seiner Wege.',3000); }],
+  );
+  for (const [txt, fn] of BEFEHLE) {
+    const b = document.createElement('button');
+    b.className = 'liftBtn';
+    b.textContent = txt;
+    b.addEventListener('click', () => {
+      document.getElementById('butlerBox').style.display='none';
+      fn(); blip(600,0.05);
+    });
+    list.appendChild(b);
+  }
+  document.getElementById('butlerBox').style.display = 'flex';
+  blip(700,0.05); blip(880,0.05);
+}
+let menschAktiv = null;
+const MENSCH_NAME = { villager:'Der Dorfbewohner', kid:'Das Kind', trader:'Der Händler',
+                      knight:'Der Ritter', hausmeister:'Der Hausmeister',
+                      bankier:'Der Bankier', butler:'Der Butler' };
 const BUTLER_TALK = [
   'Sehr wohl, König Jonah! 🤵',
   'Wie Sie wünschen!',
@@ -10771,6 +10899,34 @@ const BUTLER_WITZE = [
   'Warum haben Ritter kein Handy? Weil sie schon eine Rüstung mit Empfang haben! 🛡️',
   'Wie nennt man einen Bagger ohne Räder? Einen Sitzenbleiber! 🚜',
 ];
+// 🤵 DER BUTLER VERSTEHT GENAU
+// Früher hat er einfach das erste Wort genommen, das er kannte - bei
+// "hol mir Steine für die Mauer" hat er eine MAUER gebaut statt Steine zu
+// holen. Jetzt sucht er ZUERST das Tu-Wort (bauen? holen? graben?) und
+// erst danach, worum es geht. Und wenn beides nicht zusammenpasst, fragt
+// er nach, statt einfach irgendetwas zu machen.
+const BUTLER_SACHEN = [                 // Dinge, die er BAUEN kann
+  { art:'turm',       woerter:['turm','tower'],                       txt:'einen Turm 🗼' },
+  { art:'haus',       woerter:['haus','hütte','hutte','villa','heim'],txt:'ein Haus 🏠' },
+  { art:'bruecke',    woerter:['brücke','bruecke','brueke','steg'],   txt:'eine Brücke 🌉' },
+  { art:'treppe',     woerter:['treppe','stufen','leiter'],           txt:'eine Treppe 🪜' },
+  { art:'mauer',      woerter:['mauer','wand','zaun'],                txt:'eine Mauer 🧱' },
+  { art:'pool',       woerter:['pool','schwimm','see','teich','wasserbecken'], txt:'ein Schwimmbecken 🏊' },
+  { art:'loch',       woerter:['loch','grube','tunnel'],              txt:'ein Loch ⛏️' },
+  { art:'garten',     woerter:['blume','garten'],                     txt:'einen Blumengarten 🌸' },
+  { art:'beet',       woerter:['beet','gemüse','gemuese','weizen'],   txt:'ein Gemüsebeet 🥕' },
+  { art:'schneemann', woerter:['schneemann'],                         txt:'einen Schneemann ⛄' },
+];
+const BUTLER_ZEUG = [                   // Dinge, die er HOLEN kann
+  { block:'PLANK', woerter:['holz','bretter','planke'], txt:'Holz 🪵' },
+  { block:'STONE', woerter:['stein','fels'],            txt:'Stein 🪨' },
+  { block:'BRICK', woerter:['ziegel'],                  txt:'Ziegel 🧱' },
+  { block:'GLASS', woerter:['glas','fenster'],          txt:'Glas 🪟' },
+  { block:'WOOL',  woerter:['wolle'],                   txt:'Wolle 🧶' },
+  { block:'DIRT',  woerter:['erde','dreck'],            txt:'Erde 🟫' },
+  { block:'SAND',  woerter:['sand'],                    txt:'Sand 🏖️' },
+  { block:'CHEST', woerter:['truhe','kiste'],           txt:'eine Truhe 📦' },
+];
 function butlerAuftrag(a, text) {
   if (!text) return;
   const t = text.toLowerCase();
@@ -10779,58 +10935,89 @@ function butlerAuftrag(a, text) {
   a.walking = false; a.t = 4;
   const hat = (...w) => w.some(x => t.includes(x));
   const m = materialAus(t);
-  const fertig = (txt) => { sagen(a, txt, 4); toast('🤵 Butler: „'+txt+'"', 4000);
+  const fertig = (txt) => { sagen(a, txt, 4); toast('🤵 Butler: „'+txt+'"', 4200);
                             blip(600,0.06); blip(760,0.08); };
-  // ---- bauen ----
-  if (hat('turm','tower')) { const n=butlerBauen(a,'turm',m);
-    return fertig('Ein Turm? Sehr gerne! Ich baue ihn sofort ('+n+' Blöcke)! 🗼'); }
-  if (hat('haus','hütte','hutte','villa'))  { const n=butlerBauen(a,'haus',m);
-    return fertig('Ein Haus für Sie, mein König - ich fange an! 🏠'); }
-  if (hat('brücke','bruecke','brueke','steg')) { butlerBauen(a,'bruecke',m);
-    return fertig('Eine Brücke! Ich lege gleich los! 🌉'); }
-  if (hat('treppe','stufen')) { butlerBauen(a,'treppe',m);
-    return fertig('Eine schöne Treppe kommt sofort! 🪜'); }
-  if (hat('mauer','wand','zaun')) { butlerBauen(a,'mauer',m);
-    return fertig('Eine Mauer wird gebaut, mein König! 🧱'); }
-  if (hat('pool','schwimm','see','teich','wasserbecken')) { butlerBauen(a,'pool');
-    return fertig('Ein Schwimmbecken! Wie luxuriös! 🏊'); }
-  if (hat('loch','grab','graben','tunnel')) { butlerBauen(a,'loch');
-    return fertig('Ich grabe ein Loch für Sie! ⛏️'); }
-  if (hat('blume','garten','pflanz')) { butlerBauen(a,'garten');
-    return fertig('Ein Blumengarten - wie hübsch! 🌸'); }
-  if (hat('beet','gemüse','gemuese','karotte','tomate','weizen')) { butlerBauen(a,'beet');
-    return fertig('Ich lege ein Gemüsebeet an! 🥕'); }
-  if (hat('schneemann')) { butlerBauen(a,'schneemann');
-    return fertig('Ein Schneemann! Sehr winterlich! ⛄'); }
-  // ---- holen ----
-  if (hat('holz','bretter')) { butlerBringen(a,PLANK,'Holz');       return; }
-  if (hat('stein') && hat('hol','bring')) { butlerBringen(a,STONE,'Stein'); return; }
-  if (hat('ziegel') && hat('hol','bring')) { butlerBringen(a,BRICK,'Ziegel'); return; }
-  if (hat('glas') && hat('hol','bring')) { butlerBringen(a,GLASS,'Glas'); return; }
-  if (hat('wolle') && hat('hol','bring')) { butlerBringen(a,WOOL,'Wolle'); return; }
-  if (hat('erde','dreck') && hat('hol','bring')) { butlerBringen(a,DIRT,'Erde'); return; }
-  if (hat('sand') && hat('hol','bring')) { butlerBringen(a,SAND,'Sand'); return; }
-  if (hat('truhe','kiste')) { butlerBringen(a,CHEST,'eine Truhe');    return; }
-  if (hat('essen','hunger','snack','karotte','apfel','brot')) { boostT = 22;
-    return fertig('Ein Snack für Sie - jetzt sind Sie blitzschnell! 🥕'); }
-  // ---- machen ----
-  if (hat('licht','fackel','hell','dunkel','lampe')) { const n=butlerLicht();
-    return fertig(n ? 'Sofort heller! Ich stelle '+n+' Fackeln auf. 🕯️' : 'Hier ist es schon hell genug!'); }
-  if (hat('reparier','heil','kaputt','flick','aufräum','aufraeum','sauber','räum','raeum')) {
-    const n=butlerFlicken();
-    return fertig(n ? 'Erledigt - ich habe '+n+' Blöcke geflickt! 🔧' : 'Hier ist alles tipptopp!'); }
-  if (hat('folg','komm mit','hinterher','begleit')) { a.befehl='folgen';
-    return fertig('Sehr wohl, ich folge Ihnen überallhin! 🚶'); }
-  if (hat('warte','bleib','steh','halt')) { a.befehl='warten';
-    return fertig('Ich warte genau hier auf Sie!'); }
-  if (hat('tanz','sing','spring','quatsch','lustig')) { a.tanzT = 6;
-    return fertig('Sehr gerne! Tra-la-la! 💃'); }
+  const BLOCKS_NAME = { PLANK, STONE, BRICK, GLASS, WOOL, DIRT, SAND, CHEST };
+
+  // 1) Zuerst die klaren Befehle, die kein Objekt brauchen
+  if (hat('komm her','komm hier','komm zu mir')) { a.befehl='hierher';
+    return fertig('Zu Befehl! Ich komme sofort zu Ihnen. 👉'); }
+  if (hat('folg','komm','hinterher','begleit','mitkommen','mitgehen')) { a.befehl='folgen';
+    return fertig('Zu Befehl! Ich folge Ihnen überallhin. 🚶'); }
+  if (hat('warte','bleib hier','steh','halt an','stopp','stop')) { a.befehl='warten';
+    return fertig('Zu Befehl! Ich warte genau hier auf Sie. 🛑'); }
+  if (hat('tanz','sing','hüpf','huepf')) { a.tanzT = 6;
+    return fertig('Zu Befehl! Tra-la-la! 💃'); }
   if (hat('witz','lach')) {
     return fertig(BUTLER_WITZE[Math.floor(Math.random()*BUTLER_WITZE.length)]); }
-  if (hat('hallo','hi','guten tag','moin','servus')) {
+  if (hat('hallo','hi ','guten tag','moin','servus')) {
     return fertig('Guten Tag, König Jonah! Was darf ich für Sie tun? 🤵'); }
   if (hat('danke')) { return fertig('Sehr gerne, mein König! Immer zu Diensten.'); }
-  return fertig('Das habe ich leider nicht verstanden. Sagen Sie zum Beispiel: „bau einen Turm", „bau ein Haus aus Stein", „hol mir Holz", „mach eine Brücke", „grab ein Loch", „mach Licht", „pflanz Blumen" oder „erzähl einen Witz"!');
+
+  // 2) Das TU-WORT bestimmen - das ist das Wichtigste!
+  const willHolen  = hat('hol','bring','gib mir','besorg','reich');
+  const willBauen  = hat('bau','errichte','stell','setz','mach mir','mach ein','mach eine','leg','pflanz','grab');
+  const willLicht  = hat('licht','fackel','hell','lampe') && !hat('mach das licht aus','dunkel mach');
+  const willRaeumen= hat('reparier','heil','kaputt','flick','aufräum','aufraeum','sauber','räum','raeum');
+  const willEssen  = hat('essen','hunger','snack','apfel','brot','durst');
+
+  // 3) Objekt suchen - jeweils passend zum Tu-Wort
+  // Es gewinnt das Wort, das ZUERST im Satz steht: bei "bau mir ein Haus mit
+  // einem Turm" ist das Haus gemeint, nicht der Turm.
+  const zuerst = (liste) => {
+    let best = null, bpos = 1e9;
+    for (const s of liste) for (const w of s.woerter) {
+      const p = t.indexOf(w);
+      if (p >= 0 && p < bpos) { bpos = p; best = s; }
+    }
+    return best;
+  };
+  const sache = zuerst(BUTLER_SACHEN);
+  const zeug  = zuerst(BUTLER_ZEUG);
+
+  // HOLEN hat Vorrang, wenn Jonah "hol" gesagt hat - auch wenn im Satz
+  // noch ein Turm oder eine Mauer vorkommt ("hol Steine für die Mauer")
+  if (willHolen && zeug) {
+    butlerBringen(a, BLOCKS_NAME[zeug.block], zeug.txt);
+    return fertig('Zu Befehl: ich hole Ihnen ' + zeug.txt + '!'); }
+  if (willHolen && willEssen) { boostT = 22;
+    return fertig('Zu Befehl: ein Snack für Sie - jetzt sind Sie blitzschnell! 🥕'); }
+  if (willEssen && !sache) { boostT = 22;
+    return fertig('Zu Befehl: ein Snack für Sie - jetzt sind Sie blitzschnell! 🥕'); }
+
+  if (willBauen && sache) {
+    const n = butlerBauen(a, sache.art, m);
+    const woraus = m ? ' aus ' + materialName(m) : '';
+    return fertig('Zu Befehl: ich baue ' + sache.txt + woraus + '!'); }
+
+  if (willLicht) { const n = butlerLicht();
+    return fertig(n ? 'Zu Befehl: ich stelle '+n+' Fackeln auf! 🕯️'
+                    : 'Hier ist es schon hell genug, mein König!'); }
+  if (willRaeumen) { const n = butlerFlicken();
+    return fertig(n ? 'Zu Befehl: ich habe '+n+' Blöcke geflickt! 🔧'
+                    : 'Hier ist schon alles tipptopp!'); }
+
+  // 4) Nur ein Objekt, aber kein Tu-Wort? Dann NACHFRAGEN statt raten!
+  if (sache && zeug) {
+    return fertig('Möchten Sie ' + sache.txt + ' BAUEN oder ' + zeug.txt +
+                  ' geholt haben? Sagen Sie „bau ...“ oder „hol ...“!'); }
+  if (sache && !willHolen) {
+    const n = butlerBauen(a, sache.art, m);
+    const woraus = m ? ' aus ' + materialName(m) : '';
+    return fertig('Zu Befehl: ich baue ' + sache.txt + woraus + '!'); }
+  if (zeug) {
+    butlerBringen(a, BLOCKS_NAME[zeug.block], zeug.txt);
+    return fertig('Zu Befehl: ich hole Ihnen ' + zeug.txt + '!'); }
+
+  return fertig('Das habe ich nicht genau verstanden, mein König. Sagen Sie mir ' +
+    'erst, WAS ich tun soll: „bau …“, „hol …“, „grab ein Loch“, „mach Licht“, ' +
+    '„räum auf“, „komm mit“, „warte hier“ oder „erzähl einen Witz“.');
+}
+// Wie heißt dieses Material auf Deutsch? (für die Antwort des Butlers)
+function materialName(b) {
+  return b===STONE ? 'Stein' : b===BRICK ? 'Ziegel' : b===GLASS ? 'Glas'
+       : b===WOOL ? 'Wolle' : b===SAND ? 'Sand' : b===DIRT ? 'Erde'
+       : b===WOOD ? 'Baumstamm' : b===GOLD ? 'Gold' : 'Holz';
 }
 function butlerLicht() {                // Fackeln rund um Jonah aufstellen
   let n = 0;
@@ -15375,36 +15562,18 @@ function hitEntity(a, dir) {
     blip(440,0.08); blip(587,0.08);
     return;
   }
-  if (a.type==='trader') {              // beim Händler einkaufen!
-    openShop(a);
-    return;
-  }
-  if (a.type==='bankier') {             // 🏦 am Schalter Geld einzahlen oder abheben
-    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
-    a.walking = false; a.t = 6;
-    openBank(a);
-    return;
-  }
   if (a.type==='butler') {              // 🤵 Befehle für den Butler!
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3;
     openButler(a);
     return;
   }
-  if (a.type==='hausmeister') {         // 🔧 Hausmeister: arbeiten oder Pause?
+  // 👑 ALLE MENSCHEN hören auf König Jonah! Der Bankier und der Hausmeister
+  // haben in ihrem Menü zusätzlich noch ihre eigenen Knöpfe.
+  if (MENSCH_TYPEN.has(a.type)) {
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3;
-    a.pause = !a.pause;
-    if (a.pause) {
-      a.ziel = null;
-      sagen(a, 'Alles klar, ich mache Pause! ☕', 4);
-      toast('🔧 Hausmeister: „Alles klar, ich repariere erst mal nichts mehr. Tipp mich wieder an, wenn ich weitermachen soll!"', 4200);
-      blip(392,0.1);
-    } else {
-      sagen(a, 'Ich flicke wieder alles! 🔧', 4);
-      toast('🔧 Hausmeister: „Ich bin zurück! Alles, was kaputtgeht, mache ich sofort wieder heil!"', 4000);
-      blip(523,0.08); blip(659,0.1);
-    }
+    openMensch(a);
     return;
   }
   if (a.type==='knight') {              // mit dem Ritter sprechen!
@@ -15657,6 +15826,16 @@ function doBreak(dir) {
   if (hit.y<=CH_MIN) {                  // die allerunterste Schicht hält die Welt zusammen
     toast('🌋 Das ist der Boden der Welt – tiefer geht es nicht!', 2500);
     blip(180,0.1);
+    return;
+  }
+  // 🔒 IN DER HALLE bleibt alles heil: der rote Knopf, die Fahne, das Ziel-Feld,
+  // die Seile und der ganze Parcours. Sonst könnte man aus Versehen (oder mit
+  // Absicht) den Startknopf wegmachen oder sich eine Abkürzung bauen.
+  if (halleAn && inHalleGebiet(hit.x, hit.z)) {
+    toast(hit.block===HOLOKNOPF
+      ? '🔴 Der Startknopf bleibt, wo er ist - den brauchst du ja! 😉'
+      : '🔒 In der Halle kann man nichts abbauen - hier wird gesprungen, nicht gebuddelt! 💪', 3000);
+    blip(200,0.08);
     return;
   }
   if (hit.block===WATER) {
@@ -15936,6 +16115,14 @@ function doPlace(dir) {
   }
   if (hit.block===SEIL) {                 // 🪢 am Seil rüberschwingen!
     halleSchwingen(hit.x, hit.y, hit.z);
+    return;
+  }
+  // 🔒 In der Halle wird auch nichts HINgebaut - sonst könnte man sich
+  // einfach eine Treppe oder eine Brücke über die Lava bauen.
+  if (halleAn && inHalleGebiet(hit.x, hit.z)) {
+    toast('🔒 In der Halle kannst du nichts hinbauen - du sollst es ja mit ' +
+          'Springen und Klettern schaffen! 💪', 3000);
+    blip(200,0.08);
     return;
   }
   if (hit.block===KRONE && HOTBAR_ITEMS[selSlot]!==KRONE) {
