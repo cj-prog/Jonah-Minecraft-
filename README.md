@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- EIGENE AUFGABEN FÜR JEDEN MENSCHEN (v214)! 👑✏️ Im Menü jedes Menschen
+  gibt es jetzt „✏️ Eigene Aufgabe!" - genau wie beim Butler. Jonah schreibt
+  auf, was er will, und der Dorfbewohner, das Kind, der Ritter oder der
+  Händler macht es wirklich: „bau einen Turm aus Stein", „hol mir Holz",
+  „grab ein Loch", „mach Licht", „pflanz Blumen", „komm mit", „warte hier",
+  „du darfst wieder gehen". Man kann sogar mehreren Leuten gleichzeitig
+  verschiedene Aufträge geben - dann bauen alle nebeneinander.
+  Ganz wichtig dabei: Butler und Menschen benutzen jetzt DENSELBEN
+  Auftrags-Versteher (personAuftrag) und DIESELBE Bau-Abarbeitung
+  (arbeitsTick). Der Butler redet nur vornehmer. So kann nie einer etwas
+  verstehen, was der andere nicht kann - ein Test prüft das für sechs Sätze
+  Wort für Wort nach.
+  Außerdem hält „Warte hier!" jetzt WIRKLICH: der Platz wird gemerkt, und
+  wer doch abdriftet, geht zurück. Und wer mitkommen soll, bleibt nicht mehr
+  an einer Geländestufe hängen - er hüpft darüber.
 - ALLE MENSCHEN HÖREN AUF KÖNIG JONAH (v213)! 👑 Jetzt kann Jonah JEDEN
   Menschen antippen - Dorfbewohner, Kinder, Ritter, Händler, Bankier,
   Hausmeister und den Butler - und ihm sagen, was er tun soll:
