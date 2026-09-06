@@ -221,6 +221,26 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ENGLISCHE UND DEUTSCHE FREUNDE PLAUDERN MITEINANDER (v216)! 🌍💬 Ganz oben
+  im 📱-Messenger steht jetzt „🌍 Alle zusammen" - ein Plausch, in dem sich
+  Jonahs englische Freunde und die Leute aus seinem Dorf UNTEREINANDER
+  unterhalten. Die Engländer schreiben Englisch, das Dorf schreibt Deutsch -
+  und bei JEDEM Satz steht ein Knopf: bei englischen „🇩🇪 Was heißt das?",
+  bei deutschen „🇬🇧 Auf Englisch?" (mit 🔊 zum Vorlesen). So lernt Jonah
+  beide Richtungen. Sie antworten einander wirklich, also entsteht ein echtes
+  Hin und Her. Jonah kann jederzeit selbst mitschreiben - dann antworten ihm
+  einer aus England und einer aus dem Dorf.
+  UND ALLE WISSEN VONEINANDER: Wenn Jonah ein Halle-Level, eine Mission oder
+  die große Schlacht schafft, kommt das im Plausch an. Die englischen Freunde
+  erzählen ihm privat weiter, was jemand aus dem Dorf gesagt hat („Emma says:
+  I am baking bread. Is that true?") - und die Dorfleute erzählen umgekehrt,
+  was die Engländer geschrieben haben („Weißt du was? Fred hat geschrieben:
+  I am building a big castle - das heißt: Ich baue eine große Burg"). Wer im
+  Plausch mitreden darf, sind Jonahs ECHTE Dorf-Freunde.
+  Nebenbei repariert: Seit v213 öffnete das Antippen eines Bewohners nur noch
+  das Befehlsmenü - man konnte gar nicht mehr mit ihm reden und keine neuen
+  Freundschaften mehr schließen. Jetzt steht „💬 Erzähl mal!" ganz oben im
+  Menü und zeigt gleich mit an, wie weit die Freundschaft ist (❤ 1/3).
 - DEINE ENGLISCHEN FREUNDE SIND JETZT AUCH IN JONAHCRAFT (v215)! 📱🦊 Der
   neue 📱-Knopf öffnet den Messenger mit genau denselben acht Freunden wie in
   der Englisch-App: Fred 🦊, Lucy 🐺, Koko 🐨, Pip 🐧, Rex 🦖, Milo 🐵,
