@@ -221,6 +221,31 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ALLE MENSCHEN HÖREN AUF KÖNIG JONAH (v213)! 👑 Jetzt kann Jonah JEDEN
+  Menschen antippen - Dorfbewohner, Kinder, Ritter, Händler, Bankier,
+  Hausmeister und den Butler - und ihm sagen, was er tun soll:
+  🚶 Komm mit! · 👉 Komm her! · 🛑 Warte hier! · 💃 Tanz mal! ·
+  🙌 Du darfst gehen. Wer mitkommen soll, folgt Jonah überallhin und
+  verschwindet auch nicht mehr, wenn Jonah weit wegrennt. Der Bankier hat
+  in seinem Menü zusätzlich die Bank, der Händler seinen Laden und der
+  Hausmeister seine Pause.
+- DER BUTLER VERSTEHT JETZT GENAU (v213)! 🤵 Vorher hat er einfach das erste
+  Wort genommen, das er kannte: bei „hol mir Steine für die Mauer" hat er
+  eine MAUER gebaut statt Steine zu holen, und bei „bau ein Haus mit einem
+  Turm" einen Turm statt ein Haus. Jetzt sucht er ZUERST das Tu-Wort (bauen?
+  holen? graben? Licht?) und erst danach, worum es geht - und es gewinnt das
+  Wort, das im Satz ZUERST steht. Er sagt außerdem immer genau, was er
+  verstanden hat („Zu Befehl: ich hole Ihnen Stein 🪨!"), und wenn ein Satz
+  wirklich zweideutig ist, FRAGT er nach, statt einfach loszulegen.
+- DIE HALLE BLEIBT HEIL (v213)! 🔒 Jonah hatte aus Versehen den roten
+  Startknopf abgebaut. In der Halle kann man jetzt weder etwas abbauen noch
+  etwas hinbauen - der Knopf, die Fahne, das Ziel-Feld und der ganze
+  Parcours bleiben, wie sie sind. (Draußen in der Welt geht natürlich
+  weiterhin alles.)
+- BRÜCKEN-LEVEL: TROCKEN STARTEN (v213)! 🌉 Beim Brücken-Level stand Jonah
+  im Wasser und kam nicht mehr auf den Steg. Die trockene Startinsel reicht
+  jetzt bis unter den Anfang des Stegs, und Jonah wird immer auf einen Platz
+  gestellt, unter dem wirklich fester Boden ist.
 - JEDES LEVEL SIEHT ANDERS AUS (v212)! 🎲🎨 Weil ja seit v211 jeder Besuch
   bei Level 1 anfängt, war es vorher immer dasselbe. Jetzt wird bei jedem
   Besuch UND bei jedem roten Knopfdruck neu gewürfelt:
