@@ -676,7 +676,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 213 &middot; Alle Menschen gehorchen dir, der Butler versteht dich genau! 👑🤵</p>
+    Version 214 &middot; Jeder Mensch nimmt jetzt auch eigene Aufträge an! 👑✏️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -722,7 +722,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 213;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 214;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7225,8 +7225,6 @@ function updateAnimals(dt) {
     // 👑 KÖNIG JONAH HAT GESPROCHEN: wer einen Befehl hat, macht GENAU den.
     // Das muss hier stehen - nach der normalen KI, aber VOR dem Laufen -,
     // damit es die normale KI überschreibt und die Beine sich auch bewegen.
-    if (a.befehl && a.type !== 'butler' && MENSCH_TYPEN.has(a.type))
-      gehorcheTick(a, dt);
 
     // Freunde freuen sich und kommen angelaufen, wenn sie dich sehen
     if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
@@ -7514,6 +7512,14 @@ function updateAnimals(dt) {
       if (Math.hypot(a.x-player.x,a.z-player.z)<10 && Math.random()<dt*0.04)
         { blip(500,0.07); blip(640,0.07); }                                // Kichern
     }
+    // 👑 KÖNIG JONAH HAT GESPROCHEN - und das gilt. Das muss GANZ ZUM SCHLUSS
+    // stehen, direkt vor dem Laufen: sonst überschreibt eine der vielen
+    // anderen Verhaltensweisen (Dorfbewohner gehen zur Spielhalle, Kinder
+    // spielen, ...) den Befehl wieder, und "Warte hier!" hielt nicht.
+    if ((a.befehl || (a.bauPlan && a.bauPlan.length)) &&
+        a.type !== 'butler' && MENSCH_TYPEN.has(a.type))
+      gehorcheTick(a, dt);
+
     let vx=0, vz=0;
     const sp = a.spd || k.speed;
     if (a.walking) { vx=Math.sin(a.yaw)*sp; vz=-Math.cos(a.yaw)*sp; a.ph+=dt*9; }
@@ -10557,6 +10563,7 @@ const MENSCH_JA = [
 ];
 // Der gemeinsame Gehorsam-Tick: folgen, warten oder tanzen
 function gehorcheTick(a, dt) {
+  if (arbeitsTick(a, dt)) return;       // 🔨 er arbeitet gerade einen Auftrag ab
   const dp = Math.hypot(player.x-a.x, player.z-a.z);
   a.t = 9;
   if (a.tanzT > 0) {                    // 💃 tanzt gerade für Jonah
@@ -10568,24 +10575,44 @@ function gehorcheTick(a, dt) {
   }
   if (a.befehl === 'folgen') {
     a.spd = 0;
-    if (dp > 30) {                      // abgehängt? Dann eben abkürzen
+    // Kommt er voran? Wenn nicht, hängt er an einer Stufe fest - dann hüpft
+    // er, und wenn das auch nichts hilft, nimmt er die Abkürzung.
+    if (a.festDist === undefined || dp < a.festDist - 0.4) {
+      a.festDist = dp; a.festT = 0;
+    } else {
+      a.festT = (a.festT||0) + dt;
+    }
+    if (dp > 30 || a.festT > 6) {       // abgehängt oder festgeklemmt: abkürzen
       a.x = player.x + (Math.random()*2-1); a.z = player.z + (Math.random()*2-1);
-      a.y = player.y + 1; a.vy = 0;
+      a.y = player.y + 1; a.vy = 0; a.festT = 0; a.festDist = undefined;
     } else if (dp > 2.6) {
       a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
       a.walking = true; a.spd = 3.2;
+      if (a.festT > 0.5 && a.onGround) a.vy = 5.2;   // über die Stufe hüpfen
     } else {
       a.walking = false; a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+      a.festDist = undefined; a.festT = 0;
     }
     if (Math.random() < dt*0.008)
       sagen(a, MENSCH_JA[Math.floor(Math.random()*MENSCH_JA.length)], 3);
     return;
   }
   if (a.befehl === 'warten') {
-    a.walking = false; a.spd = 0;
-    if (dp < 14) a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    // "Warte hier!" heißt WIRKLICH hier: der Platz wird gemerkt. Sonst haben
+    // andere Verhaltensweisen (oder ein Schubser) ihn doch weggetragen.
+    if (a.warteX === undefined) { a.warteX = a.x; a.warteZ = a.z; }
+    a.walking = false; a.spd = 0; a.kx = 0; a.kz = 0;
+    const weg = Math.hypot(a.x-a.warteX, a.z-a.warteZ);
+    if (weg > 1.2) {                    // abgedriftet? Zurück auf den Platz!
+      a.yaw = Math.atan2(a.warteX-a.x, -(a.warteZ-a.z));
+      a.walking = true; a.spd = 2.6;
+      if (weg > 8) { a.x = a.warteX; a.z = a.warteZ; a.walking = false; }
+    } else if (dp < 14) {
+      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    }
     return;
   }
+  a.warteX = undefined;                 // bei jedem anderen Befehl wieder frei
   if (a.befehl === 'hierher') {         // "Komm her!" - und dann bleibt er stehen
     if (dp > 2.2) {
       a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
@@ -10622,10 +10649,10 @@ function openMensch(a) {
         blip(523,0.08); blip(659,0.1); }
     }]);
   BEFEHLE.push(
-    ['🚶 Komm mit!',      () => { a.befehl='folgen'; a.tanzT=0;
+    ['🚶 Komm mit!',      () => { a.befehl='folgen'; a.tanzT=0; a.warteX=undefined;
       sagen(a,'Ja, König Jonah - ich komme mit! 🚶',3);
       toast('👑 '+wer+': „Ja, König Jonah - ich komme mit!"',3000); }],
-    ['👉 Komm her!',      () => { a.befehl='hierher'; a.tanzT=0;
+    ['👉 Komm her!',      () => { a.befehl='hierher'; a.tanzT=0; a.warteX=undefined;
       sagen(a,'Ich komme sofort! 👑',3);
       toast('👑 '+wer+': „Ich komme sofort!"',3000); }],
     ['🛑 Warte hier!',    () => { a.befehl='warten'; a.tanzT=0;
@@ -10635,6 +10662,7 @@ function openMensch(a) {
       sagen(a,'Sehr gerne, Majestät! 💃',4);
       toast('👑💃 '+wer+' tanzt für dich!',3000);
       for (const f of [523,659,784,1047]) blip(f,0.09); }],
+    ['✏️ Eigene Aufgabe!', () => openMenschAuftrag(a)],
     ['🙌 Du darfst gehen', () => { a.befehl=null; a.tanzT=0;
       sagen(a,'Danke, König Jonah! 👋',3);
       toast('👑 '+wer+' geht wieder seiner Wege.',3000); }],
@@ -10663,45 +10691,51 @@ const BUTLER_TALK = [
   'Darf es sonst noch etwas sein?',
   'Ich stehe zu Diensten!',
 ];
+// 🔨 EINEN AUFTRAG ABARBEITEN - das können jetzt ALLE Menschen, nicht nur
+// der Butler. Gibt true zurück, solange noch gearbeitet wird.
+function arbeitsTick(a, dt) {
+  if (!a.bauPlan || !a.bauPlan.length) return false;
+  const [bx,by2,bz] = a.bauPlan[0];
+  const dp = Math.hypot(bx+0.5-a.x, bz+0.5-a.z);
+  a.t = 9;
+  if (dp > 4) {                         // erst zur Baustelle laufen
+    a.bauWeg = (a.bauWeg||0) + dt;
+    if (a.bauWeg > 5) {                 // Mauer im Weg? Dann eben außenrum!
+      a.x = bx+0.5+(Math.random()-0.5); a.z = bz+0.5+(Math.random()-0.5);
+      a.y = by2+1; a.vy = 0; a.bauWeg = 0;
+    } else {
+      a.yaw = Math.atan2(bx+0.5-a.x, -(bz+0.5-a.z));
+      a.walking = true; a.spd = 3.4;
+    }
+    return true;
+  }
+  a.bauWeg = 0;
+  a.walking = false;
+  a.yaw = Math.atan2(bx+0.5-a.x, -(bz+0.5-a.z));
+  a.bauT = (a.bauT||0) - dt;
+  if (a.bauT > 0) return true;
+  a.bauT = 0.09;                        // Block für Block - schön zum Zuschauen
+  const [x,y,z,b] = a.bauPlan.shift();
+  const alt = getBlock(x,y,z);
+  if (b===AIR ? alt!==AIR : alt===AIR || alt===GRASS || alt===SNOW || alt===BLUME)
+    setBlock(x,y,z,b);
+  if (Math.random()<0.5) blip(300+Math.random()*300, 0.03);
+  if (!a.bauPlan.length) {
+    const wer = a.type==='butler' ? 'Der Butler' : (a.name || MENSCH_NAME[a.type] || 'Er');
+    sagen(a, a.type==='butler' ? 'Fertig, mein König! Gefällt es Ihnen? ✨'
+                               : 'Fertig, König Jonah! 😊', 5);
+    toast('✨ ' + wer + ' ist fertig!', 3000);
+    blip(523,0.07); blip(659,0.07); blip(784,0.12);
+    for (let s=0;s<10;s++)
+      fireworks.push({x:a.x, y:a.y+1.4, z:a.z, vx:(Math.random()-0.5)*2.4,
+        vy:1.4+Math.random()*2, vz:(Math.random()-0.5)*2.4, tile:73, t:0.7});
+  }
+  return true;
+}
 function butlerTick(a, dt) {
   const B = dienstHeim();
   const dp = Math.hypot(player.x-a.x, player.z-a.z);
-  if (a.bauPlan && a.bauPlan.length) {  // 🔨 er arbeitet einen Auftrag ab!
-    const [bx,by2,bz] = a.bauPlan[0];
-    const dp = Math.hypot(bx+0.5-a.x, bz+0.5-a.z);
-    a.t = 9;
-    if (dp > 4) {                       // erst zur Baustelle laufen
-      a.bauWeg = (a.bauWeg||0) + dt;
-      if (a.bauWeg > 5) {               // Mauer im Weg? Dann eben außenrum!
-        a.x = bx+0.5+(Math.random()-0.5); a.z = bz+0.5+(Math.random()-0.5);
-        a.y = by2+1; a.vy = 0; a.bauWeg = 0;
-      } else {
-        a.yaw = Math.atan2(bx+0.5-a.x, -(bz+0.5-a.z));
-        a.walking = true; a.spd = 3.4;
-      }
-      return;
-    }
-    a.bauWeg = 0;
-    a.walking = false;
-    a.yaw = Math.atan2(bx+0.5-a.x, -(bz+0.5-a.z));
-    a.bauT = (a.bauT||0) - dt;
-    if (a.bauT > 0) return;
-    a.bauT = 0.09;                      // Block für Block - schön zum Zuschauen
-    const [x,y,z,b] = a.bauPlan.shift();
-    const alt = getBlock(x,y,z);
-    if (b===AIR ? alt!==AIR : alt===AIR || alt===GRASS || alt===SNOW || alt===BLUME)
-      setBlock(x,y,z,b);
-    if (Math.random()<0.5) blip(300+Math.random()*300, 0.03);
-    if (!a.bauPlan.length) {
-      sagen(a, 'Fertig, mein König! Gefällt es Ihnen? ✨', 5);
-      toast('🤵✨ Der Butler ist fertig!', 3000);
-      blip(523,0.07); blip(659,0.07); blip(784,0.12);
-      for (let s=0;s<10;s++)
-        fireworks.push({x:a.x, y:a.y+1.4, z:a.z, vx:(Math.random()-0.5)*2.4,
-          vy:1.4+Math.random()*2, vz:(Math.random()-0.5)*2.4, tile:73, t:0.7});
-    }
-    return;
-  }
+  if (arbeitsTick(a, dt)) return;       // 🔨 er arbeitet einen Auftrag ab!
   if (a.tanzT > 0) {                    // 💃 er tanzt gerade für dich!
     a.tanzT -= dt;
     a.walking = false; a.t = 9;
@@ -10786,6 +10820,19 @@ function openButlerAuftrag(a) {
   document.getElementById('chatSend').textContent = '🤵 Auftrag!';
   openChat();
   toast('🤵 Schreib mir auf, was ich tun soll! Zum Beispiel: „bau einen Turm", „bau ein Haus aus Stein", „hol mir Holz", „mach eine Brücke", „grab ein Loch", „mach Licht", „pflanz Blumen"', 7000);
+}
+// ✏️ Eigene Aufgaben auch für ganz normale Menschen
+function openMenschAuftrag(a) {
+  butlerTarget = a;                     // dieselbe Eingabe wie beim Butler
+  chatInput.value = '';
+  chatInput.placeholder = 'Was soll ich tun, König Jonah?';
+  document.getElementById('chatSend').textContent = '👑 Auftrag!';
+  openChat();
+  const wer = a.name || MENSCH_NAME[a.type] || 'Ich';
+  toast('👑 ' + wer + ': „Schreib mir auf, was ich tun soll! Zum Beispiel: ' +
+        '„bau einen Turm", „bau ein Haus aus Stein", „hol mir Holz", ' +
+        '„mach eine Brücke", „grab ein Loch", „mach Licht", „pflanz Blumen", ' +
+        '„komm mit" oder „warte hier"!"', 8000);
 }
 function bauPlatz(dist) {               // freier Platz vor Jonah zum Bauen
   const fx = Math.sin(yaw), fz = -Math.cos(yaw);
@@ -10927,19 +10974,32 @@ const BUTLER_ZEUG = [                   // Dinge, die er HOLEN kann
   { block:'SAND',  woerter:['sand'],                    txt:'Sand 🏖️' },
   { block:'CHEST', woerter:['truhe','kiste'],           txt:'eine Truhe 📦' },
 ];
-function butlerAuftrag(a, text) {
+function butlerAuftrag(a, text) { return personAuftrag(a, text); }
+// 👑 EIN AUFTRAG FÜR EINEN MENSCHEN. Genau EIN Versteher für alle - der
+// Butler sagt nur "mein König" dazu, kann aber nichts anderes als die
+// anderen. So kann nie einer etwas verstehen, was der andere nicht kann.
+function personAuftrag(a, text) {
   if (!text) return;
+  const butler = a.type === 'butler';
+  const wer = butler ? 'Butler' : (a.name || MENSCH_NAME[a.type] || 'Er');
+  const emoji = butler ? '🤵' : '👑';
   const t = text.toLowerCase();
-  toast('🙂 Du zum Butler: „'+text+'"', 2600);
+  toast('🙂 Du zu ' + wer + ': „'+text+'"', 2600);
   a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
   a.walking = false; a.t = 4;
   const hat = (...w) => w.some(x => t.includes(x));
   const m = materialAus(t);
-  const fertig = (txt) => { sagen(a, txt, 4); toast('🤵 Butler: „'+txt+'"', 4200);
+  const fertig = (txt) => { sagen(a, txt, 4); toast(emoji+' '+wer+': „'+txt+'"', 4200);
                             blip(600,0.06); blip(760,0.08); };
   const BLOCKS_NAME = { PLANK, STONE, BRICK, GLASS, WOOL, DIRT, SAND, CHEST };
 
   // 1) Zuerst die klaren Befehle, die kein Objekt brauchen
+  // Zuerst das Wegschicken - sonst würde „geh wieder" als „mitgehen" gelten
+  if (hat('darfst','kannst gehen','wieder gehen','weggehen','geh weg','nach hause',
+          'nach haus','heim','lass mich','bist frei','mach was du willst',
+          'brauchst nicht mehr','ich brauch dich nicht') && !hat('mit')) {
+    a.befehl = null; a.tanzT = 0;
+    return fertig('Alles klar - ich gehe wieder meiner Wege! 👋'); }
   if (hat('komm her','komm hier','komm zu mir')) { a.befehl='hierher';
     return fertig('Zu Befehl! Ich komme sofort zu Ihnen. 👉'); }
   if (hat('folg','komm','hinterher','begleit','mitkommen','mitgehen')) { a.befehl='folgen';
@@ -10951,8 +11011,11 @@ function butlerAuftrag(a, text) {
   if (hat('witz','lach')) {
     return fertig(BUTLER_WITZE[Math.floor(Math.random()*BUTLER_WITZE.length)]); }
   if (hat('hallo','hi ','guten tag','moin','servus')) {
-    return fertig('Guten Tag, König Jonah! Was darf ich für Sie tun? 🤵'); }
-  if (hat('danke')) { return fertig('Sehr gerne, mein König! Immer zu Diensten.'); }
+    return fertig(butler ? 'Guten Tag, König Jonah! Was darf ich für Sie tun? 🤵'
+                         : 'Hallo, König Jonah! Was soll ich tun? 😊'); }
+  if (hat('danke')) { return fertig(butler ? 'Sehr gerne, mein König! Immer zu Diensten.'
+                                           : 'Gern geschehen, König Jonah!'); }
+
 
   // 2) Das TU-WORT bestimmen - das ist das Wichtigste!
   const willHolen  = hat('hol','bring','gib mir','besorg','reich');
@@ -11009,7 +11072,8 @@ function butlerAuftrag(a, text) {
     butlerBringen(a, BLOCKS_NAME[zeug.block], zeug.txt);
     return fertig('Zu Befehl: ich hole Ihnen ' + zeug.txt + '!'); }
 
-  return fertig('Das habe ich nicht genau verstanden, mein König. Sagen Sie mir ' +
+  return fertig((butler ? 'Das habe ich nicht genau verstanden, mein König. Sagen Sie mir '
+                        : 'Das habe ich nicht verstanden. Sag mir ') +
     'erst, WAS ich tun soll: „bau …“, „hol …“, „grab ein Loch“, „mach Licht“, ' +
     '„räum auf“, „komm mit“, „warte hier“ oder „erzähl einen Witz“.');
 }
@@ -16816,8 +16880,8 @@ function submitChat() {
   const butler=butlerTarget;
   chatInput.value='';
   closeChat();
-  if (butler) {                          // 🤵 ein Auftrag für den Butler!
-    if (animals.includes(butler)) butlerAuftrag(butler, msg);
+  if (butler) {                          // 👑 ein Auftrag für einen Menschen!
+    if (animals.includes(butler)) personAuftrag(butler, msg);
     return;
   }
   if (target) {                          // Schild beschriften
