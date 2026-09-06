@@ -676,7 +676,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 210 &middot; DAS HOLODECK: weiße Halle, roter Knopf, Laser und Seil-Schaukel! 🤍🔴🪢</p>
+    Version 211 &middot; Halle: jeder Besuch startet bei Level 1 - schaffst du deinen Rekord? 🔁🏅</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -722,7 +722,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 210;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 211;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1566,8 +1566,10 @@ function halleStart() {
   halleKnopf(); missAnzeige();
   toast('🏟️ WILLKOMMEN IN DER HALLE! Alles ist weiß und leer. ' +
         'Rechts an der Wand ist ein großer roter Knopf 🔴 - tipp ihn an, ' +
-        'dann baut die Halle dein nächstes Level auf! ' +
-        'Mit dem 🚪-Knopf kommst du jederzeit wieder heraus.', 11000);
+        'dann baut die Halle Level 1 auf! Es geht IMMER bei Level 1 los - ' +
+        'schau mal, wie weit du diesmal kommst!' +
+        (halleBest ? ' Dein Rekord: Level ' + halleBest + ' 🏅' : '') +
+        ' Mit dem 🚪-Knopf kommst du jederzeit wieder heraus.', 12000);
   for (const f of [523,659,784]) blip(f,0.12);
 }
 // 🔴 Der rote Knopf an der Wand: das Programm läuft los!
@@ -1705,9 +1707,15 @@ function halleEnde() {
     player.vx = player.vy = player.vz = 0;
   }
   halleHeim = null;
+  // 🔁 Jeder Besuch fängt wieder bei Level 1 an! Wer die Halle verlässt,
+  // gibt seinen Lauf auf - nur die BESTLEISTUNG bleibt als Rekord stehen.
+  const geschafft = halleLevel;
+  halleLevel = 0; halleCacheLvl = -1;
   halleKnopf(); missAnzeige(); scheduleSave();
-  toast('🏟️ Du bist wieder zu Hause! Dein Level bleibt gespeichert - ' +
-        'du kannst jederzeit weitermachen. 👋', 5000);
+  toast('🏟️ Du bist wieder zu Hause! ' +
+        (geschafft > 0 ? 'Du hast diesmal ' + geschafft + ' Level geschafft. ' : '') +
+        'Beim nächsten Mal geht es wieder bei Level 1 los - ' +
+        'aber dein Rekord bleibt: Bestleistung Level ' + halleBest + '! 🏅', 7000);
 }
 // 🚩 Die Fahne antippen und mitnehmen
 function halleFahneNehmen(x, y, z) {
@@ -1721,7 +1729,8 @@ function halleFahneNehmen(x, y, z) {
 function halleGeschafft() {
   const restZeit = Math.max(0, Math.round(halleZeit));
   halleLevel++;
-  if (halleLevel > halleBest) halleBest = halleLevel;
+  const neuerRekord = halleLevel > halleBest;
+  if (neuerRekord) halleBest = halleLevel;
   halleFahne = false;
   money += 40 + restZeit; gems += 1; updateFoodHUD();   // ⏱️ schnell sein lohnt sich!
   for (let s=0; s<40; s++)
@@ -1735,6 +1744,7 @@ function halleGeschafft() {
   halleRuhe();
   toast('🏆 LEVEL ' + halleLevel + ' GESCHAFFT! +' + (40+restZeit) + ' € 💶 ' +
         '(40 plus ' + restZeit + ' € Zeit-Bonus!) +1 Diamant 💎  ' +
+        (neuerRekord ? '🏅 NEUER REKORD! ' : '') +
         'Die Halle ist wieder weiß. Wenn du bereit bist, tipp den roten Knopf 🔴 ' +
         'an der Wand an - dann kommt Level ' + (halleLevel+1) + ': ' +
         naechste.name + '!', 11000);
@@ -4327,7 +4337,7 @@ function saveGame() {
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
       missIdx, missZahl,                // 📜 wie weit ist Jonah mit den Missionen?
       schlacht: { welle: schlachtWelle, laeuft: schlachtLaeuft?1:0, gewonnen: schlachtGewonnen?1:0 },
-      halle: { level: halleLevel, best: halleBest },   // 🏟️ wie weit ist er in der Halle?
+      halle: { best: halleBest },       // 🏟️ nur der Rekord - jeder Besuch startet neu
       // ✨ in welcher Welt ist Jonah gerade? (in der Halle: wo er herkam)
       dim: halleAn && halleHeim ? halleHeim.dim : weltDim,
       // ... und die Änderungen ALLER anderen Welten (Wunderwelt und Planeten)
@@ -4409,10 +4419,11 @@ function loadGame() {
       // Jonah fängt beim nächsten Antippen einfach wieder bei Welle 1 an.
       schlachtWelle = 0; schlachtLaeuft = false; schlachtPause = 0;
     }
-    if (s.halle) {                       // 🏟️ das erreichte Level in der Halle
-      halleLevel = s.halle.level|0; halleBest = s.halle.best|0;
-      // In der Halle wird nie gespeichert-gestartet: Jonah steht immer draußen
-      halleAn = false; halleFahne = false; halleHeim = null;
+    if (s.halle) {                       // 🏟️ die Bestleistung in der Halle
+      halleBest = s.halle.best|0;
+      // Jeder Besuch fängt bei Level 1 an - und Jonah steht immer draußen
+      halleLevel = 0; halleCacheLvl = -1;
+      halleAn = false; halleProgramm = false; halleFahne = false; halleHeim = null;
     }
     if (typeof s.dim === 'number') weltDim = s.dim;        // ✨ welche Welt?
     for (const k in (s.edits2||{})) {                      // alte Speicherstände: die andere Welt
@@ -11352,7 +11363,8 @@ function missAnzeige() {
   if (halleAn && !halleProgramm) {      // 🤍 die weiße Halle wartet auf den Knopf
     el.style.display = 'flex';
     tx.textContent = '🏟️ DIE WEISSE HALLE · Tipp den roten Knopf 🔴 an der Wand an - ' +
-      'dann baut sie Level ' + (halleLevel+1) + ' auf: ' + halleArt().name;
+      'dann baut sie Level ' + (halleLevel+1) + ' auf: ' + halleArt().name +
+      (halleBest ? ' · 🏅 Rekord: Level ' + halleBest : '');
     return;
   }
   if (halleAn) {                        // 🏟️ Jonah übt gerade in der Halle
@@ -11364,7 +11376,8 @@ function missAnzeige() {
       (wachen ? ' · ⚔️ noch ' + wachen + ' Wächter!' : '') + ' · ' +
       (halleFahne ? '🚩 Du hast die Fahne! Schnell aufs goldene 🟨 Ziel-Feld!'
        : wachen && l.arena ? 'Besiege erst alle Wächter!'
-       : 'Hol die 🚩 Fahne!');
+       : 'Hol die 🚩 Fahne!') +
+      (halleBest ? ' · 🏅 Rekord: Level ' + halleBest : '');
     return;
   }
   if (missIdx >= MISSIONEN.length) {    // ⚔️ jetzt wartet DIE GROSSE SCHLACHT

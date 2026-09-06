@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JEDER BESUCH FÄNGT VON VORNE AN (v211)! 🔁🏅 Jonahs Wunsch: Wer die Halle
+  verlässt und später wieder hineingeht, muss die Level wieder von vorne
+  machen. Genau so ist es jetzt - der 🚪-Knopf beendet den Lauf, und beim
+  nächsten Besuch baut die Halle wieder Level 1 auf.
+  Damit sich das lohnt, merkt sich das Spiel die BESTLEISTUNG: oben in der
+  Anzeige steht immer "🏅 Rekord: Level N", und wer weiter kommt als je
+  zuvor, bekommt ein "🏅 NEUER REKORD!". Der Rekord überlebt auch das
+  Neuladen - nur das laufende Level nicht mehr.
 - DAS HOLODECK (v210)! 🤍🔴 Jonah wollte es genau so: Wenn er den
   🏟️-Knopf drückt, steht er in einer GANZ WEISSEN Halle aus Wolle - Boden,
   Wände, Decke, alles weiß und leer. An der Wand hängt ein großer roter
