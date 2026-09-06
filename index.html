@@ -181,9 +181,12 @@
   #msgrBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; gap:8px; background:rgba(12,24,40,.97); padding:12px;
     border-radius:16px; color:#fff; z-index:46; width:min(94vw,430px);
-    max-height:88vh; }
+    max-height:88vh; overflow:hidden; }
   #msgrBox h3 { font-size:17px; text-align:center; margin:0; }
-  #msgrListe { display:flex; flex-direction:column; gap:6px; overflow-y:auto; max-height:56vh; }
+  /* Liste und Chat teilen sich den Platz zwischen Überschrift und ✔-Knopf und
+     scrollen IN SICH - so ist der Knopf immer erreichbar, auch auf kleinen Handys. */
+  #msgrListe { display:flex; flex-direction:column; gap:6px; overflow-y:auto;
+    flex:1 1 auto; min-height:0; max-height:70vh; }
   .msgrZeile { display:flex; align-items:center; gap:9px; background:rgba(255,255,255,.1);
     border:none; border-radius:12px; padding:8px 10px; color:#fff; text-align:left;
     font-size:14px; cursor:pointer; }
@@ -193,24 +196,33 @@
   .msgrName { font-weight:bold; font-size:15px; }
   .msgrVor { font-size:12px; opacity:.8; display:block; max-width:250px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #msgrChat { display:none; flex-direction:column; gap:7px; }
+  #msgrChat { display:none; flex-direction:column; gap:7px; overflow:hidden;
+    flex:1 1 auto; min-height:0; }
+  /* Der Verlauf nimmt sich den Platz, der übrig bleibt, und scrollt in sich -
+     Eingabefeld und Knöpfe stehen dadurch IMMER unten und sind erreichbar. */
   #msgrVerlauf { display:flex; flex-direction:column; gap:8px; overflow-y:auto;
-    max-height:44vh; padding:2px; }
+    flex:1 1 auto; min-height:60px; padding:2px; }
   .msgrBlase { max-width:88%; padding:8px 11px; border-radius:14px; font-size:14px;
     line-height:1.35; }
   .msgrBlase.f { background:rgba(255,255,255,.16); align-self:flex-start; }
   .msgrBlase.k { background:rgba(90,170,255,.35); align-self:flex-end; }
   .msgrDe { display:block; font-size:11px; opacity:.75; margin-top:4px; }
+  .msgrWer { font-size:11px; font-weight:bold; opacity:.85; margin-bottom:3px; }
+  .msgrZeile.gruppe { background:rgba(60,150,110,.34);
+    border:1px solid rgba(140,240,190,.45); }
   .msgrWerkzeug { display:flex; gap:5px; margin-top:5px; }
   .msgrMini { font-size:11px; padding:3px 7px; border-radius:7px; border:none;
     background:rgba(255,255,255,.22); color:#fff; cursor:pointer; }
-  #msgrHilfen { display:flex; flex-direction:column; gap:5px; }
+  #msgrHilfen { display:flex; flex-direction:column; gap:5px; flex:none;
+    max-height:32vh; overflow-y:auto; }
   .msgrTipp { background:rgba(255,225,120,.22); border:1px solid rgba(255,225,120,.5);
     border-radius:10px; padding:7px 10px; color:#fff; font-size:14px; text-align:left;
     cursor:pointer; }
   .msgrTipp small { display:block; font-size:11px; opacity:.75; }
   #msgrEingabe { display:flex; gap:6px; }
   #msgrText { flex:1; font-size:15px; padding:8px; border-radius:9px; border:none; }
+  #msgrEingabe, #msgrHilfen, #msgrZurueck { flex:none; }
+  #msgrZu { flex:none; }
   #msgrSenden, #msgrZurueck, #msgrZu { font-size:14px; font-weight:bold; padding:7px 14px;
     border-radius:9px; border:none; background:#4caf50; color:#fff; cursor:pointer; }
   #msgrZurueck, #msgrZu { background:#5a6a80; }
@@ -739,7 +751,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 215 &middot; Deine englischen Freunde schreiben dir jetzt auch in JonahCraft! 📱🦊</p>
+    Version 216 &middot; Englische und deutsche Freunde plaudern jetzt miteinander! 🌍💬</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -785,7 +797,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 215;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 216;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -10691,6 +10703,57 @@ function gehorcheTick(a, dt) {
   a.befehl = null;                      // unbekannter Befehl: wieder frei
 }
 // Was Jonah einem Menschen sagen kann (Butler hat sein eigenes, größeres Menü)
+// 💬 Mit einem Bewohner oder Kind REDEN: jedes Gespräch macht euch
+// vertrauter, nach drei Gesprächen seid ihr Freunde. Steht als Knopf
+// „Erzähl mal!" im Menü jedes Menschen.
+function menschReden(a) {
+  if (a.type !== 'villager' && a.type !== 'kid') return;
+  const kid = a.type==='kid';
+  if (!a.name) a.name = (kid?KID_NAMES:VILLAGER_NAMES)[Math.floor(Math.random()*(kid?KID_NAMES:VILLAGER_NAMES).length)];
+  // Dreht sich zu dir um und bleibt kurz stehen
+  a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+  a.walking = false; a.t = 3.5;
+  a.friend = a.friend||0;
+  if (a.friend < 3) {                          // jedes Gespräch macht euch vertrauter
+    a.friend++;
+    if (a.friend===3) {                        // Freundschaft geschlossen!
+      toast('❤️❤️❤️ '+a.name+' ist jetzt dein Freund!', 3500);
+      blip(523,0.1); blip(659,0.1); blip(784,0.15);
+      const hk = a.home || 'welt';
+      if (!savedFriends[hk]) savedFriends[hk]=[];
+      savedFriends[hk].push([a.name, kid?1:0]);
+      scheduleSave();
+      return;
+    }
+    const talk = kid ? KID_TALK : VILLAGER_TALK;
+    let say = talk[Math.floor(Math.random()*talk.length)];
+    // 🌍 Hat er im Plausch etwas von den englischen Freunden gehört?
+    const eng = (typeof gruppeLetztes === 'function') ? gruppeLetztes(true) : null;
+    if (eng && Math.random() < 0.4)
+      say = 'Weißt du was? ' + eng.n + ' hat geschrieben: „' + eng.t +
+            '" - das heißt: „' + eng.d + '"';
+    sagen(a, say, 4);
+    toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"  (❤ '+a.friend+'/3)', 3500);
+  } else {                                     // Freunde kommen mit ins Abenteuer!
+    a.follow = !a.follow;
+    if (a.follow) {
+      const eng2 = (typeof gruppeLetztes === 'function') ? gruppeLetztes(true) : null;
+      if (eng2 && Math.random() < 0.4)
+        toast('❤️ '+a.name+': „Au ja, ich komme mit! Ach, und '+eng2.n+
+              ' lässt dich grüßen: „'+eng2.t+'" ('+eng2.d+')"', 4500);
+      else
+      toast('❤️ '+a.name+': „Au ja! Ich komme mit auf dein Abenteuer!"', 3200);
+      blip(523,0.08); blip(659,0.1);
+    } else {
+      toast('❤️ '+a.name+': „Gut, dann gehe ich wieder nach Hause. Bis bald!"', 3200);
+      blip(392,0.1);
+    }
+    scheduleSave();
+  }
+  if (kid) { blip(430,0.1); blip(520,0.09); }
+  else { blip(200,0.12); blip(160,0.1); }
+  return;
+}
 function openMensch(a) {
   menschAktiv = a;
   const list = document.getElementById('butlerList');
@@ -10713,6 +10776,11 @@ function openMensch(a) {
         toast('🔧 Hausmeister: „Ich bin zurück! Alles, was kaputtgeht, mache ich wieder heil!"',4000);
         blip(523,0.08); blip(659,0.1); }
     }]);
+  // 💬 Reden! Nach drei Gesprächen seid ihr Freunde - und er erzählt dir
+  // dabei auch, was die englischen Freunde im Plausch geschrieben haben.
+  if (a.type === 'villager' || a.type === 'kid')
+    BEFEHLE.push([(a.friend||0) >= 3 ? '💬 Erzähl mal! (❤ Freund)'
+                  : '💬 Erzähl mal! (❤ ' + (a.friend||0) + '/3)', () => menschReden(a)]);
   BEFEHLE.push(
     ['🚶 Komm mit!',      () => { a.befehl='folgen'; a.tanzT=0; a.warteX=undefined;
       sagen(a,'Ja, König Jonah - ich komme mit! 🚶',3);
@@ -11473,11 +11541,17 @@ function freundeTick(dt) {
   // Ist gerade etwas Großes passiert? Dann redet der Freund GENAU darüber -
   // so wie ein echter Freund, der mitbekommen hat, was du geschafft hast.
   const er = neuesEreignis();
+  const dorf = gruppeLetztes(false);            // was hat zuletzt jemand aus dem Dorf gesagt?
   if (er) {
     ereignisGesagt(er);
     engSchreiben(f.id, 'f',
       'Wow! I heard it: ' + er.en + ' Well done! ' + tun[0],
       'Wow! Ich hab es gehört: ' + er.de + ' Gut gemacht! ' + tun[1], true);
+  } else if (dorf && Math.random() < 0.5) {
+    // Er hat im Plausch mitgelesen und erzählt es weiter - so weiß jeder Bescheid.
+    engSchreiben(f.id, 'f',
+      'Hi Jonah! ' + dorf.n + ' says: "' + dorf.d + '" Is that true?',
+      'Hi Jonah! ' + dorf.n + ' sagt: „' + dorf.t + '" Stimmt das?', true);
   } else {
     // "Hey Jonah! Was machst du? Ich mache gerade ..."
     engSchreiben(f.id, 'f', 'Hi Jonah! ' + k.frage + ' ' + tun[0],
@@ -11504,6 +11578,20 @@ function msgrAuf() {
   const liste = document.getElementById('msgrListe');
   liste.innerHTML = '';
   const offen = engUngelesen();
+  // 🌍 ganz oben: der Plausch, in dem sich ALLE unterhalten
+  {
+    const log = gruppeLog(), letzte = log[log.length-1];
+    const g = document.createElement('button');
+    g.className = 'msgrZeile gruppe';
+    g.innerHTML = '<span class="msgrAva" style="background:#3f8f6a">🌍</span>' +
+      '<span><span class="msgrName">Alle zusammen</span>' +
+      '<span class="msgrVor"></span></span>';
+    g.querySelector('.msgrVor').textContent = letzte
+      ? letzte.n + ': ' + letzte.t
+      : 'Deine englischen und deutschen Freunde';
+    g.addEventListener('click', () => msgrChatAuf(GRUPPE_ID));
+    liste.appendChild(g);
+  }
   for (const f of FREUNDE) {
     const log = engChat(f.id), letzte = log[log.length-1];
     const neu = offen.indexOf(f.id) >= 0;
@@ -11523,6 +11611,15 @@ function msgrAuf() {
 }
 function msgrChatAuf(id) {
   msgrOffen = id;
+  if (id === GRUPPE_ID) {                       // 🌍 der große Plausch
+    document.getElementById('msgrListe').style.display = 'none';
+    document.getElementById('msgrChat').style.display = 'flex';
+    document.getElementById('msgrKopf').textContent = '🌍 Alle zusammen';
+    if (!gruppeLog().length) { gruppeSagen('de'); gruppeSagen('en'); }
+    msgrVerlaufZeigen();
+    msgrHilfenZeigen();
+    return;
+  }
   const f = freundVon(id);
   // als gelesen markieren
   const s = engLaden(); if (s.unread) { delete s.unread[id]; engSpeichern(s); }
@@ -11536,6 +11633,7 @@ function msgrChatAuf(id) {
 function msgrVerlaufZeigen() {
   const v = document.getElementById('msgrVerlauf');
   v.innerHTML = '';
+  if (msgrOffen === GRUPPE_ID) { gruppeVerlaufZeigen(v); return; }
   const log = engChat(msgrOffen);
   if (!log.length) {
     const f = freundVon(msgrOffen);
@@ -11567,7 +11665,56 @@ function msgrVerlaufZeigen() {
     }
     v.appendChild(d);
   }
-  v.scrollTop = v.scrollHeight;
+  // erst nach dem Zeichnen ganz nach unten - sonst stimmt die Höhe noch nicht
+  requestAnimationFrame(() => { v.scrollTop = v.scrollHeight; });
+}
+// 🌍 Der Plausch: jeder mit Namen. Englische Sätze kann man vorlesen lassen,
+// bei ALLEN Sätzen zeigt ein Knopf die andere Sprache - so versteht Jonah
+// beide Seiten und lernt nebenbei, wie sein Dorf auf Englisch klingt.
+function gruppeVerlaufZeigen(v) {
+  for (const m of gruppeLog()) {
+    const meins = m.n === 'Jonah';
+    const d = document.createElement('div');
+    d.className = 'msgrBlase ' + (meins ? 'k' : 'f');
+    if (!meins) {
+      const kopf = document.createElement('div');
+      kopf.className = 'msgrWer';
+      kopf.textContent = m.e + ' ' + m.n + (m.en ? ' 🇬🇧' : ' 🇩🇪');
+      d.appendChild(kopf);
+    }
+    const txt = document.createElement('span');
+    txt.textContent = m.t;
+    d.appendChild(txt);
+    if (!meins) {
+      const w = document.createElement('div');
+      w.className = 'msgrWerkzeug';
+      if (m.en) {                               // englischen Satz vorlesen lassen
+        const b1 = document.createElement('button');
+        b1.className = 'msgrMini'; b1.textContent = '🔊 nochmal';
+        b1.addEventListener('click', () => msgrSprich(m.t));
+        w.appendChild(b1);
+      }
+      if (m.d) {
+        const b2 = document.createElement('button');
+        b2.className = 'msgrMini';
+        b2.textContent = m.en ? '🇩🇪 Was heißt das?' : '🇬🇧 Auf Englisch?';
+        b2.addEventListener('click', () => {
+          const de = document.createElement('span');
+          de.className = 'msgrDe'; de.textContent = m.d;
+          if (!m.en) { const h = document.createElement('button');
+            h.className = 'msgrMini'; h.textContent = '🔊';
+            h.addEventListener('click', () => msgrSprich(m.d));
+            de.appendChild(document.createTextNode(' ')); de.appendChild(h); }
+          b2.replaceWith(de);
+        });
+        w.appendChild(b2);
+      }
+      d.appendChild(w);
+    }
+    v.appendChild(d);
+  }
+  // erst nach dem Zeichnen ganz nach unten - sonst stimmt die Höhe noch nicht
+  requestAnimationFrame(() => { v.scrollTop = v.scrollHeight; });
 }
 // 🗣️ Vorlesen - genau wie in der Englisch-App
 function msgrSprich(text) {
@@ -11584,6 +11731,15 @@ function msgrSprich(text) {
 function msgrHilfen() {
   const k = spielKontext();
   const h = [];
+  if (msgrOffen === GRUPPE_ID) {                // 🌍 im Plausch begrüßt man alle
+    h.push(['Hello everyone!','Hallo zusammen!']);
+    const de = gruppeLetztes(false), en = gruppeLetztes(true);
+    if (de) h.push(['' + de.n + ' says: ' + de.d, de.n + ' sagt: ' + de.t]);
+    if (en) h.push(['I like that, ' + en.n + '!', 'Das mag ich, ' + en.n + '!']);
+    h.push(['I am playing JonahCraft right now.','Ich spiele gerade JonahCraft.']);
+    h.push(['What are you all doing?','Was macht ihr alle gerade?']);
+    return h;
+  }
   if (halleAn) h.push(['I am in the training hall.','Ich bin in der Trainingshalle.']);
   else if (schlachtLaeuft) h.push(['I am fighting monsters!','Ich kämpfe gegen Monster!']);
   else if (weltDim >= 2) h.push(['I am in space!','Ich bin im Weltall!']);
@@ -11613,6 +11769,16 @@ function msgrSenden(text) {
   const t = (text || document.getElementById('msgrText').value || '').trim();
   if (!t || !msgrOffen) return;
   document.getElementById('msgrText').value = '';
+  if (msgrOffen === GRUPPE_ID) {                // 🌍 im Plausch hören ALLE zu
+    gruppeSchreiben('Jonah', '🙂', t, '', true);
+    msgrVerlaufZeigen(); blip(660,0.06);
+    // einer aus England und einer aus dem Dorf antworten
+    setTimeout(() => { gruppeSagen('en');
+      if (msgrOffen === GRUPPE_ID) msgrVerlaufZeigen(); blip(880,0.07); }, 900);
+    setTimeout(() => { gruppeSagen('de');
+      if (msgrOffen === GRUPPE_ID) msgrVerlaufZeigen(); blip(784,0.07); }, 2100);
+    return;
+  }
   engSchreiben(msgrOffen, 'k', t, '', false);
   msgrVerlaufZeigen();
   blip(660,0.06);
@@ -11644,11 +11810,14 @@ async function msgrKiAntwort(f, text, s) {
   // Was ist zuletzt im Spiel passiert? Das darf der Freund wissen -
   // dann geht das Gespräch nahtlos weiter, in beiden Apps.
   const log = (s.spielLog || []).slice(-5).map(e => '- ' + e.en).join('\n');
+  const plausch = (s.gruppe || []).slice(-6)
+    .map(m => '- ' + m.n + ': ' + (m.en ? m.t : m.d)).join('\n');
   const system = [
     f.persona + '.',
     'You are chatting with ' + (s.name || 'Jonah') + ', a 9-year-old German child who is just starting to learn English.',
     'RIGHT NOW he is playing JonahCraft, his own Minecraft-style game, and ' + k.en + '.',
     log ? 'Things he did lately (you know about these, you may mention them):\n' + log : '',
+    plausch ? 'The group chat with his German village friends said lately (you read it too):\n' + plausch : '',
     'RULES:',
     '- Very simple English: short sentences (max 8 words), present tense, beginner words.',
     '- Maximum 2 short sentences. Ask one simple question most of the time.',
@@ -11677,6 +11846,122 @@ async function msgrKiAntwort(f, text, s) {
   }
   if (msgrOffen === f.id) msgrVerlaufZeigen();
   blip(880,0.07);
+}
+
+// ======== 🌍 ALLE ZUSAMMEN: der Plausch der englischen UND deutschen Freunde ========
+// Jonahs Wunsch: seine englischen Freunde und die Leute aus seinem Dorf sollen
+// sich auch UNTEREINANDER unterhalten - und alle sollen mitbekommen, was die
+// anderen so besprochen haben. Der Plausch liegt im gemeinsamen Speicher, die
+// Englisch-App kann ihn also genauso lesen.
+const GRUPPE_ID = "__alle";             // der Plausch steht wie ein Freund in der Liste
+const DORF_SPRUECHE = [                 // [deutsch, englisch] - so lernt man beides
+  ["Ich baue gerade ein neues Haus aus Ziegeln.","I am building a new brick house."],
+  ["Bei uns im Dorf ist heute Markt!","Today is market day in our village!"],
+  ["Ich ernte gerade Karotten im Garten.","I am picking carrots in the garden."],
+  ["Meine Kuh heißt Berta. Sie ist sehr lieb.","My cow is called Berta. She is very nice."],
+  ["Ich gehe gleich angeln am See.","I am going fishing at the lake."],
+  ["Hier scheint die Sonne. Wie ist das Wetter bei euch?","The sun is shining here. How is the weather?"],
+  ["Ich backe Brot. Es riecht so gut!","I am baking bread. It smells so good!"],
+  ["Wir haben eine neue Spielhalle im Dorf!","We have a new arcade in the village!"],
+  ["Ich passe auf die Schafe auf.","I am looking after the sheep."],
+  ["Heute Nacht hat es geschneit. Alles ist weiß!","It snowed last night. Everything is white!"],
+];
+const DORF_ANTWORT = [
+  ["Oh, das klingt toll!","Oh, that sounds great!"],
+  ["Wirklich? Das möchte ich auch mal machen!","Really? I want to do that too!"],
+  ["Schön! Grüß mir alle von hier.","Nice! Say hello to everyone from me."],
+  ["Das musst du mir zeigen!","You have to show me!"],
+  ["Haha, du bist lustig!","Haha, you are funny!"],
+];
+const ENG_ANTWORT = [
+  ["That is so cool!","Das ist so cool!"],
+  ["Wow! I want to see it!","Wow! Das will ich sehen!"],
+  ["Nice! Can I help you?","Schön! Kann ich dir helfen?"],
+  ["Haha! You are funny!","Haha! Du bist lustig!"],
+  ["Really? Tell me more!","Wirklich? Erzähl mehr!"],
+];
+// Wer aus dem Dorf ist dabei? Zuerst Jonahs echte Freunde, sonst die Leute,
+// die gerade in der Welt herumlaufen - und zur Not drei bekannte Namen.
+function dorfFreunde() {
+  const raus = [], gesehen = new Set();
+  const dazu = (name, kid) => {
+    if (!name || gesehen.has(name)) return;
+    gesehen.add(name); raus.push({ name, emoji: kid ? "🧒" : "👃", kid: !!kid });
+  };
+  try {
+    for (const hk in savedFriends)
+      for (const [nm, kid] of (savedFriends[hk] || [])) dazu(nm, kid);
+  } catch(e) {}
+  if (raus.length < 3) {
+    try {
+      for (const a of animals)
+        if ((a.type === "villager" || a.type === "kid") && a.name)
+          dazu(a.name, a.type === "kid");
+    } catch(e) {}
+  }
+  if (!raus.length) { dazu("Hans", 0); dazu("Emma", 0); dazu("Max", 1); }
+  return raus.slice(0, 6);
+}
+function gruppeLog() { return engLaden().gruppe || []; }
+// wer: Name · emoji: Bild · text: was gesagt wurde · de: die Übersetzung
+// en: true = auf Englisch gesagt (dann ist "de" das Deutsche und umgekehrt)
+function gruppeSchreiben(wer, emoji, text, de, en) {
+  const s = engLaden();
+  if (!s.gruppe) s.gruppe = [];
+  s.gruppe.push({ n: wer, e: emoji, t: text, d: de, en: !!en, z: Date.now() });
+  if (s.gruppe.length > 40) s.gruppe = s.gruppe.slice(-40);
+  engSpeichern(s);
+}
+// Das Letzte, was ein ENGLISCHER bzw. ein DEUTSCHER im Plausch gesagt hat -
+// damit die jeweils anderen davon erzählen können.
+function gruppeLetztes(englisch) {
+  const log = gruppeLog();
+  for (let i = log.length-1; i >= 0; i--)
+    if (log[i].n !== "Jonah" && !!log[i].en === !!englisch) return log[i];
+  return null;
+}
+let gruppeT = 60 + Math.random()*60;    // der erste Plausch kommt bald
+function gruppeTick(dt) {
+  if (mathePause) return;
+  gruppeT -= dt;
+  if (gruppeT > 0) return;
+  gruppeT = 90 + Math.random()*90;      // alle 1,5 bis 3 Minuten sagt jemand etwas
+  gruppeSagen();
+}
+// EINER sagt etwas. Wer dran ist, hängt davon ab, wer zuletzt geredet hat -
+// so entsteht ein echtes Hin und Her zwischen England und dem Dorf.
+function gruppeSagen(zwang) {
+  const dorf = dorfFreunde();
+  const log = gruppeLog(), letzte = log[log.length-1];
+  const wuerf = (l) => l[Math.floor(Math.random()*l.length)];
+  // Antwortet jemand auf den vorigen Satz? Dann wechselt die Sprache.
+  const antwort = letzte && letzte.n !== "Jonah" && Math.random() < 0.6;
+  const engDran = zwang === "en" ? true : zwang === "de" ? false
+                : antwort ? !letzte.en : Math.random() < 0.5;
+  // Gibt es etwas Neues aus dem Spiel? Dann redet man darüber.
+  const er = neuesEreignis();
+  if (er && !antwort) {
+    ereignisGesagt(er);
+    if (engDran) {
+      const f = wuerf(FREUNDE);
+      gruppeSchreiben(f.name, f.emoji, "Big news! " + er.en + " Well done, Jonah!",
+                      "Große Neuigkeit! " + er.de + " Gut gemacht, Jonah!", true);
+    } else {
+      const d = wuerf(dorf);
+      gruppeSchreiben(d.name, d.emoji, "Habt ihr gehört? " + er.de,
+                      "Did you hear? " + er.en, false);
+    }
+    return;
+  }
+  if (engDran) {
+    const f = wuerf(FREUNDE);
+    const satz = antwort ? wuerf(ENG_ANTWORT) : wuerf(f.tun).slice();
+    gruppeSchreiben(f.name, f.emoji, satz[0], satz[1], true);
+  } else {
+    const d = wuerf(dorf);
+    const satz = antwort ? wuerf(DORF_ANTWORT) : wuerf(DORF_SPRUECHE);
+    gruppeSchreiben(d.name, d.emoji, satz[0], satz[1], false);
+  }
 }
 
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
@@ -16132,40 +16417,7 @@ function hitEntity(a, dir) {
     return;
   }
   if (a.type==='villager' || a.type==='kid') {   // mit Bewohnern und Kindern sprechen!
-    const kid = a.type==='kid';
-    if (!a.name) a.name = (kid?KID_NAMES:VILLAGER_NAMES)[Math.floor(Math.random()*(kid?KID_NAMES:VILLAGER_NAMES).length)];
-    // Dreht sich zu dir um und bleibt kurz stehen
-    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
-    a.walking = false; a.t = 3.5;
-    a.friend = a.friend||0;
-    if (a.friend < 3) {                          // jedes Gespräch macht euch vertrauter
-      a.friend++;
-      if (a.friend===3) {                        // Freundschaft geschlossen!
-        toast('❤️❤️❤️ '+a.name+' ist jetzt dein Freund!', 3500);
-        blip(523,0.1); blip(659,0.1); blip(784,0.15);
-        const hk = a.home || 'welt';
-        if (!savedFriends[hk]) savedFriends[hk]=[];
-        savedFriends[hk].push([a.name, kid?1:0]);
-        scheduleSave();
-        return;
-      }
-      const talk = kid ? KID_TALK : VILLAGER_TALK;
-      const say = talk[Math.floor(Math.random()*talk.length)];
-      sagen(a, say, 4);
-      toast((kid?'🧒 ':'👃 ')+a.name+': „'+say+'"  (❤ '+a.friend+'/3)', 3500);
-    } else {                                     // Freunde kommen mit ins Abenteuer!
-      a.follow = !a.follow;
-      if (a.follow) {
-        toast('❤️ '+a.name+': „Au ja! Ich komme mit auf dein Abenteuer!"', 3200);
-        blip(523,0.08); blip(659,0.1);
-      } else {
-        toast('❤️ '+a.name+': „Gut, dann gehe ich wieder nach Hause. Bis bald!"', 3200);
-        blip(392,0.1);
-      }
-      scheduleSave();
-    }
-    if (kid) { blip(430,0.1); blip(520,0.09); }
-    else { blip(200,0.12); blip(160,0.1); }
+    menschReden(a);
     return;
   }
   if (isPet(a)) {                       // Tiere zähmen!
@@ -17657,6 +17909,7 @@ function frame(now) {
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
   try { freundeTick(dt); } catch(e) {}   // 📱 schreibt dir gerade ein englischer Freund?
+  try { gruppeTick(dt); } catch(e) {}    // 🌍 plaudern England und das Dorf miteinander?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
