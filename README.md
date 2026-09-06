@@ -221,6 +221,25 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEINE ENGLISCHEN FREUNDE SIND JETZT AUCH IN JONAHCRAFT (v215)! 📱🦊 Der
+  neue 📱-Knopf öffnet den Messenger mit genau denselben acht Freunden wie in
+  der Englisch-App: Fred 🦊, Lucy 🐺, Koko 🐨, Pip 🐧, Rex 🦖, Milo 🐵,
+  Stella 🦄 und Sparky 🤖. Alle paar Minuten schreibt dir einer von allein:
+  „Hi Jonah! Are you in the training hall again? I am building a small rocket."
+  - ein roter Punkt am Knopf zeigt, wie viele Nachrichten warten. Und sie
+  fragen nicht irgendwas, sondern GENAU nach dem, was du gerade machst:
+  in der Halle, im Weltall, in einer Höhle, beim Kämpfen oder beim Bauen.
+  Antworten geht ganz leicht: 🔊 liest dir jeden englischen Satz vor,
+  🇩🇪 verrät dir, was er heißt, und darunter stehen fertige englische Sätze
+  zum Antippen - immer mit der deutschen Bedeutung darunter.
+  DIE GESPRÄCHE GEHEN INEINANDER ÜBER: Beide Apps benutzen denselben
+  Speicher (`fredapp1`). Ein Chat, der in der Englisch-App angefangen hat,
+  geht hier einfach weiter - und umgekehrt. Wenn du ein Halle-Level, eine
+  Mission oder die große Schlacht schaffst, erfahren es die Freunde und
+  gratulieren dir beim nächsten Mal: „Wow! I heard it: Jonah finished level 3
+  in the training hall! Well done!" Und wenn in der Englisch-App ein
+  KI-Schlüssel hinterlegt ist, antworten sie damit richtig - sie wissen dann
+  auch, was du zuletzt im Spiel geschafft hast.
 - EIGENE AUFGABEN FÜR JEDEN MENSCHEN (v214)! 👑✏️ Im Menü jedes Menschen
   gibt es jetzt „✏️ Eigene Aufgabe!" - genau wie beim Butler. Jonah schreibt
   auf, was er will, und der Dorfbewohner, das Kind, der Ritter oder der
