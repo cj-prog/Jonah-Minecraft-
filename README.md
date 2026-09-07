@@ -221,6 +221,26 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ENGLISCH LERNEN, QUIZ UND STICKER – JETZT AUCH IN JONAHCRAFT (v219)! 📚⭐
+  Jonah kann ja noch kein Englisch schreiben – und genau dafür ist die App da.
+  Deshalb gibt es im 📱-Messenger jetzt alles, was die Englisch-App auch hat:
+  🇩🇪→🇬🇧 DIE ÜBERSETZUNGS-HILFE: In jedem Chat steht „Wie sagt man …?".
+  Jonah tippt seinen Satz auf DEUTSCH, bekommt das Englische gezeigt, kann es
+  sich mit 🔊 anhören und dann mit ➤ abschicken. Ohne KI-Schlüssel reicht das
+  eingebaute Wörterbuch mit 128 Wörtern plus allen Sätzen aus den
+  Wortschatz-Kisten; mit Schlüssel übersetzt die KI ganze Sätze. Und wenn etwas
+  nicht bekannt ist, sagt sie das ehrlich, statt etwas zu erfinden.
+  📚 ENGLISCH LERNEN: Der Knopf unten im Messenger öffnet die sieben
+  Wortschatz-Kisten der Englisch-App – Hallo, Tiere, JonahCraft, Karate,
+  Werkstatt, Essen, Farben & Zahlen. Erst die Wörter anschauen und anhören,
+  dann das 🧠 QUIZ: Das englische Wort wird vorgelesen, und Jonah tippt die
+  richtige deutsche Bedeutung aus vier Möglichkeiten an. Ab der Hälfte gibt es
+  einen Sticker und ein Feuerwerk. 🎆
+  ⭐ DAS STICKER-HEFT zeigt alle 20 Sticker – die normalen, die seltenen ✨ und
+  die SUPER-SELTENEN 💥. Was noch fehlt, bleibt als ❔ geheim.
+  ALLES ZÄHLT IN BEIDEN APPS: Sticker, gelernte Wörter und geschaffte Quizze
+  liegen im gemeinsamen Speicher. Was Jonah hier verdient, hat er drüben auch –
+  und umgekehrt.
 - JEDER HAT SEINEN EIGENEN PLATZ (v218)! 🧍‍♂️🐾🚗 Vorher sind alle, die Jonah
   hinterherlaufen, auf DENSELBEN Punkt zugelaufen - Freunde, Haustiere und
   Fahrzeuge standen dann ineinander drin, und beim Antippen erwischte man das

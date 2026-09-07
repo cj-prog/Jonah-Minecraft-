@@ -230,9 +230,79 @@
   #msgrText { flex:1; font-size:15px; padding:8px; border-radius:9px; border:none; }
   #msgrEingabe, #msgrHilfen, #msgrZurueck { flex:none; }
   #msgrZu { flex:none; }
-  #msgrSenden, #msgrZurueck, #msgrZu { font-size:14px; font-weight:bold; padding:7px 14px;
-    border-radius:9px; border:none; background:#4caf50; color:#fff; cursor:pointer; }
+  #msgrSenden, #msgrZurueck, #msgrZu, #msgrLernen { font-size:14px; font-weight:bold;
+    padding:7px 14px; border-radius:9px; border:none; background:#4caf50; color:#fff;
+    cursor:pointer; flex:none; }
   #msgrZurueck, #msgrZu { background:#5a6a80; }
+  #msgrLernen { background:#7a5cc4; }
+
+  /* 🇩🇪→🇬🇧 DIE ÜBERSETZUNGS-HILFE: Jonah kann noch kein Englisch schreiben.
+     Er tippt Deutsch, hört das Englische und schickt es dann ab. */
+  #uebAuf { display:none; flex:none; background:rgba(255,225,120,.22);
+    border:1px solid rgba(255,225,120,.55); border-radius:10px; padding:7px 10px;
+    color:#fff; font-size:14px; font-weight:bold; text-align:left; cursor:pointer; }
+  #uebAuf small { display:block; font-size:10px; font-weight:normal; opacity:.75; }
+  #uebBox { display:none; flex:none; flex-direction:column; gap:6px;
+    background:rgba(255,225,120,.14); border:1px solid rgba(255,225,120,.4);
+    border-radius:10px; padding:8px; }
+  #uebKopf { font-size:12px; opacity:.85; }
+  #uebZeile { display:flex; gap:6px; }
+  #uebEingabe { flex:1; font-size:15px; padding:8px; border-radius:9px; border:none; }
+  #uebGo { font-size:16px; font-weight:bold; padding:7px 14px; border-radius:9px;
+    border:none; background:#f0b429; color:#3a2d00; cursor:pointer; }
+  #uebErgebnis { display:none; }
+  #uebEnglisch { font-size:17px; font-weight:bold; padding:6px 2px; }
+  #uebEnglisch.uebMiss { font-size:13px; font-weight:normal; opacity:.85; }
+  #uebKnoepfe { display:flex; gap:6px; }
+  #uebHoeren, #uebSenden { font-size:13px; font-weight:bold; padding:6px 12px;
+    border-radius:9px; border:none; cursor:pointer; }
+  #uebHoeren { background:rgba(255,255,255,.22); color:#fff; }
+  #uebSenden { background:#4caf50; color:#fff; }
+
+  /* 📚 DIE ENGLISCH-SCHULE: Wortschatz, Quiz und das Sticker-Heft */
+  #lernBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; gap:8px; background:rgba(12,24,40,.97); padding:12px;
+    border-radius:16px; color:#fff; z-index:47; width:min(94vw,430px);
+    max-height:88vh; overflow:hidden; }
+  #lernBox h3 { font-size:17px; text-align:center; margin:0; }
+  #lernInhalt { display:flex; flex-direction:column; gap:6px; overflow-y:auto;
+    flex:1 1 auto; min-height:0; }
+  .lernThema, .lernWort { display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,.1); border:none; border-radius:12px; padding:9px 11px;
+    color:#fff; text-align:left; font-size:14px; cursor:pointer; }
+  .lernThema.fertig { background:rgba(90,220,130,.24); }
+  .lernThema.stickerZeile { background:rgba(255,215,90,.22); }
+  .lernEmoji, .lernPic { font-size:24px; flex:none; width:32px; text-align:center; }
+  .lernTitel, .lernEn { font-weight:bold; font-size:15px; display:block; }
+  .lernUnter, .lernDe { font-size:12px; opacity:.78; display:block; }
+  .lernHoer { margin-left:auto; font-size:18px; }
+  .lernHinweis { font-size:13px; opacity:.85; text-align:center; margin:4px 0; }
+  .lernStart, .lernZurueck, #lernZu { font-size:15px; font-weight:bold; padding:9px 14px;
+    border-radius:10px; border:none; color:#fff; cursor:pointer; flex:none; }
+  .lernStart { background:#7a5cc4; }
+  .lernZurueck, #lernZu { background:#5a6a80; }
+  .quizFrage { display:flex; flex-direction:column; align-items:center; gap:4px;
+    background:rgba(255,255,255,.12); border-radius:14px; padding:12px; }
+  .quizPic { font-size:44px; }
+  .quizEn { font-size:24px; font-weight:bold; }
+  .quizHoer { font-size:12px; padding:5px 10px; border-radius:8px; border:none;
+    background:rgba(255,255,255,.22); color:#fff; cursor:pointer; }
+  .quizAntwort { font-size:15px; font-weight:bold; padding:11px; border-radius:11px;
+    border:2px solid rgba(255,255,255,.18); background:rgba(255,255,255,.08);
+    color:#fff; cursor:pointer; }
+  .quizAntwort.gut { background:rgba(90,220,130,.45); border-color:#7fe6a6; }
+  .quizAntwort.schlecht { background:rgba(230,80,80,.45); border-color:#ff9b9b; }
+  .quizErgebnis { font-size:22px; font-weight:bold; text-align:center; padding:8px; }
+  #stickerGitter { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .stickerKarte { display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.16);
+    border-radius:12px; padding:8px 4px; text-align:center; }
+  .stickerKarte.rare { border-color:rgba(120,200,255,.6); }
+  .stickerKarte.epic { border-color:rgba(255,205,80,.85); background:rgba(255,205,80,.14); }
+  .stickerKarte.leer { opacity:.4; }
+  .stickerBild { font-size:30px; }
+  .stickerName { font-size:11px; font-weight:bold; }
+  .stickerDe { font-size:9px; opacity:.72; }
 
   /* Ganz kurzer Bildschirm (kleines Handy quer): fünf Reihen passen nicht mehr
      übereinander. Dann gibt es eine VIERTE Spalte und nur noch vier Reihen -
@@ -502,13 +572,34 @@
       <div id="msgrBefehle"></div>
       <div id="msgrHilfen"></div>
     </div>
+    <button id="uebAuf">🇩🇪→🇬🇧 Wie sagt man …?<small>Du tippst Deutsch, ich sage dir das Englische</small></button>
+    <div id="uebBox">
+      <div id="uebKopf">Tipp es auf Deutsch – ich verrate dir das Englische!</div>
+      <div id="uebZeile">
+        <input id="uebEingabe" type="text" maxlength="120" placeholder="Deutsches Wort oder Satz…" autocomplete="off">
+        <button id="uebGo">➜</button>
+      </div>
+      <div id="uebErgebnis">
+        <div id="uebEnglisch"></div>
+        <div id="uebKnoepfe">
+          <button id="uebHoeren">🔊 anhören</button>
+          <button id="uebSenden">➤ Abschicken</button>
+        </div>
+      </div>
+    </div>
     <div id="msgrEingabe">
       <input id="msgrText" type="text" maxlength="120" placeholder="Write in English..." autocomplete="off">
       <button id="msgrSenden">📨</button>
     </div>
     <button id="msgrZurueck">← Alle Freunde</button>
   </div>
+  <button id="msgrLernen">📚 Englisch lernen &amp; Sticker ⭐</button>
   <button id="msgrZu">✔ Fertig</button>
+</div>
+<div class="hud" id="lernBox">
+  <h3 id="lernKopf">📚 Englisch lernen</h3>
+  <div id="lernInhalt"></div>
+  <button id="lernZu">✔ Fertig</button>
 </div>
 <div class="hud" id="superBox"><span id="superText"></span><div id="superBalken"><i id="superFuell"></i></div></div>
 <div class="hud" id="superFx"></div>
@@ -761,7 +852,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 218 &middot; Jeder Freund, jedes Tier und jedes Fahrzeug hat seinen eigenen Platz! 🧍‍♂️🐾</p>
+    Version 219 &middot; Englisch lernen, Quiz und Sticker – jetzt auch in JonahCraft! 📚⭐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -807,7 +898,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 218;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 219;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -11666,6 +11757,7 @@ function msgrKnopf() {
 // ---- der Messenger: Liste, Chat und die Englisch-Hilfen -----------------
 function msgrAuf() {
   msgrOffen = null;
+  uebZu();
   document.getElementById('msgrChat').style.display = 'none';
   document.getElementById('msgrListe').style.display = 'flex';
   document.getElementById('msgrKopf').textContent = '📱 Deine englischen Freunde';
@@ -11711,6 +11803,7 @@ function msgrChatAuf(id) {
     document.getElementById('msgrKopf').textContent = '🌍 Alle zusammen';
     if (!gruppeLog().length) { gruppeSagen('de'); gruppeSagen('en'); }
     document.getElementById('msgrBefehle').style.display = 'none';
+    uebZu(); document.getElementById('uebAuf').style.display = 'block';
     msgrVerlaufZeigen();
     msgrHilfenZeigen();
     return;
@@ -11722,6 +11815,7 @@ function msgrChatAuf(id) {
   document.getElementById('msgrListe').style.display = 'none';
   document.getElementById('msgrChat').style.display = 'flex';
   document.getElementById('msgrKopf').textContent = f.emoji + ' ' + f.name;
+  uebZu(); document.getElementById('uebAuf').style.display = 'block';
   msgrVerlaufZeigen();
   msgrBefehleZeigen(id);
   msgrHilfenZeigen();
@@ -11849,6 +11943,15 @@ function gruppeVerlaufZeigen(v) {
 function msgrRunterScrollen() {
   const o = document.getElementById('msgrOben');
   requestAnimationFrame(() => { o.scrollTop = o.scrollHeight; });
+}
+// Die Übersetzungs-Hilfe zuklappen und leeren
+function uebZu() {
+  const auf = document.getElementById('uebAuf'), box = document.getElementById('uebBox');
+  if (!auf) return;
+  auf.style.display = 'none'; box.style.display = 'none';
+  document.getElementById('uebEingabe').value = '';
+  document.getElementById('uebErgebnis').style.display = 'none';
+  letzteUebersetzung = '';
 }
 // 🗣️ Vorlesen - genau wie in der Englisch-App
 function msgrSprich(text) {
@@ -12173,6 +12276,385 @@ function engFigurPlaudern(a, dt) {
     const tun = f.tun[Math.floor(Math.random()*f.tun.length)];
     engFigurSagt(a, tun[0], tun[1]);
   }
+}
+
+// ======== 📚 DIE ENGLISCH-SCHULE - dieselbe wie in der Englisch-App =========
+// Jonah kann noch kein Englisch und will es ja gerade lernen. Deshalb gibt es
+// hier alles, was die Englisch-App auch hat: die Übersetzungs-Hilfe zum
+// Schreiben, die Wortschatz-Kisten mit Quiz und das Sticker-Heft. Sticker und
+// gelernte Wörter liegen im GEMEINSAMEN Speicher - was er hier verdient,
+// hat er drüben auch, und umgekehrt.
+const LERN_THEMEN = [
+  { id:"hello", emoji:"👋", title:"Hallo Fred!", words:[
+    { en:"Hello!", de:"Hallo!", pic:"👋" },
+    { en:"I'm Jonah.", de:"Ich bin Jonah.", pic:"🙋" },
+    { en:"How are you?", de:"Wie geht es dir?", pic:"❓" },
+    { en:"I'm fine!", de:"Mir geht es gut!", pic:"😄" },
+    { en:"What's your name?", de:"Wie heißt du?", pic:"🏷️" },
+    { en:"Nice to meet you!", de:"Schön, dich kennenzulernen!", pic:"🤝" },
+    { en:"Bye!", de:"Tschüss!", pic:"👋" }
+  ] },
+  { id:"animals", emoji:"🐾", title:"Tiere", words:[
+    { en:"dog", de:"Hund", pic:"🐕" },
+    { en:"cat", de:"Katze", pic:"🐈" },
+    { en:"wolf", de:"Wolf", pic:"🐺" },
+    { en:"horse", de:"Pferd", pic:"🐴" },
+    { en:"I like dogs.", de:"Ich mag Hunde.", pic:"❤️" },
+    { en:"My favourite animal is...", de:"Mein Lieblingstier ist...", pic:"🏆" },
+    { en:"Do you have a pet?", de:"Hast du ein Haustier?", pic:"🏠" }
+  ] },
+  { id:"minecraft", emoji:"⛏️", title:"JonahCraft", words:[
+    { en:"I play JonahCraft.", de:"Ich spiele JonahCraft.", pic:"🎮" },
+    { en:"Let's build a house!", de:"Lass uns ein Haus bauen!", pic:"🏠" },
+    { en:"My dog follows me.", de:"Mein Hund folgt mir.", pic:"🐶" },
+    { en:"I ride a horse.", de:"Ich reite ein Pferd.", pic:"🐴" },
+    { en:"treasure", de:"der Schatz", pic:"💎" },
+    { en:"Watch out, TNT!", de:"Pass auf, TNT!", pic:"💥" },
+    { en:"Let's drive a car!", de:"Lass uns Auto fahren!", pic:"🚗" }
+  ] },
+  { id:"karate", emoji:"🥋", title:"Karate & Sport", words:[
+    { en:"I do karate.", de:"Ich mache Karate.", pic:"🥋" },
+    { en:"kick", de:"der Tritt", pic:"🦵" },
+    { en:"punch", de:"der Schlag (mit der Faust)", pic:"👊" },
+    { en:"strong", de:"stark", pic:"💪" },
+    { en:"fast", de:"schnell", pic:"⚡" },
+    { en:"Let's train!", de:"Lass uns trainieren!", pic:"🏋️" },
+    { en:"I have a yellow belt.", de:"Ich habe einen gelben Gürtel.", pic:"🟡" }
+  ] },
+  { id:"workshop", emoji:"🔨", title:"Werkstatt", words:[
+    { en:"hammer", de:"der Hammer", pic:"🔨" },
+    { en:"saw", de:"die Säge", pic:"🪚" },
+    { en:"wood", de:"das Holz", pic:"🪵" },
+    { en:"screw", de:"die Schraube", pic:"🔩" },
+    { en:"tools", de:"das Werkzeug", pic:"🧰" },
+    { en:"I build a bird house.", de:"Ich baue ein Vogelhaus.", pic:"🐦" },
+    { en:"Let's build something!", de:"Lass uns etwas bauen!", pic:"🛠️" }
+  ] },
+  { id:"food", emoji:"🍕", title:"Essen", words:[
+    { en:"pizza", de:"die Pizza", pic:"🍕" },
+    { en:"apple", de:"der Apfel", pic:"🍎" },
+    { en:"ice cream", de:"das Eis", pic:"🍦" },
+    { en:"chocolate", de:"die Schokolade", pic:"🍫" },
+    { en:"I'm hungry!", de:"Ich habe Hunger!", pic:"😋" },
+    { en:"Yummy!", de:"Lecker!", pic:"🤤" },
+    { en:"My favourite food is pizza.", de:"Mein Lieblingsessen ist Pizza.", pic:"🥇" }
+  ] },
+  { id:"colors", emoji:"🌈", title:"Farben & Zahlen", words:[
+    { en:"red", de:"rot", pic:"🔴" },
+    { en:"blue", de:"blau", pic:"🔵" },
+    { en:"green", de:"grün", pic:"🟢" },
+    { en:"yellow", de:"gelb", pic:"🟨" },
+    { en:"one, two, three", de:"eins, zwei, drei", pic:"🔢" },
+    { en:"ten", de:"zehn", pic:"🔟" },
+    { en:"My favourite colour is green.", de:"Meine Lieblingsfarbe ist Grün.", pic:"🎨" }
+  ] }
+];
+const STICKERS = [
+  { id:"barky",   pic:"🐶", nm:"Barky",        de:"der Bellhund",      r:"common" },
+  { id:"whisker", pic:"🐱", nm:"Whiskers",     de:"die Schnurrkatze",  r:"common" },
+  { id:"hoppy",   pic:"🐸", nm:"Hoppy",        de:"der Hüpffrosch",    r:"common" },
+  { id:"chicky",  pic:"🐤", nm:"Chicky",       de:"das Küken",         r:"common" },
+  { id:"speedy",  pic:"🐢", nm:"Speedy",       de:"die Turbo-Schildkröte", r:"common" },
+  { id:"woody",   pic:"🪵", nm:"Woody",        de:"der Werkstatt-Klotz", r:"common" },
+  { id:"kicky",   pic:"🥋", nm:"Kicky",        de:"der Karate-Gürtel", r:"common" },
+  { id:"blocky",  pic:"🧱", nm:"Blocky",       de:"der Baustein",      r:"common" },
+  { id:"sparkle", pic:"🦄", nm:"Sparkle",      de:"das Glitzer-Einhorn", r:"rare" },
+  { id:"shadow",  pic:"🐺", nm:"Shadow",       de:"der Nachtwolf",     r:"rare" },
+  { id:"blaze",   pic:"🐉", nm:"Blaze",        de:"der Feuerdrache",   r:"rare" },
+  { id:"chompy",  pic:"🦈", nm:"Chompy",       de:"der Schnapphai",    r:"rare" },
+  { id:"koala",   pic:"🐨", nm:"Cuddle Koala", de:"der Kuschel-Koala", r:"common" },
+  { id:"pizzy",   pic:"🍕", nm:"Pizzy",        de:"die Power-Pizza",   r:"common" },
+  { id:"eagle",   pic:"🦅", nm:"Sky Eagle",    de:"der Himmels-Adler", r:"rare" },
+  { id:"ninja",   pic:"🥷", nm:"Ninja Max",    de:"der Blitz-Ninja",   r:"rare" },
+  { id:"diamond", pic:"💎", nm:"Mega Diamond", de:"der Mega-Diamant",  r:"epic" },
+  { id:"champ",   pic:"🏆", nm:"Super Champion", de:"der Super-Champion", r:"epic" },
+  { id:"creeper", pic:"🧨", nm:"Boom Creeper", de:"der Boom-Creeper",  r:"epic" },
+  { id:"goldfred",pic:"🌟", nm:"Golden Fred",  de:"der goldene Fred",  r:"epic" }
+];
+const SELTENHEIT = { common:"Normal", rare:"Selten ✨", epic:"SUPER-SELTEN 💥" };
+const DICT = {
+  "hund":"dog","katze":"cat","pferd":"horse","wolf":"wolf","vogel":"bird","fisch":"fish",
+  "hase":"rabbit","kaninchen":"rabbit","maus":"mouse","baer":"bear","bär":"bear","löwe":"lion",
+  "tiger":"tiger","elefant":"elephant","affe":"monkey","schlange":"snake","spinne":"spider",
+  "kuh":"cow","schwein":"pig","schaf":"sheep","huhn":"chicken","ente":"duck","fuchs":"fox",
+  "schule":"school","freund":"friend","freundin":"friend","familie":"family","mama":"mum",
+  "papa":"dad","bruder":"brother","schwester":"sister","oma":"grandma","opa":"grandpa",
+  "haus":"house","garten":"garden","baum":"tree","blume":"flower","sonne":"sun","mond":"moon",
+  "wasser":"water","milch":"milk","brot":"bread","apfel":"apple","banane":"banana",
+  "pizza":"pizza","eis":"ice cream","kuchen":"cake","schokolade":"chocolate","käse":"cheese",
+  "rot":"red","blau":"blue","grün":"green","gelb":"yellow","schwarz":"black","weiß":"white",
+  "orange":"orange","lila":"purple","rosa":"pink","braun":"brown",
+  "eins":"one","zwei":"two","drei":"three","vier":"four","fünf":"five","sechs":"six",
+  "sieben":"seven","acht":"eight","neun":"nine","zehn":"ten","elf":"eleven","zwölf":"twelve",
+  "groß":"big","klein":"small","schnell":"fast","langsam":"slow","gut":"good","toll":"great",
+  "cool":"cool","stark":"strong","lustig":"funny","müde":"tired","hungrig":"hungry",
+  "ja":"yes","nein":"no","bitte":"please","danke":"thank you","hallo":"hello","tschüss":"bye",
+  "ich mag":"I like","ich habe":"I have","ich bin":"I am","ich spiele":"I play",
+  "ich baue":"I build","ich esse":"I eat","ich trinke":"I drink","ich kann":"I can",
+  "karate":"karate","fußball":"football","fahrrad":"bike","ball":"ball","spiel":"game",
+  "spielen":"play","bauen":"build","essen":"eat","trinken":"drink","laufen":"run",
+  "springen":"jump","schwimmen":"swim","singen":"sing","tanzen":"dance","malen":"paint",
+  "lesen":"read","schlafen":"sleep","lachen":"laugh",
+  "schwert":"sword","diamant":"diamond","gold":"gold","burg":"castle","höhle":"cave",
+  "haustier":"pet","lieblingstier":"favourite animal","werkstatt":"workshop","holz":"wood",
+  "hammer":"hammer","säge":"saw","nagel":"nail","sticker":"sticker","tauschen":"trade"
+};
+// Ein deutsches Wort im Wörterbuch nachschlagen - erst in den Wortschatz-Kisten,
+// dann im kleinen Wörterbuch. Ohne KI-Schlüssel reicht das für die Grundwörter.
+function wortNachschlagen(frage) {
+  const putz = t => t.toLowerCase().trim().replace(/[.!?,;:]/g, "");
+  const f = putz(frage);
+  const ohne = f.replace(/^(der|die|das|ein|eine|einen|dem|den)\s+/, "");
+  for (const t of LERN_THEMEN) for (const w of t.words)
+    if (putz(w.de) === f || putz(w.de) === ohne) return w.en;
+  return DICT[f] || DICT[ohne] || null;
+}
+// 🇩🇪→🇬🇧 Jonah tippt Deutsch, wir sagen ihm das Englische. Mit KI-Schlüssel
+// kann er ganze Sätze übersetzen, ohne reicht das Wörterbuch.
+let uebersetztGerade = false, letzteUebersetzung = "";
+function uebersetzungZeigen(text, misslungen) {
+  const kasten = document.getElementById("uebErgebnis");
+  kasten.style.display = "block";
+  kasten.querySelector("#uebEnglisch").textContent = text;
+  kasten.querySelector("#uebEnglisch").className = misslungen ? "uebMiss" : "";
+  document.getElementById("uebKnoepfe").style.display = misslungen ? "none" : "flex";
+  letzteUebersetzung = misslungen ? "" : text;
+  if (!misslungen) msgrSprich(text);
+}
+async function uebersetzen() {
+  const frage = document.getElementById("uebEingabe").value.trim();
+  if (!frage || uebersetztGerade) return;
+  const s = engLaden();
+  if (!s.apiKey) {                      // ohne KI-Schlüssel: das Wörterbuch
+    const w = wortNachschlagen(frage);
+    if (w) uebersetzungZeigen(w, false);
+    else uebersetzungZeigen("Hmm, das kenne ich noch nicht. 🙈 Frag Mama oder Papa!", true);
+    return;
+  }
+  uebersetztGerade = true;
+  uebersetzungZeigen("… ich überlege …", true);
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{ "content-type":"application/json", "x-api-key": s.apiKey,
+                "anthropic-version":"2023-06-01",
+                "anthropic-dangerous-direct-browser-access":"true" },
+      body: JSON.stringify({ model: s.model || "claude-opus-5", max_tokens:120,
+        system:"You help a 9-year-old German child (3rd grade, English beginner) say things in English. Translate the child's German input into VERY simple English a beginner can say - short words, short sentence. Reply with ONLY the English translation, nothing else. If the input is already English, reply with it unchanged (fix small mistakes).",
+        messages:[{ role:"user", content: frage }] })
+    });
+    if (!res.ok) throw new Error("http");
+    const data = await res.json();
+    const tb = (data.content || []).find(b => b.type === "text");
+    const en = (tb ? tb.text : "").trim().replace(/^["']|["']$/g, "");
+    if (!en || data.stop_reason === "refusal") throw new Error("leer");
+    uebersetzungZeigen(en, false);
+  } catch(e) {
+    const w = wortNachschlagen(frage);
+    if (w) uebersetzungZeigen(w, false);
+    else uebersetzungZeigen("Ups, das hat gerade nicht geklappt. Probier es gleich nochmal! 🙈", true);
+  } finally { uebersetztGerade = false; }
+}
+
+// ---- ⭐ STICKER: dieselben wie in der Englisch-App -----------------------
+function stickerHaben() { return engLaden().stickers || []; }
+function stickerGeben(grund) {
+  const s = engLaden();
+  if (!s.stickers) s.stickers = [];
+  // Seltene Sticker gibt es seltener - genau wie drüben.
+  const w = Math.random();
+  const stufe = w < 0.06 ? "epic" : w < 0.28 ? "rare" : "common";
+  let topf = STICKERS.filter(x => x.r === stufe && s.stickers.indexOf(x.id) < 0);
+  if (!topf.length) topf = STICKERS.filter(x => s.stickers.indexOf(x.id) < 0);
+  if (!topf.length) topf = STICKERS;                 // alle schon da? Dann Freude pur
+  const st = topf[Math.floor(Math.random()*topf.length)];
+  if (s.stickers.indexOf(st.id) < 0) s.stickers.push(st.id);
+  engSpeichern(s);
+  toast("⭐ " + grund + "\n" + st.pic + " Neuer Sticker: " + st.nm + " (" + st.de + ") – " +
+        SELTENHEIT[st.r], 6000);
+  for (const f of [523,659,784,1047]) blip(f,0.1);
+  return st;
+}
+function stickerHeftZeigen() {
+  const box = document.getElementById("lernInhalt");
+  const haben = stickerHaben();
+  document.getElementById("lernKopf").textContent = "⭐ Mein Sticker-Heft (" +
+    haben.length + " von " + STICKERS.length + ")";
+  box.innerHTML = "";
+  const gitter = document.createElement("div");
+  gitter.id = "stickerGitter";
+  for (const st of STICKERS) {
+    const da = haben.indexOf(st.id) >= 0;
+    const k = document.createElement("div");
+    k.className = "stickerKarte " + st.r + (da ? "" : " leer");
+    k.innerHTML = '<span class="stickerBild"></span><span class="stickerName"></span>' +
+                  '<span class="stickerDe"></span>';
+    k.querySelector(".stickerBild").textContent = da ? st.pic : "❔";
+    k.querySelector(".stickerName").textContent = da ? st.nm : "???";
+    k.querySelector(".stickerDe").textContent = da ? st.de : SELTENHEIT[st.r];
+    gitter.appendChild(k);
+  }
+  box.appendChild(gitter);
+  if (!haben.length) {
+    const hin = document.createElement("p");
+    hin.className = "lernHinweis";
+    hin.textContent = "Noch keine Sticker! Mach ein Quiz – für jedes geschaffte Quiz gibt es einen. ⭐";
+    box.appendChild(hin);
+  }
+  document.getElementById("lernBox").style.display = "flex";
+}
+
+// ---- 🧠 WORTSCHATZ UND QUIZ ---------------------------------------------
+function lernThemenZeigen() {
+  const box = document.getElementById("lernInhalt");
+  document.getElementById("lernKopf").textContent = "📚 Englisch lernen";
+  box.innerHTML = "";
+  const s = engLaden(), fertig = s.done || {};
+  for (const t of LERN_THEMEN) {
+    const b = document.createElement("button");
+    b.className = "lernThema" + (fertig["q_" + t.id] ? " fertig" : "");
+    b.innerHTML = '<span class="lernEmoji"></span><span><span class="lernTitel"></span>' +
+                  '<span class="lernUnter"></span></span>';
+    b.querySelector(".lernEmoji").textContent = t.emoji;
+    b.querySelector(".lernTitel").textContent = t.title;
+    b.querySelector(".lernUnter").textContent = t.words.length + " Wörter" +
+      (fertig["q_" + t.id] ? " · Quiz geschafft ⭐" : "");
+    b.addEventListener("click", () => lernWoerterZeigen(t));
+    box.appendChild(b);
+  }
+  const st = document.createElement("button");
+  st.className = "lernThema stickerZeile";
+  st.innerHTML = '<span class="lernEmoji">⭐</span><span><span class="lernTitel">Mein Sticker-Heft</span>' +
+                 '<span class="lernUnter"></span></span>';
+  st.querySelector(".lernUnter").textContent = stickerHaben().length + " von " + STICKERS.length + " gesammelt";
+  st.addEventListener("click", stickerHeftZeigen);
+  box.appendChild(st);
+  document.getElementById("lernBox").style.display = "flex";
+}
+// Erst die Wörter anschauen (mit Vorlesen), dann das Quiz
+function lernWoerterZeigen(t) {
+  const box = document.getElementById("lernInhalt");
+  document.getElementById("lernKopf").textContent = t.emoji + " " + t.title;
+  box.innerHTML = "";
+  for (const w of t.words) {
+    const z = document.createElement("button");
+    z.className = "lernWort";
+    z.innerHTML = '<span class="lernPic"></span><span><span class="lernEn"></span>' +
+                  '<span class="lernDe"></span></span><span class="lernHoer">🔊</span>';
+    z.querySelector(".lernPic").textContent = w.pic;
+    z.querySelector(".lernEn").textContent = w.en;
+    z.querySelector(".lernDe").textContent = w.de;
+    z.addEventListener("click", () => msgrSprich(w.en));
+    box.appendChild(z);
+  }
+  const q = document.createElement("button");
+  q.className = "lernStart";
+  q.textContent = "🧠 Quiz starten!";
+  q.addEventListener("click", () => quizStarten(t));
+  box.appendChild(q);
+  const z = document.createElement("button");
+  z.className = "lernZurueck";
+  z.textContent = "← Alle Themen";
+  z.addEventListener("click", lernThemenZeigen);
+  box.appendChild(z);
+}
+// Das Quiz: englisches Wort hören und die richtige Bedeutung antippen
+let quizThema = null, quizFragen = [], quizNr = 0, quizPunkte = 0;
+function mischen(a) { return a.slice().sort(() => Math.random() - 0.5); }
+function quizStarten(t) {
+  quizThema = t; quizNr = 0; quizPunkte = 0;
+  quizFragen = mischen(t.words);
+  quizFrageZeigen();
+}
+function quizFrageZeigen() {
+  const box = document.getElementById("lernInhalt");
+  const w = quizFragen[quizNr];
+  document.getElementById("lernKopf").textContent =
+    "🧠 " + quizThema.title + " (" + (quizNr+1) + "/" + quizFragen.length + ")  ⭐ " + quizPunkte;
+  box.innerHTML = "";
+  const frage = document.createElement("div");
+  frage.className = "quizFrage";
+  frage.innerHTML = '<span class="quizPic"></span><span class="quizEn"></span>' +
+                    '<button class="quizHoer">🔊 nochmal hören</button>';
+  frage.querySelector(".quizPic").textContent = w.pic;
+  frage.querySelector(".quizEn").textContent = w.en;
+  frage.querySelector(".quizHoer").addEventListener("click", () => msgrSprich(w.en));
+  box.appendChild(frage);
+  msgrSprich(w.en);
+  const hin = document.createElement("p");
+  hin.className = "lernHinweis";
+  hin.textContent = "Was heißt das auf Deutsch?";
+  box.appendChild(hin);
+  // eine richtige und drei falsche Antworten aus allen Themen
+  const alle = [];
+  for (const t of LERN_THEMEN) for (const x of t.words) if (x.de !== w.de) alle.push(x.de);
+  const auswahl = mischen([w.de].concat(mischen(alle).slice(0,3)));
+  for (const a of auswahl) {
+    const b = document.createElement("button");
+    b.className = "quizAntwort";
+    b.textContent = a;
+    b.addEventListener("click", () => quizAntworten(b, a === w.de, w));
+    box.appendChild(b);
+  }
+}
+function quizAntworten(knopf, richtig, wort) {
+  for (const b of document.querySelectorAll(".quizAntwort")) b.disabled = true;
+  if (richtig) {
+    knopf.classList.add("gut"); quizPunkte++;
+    blip(659,0.09); blip(880,0.12);
+    const s = engLaden();
+    if (!s.learned) s.learned = [];
+    if (s.learned.indexOf(wort.en) < 0) s.learned.push(wort.en);
+    engSpeichern(s);
+  } else {
+    knopf.classList.add("schlecht");
+    for (const b of document.querySelectorAll(".quizAntwort"))
+      if (b.textContent === wort.de) b.classList.add("gut");
+    blip(200,0.16);
+  }
+  setTimeout(() => {
+    quizNr++;
+    if (quizNr < quizFragen.length) quizFrageZeigen();
+    else quizFertig();
+  }, richtig ? 700 : 1800);
+}
+function quizFertig() {
+  const box = document.getElementById("lernInhalt");
+  const alle = quizFragen.length;
+  document.getElementById("lernKopf").textContent = "🏆 Quiz geschafft!";
+  box.innerHTML = "";
+  const e = document.createElement("div");
+  e.className = "quizErgebnis";
+  e.textContent = "⭐ " + quizPunkte + " von " + alle + " richtig!";
+  box.appendChild(e);
+  const lob = document.createElement("p");
+  lob.className = "lernHinweis";
+  lob.textContent = quizPunkte === alle ? "ALLES richtig! Du bist ein Englisch-Profi! 🎉"
+    : quizPunkte >= alle - 2 ? "Richtig stark! Fast alles gewusst. 💪"
+    : "Gut gemacht! Schau dir die Wörter nochmal an, dann klappt es. 😊";
+  box.appendChild(lob);
+  // ab der Hälfte gibt es einen Sticker - und der zählt in BEIDEN Apps
+  if (quizPunkte >= Math.ceil(alle/2)) {
+    const s = engLaden();
+    if (!s.done) s.done = {};
+    s.done["q_" + quizThema.id] = true;
+    engSpeichern(s);
+    stickerGeben("Quiz „" + quizThema.title + "“ geschafft!");
+    for (let i=0;i<30;i++)
+      fireworks.push({x:player.x+(Math.random()-0.5)*4, y:player.y+1+Math.random()*4,
+        z:player.z+(Math.random()-0.5)*4, vx:(Math.random()-0.5)*4, vy:2+Math.random()*3,
+        vz:(Math.random()-0.5)*4, tile:[25,73,40,94,30][i%5], t:1.2});
+  }
+  const n = document.createElement("button");
+  n.className = "lernStart";
+  n.textContent = "🔁 Nochmal spielen";
+  n.addEventListener("click", () => quizStarten(quizThema));
+  box.appendChild(n);
+  const z = document.createElement("button");
+  z.className = "lernZurueck";
+  z.textContent = "← Alle Themen";
+  z.addEventListener("click", lernThemenZeigen);
+  box.appendChild(z);
 }
 
 // ======== 🌍 ALLE ZUSAMMEN: der Plausch der englischen UND deutschen Freunde ========
@@ -13865,6 +14347,37 @@ document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.s
     msgrOffen = null; msgrKnopf(); blip(300,0.06);
   });
   document.getElementById("msgrZurueck").addEventListener("click", () => msgrAuf());
+  // 🇩🇪→🇬🇧 die Übersetzungs-Hilfe
+  document.getElementById("uebAuf").addEventListener("click", () => {
+    const box = document.getElementById("uebBox");
+    const auf = box.style.display !== "flex";
+    box.style.display = auf ? "flex" : "none";
+    if (auf) document.getElementById("uebEingabe").focus();
+    blip(700,0.05);
+  });
+  document.getElementById("uebGo").addEventListener("click", uebersetzen);
+  document.getElementById("uebEingabe").addEventListener("keydown", e => {
+    e.stopPropagation();
+    if (e.key === "Enter") { e.preventDefault(); uebersetzen(); }
+  });
+  document.getElementById("uebEingabe").addEventListener("keyup", e => e.stopPropagation());
+  document.getElementById("uebHoeren").addEventListener("click", () => {
+    if (letzteUebersetzung) msgrSprich(letzteUebersetzung);
+  });
+  document.getElementById("uebSenden").addEventListener("click", () => {
+    if (!letzteUebersetzung) return;
+    const satz = letzteUebersetzung;
+    uebZu();
+    msgrSenden(satz);
+  });
+  // 📚 Englisch lernen und Sticker
+  document.getElementById("msgrLernen").addEventListener("click", () => {
+    document.getElementById("msgrBox").style.display = "none";
+    msgrOffen = null; lernThemenZeigen(); blip(700,0.05); blip(880,0.06);
+  });
+  document.getElementById("lernZu").addEventListener("click", () => {
+    document.getElementById("lernBox").style.display = "none"; blip(300,0.06);
+  });
   document.getElementById("msgrSenden").addEventListener("click", () => msgrSenden());
   document.getElementById("msgrText").addEventListener("keydown", e => {
     if (e.key === "Enter") { e.preventDefault(); msgrSenden(); }
