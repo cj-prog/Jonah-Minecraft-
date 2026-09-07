@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEINE ENGLISCHEN FREUNDE LAUFEN JETZT DURCH DEINE WELT (v217)! 🦊🚶 Fred 🦊,
+  Lucy 🐺, Koko 🐨, Pip 🐧, Rex 🦖, Milo 🐵, Stella 🦄 und Sparky 🤖 sind nicht
+  mehr nur im Handy - sie spazieren wirklich durch JonahCraft! Jeder sieht
+  anders aus: Fred und Lucy haben spitze Ohren und einen buschigen Schwanz,
+  Koko und Milo runde Ohren, Pip einen weißen Bauch und einen orangen
+  Schnabel, Rex Rückenzacken, Stella ein goldenes Horn und Sparky eine Antenne
+  mit Lämpchen. Sie laufen herum wie die Dorfbewohner, bleiben in ihrer Gegend
+  und tauchen immer wieder in Jonahs Nähe auf (höchstens vier gleichzeitig).
+  Im Vorbeigehen erzählen sie auf Englisch, was sie gerade machen - und
+  darunter steht immer, was es heißt. Manchmal geben sie auch weiter, was
+  jemand aus dem Dorf im Plausch gesagt hat.
+  ANTIPPEN öffnet EUREN Chat - dasselbe Gespräch wie im Messenger und in der
+  Englisch-App. Und weil sie draußen stehen, gibt es im Chat vier Befehle auf
+  Englisch: „🚶 Come with me!", „👉 Come here!", „🛑 Wait here!" und
+  „🙌 You can go." - jeder mit der deutschen Bedeutung darunter. Wer mitkommen
+  soll, trägt ein Herz über dem Kopf und ist nach dem Neuladen wieder da.
 - ENGLISCHE UND DEUTSCHE FREUNDE PLAUDERN MITEINANDER (v216)! 🌍💬 Ganz oben
   im 📱-Messenger steht jetzt „🌍 Alle zusammen" - ein Plausch, in dem sich
   Jonahs englische Freunde und die Leute aus seinem Dorf UNTEREINANDER

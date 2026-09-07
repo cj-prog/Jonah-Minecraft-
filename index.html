@@ -198,10 +198,12 @@
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #msgrChat { display:none; flex-direction:column; gap:7px; overflow:hidden;
     flex:1 1 auto; min-height:0; }
-  /* Der Verlauf nimmt sich den Platz, der übrig bleibt, und scrollt in sich -
-     Eingabefeld und Knöpfe stehen dadurch IMMER unten und sind erreichbar. */
-  #msgrVerlauf { display:flex; flex-direction:column; gap:8px; overflow-y:auto;
-    flex:1 1 auto; min-height:60px; padding:2px; }
+  /* Verlauf, Befehle und Satz-Hilfen scrollen GEMEINSAM in einem Bereich.
+     Eingabefeld und Knöpfe stehen dadurch IMMER unten und sind erreichbar -
+     auch auf einem kurzen Handy im Querformat. */
+  #msgrOben { display:flex; flex-direction:column; gap:7px; overflow-y:auto;
+    flex:1 1 auto; min-height:70px; }
+  #msgrVerlauf { display:flex; flex-direction:column; gap:8px; flex:none; padding:2px; }
   .msgrBlase { max-width:88%; padding:8px 11px; border-radius:14px; font-size:14px;
     line-height:1.35; }
   .msgrBlase.f { background:rgba(255,255,255,.16); align-self:flex-start; }
@@ -213,8 +215,13 @@
   .msgrWerkzeug { display:flex; gap:5px; margin-top:5px; }
   .msgrMini { font-size:11px; padding:3px 7px; border-radius:7px; border:none;
     background:rgba(255,255,255,.22); color:#fff; cursor:pointer; }
-  #msgrHilfen { display:flex; flex-direction:column; gap:5px; flex:none;
-    max-height:32vh; overflow-y:auto; }
+  #msgrHilfen { display:flex; flex-direction:column; gap:5px; flex:none; }
+  /* 👑 Befehle an einen Freund, der gerade draußen in der Welt herumläuft */
+  #msgrBefehle { display:none; flex-wrap:wrap; gap:5px; flex:none; }
+  .msgrBef { background:rgba(120,200,255,.22); border:1px solid rgba(150,215,255,.5);
+    border-radius:10px; padding:5px 9px; color:#fff; font-size:13px; text-align:left;
+    cursor:pointer; flex:1 1 46%; }
+  .msgrBef small { display:block; font-size:10px; opacity:.75; }
   .msgrTipp { background:rgba(255,225,120,.22); border:1px solid rgba(255,225,120,.5);
     border-radius:10px; padding:7px 10px; color:#fff; font-size:14px; text-align:left;
     cursor:pointer; }
@@ -490,8 +497,11 @@
   <h3 id="msgrKopf">📱 Deine englischen Freunde</h3>
   <div id="msgrListe"></div>
   <div id="msgrChat">
-    <div id="msgrVerlauf"></div>
-    <div id="msgrHilfen"></div>
+    <div id="msgrOben">
+      <div id="msgrVerlauf"></div>
+      <div id="msgrBefehle"></div>
+      <div id="msgrHilfen"></div>
+    </div>
     <div id="msgrEingabe">
       <input id="msgrText" type="text" maxlength="120" placeholder="Write in English..." autocomplete="off">
       <button id="msgrSenden">📨</button>
@@ -751,7 +761,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 216 &middot; Englische und deutsche Freunde plaudern jetzt miteinander! 🌍💬</p>
+    Version 217 &middot; Deine englischen Freunde laufen jetzt durch deine Welt! 🦊🚶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -797,7 +807,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 216;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 217;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4463,7 +4473,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedRaum = null;
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedRaum = null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -4493,6 +4503,9 @@ function saveGame() {
        a.home||'welt', a.hx||0, a.hz||0]);
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
+      // 🦊 welche englischen Freunde sollen mitkommen? Die stehen nach dem
+      // Neuladen wieder neben Jonah - alle anderen laufen sowieso wieder herum.
+      engFolgt: animals.filter(a=>a.type==='engfreund' && a.befehl==='folgen').map(a=>a.fid),
       missIdx, missZahl,                // 📜 wie weit ist Jonah mit den Missionen?
       schlacht: { welle: schlachtWelle, laeuft: schlachtLaeuft?1:0, gewonnen: schlachtGewonnen?1:0 },
       halle: { best: halleBest },       // 🏟️ nur der Rekord - jeder Besuch startet neu
@@ -4606,6 +4619,7 @@ function loadGame() {
     if (Array.isArray(s.pets)) savedPets = s.pets;
     if (s.friends && typeof s.friends==='object') savedFriends = s.friends;
     if (Array.isArray(s.companions)) savedCompanions = s.companions;
+    if (Array.isArray(s.engFolgt)) savedEngFolgt = s.engFolgt;
     if (s.signs) for (const k in s.signs) signTexts.set(k, s.signs[k]);
     if (s.paints) for (const k in s.paints) paintings.set(k, s.paints[k]);
     if (s.rots) for (const k in s.rots) rotations.set(k, s.rots[k]);
@@ -5141,6 +5155,30 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 3.2) return 'rgba(0,0,0,0)';                            // in der Mitte ist ein Loch
     if (r > 7.6) return 'rgba(0,0,0,0)';
     return (Math.floor(r) % 2) ? vary(244,232,192,8) : vary(198,176,128,10);
+  });
+  // 🦊🐺🐨🐧🦖🐵🦄🤖 Die acht englischen Freunde: Fell (131-138) und
+  // Gesicht (139-146). Reihenfolge wie in FREUNDE: fred, lucy, koko, pip,
+  // rex, milo, stella, sparky.
+  const ENG_FELL = [[240,138,36],[168,180,196],[156,143,127],[92,122,158],
+                    [63,169,111],[185,138,76],[226,97,139],[124,140,166]];
+  ENG_FELL.forEach((c, i) => {
+    tile(131+i, () => vary(c[0], c[1], c[2], 16));
+    const hell = (n) => vary(Math.min(255,c[0]+n), Math.min(255,c[1]+n), Math.min(255,c[2]+n), 8);
+    tile(139+i, (x,y) => {
+      // 1. die großen Augen mit Glanzpunkt
+      if ((x>=2&&x<=4 || x>=11&&x<=13) && y>=3&&y<=6) {
+        if ((x===3||x===12) && y===4) return "rgb(252,252,252)";                 // Glanzpunkt
+        return "rgb(26,22,20)";
+      }
+      // 2. der große helle Schnauzenfleck
+      if (x>=4&&x<=11 && y>=8&&y<=14) {
+        if (x>=6&&x<=9 && y>=8&&y<=10) return "rgb(38,30,28)";                   // die Nase
+        if (y===12 && x>=5&&x<=10) return "rgb(52,40,38)";                       // Mund quer
+        if (y===13 && (x===5||x===10)) return "rgb(52,40,38)";                   // und die Mundwinkel
+        return hell(80);
+      }
+      return vary(c[0], c[1], c[2], 14);
+    });
   });
   tile(130,(x,y)=>{                                                 // 🏄 Surfbrett: bunt gestreift
     if (y < 2 || y > 13) return vary(240,244,250,8);                // weiße Spitze und Ende
@@ -5952,6 +5990,19 @@ const ANIMAL_KIND = {
   trader:   { speed:0.8, half:0.3,  height:1.8,  tile:57, face:21 },
   knight:   { speed:0.9, half:0.3,  height:1.85, tile:56, face:21 },
   ball:     { speed:0,   half:0.22, height:0.44, tile:10, face:10 },
+  engfreund:{ speed:1.1, half:0.28, height:1.7,  tile:131, face:139 },
+};
+// 🦊 Die englischen Freunde als Figuren in der Welt: welches Fell, welches
+// Gesicht und welches Erkennungszeichen auf dem Kopf?
+const ENG_LOOK = {
+  fred:  { fell:131, face:139, art:"ohren"  },   // Fuchs: spitze Ohren + buschiger Schwanz
+  lucy:  { fell:132, face:140, art:"ohren"  },   // Wolf: genauso, nur grau
+  koko:  { fell:133, face:141, art:"rund"   },   // Koala: große runde Ohren
+  pip:   { fell:134, face:142, art:"schnabel"},  // Pinguin: weißer Bauch + Schnabel
+  rex:   { fell:135, face:143, art:"zacken" },   // Dino: Rückenzacken
+  milo:  { fell:136, face:144, art:"rund"   },   // Affe: runde Ohren + Schwanz
+  stella:{ fell:137, face:145, art:"horn"   },   // Einhorn: goldenes Horn
+  sparky:{ fell:138, face:146, art:"antenne"},   // Roboter: Antenne
 };
 const isPet = a => a.type==='dog' || a.type==='cat' || a.type==='pig' || a.type==='cow' || a.type==='bird' || a.type==='blitzmaus';
 const TAME_MSG = {
@@ -7304,7 +7355,8 @@ function updateAnimals(dt) {
     // damit es die normale KI überschreibt und die Beine sich auch bewegen.
 
     // Freunde freuen sich und kommen angelaufen, wenn sie dich sehen
-    if ((a.type==='villager'||a.type==='kid') && a.friend>=3) {
+    if (a.type==='engfreund') engFigurPlaudern(a, dt);   // 🦊 erzählt im Vorbeigehen
+    if ((a.type==='villager'||a.type==='kid'||a.type==='engfreund') && a.friend>=3) {
       const dp = Math.hypot(player.x-a.x, player.z-a.z);
       if (a.follow) {                   // Abenteuer-Begleiter!
         // Ist Jonah in seiner Festung, machen es sich die Freunde
@@ -7386,7 +7438,7 @@ function updateAnimals(dt) {
       if (a.walking) {
         a.yaw = Math.random()*Math.PI*2;
         // Dorfbewohner, Kinder und Ritter bleiben in der Nähe ihres Zuhauses
-        if ((a.type==='villager'||a.type==='kid') && !a.wandert &&
+        if ((a.type==='villager'||a.type==='kid'||a.type==='engfreund') && !a.wandert &&
             Math.hypot(a.hx-a.x, a.hz-a.z) > 14)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
         // Wanderer ziehen zielstrebig in ihre Reise-Richtung weiter
@@ -7606,7 +7658,7 @@ function updateAnimals(dt) {
 
     const inWater = getBlock(Math.floor(a.x),Math.floor(a.y+0.3),Math.floor(a.z))===WATER;
     const mensch = a.type==='villager'||a.type==='kid'||a.type==='trader'||a.type==='knight'||
-                   a.type==='hausmeister'||a.type==='butler';
+                   a.type==='hausmeister'||a.type==='butler'||a.type==='engfreund';
     if (a.flug) {                       // 🔧✈️ Düsen-Rucksack an: keine Schwerkraft!
       a.vy = a.steig || 0;
     } else if (inWater) {
@@ -8128,6 +8180,37 @@ function drawAnimals() {
       pushBox(arr,a, 0.1,0.58,0.55, 0.09,0.26,0.09, 73);
       pushBox(arr,a, 0,0.78,0.55, 0.28,0.11,0.09, 73);
       if (a.tame) pushBox(arr,a, 0,0.36,-0.3, 0.32,0.09,0.16, 25); // rotes Halsband
+    } else if (a.type==='engfreund') {                             // 🦊 ein englischer Freund
+      const L = ENG_LOOK[a.fid] || ENG_LOOK.fred;
+      const F = L.fell, G = L.face;
+      pushBox(arr,a, -0.12,0.27, sw*0.5, 0.18,0.54,0.22, F);        // zwei Beine
+      pushBox(arr,a,  0.12,0.27,-sw*0.5, 0.18,0.54,0.22, F);
+      pushBox(arr,a, 0,0.83,0, 0.38,0.6,0.26, F);                   // schlanker Körper
+      pushBox(arr,a, -0.26,0.85,-sw*0.6, 0.13,0.5,0.19, F);         // Arme schwingen mit
+      pushBox(arr,a,  0.26,0.85, sw*0.6, 0.13,0.5,0.19, F);
+      pushBox(arr,a, 0,1.18,0, 0.16,0.12,0.16, F);                  // kurzer Hals
+      pushBox(arr,a, 0,1.5,0, 0.56,0.54,0.5, F, G);                 // dicker Kopf mit Gesicht
+      if (L.art === 'ohren') {                                     // spitze Ohren + Schwanz
+        pushBox(arr,a, -0.19,1.85,0.03, 0.16,0.26,0.11, F);
+        pushBox(arr,a,  0.19,1.85,0.03, 0.16,0.26,0.11, F);
+        pushBox(arr,a, 0,0.66,0.3+Math.abs(sw)*0.5, 0.2,0.2,0.36, F);
+      } else if (L.art === 'rund') {                               // große runde Ohren
+        pushBox(arr,a, -0.34,1.68,0.02, 0.24,0.24,0.16, F);
+        pushBox(arr,a,  0.34,1.68,0.02, 0.24,0.24,0.16, F);
+      } else if (L.art === 'schnabel') {                           // weißer Bauch + Schnabel
+        pushBox(arr,a, 0,0.83,-0.15, 0.26,0.46,0.02, 49);
+        pushBox(arr,a, 0,1.4,-0.28, 0.16,0.12,0.12, 30);
+      } else if (L.art === 'zacken') {                             // Rückenzacken + Schwanz
+        for (let i2=0;i2<3;i2++) pushBox(arr,a, 0,0.9+i2*0.2,0.17, 0.1,0.16,0.1, 27);
+        pushBox(arr,a, 0,0.6,0.34+Math.abs(sw)*0.6, 0.18,0.18,0.42, F);
+      } else if (L.art === 'horn') {                               // goldenes Horn + Mähne
+        pushBox(arr,a, 0,1.88,-0.08, 0.1,0.3,0.1, 120);
+        pushBox(arr,a, 0,1.72,0.18, 0.34,0.34,0.12, 25);
+      } else if (L.art === 'antenne') {                            // Antenne mit Lämpchen
+        pushBox(arr,a, 0,1.86,0, 0.07,0.2,0.07, 3);
+        pushBox(arr,a, 0,2.0,0, 0.15,0.15,0.15, 27);
+      }
+      if (a.befehl === 'folgen') drawHeart(arr, a, 2.25);          // ❤️ er kommt mit!
     } else if (a.type==='kid') {                                   // Dorf-Kind
       pushBox(arr,a, 0,0.22, sw*0.3, 0.36,0.44,0.24, k.tile);      // Beine/Hose
       pushBox(arr,a, 0,0.62,0, 0.4,0.4,0.24, k.tile);              // Körper
@@ -10632,7 +10715,7 @@ function hausmeisterTick(a, dt) {
 }
 // 👑 ALLE MENSCHEN HÖREN AUF KÖNIG JONAH
 // Diese Leute kann Jonah antippen und ihnen etwas sagen:
-const MENSCH_TYPEN = new Set(['villager','kid','trader','knight','hausmeister',
+const MENSCH_TYPEN = new Set(['villager','kid','trader','knight','hausmeister','engfreund',
                               'bankier','butler']);
 const MENSCH_JA = [
   'Ja, König Jonah!', 'Sofort, Majestät! 👑', 'Wie Ihr befiehlt!',
@@ -11616,6 +11699,7 @@ function msgrChatAuf(id) {
     document.getElementById('msgrChat').style.display = 'flex';
     document.getElementById('msgrKopf').textContent = '🌍 Alle zusammen';
     if (!gruppeLog().length) { gruppeSagen('de'); gruppeSagen('en'); }
+    document.getElementById('msgrBefehle').style.display = 'none';
     msgrVerlaufZeigen();
     msgrHilfenZeigen();
     return;
@@ -11628,7 +11712,43 @@ function msgrChatAuf(id) {
   document.getElementById('msgrChat').style.display = 'flex';
   document.getElementById('msgrKopf').textContent = f.emoji + ' ' + f.name;
   msgrVerlaufZeigen();
+  msgrBefehleZeigen(id);
   msgrHilfenZeigen();
+}
+// 👑 Läuft dieser Freund gerade draußen herum? Dann kann Jonah ihm auch
+// SAGEN, was er tun soll - auf Englisch, wie einem echten Freund.
+function msgrBefehleZeigen(id) {
+  const box = document.getElementById('msgrBefehle');
+  box.innerHTML = '';
+  const a = (typeof engFigur === 'function') ? engFigur(id) : null;
+  if (!a) { box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  const BEF = [
+    ['🚶 Come with me!', 'Komm mit!', () => {
+      a.befehl = 'folgen'; a.warteX = undefined;
+      engFigurSagt(a, 'Yes! I come with you!', 'Ja! Ich komme mit dir mit!'); }],
+    ['👉 Come here!', 'Komm her!', () => {
+      a.befehl = 'hierher'; a.warteX = undefined;
+      engFigurSagt(a, 'I am coming!', 'Ich komme!'); }],
+    ['🛑 Wait here!', 'Warte hier!', () => {
+      a.befehl = 'warten';
+      engFigurSagt(a, 'Okay, I wait here.', 'Okay, ich warte hier.'); }],
+    ['🙌 You can go.', 'Du darfst gehen.', () => {
+      a.befehl = null;
+      engFigurSagt(a, 'Bye Jonah! See you!', 'Tschüss Jonah! Bis bald!'); }],
+  ];
+  for (const [en, de, fn] of BEF) {
+    const b = document.createElement('button');
+    b.className = 'msgrBef';
+    b.innerHTML = '<span></span><small></small>';
+    b.querySelector('span').textContent = en;
+    b.querySelector('small').textContent = de;
+    b.addEventListener('click', () => {
+      document.getElementById('msgrBox').style.display = 'none';
+      msgrOffen = null; fn(); blip(600,0.05);
+    });
+    box.appendChild(b);
+  }
 }
 function msgrVerlaufZeigen() {
   const v = document.getElementById('msgrVerlauf');
@@ -11665,8 +11785,7 @@ function msgrVerlaufZeigen() {
     }
     v.appendChild(d);
   }
-  // erst nach dem Zeichnen ganz nach unten - sonst stimmt die Höhe noch nicht
-  requestAnimationFrame(() => { v.scrollTop = v.scrollHeight; });
+  msgrRunterScrollen();
 }
 // 🌍 Der Plausch: jeder mit Namen. Englische Sätze kann man vorlesen lassen,
 // bei ALLEN Sätzen zeigt ein Knopf die andere Sprache - so versteht Jonah
@@ -11713,8 +11832,12 @@ function gruppeVerlaufZeigen(v) {
     }
     v.appendChild(d);
   }
-  // erst nach dem Zeichnen ganz nach unten - sonst stimmt die Höhe noch nicht
-  requestAnimationFrame(() => { v.scrollTop = v.scrollHeight; });
+  msgrRunterScrollen();
+}
+// Nach dem Zeichnen ans Ende springen - vorher stimmt die Höhe noch nicht.
+function msgrRunterScrollen() {
+  const o = document.getElementById('msgrOben');
+  requestAnimationFrame(() => { o.scrollTop = o.scrollHeight; });
 }
 // 🗣️ Vorlesen - genau wie in der Englisch-App
 function msgrSprich(text) {
@@ -11846,6 +11969,67 @@ async function msgrKiAntwort(f, text, s) {
   }
   if (msgrOffen === f.id) msgrVerlaufZeigen();
   blip(880,0.07);
+}
+
+// ---- 🦊 die englischen Freunde laufen durch Jonahs Welt ------------------
+// Sie bewegen sich wie die Dorfbewohner, hören genauso auf König Jonah und
+// reden natürlich Englisch - mit deutscher Übersetzung darunter.
+const ENG_DA = 4;                       // so viele sind höchstens gleichzeitig da
+let engSpawnT = 6;                      // die ersten kommen kurz nach dem Start
+function engFiguren() { return animals.filter(a => a.type === "engfreund"); }
+function engFigur(fid) { return engFiguren().find(a => a.fid === fid); }
+function engSpawnTick(dt) {
+  if (mathePause || halleAn || weltDim !== 0) return;
+  // Ums Weggehen kümmert sich updateAnimals für alle gleich: wer weiter als
+  // 72 Blöcke weg ist, verschwindet - außer er soll mitkommen.
+  engSpawnT -= dt;
+  if (engSpawnT > 0) return;
+  engSpawnT = 12 + Math.random()*12;
+  const da = engFiguren();
+  if (da.length >= ENG_DA) return;
+  const frei = FREUNDE.filter(f => !da.some(a => a.fid === f.id));
+  if (!frei.length) return;
+  const f = frei[Math.floor(Math.random()*frei.length)];
+  for (let v = 0; v < 24; v++) {        // einen freien Platz in der Nähe suchen
+    const w = Math.random()*Math.PI*2, d = 18 + Math.random()*20;
+    const x = Math.floor(player.x + Math.cos(w)*d), z = Math.floor(player.z + Math.sin(w)*d);
+    if (spawnMob("engfreund", x, z, { fid:f.id, name:f.name, hx:x, hz:z, friend:3 })) return;
+  }
+}
+// Er sagt etwas auf Englisch - und darunter steht, was es heißt.
+function engFigurSagt(a, en, de) {
+  sagen(a, en, 4.5);
+  const f = freundVon(a.fid);
+  toast(f.emoji + " " + f.name + ": „" + en + "\"\n🇩🇪 " + de, 5000);
+}
+// Beim Antippen: er begrüßt dich auf Englisch und du kommst direkt in EUREN
+// Chat - dasselbe Gespräch wie im Messenger und in der Englisch-App.
+function engFigurAntippen(a) {
+  const f = freundVon(a.fid);
+  a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+  a.walking = false; a.t = 3.5;
+  const k = spielKontext();
+  engFigurSagt(a, "Hi Jonah! " + k.frage, "Hi Jonah! " + k.de);
+  blip(660,0.07); blip(880,0.09);
+  engSchreiben(f.id, "f", "Hi Jonah! " + k.frage, "Hi Jonah! " + k.de, false);
+  msgrAuf(); msgrChatAuf(f.id);
+}
+// Ab und zu erzählt einer im Vorbeigehen etwas - auch das, was gerade im
+// Plausch besprochen wurde. So hängt alles zusammen.
+function engFigurPlaudern(a, dt) {
+  // Nur reden, wenn Jonah nah genug ist, um die Sprechblase zu sehen -
+  // sonst poppen Meldungen von jemandem auf, der gar nicht da ist.
+  if (Math.hypot(a.x-player.x, a.z-player.z) > 22) return;
+  if (a.sagT > 0) return;               // er redet noch
+  if (Math.random() >= dt*0.06) return; // etwa alle 5 Minuten pro Freund
+  const f = freundVon(a.fid);
+  const dorf = gruppeLetztes(false);
+  if (dorf && Math.random() < 0.4)
+    engFigurSagt(a, dorf.n + " says: " + dorf.d, dorf.n + " sagt: " + dorf.t);
+  else {
+    const tun = f.tun[Math.floor(Math.random()*f.tun.length)];
+    engFigurSagt(a, tun[0], tun[1]);
+  }
 }
 
 // ======== 🌍 ALLE ZUSAMMEN: der Plausch der englischen UND deutschen Freunde ========
@@ -16353,6 +16537,10 @@ function hitEntity(a, dir) {
   }
   // 👑 ALLE MENSCHEN hören auf König Jonah! Der Bankier und der Hausmeister
   // haben in ihrem Menü zusätzlich noch ihre eigenen Knöpfe.
+  if (a.type==='engfreund') {          // 🦊 mit dem englischen Freund reden
+    engFigurAntippen(a);
+    return;
+  }
   if (MENSCH_TYPEN.has(a.type)) {
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3;
@@ -17910,6 +18098,7 @@ function frame(now) {
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
   try { freundeTick(dt); } catch(e) {}   // 📱 schreibt dir gerade ein englischer Freund?
   try { gruppeTick(dt); } catch(e) {}    // 🌍 plaudern England und das Dorf miteinander?
+  try { engSpawnTick(dt); } catch(e) {}  // 🦊 laufen genug englische Freunde herum?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
@@ -18236,6 +18425,14 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     animals.push({ type: c[0]===1?'kid':'villager', name:c[1], x:c[2], y:c[3], z:c[4],
       home:c[5], hx:c[6], hz:c[7], friend:3, follow:true,
       yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false });
+  }
+  // 🦊 die englischen Freunde, die mitkommen sollten, stehen wieder bereit
+  for (const fid of savedEngFolgt) {
+    if (!FREUNDE.some(f => f.id === fid) || animals.some(a=>a.fid===fid)) continue;
+    animals.push({ type:'engfreund', fid, name: freundVon(fid).name, friend:3,
+      befehl:'folgen', x: player.x + (Math.random()*3-1.5), y: player.y,
+      z: player.z + (Math.random()*3-1.5), hx: player.x, hz: player.z,
+      yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:1, ph:0, onGround:false });
   }
   // 🚀 Deine eigene Rakete zum Selberfliegen - nur, wenn du schon mal drin sassest
   if (savedRaum && !animals.some(a=>a.type==='raumschiff')) {
