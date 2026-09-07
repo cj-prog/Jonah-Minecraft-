@@ -254,6 +254,11 @@
   #uebEnglisch { font-size:17px; font-weight:bold; padding:6px 2px; }
   #uebEnglisch.uebMiss { font-size:13px; font-weight:normal; opacity:.85; }
   #uebKnoepfe { display:flex; gap:6px; }
+  #uebTeile { display:none; flex-wrap:wrap; gap:5px; margin:4px 0; }
+  .uebTeil { background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3);
+    border-radius:9px; padding:5px 9px; color:#fff; font-size:14px; font-weight:bold;
+    text-align:left; cursor:pointer; }
+  .uebTeil small { display:block; font-size:10px; font-weight:normal; opacity:.72; }
   #uebHoeren, #uebSenden { font-size:13px; font-weight:bold; padding:6px 12px;
     border-radius:9px; border:none; cursor:pointer; }
   #uebHoeren { background:rgba(255,255,255,.22); color:#fff; }
@@ -581,6 +586,7 @@
       </div>
       <div id="uebErgebnis">
         <div id="uebEnglisch"></div>
+        <div id="uebTeile"></div>
         <div id="uebKnoepfe">
           <button id="uebHoeren">🔊 anhören</button>
           <button id="uebSenden">➤ Abschicken</button>
@@ -12409,16 +12415,54 @@ function wortNachschlagen(frage) {
     if (putz(w.de) === f || putz(w.de) === ohne) return w.en;
   return DICT[f] || DICT[ohne] || null;
 }
+// Kennt das Wörterbuch den GANZEN Satz nicht, suchen wir wenigstens die Teile.
+// Ein falsch zusammengebauter Satz wäre schlimmer als gar keiner - Jonah soll
+// ja richtiges Englisch lernen. Also zeigen wir ehrlich, was wir kennen, und
+// er baut selbst daraus.
+function teileNachschlagen(frage) {
+  const woerter = frage.toLowerCase().replace(/[.!?,;:]/g, " ").split(/\s+/).filter(Boolean);
+  const raus = [];
+  let i = 0;
+  while (i < woerter.length) {
+    let gefunden = null;
+    // längste Wortgruppe zuerst ("ich baue" schlägt "ich")
+    for (let n = Math.min(3, woerter.length - i); n >= 1 && !gefunden; n--) {
+      const stueck = woerter.slice(i, i + n).join(" ");
+      const en = wortNachschlagen(stueck);
+      if (en) gefunden = { n, de: stueck, en };
+    }
+    if (gefunden) { raus.push([gefunden.de, gefunden.en]); i += gefunden.n; }
+    else i++;
+  }
+  return raus;
+}
 // 🇩🇪→🇬🇧 Jonah tippt Deutsch, wir sagen ihm das Englische. Mit KI-Schlüssel
 // kann er ganze Sätze übersetzen, ohne reicht das Wörterbuch.
 let uebersetztGerade = false, letzteUebersetzung = "";
-function uebersetzungZeigen(text, misslungen) {
+function uebersetzungZeigen(text, misslungen, teile) {
   const kasten = document.getElementById("uebErgebnis");
   kasten.style.display = "block";
   kasten.querySelector("#uebEnglisch").textContent = text;
   kasten.querySelector("#uebEnglisch").className = misslungen ? "uebMiss" : "";
   document.getElementById("uebKnoepfe").style.display = misslungen ? "none" : "flex";
   letzteUebersetzung = misslungen ? "" : text;
+  // Die bekannten Teile zum Antippen - jeder liest sich vor und lässt sich
+  // abschicken. So kommt Jonah auch bei einem langen Satz weiter.
+  const box = document.getElementById("uebTeile");
+  box.innerHTML = "";
+  box.style.display = (teile && teile.length) ? "flex" : "none";
+  for (const [de, en] of (teile || [])) {
+    const b = document.createElement("button");
+    b.className = "uebTeil";
+    b.innerHTML = '<span></span><small></small>';
+    b.querySelector("span").textContent = en;
+    b.querySelector("small").textContent = de;
+    b.addEventListener("click", () => {
+      document.getElementById("uebEingabe").value = de;
+      uebersetzungZeigen(en, false);
+    });
+    box.appendChild(b);
+  }
   if (!misslungen) msgrSprich(text);
 }
 async function uebersetzen() {
@@ -12427,8 +12471,13 @@ async function uebersetzen() {
   const s = engLaden();
   if (!s.apiKey) {                      // ohne KI-Schlüssel: das Wörterbuch
     const w = wortNachschlagen(frage);
-    if (w) uebersetzungZeigen(w, false);
-    else uebersetzungZeigen("Hmm, das kenne ich noch nicht. 🙈 Frag Mama oder Papa!", true);
+    if (w) { uebersetzungZeigen(w, false); return; }
+    const teile = teileNachschlagen(frage);
+    if (teile.length)
+      uebersetzungZeigen("Den ganzen Satz kenne ich noch nicht 🙈 – aber diese Teile! " +
+                         "Tipp einen an:", true, teile);
+    else
+      uebersetzungZeigen("Hmm, das kenne ich noch nicht. 🙈 Frag Mama oder Papa!", true);
     return;
   }
   uebersetztGerade = true;
@@ -12451,8 +12500,13 @@ async function uebersetzen() {
     uebersetzungZeigen(en, false);
   } catch(e) {
     const w = wortNachschlagen(frage);
-    if (w) uebersetzungZeigen(w, false);
-    else uebersetzungZeigen("Ups, das hat gerade nicht geklappt. Probier es gleich nochmal! 🙈", true);
+    if (w) { uebersetzungZeigen(w, false); return; }
+    const teile = teileNachschlagen(frage);
+    if (teile.length)
+      uebersetzungZeigen("Das Internet antwortet gerade nicht 🙈 – aber diese Teile kenne ich:",
+                         true, teile);
+    else
+      uebersetzungZeigen("Ups, das hat gerade nicht geklappt. Probier es gleich nochmal! 🙈", true);
   } finally { uebersetztGerade = false; }
 }
 
@@ -12533,6 +12587,7 @@ function lernThemenZeigen() {
 }
 // Erst die Wörter anschauen (mit Vorlesen), dann das Quiz
 function lernWoerterZeigen(t) {
+  document.getElementById("lernBox").style.display = "flex";
   const box = document.getElementById("lernInhalt");
   document.getElementById("lernKopf").textContent = t.emoji + " " + t.title;
   box.innerHTML = "";
@@ -12567,6 +12622,7 @@ function quizStarten(t) {
   quizFrageZeigen();
 }
 function quizFrageZeigen() {
+  document.getElementById("lernBox").style.display = "flex";   // sicher ist sicher
   const box = document.getElementById("lernInhalt");
   const w = quizFragen[quizNr];
   document.getElementById("lernKopf").textContent =
@@ -12619,6 +12675,7 @@ function quizAntworten(knopf, richtig, wort) {
   }, richtig ? 700 : 1800);
 }
 function quizFertig() {
+  document.getElementById("lernBox").style.display = "flex";
   const box = document.getElementById("lernInhalt");
   const alle = quizFragen.length;
   document.getElementById("lernKopf").textContent = "🏆 Quiz geschafft!";
