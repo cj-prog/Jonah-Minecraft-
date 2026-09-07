@@ -12059,6 +12059,10 @@ function abstandHalten(dt) {
   // Ausweichen muss SCHNELLER gehen als Laufen (3,5) - sonst schiebt sich
   // einer beim Hinlaufen wieder in den anderen hinein.
   const tempo = 4.5 * dt;
+  // Erst ALLE Schubser sammeln, dann pro Wesen EINMAL bewegen. Sonst bekommt
+  // einer, der zwischen mehreren steht, in einem Bild mehrere Schubser
+  // hintereinander und macht einen viel zu großen Satz.
+  const sx = new Array(nah.length).fill(0), sz = new Array(nah.length).fill(0);
   for (let i = 0; i < nah.length; i++) {
     const [a, ka] = nah[i], fa = stehtFest(a);
     for (let j = i + 1; j < nah.length; j++) {
@@ -12066,8 +12070,8 @@ function abstandHalten(dt) {
       if (fa && fb) continue;           // zwei Unbewegliche gehen sich nichts an
       // Stehen sie überhaupt auf derselben Höhe? (Vogel über Kuh ist in Ordnung)
       if (a.y > b.y + kb.height - 0.15 || b.y > a.y + ka.height - 0.15) continue;
-      let dx = b.x - a.x, dz = b.z - a.z;
-      let d = Math.hypot(dx, dz);
+      const dx = b.x - a.x, dz = b.z - a.z;
+      const d = Math.hypot(dx, dz);
       const soll = (ka.half + kb.half) * 1.05;
       if (d >= soll) continue;
       if (d < 0.0001) {
@@ -12076,15 +12080,22 @@ function abstandHalten(dt) {
         // eigene Ausweichrichtung. Die gehört fest zu ihm: würfelte man sie
         // jedes Bild neu, hoben sich die Schubser gegenseitig auf und die
         // beiden zappelten für immer auf demselben Fleck.
-        if (!fa) verschiebe(a, Math.cos(weichWinkel(a))*tempo, Math.sin(weichWinkel(a))*tempo, ka);
-        if (!fb) verschiebe(b, Math.cos(weichWinkel(b))*tempo, Math.sin(weichWinkel(b))*tempo, kb);
+        if (!fa) { sx[i] += Math.cos(weichWinkel(a))*tempo; sz[i] += Math.sin(weichWinkel(a))*tempo; }
+        if (!fb) { sx[j] += Math.cos(weichWinkel(b))*tempo; sz[j] += Math.sin(weichWinkel(b))*tempo; }
         continue;
       }
       const schub = Math.min(tempo, (soll - d) * 0.5);
       const ux = dx / d * schub, uz = dz / d * schub;
-      if (!fa) verschiebe(a, -ux, -uz, ka);
-      if (!fb) verschiebe(b,  ux,  uz, kb);
+      if (!fa) { sx[i] -= ux; sz[i] -= uz; }
+      if (!fb) { sx[j] += ux; sz[j] += uz; }
     }
+  }
+  for (let i = 0; i < nah.length; i++) {
+    if (!sx[i] && !sz[i]) continue;
+    const laenge = Math.hypot(sx[i], sz[i]);
+    // NIE weiter als tempo pro Bild - so kann niemand durch eine Wand springen
+    const f = laenge > tempo ? tempo / laenge : 1;
+    verschiebe(nah[i][0], sx[i]*f, sz[i]*f, nah[i][1]);
   }
 }
 // Jedes Wesen bekommt EINMAL seine eigene Ausweichrichtung. Der goldene Winkel
