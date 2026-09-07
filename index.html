@@ -761,7 +761,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 217 &middot; Deine englischen Freunde laufen jetzt durch deine Welt! 🦊🚶</p>
+    Version 218 &middot; Jeder Freund, jedes Tier und jedes Fahrzeug hat seinen eigenen Platz! 🧍‍♂️🐾</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -807,7 +807,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 217;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 218;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7070,6 +7070,7 @@ function geldKlau(a, dt) {
 function updateAnimals(dt) {
   animalSpawnT -= dt;
   if (animalSpawnT<=0) { animalSpawnT=1.5; spawnTick(); }
+  gefolgeOrdnen();                      // 🧍 wer läuft mit, und auf welchem Platz?
 
   for (let i=animals.length-1; i>=0; i--) {
     const a = animals[i];
@@ -7333,14 +7334,16 @@ function updateAnimals(dt) {
     // (außer Jonah ist in seiner Festung - dann ab ins Gehege! 🐾)
     if (a.tame) {
       const ziel = (a===schulterMaus) ? null : heimPlatz(a, 43, 6, 11, 6);
-      const zx = ziel ? ziel[0] : player.x, zz = ziel ? ziel[1] : player.z;
+      const platz = ziel ? null : gefolgePlatz(a);   // 🐾 sein eigener Fleck neben Jonah
+      const zx = ziel ? ziel[0] : platz ? platz[0] : player.x,
+            zz = ziel ? ziel[1] : platz ? platz[1] : player.z;
       const dx=zx-a.x, dz=zz-a.z, dp=Math.hypot(dx,dz);
       a.t = 9; a.spd = 0;
       if (dp > (ziel ? 3 : 25)) {       // zu weit weg? Hinflitzen! (ins Gehege gehts direkt)
         a.x = zx + (Math.random()*2-1);
         a.z = zz + (Math.random()*2-1);
         a.y = (ziel ? burgPos().base : player.y) + 1; a.vy = 0;
-      } else if (a.sit || dp < (ziel ? 1 : 3)) {
+      } else if (a.sit || dp < (ziel ? 1 : platz ? 0.7 : 3)) {
         a.walking = false;
       } else {
         a.yaw = Math.atan2(dx,-dz);
@@ -7362,14 +7365,16 @@ function updateAnimals(dt) {
         // Ist Jonah in seiner Festung, machen es sich die Freunde
         // im Freunde-Haus nebenan gemütlich 🏠
         const heim = heimPlatz(a, 42.5, 6, -4, 4);
-        const zx = heim ? heim[0] : player.x, zz = heim ? heim[1] : player.z;
+        const platz = heim ? null : gefolgePlatz(a);   // 🧍 sein eigener Fleck
+        const zx = heim ? heim[0] : platz ? platz[0] : player.x,
+              zz = heim ? heim[1] : platz ? platz[1] : player.z;
         const dpz = Math.hypot(zx-a.x, zz-a.z);
         a.t = 9; a.spd = 0;
         if (dpz > (heim ? 3 : 25)) {    // zu weit zurückgefallen? Herteleportieren
           a.x = zx + (Math.random()*2-1);
           a.z = zz + (Math.random()*2-1);
           a.y = (heim ? burgPos().base : player.y) + 1; a.vy = 0;
-        } else if (dpz > (heim ? 1 : 3)) {
+        } else if (dpz > (heim ? 1 : platz ? 0.8 : 3)) {
           a.yaw = Math.atan2(zx-a.x, -(zz-a.z));
           a.walking = true; a.spd = heim ? 2.4 : 3.4;
         } else a.walking = false;
@@ -7700,6 +7705,7 @@ function updateAnimals(dt) {
     else { if (a.vy<0) a.onGround=true; a.vy=0; }
     if (a.y<-12) animals.splice(i,1);
   }
+  abstandHalten(dt);                    // 🧍🧍 niemand steht im anderen drin
 }
 
 // Schwebendes Herz über dem Kopf von Freunden ❤️
@@ -10735,6 +10741,11 @@ function gehorcheTick(a, dt) {
   }
   if (a.befehl === 'folgen') {
     a.spd = 0;
+    // Jeder hat seinen eigenen Fleck im Fächer hinter Jonah - so drängeln
+    // sie sich nicht alle auf denselben Punkt.
+    const platz = gefolgePlatz(a);
+    const zx = platz ? platz[0] : player.x, zz = platz ? platz[1] : player.z;
+    const dz2 = Math.hypot(zx-a.x, zz-a.z);
     // Kommt er voran? Wenn nicht, hängt er an einer Stufe fest - dann hüpft
     // er, und wenn das auch nichts hilft, nimmt er die Abkürzung.
     if (a.festDist === undefined || dp < a.festDist - 0.4) {
@@ -10743,10 +10754,10 @@ function gehorcheTick(a, dt) {
       a.festT = (a.festT||0) + dt;
     }
     if (dp > 30 || a.festT > 6) {       // abgehängt oder festgeklemmt: abkürzen
-      a.x = player.x + (Math.random()*2-1); a.z = player.z + (Math.random()*2-1);
+      a.x = zx + (Math.random()*0.6-0.3); a.z = zz + (Math.random()*0.6-0.3);
       a.y = player.y + 1; a.vy = 0; a.festT = 0; a.festDist = undefined;
-    } else if (dp > 2.6) {
-      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    } else if (dz2 > (platz ? 0.8 : 2.6)) {
+      a.yaw = Math.atan2(zx-a.x, -(zz-a.z));
       a.walking = true; a.spd = 3.2;
       if (a.festT > 0.5 && a.onGround) a.vy = 5.2;   // über die Stufe hüpfen
     } else {
@@ -11969,6 +11980,127 @@ async function msgrKiAntwort(f, text, s) {
   }
   if (msgrOffen === f.id) msgrVerlaufZeigen();
   blip(880,0.07);
+}
+
+// ========== 🧍🧍🧍 JEDER BRAUCHT SEINEN EIGENEN PLATZ =========================
+// Vorher sind alle, die Jonah hinterherlaufen, auf DENSELBEN Punkt zugelaufen -
+// Freunde, Haustiere und Fahrzeuge standen dann ineinander drin, und beim
+// Antippen erwischte man das falsche. Zwei Dinge lösen das:
+//   1. Jeder Begleiter bekommt seinen EIGENEN Stehplatz hinter Jonah.
+//   2. Wer sich trotzdem überschneidet, wird sanft auseinandergeschoben.
+
+// Kleine, wuselige Wesen brauchen keinen Abstand (Vögel fliegen, Fische
+// schwimmen, der Ball soll ja getreten werden).
+const OHNE_ABSTAND = new Set(["fish", "bird", "ball", "laser"]);
+// Was fest an seinem Platz steht, schiebt die anderen weg, bewegt sich aber
+// selbst nicht: Statuen, Fahrstuhlkabinen und alles in der Halle.
+function stehtFest(a) { return a.type === "statue" || a.type === "kabine" || !!a.halle; }
+
+// Wer läuft Jonah gerade hinterher?
+function istGefolge(a) {
+  if (a === riding || a === carRiding || a === schulterMaus) return false;
+  if (a.befehl === "folgen") return true;
+  if (a.follow && a.friend >= 3) return true;
+  if (a.tame && !a.sit) return true;
+  return false;
+}
+// Einmal pro Bild: die Begleiter durchnummerieren. Die Nummer bleibt jedem
+// erhalten, solange er dabei ist - sonst würden sie beim Laufen die Plätze
+// tauschen und sich gegenseitig anrempeln.
+let gefolge = [];
+// In welche Richtung ist Jonah zuletzt GELAUFEN? Daran hängt der Fächer -
+// nicht an der Blickrichtung. Sonst würden die Freunde jedes Mal um ihn
+// herumwandern, sobald er sich nur umdreht, um sie anzuschauen.
+let gefolgeRichtung = 0, gefolgeVorX = null, gefolgeVorZ = 0;
+function gefolgeOrdnen() {
+  if (gefolgeVorX !== null) {
+    const dx = player.x - gefolgeVorX, dz = player.z - gefolgeVorZ;
+    if (Math.hypot(dx, dz) > 0.015) gefolgeRichtung = Math.atan2(dx, -dz);
+  }
+  gefolgeVorX = player.x; gefolgeVorZ = player.z;
+  gefolge = animals.filter(istGefolge);
+  gefolge.sort((p, q) => (p.gefolgeNr || 0) - (q.gefolgeNr || 0));
+  gefolge.forEach((a, i) => { a.platzNr = i; });
+}
+let gefolgeZaehler = 0;
+// Wo soll dieser Begleiter stehen? Ein Fächer HINTER Jonah, jeder auf
+// seinem eigenen Fleck. Gibt null zurück, wenn er allein unterwegs ist -
+// dann darf er wie bisher einfach direkt zu Jonah.
+function gefolgePlatz(a) {
+  const n = gefolge.length;
+  if (n <= 1 || a.platzNr === undefined) return null;
+  if (a.gefolgeNr === undefined) a.gefolgeNr = ++gefolgeZaehler;
+  // Der Bogen muss so groß sein, dass zwischen zwei Nachbarplätzen wirklich
+  // ein ganzer Körper Platz hat - sonst laufen sie beim Hinlaufen wieder
+  // ineinander, und das Laufen ist stärker als das Ausweichen.
+  const r = Math.min(5.0, 1.8 + n * 0.28);          // je mehr, desto weiter weg
+  const fach = Math.min(3.6, 0.75 + n * 0.3);       // und desto weiter der Fächer
+  const w = gefolgeRichtung + Math.PI + (a.platzNr - (n - 1) / 2) * (fach / Math.max(1, n - 1));
+  return [player.x + Math.sin(w) * r, player.z - Math.cos(w) * r];
+}
+// Zwei, die sich überschneiden, sanft auseinanderschieben - aber nie in eine
+// Wand hinein. Wer festeht, bleibt stehen und schiebt nur den anderen.
+function abstandHalten(dt) {
+  const nah = [];
+  for (const a of animals) {
+    if (a === riding || a === carRiding) continue;
+    if (OHNE_ABSTAND.has(a.type)) continue;
+    if (Math.hypot(a.x - player.x, a.z - player.z) > 48) continue;
+    const k = ANIMAL_KIND[a.type];
+    if (!k) continue;
+    // Steckt er in einem Block? Zur Seite schieben dürfen wir ihn dann nicht
+    // (sonst käme er durch Wände). Stattdessen bekommt er einen Schubs nach
+    // OBEN und arbeitet sich so wieder frei - genau wie ein Bewohner, der
+    // aus Versehen eingemauert wurde. Sonst bliebe er für immer stecken und
+    // würde jeden anderen mit blockieren.
+    if (!stehtFest(a) && a.vy <= 0 && collideBox(a.x, a.y, a.z, k.half, k.height)) a.vy = 4;
+    nah.push([a, k]);
+  }
+  // Ausweichen muss SCHNELLER gehen als Laufen (3,5) - sonst schiebt sich
+  // einer beim Hinlaufen wieder in den anderen hinein.
+  const tempo = 4.5 * dt;
+  for (let i = 0; i < nah.length; i++) {
+    const [a, ka] = nah[i], fa = stehtFest(a);
+    for (let j = i + 1; j < nah.length; j++) {
+      const [b, kb] = nah[j], fb = stehtFest(b);
+      if (fa && fb) continue;           // zwei Unbewegliche gehen sich nichts an
+      // Stehen sie überhaupt auf derselben Höhe? (Vogel über Kuh ist in Ordnung)
+      if (a.y > b.y + kb.height - 0.15 || b.y > a.y + ka.height - 0.15) continue;
+      let dx = b.x - a.x, dz = b.z - a.z;
+      let d = Math.hypot(dx, dz);
+      const soll = (ka.half + kb.half) * 1.05;
+      if (d >= soll) continue;
+      if (d < 0.0001) {
+        // Sie stehen EXAKT aufeinander - dann gibt es gar keine Richtung, in
+        // die man sie auseinanderziehen könnte. Also geht jeder in SEINE
+        // eigene Ausweichrichtung. Die gehört fest zu ihm: würfelte man sie
+        // jedes Bild neu, hoben sich die Schubser gegenseitig auf und die
+        // beiden zappelten für immer auf demselben Fleck.
+        if (!fa) verschiebe(a, Math.cos(weichWinkel(a))*tempo, Math.sin(weichWinkel(a))*tempo, ka);
+        if (!fb) verschiebe(b, Math.cos(weichWinkel(b))*tempo, Math.sin(weichWinkel(b))*tempo, kb);
+        continue;
+      }
+      const schub = Math.min(tempo, (soll - d) * 0.5);
+      const ux = dx / d * schub, uz = dz / d * schub;
+      if (!fa) verschiebe(a, -ux, -uz, ka);
+      if (!fb) verschiebe(b,  ux,  uz, kb);
+    }
+  }
+}
+// Jedes Wesen bekommt EINMAL seine eigene Ausweichrichtung. Der goldene Winkel
+// sorgt dafür, dass mehrere, die zusammen entstehen (vier Autos zum Beispiel),
+// möglichst weit auseinanderliegende Richtungen bekommen.
+let weichZaehler = 0;
+function weichWinkel(a) {
+  if (a.weichW === undefined) a.weichW = (++weichZaehler) * 2.39996;
+  return a.weichW;
+}
+function verschiebe(a, dx, dz, k) {
+  if (!collideBox(a.x + dx, a.y, a.z, k.half, k.height)) a.x += dx;
+  if (!collideBox(a.x, a.y, a.z + dz, k.half, k.height)) a.z += dz;
+  // Wer "warte hier" gesagt bekommen hat, merkt sich seinen NEUEN Platz -
+  // sonst läuft er gleich wieder zurück in den anderen hinein.
+  if (a.warteX !== undefined) { a.warteX = a.x; a.warteZ = a.z; }
 }
 
 // ---- 🦊 die englischen Freunde laufen durch Jonahs Welt ------------------
@@ -14759,12 +14891,18 @@ function screenRay(px,py) { // Strahl durch einen Bildschirmpunkt (CSS-Pixel)
   return [dx/l,dy/l,dz/l];
 }
 
-function rayEntity(o, d, maxT) {  // trifft der Strahl ein Tier/Wesen?
-  let best=null;
+// Trifft der Strahl ein Tier, einen Menschen oder ein Fahrzeug?
+// Wenn zwei fast gleich weit vorn liegen (zum Beispiel zwei Autos, die dicht
+// nebeneinander parken), gewinnt das, was Jonah WIRKLICH anvisiert - also das,
+// dessen Mitte am nächsten am Zielstrahl liegt. Sonst erwischt man dauernd
+// das falsche.
+function rayEntity(o, d, maxT) {
+  const treffer = [];
   for (const a of animals) {
     if (a===riding) continue;           // das eigene Pferd nicht antippen können
     if (a.schulter) continue;           // die Schulter-Maus blockiert kein Tippen
     const k=ANIMAL_KIND[a.type];
+    if (!k) continue;
     let t0=0, t1=maxT, ok=true;
     const mins=[a.x-k.half, a.y, a.z-k.half], maxs=[a.x+k.half, a.y+k.height, a.z+k.half];
     for (let i=0;i<3;i++) {
@@ -14774,7 +14912,18 @@ function rayEntity(o, d, maxT) {  // trifft der Strahl ein Tier/Wesen?
       t0=Math.max(t0,ta); t1=Math.min(t1,tb);
       if (t0>t1) { ok=false; break; }
     }
-    if (ok && (!best || t0<best.t)) best={a, t:t0};
+    if (ok) treffer.push({a, t:t0, k});
+  }
+  if (!treffer.length) return null;
+  let best = null;
+  const vorn = Math.min(...treffer.map(h => h.t));
+  for (const h of treffer) {
+    if (h.t > vorn + 0.6) continue;     // deutlich weiter hinten: zählt nicht mit
+    // Wie weit ist die Mitte dieses Wesens vom Zielstrahl entfernt?
+    const mx = h.a.x - o[0], my = h.a.y + h.k.height*0.5 - o[1], mz = h.a.z - o[2];
+    const laengs = mx*d[0] + my*d[1] + mz*d[2];
+    const ab = Math.hypot(mx - d[0]*laengs, my - d[1]*laengs, mz - d[2]*laengs);
+    if (!best || ab < best.ab) best = { a:h.a, t:h.t, ab };
   }
   return best;
 }

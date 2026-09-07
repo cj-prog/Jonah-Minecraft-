@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JEDER HAT SEINEN EIGENEN PLATZ (v218)! 🧍‍♂️🐾🚗 Vorher sind alle, die Jonah
+  hinterherlaufen, auf DENSELBEN Punkt zugelaufen - Freunde, Haustiere und
+  Fahrzeuge standen dann ineinander drin, und beim Antippen erwischte man das
+  falsche Auto. Jetzt bekommt jeder Begleiter seinen eigenen Stehplatz in einem
+  Fächer HINTER Jonah. Der Fächer richtet sich nach der Richtung, in die Jonah
+  zuletzt GELAUFEN ist - dreht er sich nur um, um seine Gruppe anzuschauen,
+  bleiben alle brav stehen. Jeder behält seinen Platz, sie tauschen also nicht
+  dauernd durch.
+  Und wer sich trotzdem überschneidet - zwei geparkte Autos, zwei Kühe, ein
+  Freund und ein Boot -, wird sanft auseinandergeschoben, aber nie in eine Wand
+  hinein. Statuen bleiben stehen und schieben nur die anderen weg.
+  ANTIPPEN TRIFFT JETZT DAS RICHTIGE: Wenn zwei Sachen fast gleich weit vorn
+  liegen, gewinnt die, die Jonah wirklich anvisiert - also die, deren Mitte am
+  nächsten am Zielstrahl liegt. Kein Aufsteigen aufs falsche Fahrzeug mehr!
 - DEINE ENGLISCHEN FREUNDE LAUFEN JETZT DURCH DEINE WELT (v217)! 🦊🚶 Fred 🦊,
   Lucy 🐺, Koko 🐨, Pip 🐧, Rex 🦖, Milo 🐵, Stella 🦄 und Sparky 🤖 sind nicht
   mehr nur im Handy - sie spazieren wirklich durch JonahCraft! Jeder sieht
