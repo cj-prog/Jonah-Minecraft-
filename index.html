@@ -896,7 +896,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 220 &middot; Ein echtes Kino mit richtigen Filmen! 🎬🍿</p>
+    Version 221 &middot; Das Kino steht jetzt fest auf dem Boden – und das Bild ist gestochen scharf! 🎬✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -942,7 +942,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 220;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 221;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3075,7 +3075,10 @@ function genChunkData(cx, cz, ohneEdits) {
   if (weltDim === 1) return genZauberChunk(cx, cz, ohneEdits);
   if (weltDim >= 2) return genPlanetChunk(cx, cz, ohneEdits, weltDim);
   if (halleChunk(cx, cz)) return genHalleChunk(cx, cz, ohneEdits);   // 🏟️ DIE HALLE
-  if (kinoChunk(cx, cz)) return genKinoChunk(cx, cz, ohneEdits);     // 🎬 DAS KINO
+  // 🎬 DAS KINO wird NICHT statt der Welt gebaut, sondern auf sie
+  // draufgestempelt (ganz unten in dieser Funktion). Sonst fehlte rundherum
+  // der Boden - da war ein tiefer Abgrund, und die Straße nebenan brach ab,
+  // sodass die Busse hinunterfielen.
   const data = new Uint8Array(CS*CS*CH_TOT);
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
@@ -4417,6 +4420,9 @@ function genChunkData(cx, cz, ohneEdits) {
       }
     }
   }
+  // 🎬 DAS KINO auf die fertige Welt stempeln: Straßen, Boden und alles
+  // andere bleiben also erhalten, nur wo das Kino steht, steht das Kino.
+  if (kinoChunk(cx, cz)) kinoStempeln(data, cx, cz);
   // gespeicherte Änderungen des Spielers anwenden.
   // Alte Schnee- und Pfützen-Reste vom Wetter dürfen aber keine neuen
   // Gebäude kaputt machen: liegen sie mitten in einer frisch gebauten
@@ -4710,6 +4716,7 @@ function loadGame() {
     const s = JSON.parse(raw);
     if (typeof s.seed !== 'number') return null;
     seed = s.seed;
+    kinoHoeheFertig = false;   // 🎬 in einer anderen Welt steht das Kino woanders
     // Alte Speicherstände kannten noch keinen tiefen Untergrund: ihre
     // Schicht-Nummern werden auf die neue, tiefere Welt umgerechnet.
     const shift = ((-CH_MIN) - (typeof s.depth==='number' ? s.depth : 0)) << 8;
@@ -12876,16 +12883,37 @@ function gruppeSagen(zwang) {
 // Lichtkegel und eine Popcorn-Theke. Die Filme laufen WIRKLICH auf der
 // Leinwand (kinoLeinwandZeichnen malt jedes Bild neu).
 const KINO_X = 12000, KINO_Z = 12000;   // weit genug weg, aber nah genug, dass
-const KINO_Y = 60;                      // die Wände nicht flimmern (float32!)
-const KINO_W = 26, KINO_D = 34, KINO_H = 13;
+const KINO_W = 26, KINO_D = 34, KINO_H = 13;   // die Wände nicht flimmern
+// Wie hoch das Kino steht, hängt vom GELÄNDE ab - jede Welt sieht ja anders
+// aus. Stünde es auf einer festen Höhe, schwebte es in der einen Welt über
+// einem Abgrund und wäre in der nächsten im Berg vergraben. Der Eingang liegt
+// hinten und ist die höchste Stelle; darum ziehen wir die Reihen wieder ab.
+let KINO_Y = 60, LW_Y0 = 63, LW_Y1 = 72, kinoHoeheFertig = false;
 // Das Kino steht auf einem Sockel, der bis aufs Gelände hinunterreicht -
 // sonst schwebt es in der Luft und der Teleport landet darunter statt drin.
 // Die Leinwand: breit, hoch, an der Vorderwand
-const LW_X0 = 2, LW_X1 = 23;            // von lx 2 bis 23 (22 Blöcke breit)
-const LW_Y0 = KINO_Y + 3, LW_Y1 = KINO_Y + 12;
-const LW_Z = 2;                         // die Wand, auf der sie hängt
+undefined
 // Die Sitzreihen steigen nach hinten an - so sieht jeder etwas
 const KINO_REIHEN = [10, 14, 18, 22, 26];
+const LW_X0 = 2, LW_X1 = 23;            // die Leinwand: von lx 2 bis 23
+const LW_Z = 2;                         // die Wand, auf der sie hängt
+// Einmal pro Welt ausrechnen, wie hoch das Kino steht. Wir nehmen das
+// höchste Gelände im Grundriss, damit nirgends etwas hineinragt, und ziehen
+// die Reihen ab, damit der EINGANG auf Bodenhöhe liegt - so kann Jonah auch
+// zu Fuß hineinlaufen.
+function kinoHoehe() {
+  if (kinoHoeheFertig) return KINO_Y;
+  // Auch der Platz VOR dem Eingang zählt mit: liegt dort ein Hügel, muss das
+  // Kino höher stehen, sonst führt die Zuwegung bergab in die Tür hinein.
+  let hoch = SEA + 1;
+  for (let lx = 0; lx <= KINO_W; lx += 2)
+    for (let lz = 0; lz <= KINO_D + 8; lz += 2)
+      hoch = Math.max(hoch, terrainHeight(KINO_X + lx, KINO_Z + lz));
+  KINO_Y = Math.max(SEA + 2, hoch - (KINO_REIHEN.length - 1));
+  LW_Y0 = KINO_Y + 3; LW_Y1 = KINO_Y + 12;
+  kinoHoeheFertig = true;
+  return KINO_Y;
+}
 function kinoStufe(lz) {                // wie hoch liegt der Boden hier?
   let h = 0;
   for (let i = 0; i < KINO_REIHEN.length; i++) if (lz >= KINO_REIHEN[i] - 2) h = i;
@@ -12896,13 +12924,19 @@ function inKinoGebiet(x, z) {
 }
 // Wie bei der Halle: das GANZE Chunk-Rechteck gegen das Kino-Rechteck prüfen,
 // sonst fehlen an den Ecken die Wände.
+const KINO_VORPLATZ = 16;               // so weit reicht die Treppe vor dem Eingang
+// Danach läuft die Rampe noch weiter aus, bis sie das echte Gelände trifft.
+// Ohne diesen Auslauf endet der Vorplatz mitten in einem Hang - und davor
+// steht dann eine Mauer aus Erde, über die Jonah nicht drüberkommt.
+const KINO_AUSLAUF = 10;
 function kinoChunk(cx, cz) {
   const x0 = cx*CS, z0 = cz*CS, x1 = x0+CS-1, z1 = z0+CS-1;
   return x1 >= KINO_X-3 && x0 <= KINO_X+KINO_W+3 &&
-         z1 >= KINO_Z-3 && z0 <= KINO_Z+KINO_D+3;
+         z1 >= KINO_Z-3 && z0 <= KINO_Z+KINO_D+KINO_VORPLATZ+KINO_AUSLAUF+3;
 }
 // Wo steht Jonah, wenn er ins Kino kommt? Hinten in der Mitte, am Eingang.
 function kinoEingang() {
+  kinoHoehe();
   return [KINO_X + (KINO_W>>1), KINO_Y + KINO_REIHEN.length, KINO_Z + KINO_D - 3];
 }
 // Welcher Block steht hier? (lx/lz sind KINO-eigene Koordinaten)
@@ -12916,24 +12950,30 @@ function kinoBlock(lx, ly, lz) {
   // das Kino wirklich auf dem Boden, und wer herteleportiert, landet drin
   // (die Suche nach einem freien Platz geht von unten nach oben).
   const gelaende = terrainHeight(KINO_X + lx, KINO_Z + lz);
-  if (ly < boden) return ly >= gelaende - 2 ? STONE : AIR;
-  // --- Außenwände und Dach
-  // --- Eine Treppe von draußen hoch zum Eingang
-  if (lz > KINO_D && lz <= KINO_D + 2) return AIR;
+  // --- Außenwände und Dach ZUERST. Vorher stand hier die Sockel-Regel, und
+  // die hat der Rückwand Löcher gefressen: dort liegt der Boden der letzten
+  // Reihe vier Blöcke höher, und alles darunter galt als "unter dem Boden".
   const aussen = lx === -1 || lx === KINO_W || lz === -1 || lz === KINO_D;
   if (aussen) {
     if (ly > KINO_Y + KINO_H) return AIR;
+    if (ly < Math.min(gelaende, KINO_Y) - 2) return AIR;   // tief genug gegründet
+    // 🚪 DER EINGANG gehört IN die Außenwand. Vorher saßen die Türen einen
+    // Block dahinter und die Wand davor war zu - man konnte gar nicht zu Fuß
+    // hineinlaufen, sondern nur herteleportieren.
+    if (lz === KINO_D && (lx === 12 || lx === 13)) {
+      const tuerBoden = KINO_Y + kinoStufe(KINO_D - 1);
+      if (ly === tuerBoden) return DOOR;
+      if (ly === tuerBoden + 1) return DOOR_TOP;
+    }
     // 🎬 Die Leuchtreklame über dem Eingang: goldene Blöcke
     if (lz === KINO_D && ly === KINO_Y + KINO_H - 1 && lx >= 6 && lx <= 19) return GOLD;
     return BRICK;
   }
+  // --- Der Sockel unter dem Saal: bis hinunter aufs Gelände alles fest
+  if (ly < boden) return ly >= gelaende - 2 ? STONE : AIR;
   if (ly === KINO_Y + KINO_H) return STONE;       // das Dach
   if (ly > KINO_Y + KINO_H) return AIR;
-  // --- Der Eingang hinten in der Mitte (zwei Türen breit)
-  if (lz === KINO_D - 1 && (lx === 12 || lx === 13)) {
-    if (ly === boden) return DOOR;
-    if (ly === boden + 1) return DOOR_TOP;
-  }
+  // (Die Türen sitzen in der Außenwand - siehe oben.)
   // --- Der Boden jeder Reihe
   if (ly === boden - 1 && drin) return PLANK;
   if (ly < boden) return AIR;
@@ -12957,31 +12997,76 @@ function kinoBlock(lx, ly, lz) {
       (lz === 8 || lz === 16 || lz === 24)) return TORCH;
   return AIR;
 }
-function genKinoChunk(cx, cz, ohneEdits) {
-  const data = new Uint8Array(CS*CS*CH_TOT);
+// Das Kino auf die schon fertig gebaute Welt setzen. Wo das Kino etwas hat,
+// gewinnt das Kino; sonst bleibt die Welt, wie sie ist. Und der Innenraum wird
+// freigeräumt, damit keine Erde im Kinosaal steht.
+// Wie hoch liegt die Zuwegung an dieser Stelle? Wir laufen von der Tür nach
+// draußen und gehen pro Block höchstens eine Stufe - mehr schafft Jonah nicht.
+// Dabei nähern wir uns dem Gelände an, bis wir es erreicht haben.
+function kinoRampe(lx, lz) {
+  let h = KINO_Y + (KINO_REIHEN.length - 1);          // Höhe der Türschwelle
+  for (let d = 1; d <= lz - KINO_D; d++) {
+    const g = terrainHeight(KINO_X + lx, KINO_Z + KINO_D + d);
+    const ziel = g > h ? h + 1 : h - 1;               // eine Stufe Richtung Gelände
+    h = g > h ? Math.min(ziel, g) : Math.max(ziel, g);
+  }
+  return h;
+}
+function kinoStempeln(data, cx, cz) {
+  kinoHoehe();
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz2=0; lz2<CS; lz2++) for (let lx2=0; lx2<CS; lx2++) {
     const lx = x0+lx2-KINO_X, lz = z0+lz2-KINO_Z;
-    // von etwas unter dem Gelände bis übers Dach - der Sockel füllt den Rest
-    const unten = Math.min(KINO_Y, terrainHeight(KINO_X+lx, KINO_Z+lz)) - 3;
-    for (let y=unten; y<=KINO_Y+KINO_H; y++) {
+    if (lx < -1 || lx > KINO_W || lz < -1) continue;
+    // 🎬 DER VORPLATZ vor dem Eingang: eine ebene Fläche auf Eingangshöhe,
+    // die nach außen in Stufen abfällt. Ohne ihn stünde der Eingang in einer
+    // hügeligen Welt fünf Blöcke über dem Boden und man käme nicht hinein.
+    if (lz > KINO_D) {
+      if (lz > KINO_D + KINO_VORPLATZ + KINO_AUSLAUF) continue;
+      const platzY = kinoRampe(lx, lz);
+      const gel = terrainHeight(KINO_X+lx, KINO_Z+lz);
+      // Im Auslauf hinter dem Vorplatz wird nur noch angefasst, was wirklich
+      // nicht passt - sonst hätte das Kino eine riesige kahle Fläche um sich.
+      const auslauf = lz > KINO_D + KINO_VORPLATZ;
+      if (auslauf && platzY === gel) continue;
+      // auffüllen, wo es zu tief ist (wo das Gelände schon passt, bleibt
+      // der Boden so wie er ist - dann sieht der Vorplatz natürlich aus) ...
+      if (platzY !== gel)
+        for (let y = Math.min(gel, platzY) - 2; y <= platzY; y++)
+          data[bidx(lx2, y, lz2)] = y === platzY ? STRASSE : STONE;
+      // ... und wegräumen, was über dem Weg steht: Hügel genauso wie Bäume.
+      // Ein Baum direkt vor der Tür ist genauso eine Mauer wie ein Berg.
+      for (let y = platzY + 1; y <= Math.max(gel, platzY) + 8; y++)
+        data[bidx(lx2, y, lz2)] = AIR;
+      continue;
+    }
+    if (lz > KINO_D) continue;
+    const gelaende = terrainHeight(KINO_X+lx, KINO_Z+lz);
+    const unten = Math.min(KINO_Y, gelaende) - 3;
+    for (let y=unten; y<=KINO_Y+KINO_H+1; y++) {
       const b = kinoBlock(lx, y, lz);
+      // Ein Kino-Block gewinnt. Wo im Kino LUFT sein soll (Saal, Türen,
+      // Gänge), muss auch wirklich Luft sein - sonst steht der Berg im Saal.
       if (b !== AIR) data[bidx(lx2,y,lz2)] = b;
+      else if (y >= KINO_Y - 2) data[bidx(lx2,y,lz2)] = AIR;
     }
   }
-  const e = ohneEdits ? null : edits.get(ckey(cx,cz));
-  if (e) for (const [i,v] of e) data[i] = v;
-  return data;
 }
 
 // ---- 🎨 Der Zeichenkasten für die Filme -----------------------------------
 // Jedes Bild wird frisch auf eine kleine Leinwand gemalt (320x180) und dann
 // als Textur auf die Kino-Wand gelegt. Das sind also wirklich laufende Bilder,
 // keine Standbilder.
-const KINO_B = 320, KINO_HOCH = 180;
+// Gemalt wird in 320x180 - damit bleiben alle Szenen einfach zu schreiben.
+// Die ECHTE Leinwand ist aber viermal so fein (1280x720), sonst ist das Bild
+// auf einer 22 Blöcke breiten Wand verschwommen: ein Pixel wäre dann fast
+// einen halben Block groß. Der Maßstab wird einmal fest eingestellt, alle
+// Zeichenbefehle rechnen also weiter in 320x180.
+const KINO_B = 320, KINO_HOCH = 180, KINO_SCHARF = 4;
 const kinoCanvas = document.createElement("canvas");
-kinoCanvas.width = KINO_B; kinoCanvas.height = KINO_HOCH;
+kinoCanvas.width = KINO_B * KINO_SCHARF; kinoCanvas.height = KINO_HOCH * KINO_SCHARF;
 const kg = kinoCanvas.getContext("2d");
+kg.scale(KINO_SCHARF, KINO_SCHARF);
 function kHimmel(oben, unten) {
   const gr = kg.createLinearGradient(0, 0, 0, KINO_HOCH);
   gr.addColorStop(0, oben); gr.addColorStop(1, unten);
@@ -13380,6 +13465,7 @@ let kinoSzene = -1;                     // welche Szene läuft (für Ton und Tex
 let kinoTex = null;                     // die WebGL-Textur der Leinwand
 let kinoPause = false;
 function imKino() {
+  kinoHoehe();
   return player.x > KINO_X - 4 && player.x < KINO_X + KINO_W + 4 &&
          player.z > KINO_Z - 4 && player.z < KINO_Z + KINO_D + 4 &&
          player.y > KINO_Y - 6 && player.y < KINO_Y + KINO_H + 4;
@@ -13409,6 +13495,7 @@ function kinoBildMalen() {
   kg.save();
   try { sz.mal(Math.min(1, rest / sz.s)); } catch(e) { kinoStandbild(); }
   kg.restore();
+  kg.setTransform(KINO_SCHARF, 0, 0, KINO_SCHARF, 0, 0);   // Maßstab sicher zurück
   // Am Anfang und am Ende sanft auf- und abblenden - wie im echten Kino
   const blende = Math.min(1, kinoZeit / 0.8, (kinoFilm.dauer - kinoZeit) / 0.8);
   if (blende < 1) {
@@ -13491,7 +13578,10 @@ function drawKinoLeinwand() {
   // Die Leinwand hängt an der Wand bei lz = LW_Z und schaut nach +Z
   const x0 = KINO_X + LW_X0, x1 = KINO_X + LW_X1 + 1;
   const yb = LW_Y0, yt = LW_Y1 + 1;
-  const zp = KINO_Z + LW_Z + 1.02;
+  // 0.12 vor der Wand - bei nur 0.02 kämpfen Leinwand und Wand um dieselbe
+  // Tiefe (Z-Fighting) und das Bild bekommt graue Streifen. Die gemalten
+  // Bilder im Spiel halten aus demselben Grund 0.115 Abstand.
+  const zp = KINO_Z + LW_Z + 1.12;
   const h = kinoFilm ? 1.35 : 1.0;      // ein laufender Film leuchtet
   const a = [x1,yb,zp,1,1,h, x0,yb,zp,0,1,h, x0,yt,zp,0,0,h,
              x1,yb,zp,1,1,h, x0,yt,zp,0,0,h, x1,yt,zp,1,0,h];
@@ -15491,6 +15581,7 @@ function wireChan() {
     if (m.t==='hello') {                // Gast übernimmt die Welt des Gastgebers
       mpGuest = true;
       seed = m.seed;
+      kinoHoeheFertig = false;   // 🎬 in einer anderen Welt steht das Kino woanders
       edits.clear();
       for (const k in (m.edits||{})) {
         const a=m.edits[k], mm=new Map();
