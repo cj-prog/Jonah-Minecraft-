@@ -221,6 +221,27 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS KINO STEHT JETZT FEST AUF DEM BODEN – UND DAS BILD IST SCHARF (v221)! 🎬🏞️
+  Jonah hatte zwei Beschwerden – beide sind weg.
+  ERSTENS: Das Kino hing über einem tiefen Abgrund ohne Boden, und die Straße
+  daneben hatte Löcher, aus denen die Busse gefallen sind. Der Grund: Das Kino
+  hat sich seinen eigenen Chunk gebaut und die richtige Welt einfach ersetzt –
+  drumherum war nichts. Jetzt wächst in den Kino-Chunks wieder ganz normale
+  Welt mit Gras, Sand, Stein und Straße, und das Kino wird oben draufgestempelt.
+  Kein Abgrund mehr, keine Löcher in der Straße, und die Busse fahren am Kino
+  vorbei, ohne abzustürzen.
+  Dazu gibt es einen VORPLATZ: eine Rampe, die in Einer-Stufen zur Tür führt –
+  auch wenn das Kino mitten in einem Hügel steht. Was im Weg steht, wird
+  weggeräumt: Hügel genauso wie Bäume. Und der Vorplatz hört nicht einfach an
+  einer Kante auf – die Rampe läuft weiter aus, bis sie das echte Gelände
+  trifft. Und die Tür sitzt jetzt WIRKLICH in der
+  Außenwand (vorher stand sie einen Block dahinter, hinter einer dicken Mauer –
+  man kam gar nicht rein!).
+  ZWEITENS: Die Leinwand war verschwommen. Sie hat jetzt 1280×720 Bildpunkte
+  statt 320×180 – das sind 58 Bildpunkte pro Block statt 15, also viermal so
+  scharf. Außerdem hatte das Bild graue Streifen, weil Leinwand und Wand um
+  dieselbe Stelle gekämpft haben; die Leinwand hängt jetzt weiter vor der Wand.
+  Der Drache ist gestochen scharf. 🐉✨
 - ENGLISCH LERNEN, QUIZ UND STICKER – JETZT AUCH IN JONAHCRAFT (v219)! 📚⭐
   Jonah kann ja noch kein Englisch schreiben – und genau dafür ist die App da.
   Deshalb gibt es im 📱-Messenger jetzt alles, was die Englisch-App auch hat:
