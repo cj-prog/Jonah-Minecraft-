@@ -13231,7 +13231,7 @@ const KINO_FILME = [
       { s:5, text:"Da vorne ist er: der Mond! 🌕", ton:[784,880],
         mal:(t)=>{ kHimmel("#0a0a22","#1a1a3a"); kSterne(90, t*2);
           kSonne(230, 66, 34 + t*14, "#e8e8d8");
-          kg.fillStyle="#c8c8b8";                                // Krater
+          kg.fillStyle="#b4b49e";                                // Krater (deutlich sichtbar)
           for (const [cx,cy,cr] of [[218,56,7],[244,74,5],[228,82,4]]) {
             kg.beginPath(); kg.arc(cx, cy, cr*(1+t*0.4), 0, 6.2832); kg.fill(); }
           kRakete(70 + t*80, 120 - t*20, 1.0, 0.6); } },
