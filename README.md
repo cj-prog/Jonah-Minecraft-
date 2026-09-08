@@ -241,6 +241,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   ALLES ZÄHLT IN BEIDEN APPS: Sticker, gelernte Wörter und geschaffte Quizze
   liegen im gemeinsamen Speicher. Was Jonah hier verdient, hat er drüben auch –
   und umgekehrt.
+- EIN ECHTES KINO MIT RICHTIGEN FILMEN (v220)! 🎬🍿 Über den 🛸-Teleport
+  kommst du zu „🎬 Das Kino": ein großer Saal mit einer riesigen Leinwand
+  (22×10 Blöcke), fünf ansteigenden Sitzreihen mit je 9 Sesseln, dunklen
+  Wänden und einer Popcorn-Theke. Setz dich in einen Sessel – dann geht die
+  Filmauswahl auf.
+  VIER FILME laufen wirklich auf der Leinwand: 🐉 „Der Drache und der Ritter",
+  🚀 „Die Reise zum Mond", 🦊 „Fred and Lucy in the Jungle" (auf Englisch, mit
+  deutschem Untertitel – so lernst du beim Zuschauen!) und ⛏️ „Jonah baut die
+  größte Burg" – ein Film über dich. Jeder Film hat 6 bis 7 Szenen, dauert
+  eine gute halbe Minute und wird Bild für Bild frisch gemalt: der Drache
+  schlägt mit den Flügeln, die Rakete zündet, der Wasserfall fließt, der Turm
+  wächst. Dazu gibt es Musik und unten einen Untertitel zu jeder Szene, sanftes
+  Auf- und Abblenden am Anfang und Ende – und ⏸ zum Pausieren und ⏹ zum
+  Aufhören. Wer aus dem Kino läuft, für den hört der Film auf.
 - JEDER HAT SEINEN EIGENEN PLATZ (v218)! 🧍‍♂️🐾🚗 Vorher sind alle, die Jonah
   hinterherlaufen, auf DENSELBEN Punkt zugelaufen - Freunde, Haustiere und
   Fahrzeuge standen dann ineinander drin, und beim Antippen erwischte man das
