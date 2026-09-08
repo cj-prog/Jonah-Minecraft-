@@ -264,6 +264,34 @@
   #uebHoeren { background:rgba(255,255,255,.22); color:#fff; }
   #uebSenden { background:#4caf50; color:#fff; }
 
+  /* 🎬 DAS KINO: Untertitel, Bedienleiste und die Filmauswahl */
+  #kinoText { display:none; left:50%; transform:translateX(-50%);
+    bottom:calc(96px + env(safe-area-inset-bottom)); max-width:min(92vw,620px);
+    background:rgba(0,0,0,.72); color:#fff; font-size:17px; font-weight:bold;
+    text-align:center; padding:8px 14px; border-radius:10px; z-index:44;
+    text-shadow:0 1px 3px #000; }
+  #kinoBar { display:none; gap:8px; left:50%; transform:translateX(-50%);
+    bottom:calc(48px + env(safe-area-inset-bottom)); z-index:44; }
+  #kinoBar button { font-size:15px; font-weight:bold; padding:7px 14px;
+    border-radius:10px; border:none; background:rgba(0,0,0,.66); color:#fff;
+    cursor:pointer; }
+  #kinoWahl { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; gap:8px; background:rgba(10,8,16,.97); padding:12px;
+    border-radius:16px; color:#fff; z-index:48; width:min(94vw,440px);
+    max-height:88vh; overflow:hidden; }
+  #kinoWahl h3 { font-size:18px; text-align:center; margin:0; }
+  #kinoListe { display:flex; flex-direction:column; gap:7px; overflow-y:auto;
+    flex:1 1 auto; min-height:0; }
+  .kinoFilm { display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,.1); border:none; border-radius:12px;
+    padding:9px 11px; color:#fff; text-align:left; font-size:14px; cursor:pointer; }
+  .kinoPlakat { font-size:26px; flex:none; width:46px; height:60px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; }
+  .kinoTitel { font-weight:bold; font-size:15px; display:block; }
+  .kinoKurz { font-size:11.5px; opacity:.78; display:block; margin-top:2px; }
+  #kinoZu { font-size:15px; font-weight:bold; padding:9px 14px; border-radius:10px;
+    border:none; background:#5a6a80; color:#fff; cursor:pointer; flex:none; }
+
   /* 📚 DIE ENGLISCH-SCHULE: Wortschatz, Quiz und das Sticker-Heft */
   #lernBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; gap:8px; background:rgba(12,24,40,.97); padding:12px;
@@ -602,6 +630,16 @@
   <button id="msgrLernen">📚 Englisch lernen &amp; Sticker ⭐</button>
   <button id="msgrZu">✔ Fertig</button>
 </div>
+<div class="hud" id="kinoText"></div>
+<div class="hud" id="kinoBar">
+  <button id="kinoPause">⏸</button>
+  <button id="kinoStopp">⏹ Aufhören</button>
+</div>
+<div class="hud" id="kinoWahl">
+  <h3>🎬 Was möchtest du sehen?</h3>
+  <div id="kinoListe"></div>
+  <button id="kinoZu">✔ Doch nicht</button>
+</div>
 <div class="hud" id="lernBox">
   <h3 id="lernKopf">📚 Englisch lernen</h3>
   <div id="lernInhalt"></div>
@@ -858,7 +896,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 219 &middot; Englisch lernen, Quiz und Sticker – jetzt auch in JonahCraft! 📚⭐</p>
+    Version 220 &middot; Ein echtes Kino mit richtigen Filmen! 🎬🍿</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -904,7 +942,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 219;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 220;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3037,6 +3075,7 @@ function genChunkData(cx, cz, ohneEdits) {
   if (weltDim === 1) return genZauberChunk(cx, cz, ohneEdits);
   if (weltDim >= 2) return genPlanetChunk(cx, cz, ohneEdits, weltDim);
   if (halleChunk(cx, cz)) return genHalleChunk(cx, cz, ohneEdits);   // 🏟️ DIE HALLE
+  if (kinoChunk(cx, cz)) return genKinoChunk(cx, cz, ohneEdits);     // 🎬 DAS KINO
   const data = new Uint8Array(CS*CS*CH_TOT);
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz=0; lz<CS; lz++) for (let lx=0; lx<CS; lx++) {
@@ -12830,6 +12869,639 @@ function gruppeSagen(zwang) {
   }
 }
 
+// ============== 🎬 DAS KINO ===============================================
+// Jonahs Wunsch: ein Kino, in dem richtige Filme laufen. Das Gebäude steht -
+// wie die Halle - an einem festen Platz, damit es immer da und immer heil ist.
+// Drinnen: eine riesige Leinwand, ansteigende Sitzreihen, ein Vorführraum mit
+// Lichtkegel und eine Popcorn-Theke. Die Filme laufen WIRKLICH auf der
+// Leinwand (kinoLeinwandZeichnen malt jedes Bild neu).
+const KINO_X = 12000, KINO_Z = 12000;   // weit genug weg, aber nah genug, dass
+const KINO_Y = 60;                      // die Wände nicht flimmern (float32!)
+const KINO_W = 26, KINO_D = 34, KINO_H = 13;
+// Das Kino steht auf einem Sockel, der bis aufs Gelände hinunterreicht -
+// sonst schwebt es in der Luft und der Teleport landet darunter statt drin.
+// Die Leinwand: breit, hoch, an der Vorderwand
+const LW_X0 = 2, LW_X1 = 23;            // von lx 2 bis 23 (22 Blöcke breit)
+const LW_Y0 = KINO_Y + 3, LW_Y1 = KINO_Y + 12;
+const LW_Z = 2;                         // die Wand, auf der sie hängt
+// Die Sitzreihen steigen nach hinten an - so sieht jeder etwas
+const KINO_REIHEN = [10, 14, 18, 22, 26];
+function kinoStufe(lz) {                // wie hoch liegt der Boden hier?
+  let h = 0;
+  for (let i = 0; i < KINO_REIHEN.length; i++) if (lz >= KINO_REIHEN[i] - 2) h = i;
+  return h;
+}
+function inKinoGebiet(x, z) {
+  return x >= KINO_X-3 && x < KINO_X+KINO_W+3 && z >= KINO_Z-3 && z < KINO_Z+KINO_D+3;
+}
+// Wie bei der Halle: das GANZE Chunk-Rechteck gegen das Kino-Rechteck prüfen,
+// sonst fehlen an den Ecken die Wände.
+function kinoChunk(cx, cz) {
+  const x0 = cx*CS, z0 = cz*CS, x1 = x0+CS-1, z1 = z0+CS-1;
+  return x1 >= KINO_X-3 && x0 <= KINO_X+KINO_W+3 &&
+         z1 >= KINO_Z-3 && z0 <= KINO_Z+KINO_D+3;
+}
+// Wo steht Jonah, wenn er ins Kino kommt? Hinten in der Mitte, am Eingang.
+function kinoEingang() {
+  return [KINO_X + (KINO_W>>1), KINO_Y + KINO_REIHEN.length, KINO_Z + KINO_D - 3];
+}
+// Welcher Block steht hier? (lx/lz sind KINO-eigene Koordinaten)
+function kinoBlock(lx, ly, lz) {
+  const drin = lx >= 0 && lx < KINO_W && lz >= 0 && lz < KINO_D;
+  const rand = lx >= -1 && lx <= KINO_W && lz >= -1 && lz <= KINO_D;
+  if (!rand) return AIR;
+  const stufe = kinoStufe(lz);
+  const boden = KINO_Y + stufe;
+  // --- Der Sockel: von hier bis hinunter aufs Gelände alles fest. So steht
+  // das Kino wirklich auf dem Boden, und wer herteleportiert, landet drin
+  // (die Suche nach einem freien Platz geht von unten nach oben).
+  const gelaende = terrainHeight(KINO_X + lx, KINO_Z + lz);
+  if (ly < boden) return ly >= gelaende - 2 ? STONE : AIR;
+  // --- Außenwände und Dach
+  // --- Eine Treppe von draußen hoch zum Eingang
+  if (lz > KINO_D && lz <= KINO_D + 2) return AIR;
+  const aussen = lx === -1 || lx === KINO_W || lz === -1 || lz === KINO_D;
+  if (aussen) {
+    if (ly > KINO_Y + KINO_H) return AIR;
+    // 🎬 Die Leuchtreklame über dem Eingang: goldene Blöcke
+    if (lz === KINO_D && ly === KINO_Y + KINO_H - 1 && lx >= 6 && lx <= 19) return GOLD;
+    return BRICK;
+  }
+  if (ly === KINO_Y + KINO_H) return STONE;       // das Dach
+  if (ly > KINO_Y + KINO_H) return AIR;
+  // --- Der Eingang hinten in der Mitte (zwei Türen breit)
+  if (lz === KINO_D - 1 && (lx === 12 || lx === 13)) {
+    if (ly === boden) return DOOR;
+    if (ly === boden + 1) return DOOR_TOP;
+  }
+  // --- Der Boden jeder Reihe
+  if (ly === boden - 1 && drin) return PLANK;
+  if (ly < boden) return AIR;
+  // --- Die Leinwand-Wand vorne (weiße Wolle = die Leinwand)
+  if (lz === LW_Z) {
+    if (lx >= LW_X0 && lx <= LW_X1 && ly >= LW_Y0 && ly <= LW_Y1) return WOOL;
+    return STONE;
+  }
+  // Die Seitenwände drinnen sind dunkler Stein, damit das Bild leuchtet
+  if ((lx === 0 || lx === KINO_W - 1) && lz > LW_Z) return STONE;
+  if (lz < LW_Z) return lz === 0 || lz === 1 ? AIR : AIR;   // hinter der Leinwand: nichts
+  // --- Die Sitzreihen
+  for (const rz of KINO_REIHEN) {
+    if (lz === rz && ly === boden && lx >= 4 && lx <= 21 && (lx % 2) === 0) return CHAIR;
+  }
+  // --- Die Popcorn-Theke hinten links
+  if (lz === KINO_D - 3 && lx >= 2 && lx <= 5 && ly === boden) return TABLE;
+  if (lz === KINO_D - 4 && lx === 3 && ly === boden) return CHEST;
+  // --- Zwei Lampen an der Seite, damit es nicht stockdunkel ist
+  if ((lx === 1 || lx === KINO_W - 2) && ly === KINO_Y + KINO_H - 2 &&
+      (lz === 8 || lz === 16 || lz === 24)) return TORCH;
+  return AIR;
+}
+function genKinoChunk(cx, cz, ohneEdits) {
+  const data = new Uint8Array(CS*CS*CH_TOT);
+  const x0 = cx*CS, z0 = cz*CS;
+  for (let lz2=0; lz2<CS; lz2++) for (let lx2=0; lx2<CS; lx2++) {
+    const lx = x0+lx2-KINO_X, lz = z0+lz2-KINO_Z;
+    // von etwas unter dem Gelände bis übers Dach - der Sockel füllt den Rest
+    const unten = Math.min(KINO_Y, terrainHeight(KINO_X+lx, KINO_Z+lz)) - 3;
+    for (let y=unten; y<=KINO_Y+KINO_H; y++) {
+      const b = kinoBlock(lx, y, lz);
+      if (b !== AIR) data[bidx(lx2,y,lz2)] = b;
+    }
+  }
+  const e = ohneEdits ? null : edits.get(ckey(cx,cz));
+  if (e) for (const [i,v] of e) data[i] = v;
+  return data;
+}
+
+// ---- 🎨 Der Zeichenkasten für die Filme -----------------------------------
+// Jedes Bild wird frisch auf eine kleine Leinwand gemalt (320x180) und dann
+// als Textur auf die Kino-Wand gelegt. Das sind also wirklich laufende Bilder,
+// keine Standbilder.
+const KINO_B = 320, KINO_HOCH = 180;
+const kinoCanvas = document.createElement("canvas");
+kinoCanvas.width = KINO_B; kinoCanvas.height = KINO_HOCH;
+const kg = kinoCanvas.getContext("2d");
+function kHimmel(oben, unten) {
+  const gr = kg.createLinearGradient(0, 0, 0, KINO_HOCH);
+  gr.addColorStop(0, oben); gr.addColorStop(1, unten);
+  kg.fillStyle = gr; kg.fillRect(0, 0, KINO_B, KINO_HOCH);
+}
+function kBoden(y, farbe) { kg.fillStyle = farbe; kg.fillRect(0, y, KINO_B, KINO_HOCH - y); }
+function kSonne(x, y, r, farbe) {
+  kg.fillStyle = farbe || "#ffe066";
+  kg.beginPath(); kg.arc(x, y, r, 0, 6.2832); kg.fill();
+}
+function kSterne(n, t) {
+  kg.fillStyle = "#fff";
+  for (let i = 0; i < n; i++) {
+    const x = (i * 97 % KINO_B), y = (i * 53 % 120);
+    const hell = 0.4 + 0.6 * Math.abs(Math.sin(t * 3 + i));
+    kg.globalAlpha = hell;
+    kg.fillRect(x, y, i % 5 === 0 ? 2 : 1, i % 5 === 0 ? 2 : 1);
+  }
+  kg.globalAlpha = 1;
+}
+function kWolke(x, y, s) {
+  kg.fillStyle = "rgba(255,255,255,.92)";
+  for (const [dx, dy, r] of [[0,0,10],[9,-3,8],[-9,-2,7],[4,4,7],[-5,4,6]]) {
+    kg.beginPath(); kg.arc(x + dx*s, y + dy*s, r*s, 0, 6.2832); kg.fill();
+  }
+}
+function kBaum(x, y, s) {
+  kg.fillStyle = "#7a4f2a"; kg.fillRect(x - 3*s, y - 16*s, 6*s, 16*s);
+  kg.fillStyle = "#3f9a4a";
+  for (const [dx, dy, r] of [[0,-22,13],[-9,-16,10],[9,-16,10],[0,-30,9]]) {
+    kg.beginPath(); kg.arc(x + dx*s, y + dy*s, r*s, 0, 6.2832); kg.fill();
+  }
+}
+function kFeuer(x, y, s, t) {
+  for (let i = 0; i < 7; i++) {
+    const w = t * 9 + i;
+    const fx = x + Math.sin(w) * 4 * s + i * 5 * s;
+    const fy = y - Math.abs(Math.cos(w * 0.7)) * 7 * s;
+    kg.fillStyle = i % 3 === 0 ? "#fff3a0" : i % 3 === 1 ? "#ff9c2a" : "#ff5722";
+    kg.beginPath(); kg.arc(fx, fy, (5 - i * 0.4) * s, 0, 6.2832); kg.fill();
+  }
+}
+// Eine einfache Figur: Kopf, Körper, zwei Beine, zwei Arme. schritt macht sie
+// lebendig (Beine und Arme schwingen).
+function kFigur(x, y, s, haut, kleid, schritt, arm) {
+  const b = Math.sin(schritt) * 4 * s, a2 = arm === undefined ? -b : arm;
+  // erst ein dunkler Umriss, dann die Figur darüber - so hebt sie sich ab
+  kg.strokeStyle = "rgba(20,16,24,.55)"; kg.lineWidth = 6.6 * s; kg.lineCap = "round";
+  kg.beginPath();
+  kg.moveTo(x, y - 14*s); kg.lineTo(x + b, y);
+  kg.moveTo(x, y - 14*s); kg.lineTo(x - b, y);
+  kg.moveTo(x - 4*s, y - 25*s); kg.lineTo(x - 9*s, y - 18*s + a2);
+  kg.moveTo(x + 4*s, y - 25*s); kg.lineTo(x + 9*s, y - 18*s - a2);
+  kg.stroke();
+  kg.fillStyle = "rgba(20,16,24,.55)";
+  kg.fillRect(x - 6.6*s, y - 28.6*s, 13.2*s, 17*s);
+  kg.beginPath(); kg.arc(x, y - 33*s, 8.6*s, 0, 6.2832); kg.fill();
+  kg.strokeStyle = kleid; kg.lineWidth = 3.4 * s; kg.lineCap = "round";
+  kg.beginPath();                                   // Beine
+  kg.moveTo(x, y - 14*s); kg.lineTo(x + b, y);
+  kg.moveTo(x, y - 14*s); kg.lineTo(x - b, y);
+  kg.stroke();
+  kg.fillStyle = kleid;                             // Körper
+  kg.fillRect(x - 5*s, y - 27*s, 10*s, 14*s);
+  kg.beginPath();                                   // Arme
+  kg.moveTo(x - 4*s, y - 25*s); kg.lineTo(x - 9*s, y - 18*s + a2);
+  kg.moveTo(x + 4*s, y - 25*s); kg.lineTo(x + 9*s, y - 18*s - a2);
+  kg.stroke();
+  kg.fillStyle = haut;                              // Kopf
+  kg.beginPath(); kg.arc(x, y - 33*s, 7*s, 0, 6.2832); kg.fill();
+  kg.fillStyle = "#222";                            // zwei Augen
+  kg.fillRect(x - 3.4*s, y - 35*s, 1.8*s, 2.2*s);
+  kg.fillRect(x + 1.6*s, y - 35*s, 1.8*s, 2.2*s);
+}
+// Ein Drache: Körper, Flügel, langer Hals, Schwanz
+function kDrache(x, y, s, t, farbe) {
+  const fl = Math.sin(t * 6) * 14 * s;
+  kg.fillStyle = farbe || "#3fa96f";
+  kg.beginPath(); kg.ellipse(x, y, 22*s, 13*s, 0, 0, 6.2832); kg.fill();
+  kg.fillStyle = "#2a7a4e";                         // Flügel: dunklerer Ton
+  kg.beginPath();
+  kg.moveTo(x - 4*s, y - 8*s); kg.lineTo(x - 26*s, y - 20*s - fl); kg.lineTo(x - 2*s, y + 2*s);
+  kg.moveTo(x + 4*s, y - 8*s); kg.lineTo(x + 26*s, y - 20*s - fl); kg.lineTo(x + 2*s, y + 2*s);
+  kg.fill();
+  kg.strokeStyle = "rgba(20,16,24,.4)"; kg.lineWidth = 1.6*s;
+  kg.beginPath();
+  kg.moveTo(x - 4*s, y - 8*s); kg.lineTo(x - 26*s, y - 20*s - fl); kg.lineTo(x - 2*s, y + 2*s);
+  kg.moveTo(x + 4*s, y - 8*s); kg.lineTo(x + 26*s, y - 20*s - fl); kg.lineTo(x + 2*s, y + 2*s);
+  kg.stroke();
+  kg.fillStyle = farbe || "#3fa96f";
+  kg.lineWidth = 8*s; kg.strokeStyle = farbe || "#3fa96f"; kg.lineCap = "round";
+  kg.beginPath();                                   // Hals und Schwanz
+  kg.moveTo(x + 16*s, y - 4*s); kg.lineTo(x + 30*s, y - 18*s);
+  kg.moveTo(x - 20*s, y); kg.lineTo(x - 38*s, y + 6*s + Math.sin(t*5)*4*s);
+  kg.stroke();
+  kg.beginPath(); kg.arc(x + 33*s, y - 21*s, 9*s, 0, 6.2832); kg.fill();   // Kopf
+  kg.fillStyle = "#fff";
+  kg.beginPath(); kg.arc(x + 36*s, y - 24*s, 2.6*s, 0, 6.2832); kg.fill();  // Auge
+  kg.fillStyle = "#222";
+  kg.beginPath(); kg.arc(x + 36.6*s, y - 24*s, 1.3*s, 0, 6.2832); kg.fill();
+}
+// Eine Rakete mit Feuerstrahl
+function kRakete(x, y, s, schub) {
+  kg.fillStyle = "#e8eaf0";
+  kg.beginPath();
+  kg.moveTo(x, y - 34*s); kg.lineTo(x + 9*s, y - 8*s);
+  kg.lineTo(x + 9*s, y + 10*s); kg.lineTo(x - 9*s, y + 10*s);
+  kg.lineTo(x - 9*s, y - 8*s); kg.closePath(); kg.fill();
+  kg.fillStyle = "#e34b3c";                          // Spitze und Flossen
+  kg.beginPath(); kg.moveTo(x, y - 34*s); kg.lineTo(x + 9*s, y - 10*s); kg.lineTo(x - 9*s, y - 10*s); kg.fill();
+  kg.beginPath(); kg.moveTo(x - 9*s, y + 2*s); kg.lineTo(x - 18*s, y + 12*s); kg.lineTo(x - 9*s, y + 12*s); kg.fill();
+  kg.beginPath(); kg.moveTo(x + 9*s, y + 2*s); kg.lineTo(x + 18*s, y + 12*s); kg.lineTo(x + 9*s, y + 12*s); kg.fill();
+  kg.fillStyle = "#7fd4ff";                          // das Fenster
+  kg.beginPath(); kg.arc(x, y - 12*s, 5*s, 0, 6.2832); kg.fill();
+  if (schub > 0) {
+    for (let i = 0; i < 5; i++) {
+      const l = (14 + i * 9) * s * schub;
+      kg.fillStyle = i < 2 ? "#fff3a0" : i < 4 ? "#ff9c2a" : "#ff5722";
+      kg.beginPath();
+      kg.ellipse(x, y + 12*s + l * 0.45, (7 - i) * s * 0.9, l * 0.5, 0, 0, 6.2832);
+      kg.fill();
+    }
+  }
+}
+// Ein Fuchs oder Wolf von der Seite (für Fred und Lucy)
+function kTier(x, y, s, fell, ohren, t) {
+  const b = Math.sin(t * 7) * 3 * s;
+  kg.fillStyle = fell;
+  kg.beginPath(); kg.ellipse(x, y - 9*s, 15*s, 8*s, 0, 0, 6.2832); kg.fill();
+  kg.lineWidth = 3.2*s; kg.strokeStyle = fell; kg.lineCap = "round";
+  kg.beginPath();
+  kg.moveTo(x - 7*s, y - 5*s); kg.lineTo(x - 7*s + b, y);
+  kg.moveTo(x + 7*s, y - 5*s); kg.lineTo(x + 7*s - b, y);
+  kg.stroke();
+  kg.beginPath();                                    // Schwanz
+  kg.moveTo(x - 14*s, y - 10*s);
+  kg.lineTo(x - 24*s, y - 16*s - Math.sin(t*6)*3*s);
+  kg.lineWidth = 6*s; kg.stroke();
+  kg.beginPath(); kg.arc(x + 15*s, y - 17*s, 8*s, 0, 6.2832); kg.fill();   // Kopf
+  if (ohren) {                                       // spitze Ohren
+    kg.beginPath();
+    kg.moveTo(x + 10*s, y - 22*s); kg.lineTo(x + 12*s, y - 31*s); kg.lineTo(x + 16*s, y - 23*s);
+    kg.moveTo(x + 18*s, y - 23*s); kg.lineTo(x + 21*s, y - 31*s); kg.lineTo(x + 23*s, y - 21*s);
+    kg.fill();
+  }
+  kg.fillStyle = "#fff";
+  kg.beginPath(); kg.arc(x + 19*s, y - 19*s, 2.4*s, 0, 6.2832); kg.fill();
+  kg.fillStyle = "#222";
+  kg.beginPath(); kg.arc(x + 19.6*s, y - 19*s, 1.2*s, 0, 6.2832); kg.fill();
+  kg.beginPath(); kg.arc(x + 23*s, y - 16*s, 2*s, 0, 6.2832); kg.fill();   // Nase
+}
+// Ein Block-Turm, der wächst (für Jonahs Film)
+function kTurm(x, y, s, hoehe, farben) {
+  for (let i = 0; i < hoehe; i++) {
+    kg.fillStyle = farben[i % farben.length];
+    kg.fillRect(x - 11*s, y - (i + 1) * 9 * s, 22*s, 8.4*s);
+    kg.strokeStyle = "rgba(0,0,0,.18)"; kg.lineWidth = 1;
+    kg.strokeRect(x - 11*s, y - (i + 1) * 9 * s, 22*s, 8.4*s);
+  }
+}
+
+// ---- 🎞️ DIE FILME ---------------------------------------------------------
+// Jeder Film besteht aus Szenen. Jede Szene weiß, wie lange sie dauert, was
+// gemalt wird (mal), was unten als Text steht und welche Töne sie spielt.
+// t läuft in jeder Szene von 0 bis 1.
+const KINO_FILME = [
+  { id:"drache", titel:"Der Drache und der Ritter", emoji:"🐉", dauer:0,
+    farbe:"#c0563a",
+    kurz:"Ein tapferer Ritter reitet los, um einen Drachen zu besiegen. Aber es kommt ganz anders …",
+    szenen:[
+      { s:4, text:"Es war einmal ein tapferer Ritter.", ton:[392,523],
+        mal:(t)=>{ kHimmel("#7ec8f0","#cfe9c0"); kBoden(140,"#5aa84f");
+          kWolke(60 + t*20, 40, 1); kWolke(240 - t*14, 30, 0.8);
+          kSonne(285, 32, 16);
+          kFigur(40 + t*90, 150, 1.5, "#f0c39a", "#8894a8", t*14); } },
+      { s:4, text:"Hinter dem Berg wohnte ein großer Drache.", ton:[196,165],
+        mal:(t)=>{ kHimmel("#f0a25a","#ffd9a0"); kBoden(140,"#6b5a3a");
+          kg.fillStyle="#4a3f2a";
+          kg.beginPath(); kg.moveTo(40,140); kg.lineTo(120,50); kg.lineTo(200,140); kg.fill();
+          kg.beginPath(); kg.moveTo(160,140); kg.lineTo(230,70); kg.lineTo(300,140); kg.fill();
+          kDrache(190, 60 - Math.sin(t*3)*6, 1.1, t*4); } },
+      { s:5, text:"Der Drache spuckte Feuer! Der Ritter bekam Angst.", ton:[147,110,98],
+        mal:(t)=>{ kHimmel("#e06a3a","#ffb070"); kBoden(140,"#6b4a2a");
+          kDrache(215, 70, 1.3, t*5);
+          if (t > 0.25) kFeuer(120 - t*40, 92, 1.6 + t, t*6);
+          kFigur(45, 150, 1.5, "#f0c39a", "#8894a8", 0, t>0.25 ? -8 : 0); } },
+      { s:5, text:"Aber dann sah er: Der Drache weinte!", ton:[330,294],
+        mal:(t)=>{ kHimmel("#8ab8d8","#d8e8f0"); kBoden(140,"#5aa84f");
+          kDrache(200, 100, 1.2, t*1.5);
+          for (let i=0;i<3;i++){ const ty=(t*70 + i*24) % 60;   // die Tränen
+            kg.fillStyle="rgba(20,40,80,.5)";
+            kg.beginPath(); kg.arc(236, 80 + ty, 5.2, 0, 6.2832); kg.fill();
+            kg.fillStyle="#a8e8ff";
+            kg.beginPath(); kg.arc(236, 80 + ty, 3.8, 0, 6.2832); kg.fill(); }
+          kFigur(60, 150, 1.5, "#f0c39a", "#8894a8", 0); } },
+      { s:5, text:"„Ich bin nur einsam!\", sagte der Drache leise.", ton:[262,294,330],
+        mal:(t)=>{ kHimmel("#8ab8d8","#d8e8f0"); kBoden(140,"#5aa84f");
+          kDrache(190, 104, 1.2, t*1.2);
+          kFigur(80 + t*36, 150, 1.5, "#f0c39a", "#8894a8", t*10);
+          kg.fillStyle="rgba(255,255,255,.94)";        // eine Sprechblase
+          kg.beginPath(); kg.roundRect ? kg.roundRect(150,26,140,34,10) : kg.rect(150,26,140,34); kg.fill();
+          kg.fillStyle="#333"; kg.font="bold 13px sans-serif"; kg.textAlign="center";
+          kg.fillText("Ich bin so allein …", 220, 48); } },
+      { s:5, text:"Da wurden die beiden die allerbesten Freunde. ❤️", ton:[523,659,784],
+        mal:(t)=>{ kHimmel("#7ec8f0","#cfe9c0"); kBoden(140,"#5aa84f");
+          kDrache(210, 108, 1.1, t*1.2);
+          kFigur(150, 150, 1.5, "#f0c39a", "#8894a8", 0, -5);
+          kg.fillStyle="#e0466a";                       // Herzen steigen auf
+          for (let i=0;i<5;i++){ const hy=130 - ((t*80 + i*26) % 110), hx=170 + i*13;
+            const hs=3.4;
+            kg.beginPath(); kg.arc(hx-hs*0.6,hy,hs*0.7,0,6.2832);
+            kg.arc(hx+hs*0.6,hy,hs*0.7,0,6.2832); kg.fill();
+            kg.beginPath(); kg.moveTo(hx-hs*1.25,hy+hs*0.3);
+            kg.lineTo(hx,hy+hs*2.1); kg.lineTo(hx+hs*1.25,hy+hs*0.3); kg.fill(); } } },
+      { s:5, text:"Und flogen zusammen über das ganze Land. ENDE 🎬", ton:[659,784,1047],
+        mal:(t)=>{ kHimmel("#5aa8e0","#a8d8f0"); 
+          kg.fillStyle="#4a8a4a"; kg.fillRect(0,150,KINO_B,30);
+          kWolke(40 + t*120, 50, 1.2); kWolke(200 + t*90, 96, 0.9); kWolke(280 - t*60, 34, 0.7);
+          const dy = 84 + Math.sin(t*6)*10;
+          kDrache(60 + t*180, dy, 1.0, t*7);
+          kFigur(62 + t*180, dy - 8, 0.85, "#f0c39a", "#8894a8", 0, -4); } },
+    ] },
+
+  { id:"mond", titel:"Die Reise zum Mond", emoji:"🚀", dauer:0,
+    farbe:"#2a3a6a",
+    kurz:"Countdown, Start und eine Landung ganz weit oben. Und was man von dort sieht!",
+    szenen:[
+      { s:5, text:"Die Rakete steht bereit. Der Countdown läuft!", ton:[440],
+        mal:(t)=>{ kHimmel("#f0a860","#ffd9a0"); kBoden(150,"#8a7a5a");
+          kg.fillStyle="#6a6a72"; kg.fillRect(178,70,7,80);     // der Startturm
+          kRakete(150, 118, 1.5, 0);
+          const z = 5 - Math.floor(t*5);
+          kg.fillStyle="#fff"; kg.strokeStyle="#333"; kg.lineWidth=3;
+          kg.font="bold 54px sans-serif"; kg.textAlign="center";
+          kg.strokeText(z > 0 ? z : "LOS!", 250, 76); kg.fillText(z > 0 ? z : "LOS!", 250, 76); } },
+      { s:5, text:"Und ab geht die Post! 🚀", ton:[196,262,330,392],
+        mal:(t)=>{ kHimmel("#7ec8f0","#ffd9a0"); kBoden(150,"#8a7a5a");
+          kg.fillStyle="rgba(230,230,235,.75)";
+          for (let i=0;i<9;i++) kg.beginPath(),
+            kg.arc(150 + Math.sin(i*2.1)*40, 150 - i*4, 12 + i*3, 0, 6.2832), kg.fill();
+          kRakete(150, 130 - t*t*150, 1.5, 1); } },
+      { s:5, text:"Immer höher – die Sterne kommen näher.", ton:[523,659],
+        mal:(t)=>{ kHimmel("#2a3a6a","#6a4a8a"); kSterne(70, t*3);
+          kg.fillStyle="#5aa84f";                                // die Erde bleibt zurück
+          kg.beginPath(); kg.arc(160, 240 + t*60, 110, 0, 6.2832); kg.fill();
+          kRakete(160, 110 - t*30, 1.2, 1); } },
+      { s:5, text:"Da vorne ist er: der Mond! 🌕", ton:[784,880],
+        mal:(t)=>{ kHimmel("#0a0a22","#1a1a3a"); kSterne(90, t*2);
+          kSonne(230, 66, 34 + t*14, "#e8e8d8");
+          kg.fillStyle="#c8c8b8";                                // Krater
+          for (const [cx,cy,cr] of [[218,56,7],[244,74,5],[228,82,4]]) {
+            kg.beginPath(); kg.arc(cx, cy, cr*(1+t*0.4), 0, 6.2832); kg.fill(); }
+          kRakete(70 + t*80, 120 - t*20, 1.0, 0.6); } },
+      { s:5, text:"Sanft aufsetzen … geschafft! 🌙", ton:[330,392,523],
+        mal:(t)=>{ kHimmel("#0a0a22","#101028"); kSterne(90, t);
+          kg.fillStyle="#d0d0c0"; kg.fillRect(0,140,KINO_B,40);
+          kg.fillStyle="#b8b8a8";
+          for (const [cx,cr] of [[60,14],[150,10],[250,16]]) {
+            kg.beginPath(); kg.arc(cx,148,cr,0,6.2832); kg.fill(); }
+          kRakete(160, 128 - (1-t)*(1-t)*70, 1.2, t > 0.75 ? 0 : 0.4); } },
+      { s:5, text:"Ein kleiner Schritt für Jonah …", ton:[523,587],
+        mal:(t)=>{ kHimmel("#0a0a22","#101028"); kSterne(90, t*0.5);
+          kg.fillStyle="#d0d0c0"; kg.fillRect(0,140,KINO_B,40);
+          kRakete(230, 128, 1.2, 0);
+          kFigur(90 + t*40, 148, 1.4, "#e8e8f0", "#f0f0f8", t*5);
+          kg.fillStyle="#7fd4ff";                                 // Helm-Visier
+          kg.beginPath(); kg.arc(90 + t*40, 148 - 33*1.4, 8*1.4, 0, 6.2832); kg.fill(); } },
+      { s:6, text:"Und von hier oben sieht man die ganze Erde. ENDE 🎬", ton:[659,784,1047,1319],
+        mal:(t)=>{ kHimmel("#050515","#0a0a22"); kSterne(100, t);
+          kg.fillStyle="#d0d0c0"; kg.fillRect(0,158,KINO_B,22);
+          const ey = 74 - t*14;
+          kg.fillStyle="#2a6ad0";                                  // die Erde geht auf
+          kg.beginPath(); kg.arc(160, ey, 40, 0, 6.2832); kg.fill();
+          kg.fillStyle="#4aa84f";
+          kg.beginPath(); kg.arc(148, ey-10, 15, 0, 6.2832); kg.fill();
+          kg.beginPath(); kg.arc(174, ey+9, 12, 0, 6.2832); kg.fill();
+          kg.fillStyle="rgba(255,255,255,.5)";
+          kg.beginPath(); kg.ellipse(160, ey+4, 40, 12, 0.3, 0, 6.2832); kg.fill();
+          kFigur(70, 166, 1.2, "#e8e8f0", "#f0f0f8", 0, -6); } },
+    ] },
+
+  { id:"freunde", titel:"Fred and Lucy in the Jungle", emoji:"🦊", dauer:0,
+    farbe:"#2a7a4a", englisch:true,
+    kurz:"Ein Film auf ENGLISCH – mit deutschem Untertitel. So lernst du beim Zuschauen!",
+    szenen:[
+      { s:5, text:"Fred is a fox. · Fred ist ein Fuchs.", ton:[523],
+        mal:(t)=>{ kHimmel("#8ad8f0","#cfe9c0"); kBoden(148,"#4a9a3a");
+          kBaum(40,148,1.1); kBaum(280,148,0.9);
+          kTier(120 + t*40, 148, 1.5, "#F08A24", true, t*4); } },
+      { s:5, text:"Lucy is a wolf. She is his friend. · Lucy ist ein Wolf. Sie ist seine Freundin.", ton:[587],
+        mal:(t)=>{ kHimmel("#8ad8f0","#cfe9c0"); kBoden(148,"#4a9a3a");
+          kBaum(40,148,1.1); kBaum(280,148,0.9);
+          kTier(110, 148, 1.5, "#F08A24", true, t*2);
+          kTier(200 - t*30, 148, 1.5, "#8AA2B8", true, t*4); } },
+      { s:5, text:"They walk into the jungle. · Sie gehen in den Dschungel.", ton:[440,523],
+        mal:(t)=>{ kHimmel("#6ac0a0","#a8d8a0"); kBoden(148,"#3a7a2a");
+          for (let i=0;i<6;i++) kBaum(30 + i*56 - t*30, 148, 0.8 + (i%3)*0.2);
+          kTier(90 + t*30, 152, 1.3, "#F08A24", true, t*6);
+          kTier(140 + t*30, 152, 1.3, "#8AA2B8", true, t*6); } },
+      { s:5, text:"Look! A big waterfall! · Schau! Ein großer Wasserfall!", ton:[659,784],
+        mal:(t)=>{ kHimmel("#7ec8f0","#b8e0d0"); kBoden(150,"#3a7a2a");
+          kg.fillStyle="#7a6a5a"; kg.fillRect(180,10,90,140);
+          kg.fillStyle="#7fd4ff";                                  // das fallende Wasser
+          for (let i=0;i<7;i++){ const wx=196+i*10, off=(t*130+i*19)%140;
+            kg.globalAlpha=0.55+0.45*Math.sin(i+t*8);
+            kg.fillRect(wx, 14+off*0.1, 7, 130); }
+          kg.globalAlpha=1;
+          kg.fillStyle="#4ab0e0"; kg.fillRect(170,146,120,34);
+          kTier(70, 150, 1.4, "#F08A24", true, t*2);
+          kTier(120, 150, 1.4, "#8AA2B8", true, t*2); } },
+      { s:5, text:"They swim in the water. It is cold! · Sie schwimmen. Es ist kalt!", ton:[392,330]  ,
+        mal:(t)=>{ kHimmel("#7ec8f0","#b8e0d0"); kBoden(120,"#3a7a2a");
+          kg.fillStyle="#4ab0e0"; kg.fillRect(0,120,KINO_B,60);
+          kg.fillStyle="rgba(255,255,255,.4)";
+          for (let i=0;i<8;i++) kg.fillRect((i*44 + t*40)%KINO_B, 128 + (i%3)*13, 26, 3);
+          kg.fillStyle="#F08A24";
+          kg.beginPath(); kg.arc(110, 118 + Math.sin(t*7)*4, 11, 0, 6.2832); kg.fill();
+          kg.fillStyle="#8AA2B8";
+          kg.beginPath(); kg.arc(190, 118 + Math.cos(t*7)*4, 11, 0, 6.2832); kg.fill();
+          kg.fillStyle="#222";
+          kg.fillRect(106,114,3,3); kg.fillRect(114,114,3,3);
+          kg.fillRect(186,114,3,3); kg.fillRect(194,114,3,3); } },
+      { s:6, text:"„We are best friends!\" · „Wir sind beste Freunde!\" THE END 🎬", ton:[523,659,784,1047],
+        mal:(t)=>{ kHimmel("#f0a860","#ffd9a0");                   // Sonnenuntergang
+          kSonne(160, 120, 40 - t*6, "#ff9c4a");
+          kBoden(148,"#2a5a2a");
+          kTier(115, 150, 1.5, "#F08A24", true, 0);
+          kTier(180, 150, 1.5, "#8AA2B8", true, 0);
+          kg.fillStyle="#e0466a";
+          for (let i=0;i<4;i++){ const hy=140 - ((t*70 + i*30) % 120), hx=138 + i*10, hs=3.6;
+            kg.beginPath(); kg.arc(hx-hs*0.6,hy,hs*0.7,0,6.2832);
+            kg.arc(hx+hs*0.6,hy,hs*0.7,0,6.2832); kg.fill();
+            kg.beginPath(); kg.moveTo(hx-hs*1.25,hy+hs*0.3);
+            kg.lineTo(hx,hy+hs*2.1); kg.lineTo(hx+hs*1.25,hy+hs*0.3); kg.fill(); } } },
+    ] },
+
+  { id:"burg", titel:"Jonah baut die größte Burg", emoji:"⛏️", dauer:0,
+    farbe:"#7a5cc4",
+    kurz:"Ein Film über dich! Wie du die größte Burg der Welt baust – und wer alles mithilft.",
+    szenen:[
+      { s:4, text:"Jonah hatte eine Idee: die größte Burg der Welt!", ton:[523,659],
+        mal:(t)=>{ kHimmel("#7ec8f0","#cfe9c0"); kBoden(150,"#5aa84f");
+          kFigur(150, 150, 1.6, "#f0c39a", "#4a90d0", 0, -6);
+          kg.fillStyle="#ffe066";                                  // die Idee-Glühbirne
+          kg.beginPath(); kg.arc(150, 62 - Math.sin(t*4)*4, 12, 0, 6.2832); kg.fill();
+          kg.fillStyle="#c8a020"; kg.fillRect(145, 74, 10, 6); } },
+      { s:5, text:"Er holte Stein für Stein …", ton:[262,262],
+        mal:(t)=>{ kHimmel("#7ec8f0","#cfe9c0"); kBoden(150,"#5aa84f");
+          kTurm(150, 150, 1.4, Math.floor(t*4)+1, ["#9a9a9a","#b0b0b0"]);
+          kFigur(90, 150, 1.5, "#f0c39a", "#4a90d0", t*12); } },
+      { s:5, text:"… und alle Freunde halfen mit! 🧑‍🤝‍🧑", ton:[392,440,523],
+        mal:(t)=>{ kHimmel("#7ec8f0","#cfe9c0"); kBoden(150,"#5aa84f");
+          kTurm(160, 150, 1.4, 5 + Math.floor(t*3), ["#9a9a9a","#b0b0b0"]);
+          kFigur(60, 150, 1.3, "#f0c39a", "#4a90d0", t*10);
+          kFigur(100, 150, 1.2, "#e8c0a0", "#c85a5a", t*10 + 2);
+          kTier(240, 150, 1.1, "#F08A24", true, t*6); } },
+      { s:5, text:"Höher und höher – bis in die Wolken!", ton:[523,587,659],
+        mal:(t)=>{ kHimmel("#6ab8e8","#b8dcf0"); kBoden(170,"#5aa84f");
+          kWolke(60, 40, 1.1); kWolke(250, 30, 0.9);
+          kTurm(160, 170, 1.5, 8 + Math.floor(t*8), ["#9a9a9a","#b0b0b0","#c8b090"]);
+          kFigur(70, 170, 1.2, "#f0c39a", "#4a90d0", t*8); } },
+      { s:5, text:"Oben wehte die Fahne von König Jonah. 👑", ton:[659,784],
+        mal:(t)=>{ kHimmel("#6ab8e8","#b8dcf0");
+          kg.fillStyle="#9a9a9a"; kg.fillRect(130,60,60,120);
+          kg.fillStyle="#b0b0b0";
+          for (let i=0;i<5;i++) kg.fillRect(128 + i*13, 48, 9, 14);   // Zinnen
+          kg.fillStyle="#6a5a4a"; kg.fillRect(158,36,3,26);
+          kg.fillStyle="#e34b3c";                                     // die wehende Fahne
+          kg.beginPath(); kg.moveTo(161,38);
+          kg.lineTo(161 + 30 + Math.sin(t*8)*4, 44 + Math.sin(t*6)*3);
+          kg.lineTo(161, 54); kg.fill();
+          kFigur(200, 176, 1.2, "#f0c39a", "#4a90d0", 0, -5); } },
+      { s:6, text:"Die schönste Burg von allen. Gut gemacht, Jonah! ENDE 🎬", ton:[523,659,784,1047,1319],
+        mal:(t)=>{ kHimmel("#f0a860","#ffd9a0"); kSonne(280,44,20,"#ff9c4a");
+          kBoden(150,"#4a8a3a");
+          kg.fillStyle="#9a9a9a"; kg.fillRect(110,70,100,80);
+          kg.fillRect(88,96,24,54); kg.fillRect(208,96,24,54);
+          kg.fillStyle="#b0b0b0";
+          for (let i=0;i<7;i++) kg.fillRect(108 + i*15, 60, 10, 12);
+          kg.fillStyle="#5a4a3a"; kg.fillRect(148,116,24,34);        // das Tor
+          kFigur(60, 150, 1.3, "#f0c39a", "#4a90d0", 0, -5);
+          kFigur(262, 150, 1.2, "#e8c0a0", "#c85a5a", 0, -4);
+          kg.fillStyle="#ffe066";                                     // Feuerwerk
+          for (let i=0;i<12;i++){ const w=i/12*6.2832, r=(t*60)%60;
+            kg.globalAlpha = Math.max(0, 1 - r/60);
+            kg.beginPath(); kg.arc(160 + Math.cos(w)*r, 46 + Math.sin(w)*r, 2.6, 0, 6.2832); kg.fill(); }
+          kg.globalAlpha=1; } },
+    ] },
+];
+for (const f of KINO_FILME) f.dauer = f.szenen.reduce((n, sz) => n + sz.s, 0);
+
+// ---- ▶️ Der Vorführer: Film starten, Bild für Bild malen, Untertitel -------
+let kinoFilm = null;                    // welcher Film läuft gerade?
+let kinoZeit = 0;                       // wie weit ist er?
+let kinoSzene = -1;                     // welche Szene läuft (für Ton und Text)
+let kinoTex = null;                     // die WebGL-Textur der Leinwand
+let kinoPause = false;
+function imKino() {
+  return player.x > KINO_X - 4 && player.x < KINO_X + KINO_W + 4 &&
+         player.z > KINO_Z - 4 && player.z < KINO_Z + KINO_D + 4 &&
+         player.y > KINO_Y - 6 && player.y < KINO_Y + KINO_H + 4;
+}
+// Das Standbild, wenn gerade kein Film läuft: der Vorhang mit dem Kino-Logo
+function kinoStandbild() {
+  kg.fillStyle = "#7a1020"; kg.fillRect(0, 0, KINO_B, KINO_HOCH);
+  kg.fillStyle = "rgba(0,0,0,.22)";
+  for (let i = 0; i < 22; i++) kg.fillRect(i * 15 + (i % 2) * 4, 0, 6, KINO_HOCH);
+  kg.fillStyle = "#ffe066"; kg.textAlign = "center";
+  kg.font = "bold 34px sans-serif"; kg.fillText("🎬 KINO", KINO_B/2, 82);
+  kg.font = "bold 15px sans-serif"; kg.fillStyle = "#fff";
+  kg.fillText("Setz dich hin und such dir einen Film aus!", KINO_B/2, 116);
+}
+function kinoBildMalen() {
+  if (!kinoFilm) { kinoStandbild(); return; }
+  let rest = kinoZeit, nr = 0;
+  while (nr < kinoFilm.szenen.length - 1 && rest >= kinoFilm.szenen[nr].s) {
+    rest -= kinoFilm.szenen[nr].s; nr++;
+  }
+  const sz = kinoFilm.szenen[nr];
+  if (nr !== kinoSzene) {               // neue Szene: Musik dazu
+    kinoSzene = nr;
+    if (sz.ton) sz.ton.forEach((f, i) => setTimeout(() => blip(f, 0.12), i * 150));
+    kinoUntertitelZeigen(sz.text);
+  }
+  kg.save();
+  try { sz.mal(Math.min(1, rest / sz.s)); } catch(e) { kinoStandbild(); }
+  kg.restore();
+  // Am Anfang und am Ende sanft auf- und abblenden - wie im echten Kino
+  const blende = Math.min(1, kinoZeit / 0.8, (kinoFilm.dauer - kinoZeit) / 0.8);
+  if (blende < 1) {
+    kg.fillStyle = "rgba(0,0,0," + (1 - Math.max(0, blende)) + ")";
+    kg.fillRect(0, 0, KINO_B, KINO_HOCH);
+  }
+}
+function kinoUntertitelZeigen(text) {
+  const el = document.getElementById("kinoText");
+  if (!el) return;
+  el.textContent = text || "";
+  el.style.display = text ? "block" : "none";
+}
+function kinoStart(film) {
+  kinoFilm = film; kinoZeit = 0; kinoSzene = -1; kinoPause = false;
+  document.getElementById("kinoWahl").style.display = "none";
+  document.getElementById("kinoBar").style.display = "flex";
+  toast("🎬 „" + film.titel + "\" – viel Spaß! Zum Aufhören: ⏹", 3000);
+  blip(392,0.1); blip(523,0.1); blip(659,0.14);
+}
+function kinoStopp() {
+  kinoFilm = null; kinoSzene = -1; kinoZeit = 0;
+  kinoUntertitelZeigen("");
+  document.getElementById("kinoBar").style.display = "none";
+  const w = document.getElementById("kinoWahl");
+  if (w.style.display === "flex") return;
+  blip(300,0.08);
+}
+function kinoTick(dt) {
+  if (!kinoFilm) return;
+  // Wer aus dem Kino rausläuft, für den hört der Film auf
+  if (!imKino()) { kinoStopp(); return; }
+  if (kinoPause) return;
+  kinoZeit += dt;
+  if (kinoZeit >= kinoFilm.dauer) {     // Abspann
+    const titel = kinoFilm.titel;
+    kinoStopp();
+    toast("🎬 „" + titel + "\" ist zu Ende. Hat es dir gefallen? 👏", 4500);
+    for (const f of [523,659,784,1047]) blip(f,0.12);
+    setTimeout(kinoWahlZeigen, 1200);
+  }
+}
+// Die Filmauswahl - mit Plakat, Titel, Dauer und einer kurzen Beschreibung
+function kinoWahlZeigen() {
+  const liste = document.getElementById("kinoListe");
+  liste.innerHTML = "";
+  for (const f of KINO_FILME) {
+    const b = document.createElement("button");
+    b.className = "kinoFilm";
+    b.innerHTML = '<span class="kinoPlakat"></span><span><span class="kinoTitel"></span>' +
+                  '<span class="kinoKurz"></span></span>';
+    const pl = b.querySelector(".kinoPlakat");
+    pl.textContent = f.emoji; pl.style.background = f.farbe;
+    b.querySelector(".kinoTitel").textContent = f.titel +
+      "  (" + Math.round(f.dauer) + " Sek.)" + (f.englisch ? "  🇬🇧" : "");
+    b.querySelector(".kinoKurz").textContent = f.kurz;
+    b.addEventListener("click", () => kinoStart(f));
+    liste.appendChild(b);
+  }
+  document.getElementById("kinoWahl").style.display = "flex";
+  blip(700,0.05); blip(880,0.06);
+}
+// ---- Die Leinwand im Raum zeichnen ---------------------------------------
+function kinoTexturSetzen() {
+  if (!kinoTex) {
+    kinoTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, kinoTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  } else gl.bindTexture(gl.TEXTURE_2D, kinoTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, kinoCanvas);
+}
+function drawKinoLeinwand() {
+  if (!imKino()) return;
+  kinoBildMalen();
+  kinoTexturSetzen();
+  gl.uniform1f(loc.uAlpha, 1);
+  // Die Leinwand hängt an der Wand bei lz = LW_Z und schaut nach +Z
+  const x0 = KINO_X + LW_X0, x1 = KINO_X + LW_X1 + 1;
+  const yb = LW_Y0, yt = LW_Y1 + 1;
+  const zp = KINO_Z + LW_Z + 1.02;
+  const h = kinoFilm ? 1.35 : 1.0;      // ein laufender Film leuchtet
+  const a = [x1,yb,zp,1,1,h, x0,yb,zp,0,1,h, x0,yt,zp,0,0,h,
+             x1,yb,zp,1,1,h, x0,yt,zp,0,0,h, x1,yt,zp,1,0,h];
+  gl.bindBuffer(gl.ARRAY_BUFFER, signBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW);
+  setAttribs();
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
+}
+
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
 // Manchmal tun sich mehrere Räuber zu einer Bande zusammen: sie kommen in
 // ihrem Räuber-Bulli angefahren, parken vor der Dorfbank, brechen ein, schleppen
@@ -13876,6 +14548,10 @@ function teleportZiele() {
       ziele.push([TP_FAHRZEUG[a.type], Math.round(a.x), Math.round(a.z)]);
   for (const t of customTargets)                        // deine gemerkten Schilder
     ziele.push(['📍 ' + t.label, t.x, t.z]);
+  if (weltDim === 0) {                                  // 🎬 ab ins Kino!
+    const [kx, , kz] = kinoEingang();
+    ziele.push(['🎬 Das Kino', kx, kz]);
+  }
   return ziele;
 }
 function teleportZu(zx, zz, label) {
@@ -14431,6 +15107,18 @@ document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.s
   document.getElementById("msgrLernen").addEventListener("click", () => {
     document.getElementById("msgrBox").style.display = "none";
     msgrOffen = null; lernThemenZeigen(); blip(700,0.05); blip(880,0.06);
+  });
+  // 🎬 die Bedienung im Kino
+  document.getElementById("kinoZu").addEventListener("click", () => {
+    document.getElementById("kinoWahl").style.display = "none"; blip(300,0.06);
+  });
+  document.getElementById("kinoStopp").addEventListener("click", () => {
+    kinoStopp(); kinoWahlZeigen();
+  });
+  document.getElementById("kinoPause").addEventListener("click", () => {
+    kinoPause = !kinoPause;
+    document.getElementById("kinoPause").textContent = kinoPause ? "▶" : "⏸";
+    blip(kinoPause ? 300 : 600, 0.07);
   });
   document.getElementById("lernZu").addEventListener("click", () => {
     document.getElementById("lernBox").style.display = "none"; blip(300,0.06);
@@ -17851,9 +18539,19 @@ function doPlace(dir) {
       toast('🚽 Plumps! Und danach: Spülung – Rauschhh! 🌀', 2800);
       blip(600,0.08); blip(400,0.12); blip(250,0.2); blip(180,0.25);
     } else {
-      toast('🪑 Ahh, gemütlich! Zum Aufstehen einfach bewegen.', 2500);
-      blip(330,0.08);
+      if (imKino()) {                   // 🎬 im Kino gibt es gleich die Filmauswahl
+        blip(392,0.08); blip(523,0.1);
+        if (!kinoFilm) kinoWahlZeigen();
+      } else {
+        toast('🪑 Ahh, gemütlich! Zum Aufstehen einfach bewegen.', 2500);
+        blip(330,0.08);
+      }
     }
+    return;
+  }
+  if (hit.block===WOOL && imKino() &&    // 🎬 die Leinwand antippen
+      hit.z === KINO_Z + LW_Z && hit.y >= LW_Y0 && hit.y <= LW_Y1) {
+    if (kinoFilm) kinoStopp(); else kinoWahlZeigen();
     return;
   }
   if (hit.block===SINK) {               // Hände waschen!
@@ -18829,6 +19527,7 @@ function frame(now) {
   try { freundeTick(dt); } catch(e) {}   // 📱 schreibt dir gerade ein englischer Freund?
   try { gruppeTick(dt); } catch(e) {}    // 🌍 plaudern England und das Dorf miteinander?
   try { engSpawnTick(dt); } catch(e) {}  // 🦊 laufen genug englische Freunde herum?
+  try { kinoTick(dt); } catch(e) {}      // 🎬 läuft gerade ein Film im Kino?
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
@@ -19012,6 +19711,7 @@ function frame(now) {
   gl.disable(gl.CULL_FACE);
   drawSignTexts();
   drawPaintings();
+  try { drawKinoLeinwand(); } catch(e) {}   // 🎬 läuft gerade ein Film?
   gl.uniform1f(loc.uAlpha,0.62);
   for (let i=vis.length-1;i>=0;i--) {
     const ch=vis[i];
