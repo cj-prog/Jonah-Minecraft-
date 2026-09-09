@@ -896,7 +896,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 221 &middot; Das Kino steht jetzt fest auf dem Boden – und das Bild ist gestochen scharf! 🎬✨</p>
+    Version 222 &middot; Die Kino-Leinwand ist jetzt wirklich scharf – kein einziges Treppchen mehr! 🎬🔍</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -942,7 +942,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 221;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 222;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5553,13 +5553,40 @@ gl.enable(gl.CULL_FACE);
 const SKY = [0.53,0.81,0.92];
 gl.clearColor(SKY[0],SKY[1],SKY[2],1);
 
+// 🔍 WIE FEIN WIRD GERECHNET?
+// Ein Handy hat oft 3 echte Bildpunkte pro Zeichen-Punkt. Alles dreifach zu
+// rechnen wäre für die ganze Welt zu langsam - deshalb ist bei 1.75 Schluss.
+// Im KINO ist das aber zu grob: die Leinwand ist dann nur mit 577 statt 990
+// Bildpunkten gemalt und Jonah sieht Treppchen. Drinnen sieht man ohnehin nur
+// den Saal, das kostet fast nichts - also wird dort voll aufgedreht.
+let scharfKino = false;                 // sind wir gerade im Scharf-Modus?
+let scharfGrenze = 3;                   // so weit darf im Kino aufgedreht werden
+function bildPunkte() {
+  return Math.min(window.devicePixelRatio||1, scharfKino ? scharfGrenze : 1.75);
+}
 function resize() {
-  const dpr = Math.min(window.devicePixelRatio||1, 1.75);
+  const dpr = bildPunkte();
   canvas.width = Math.floor(innerWidth*dpr);
   canvas.height = Math.floor(innerHeight*dpr);
   gl.viewport(0,0,canvas.width,canvas.height);
 }
 addEventListener('resize', resize); resize();
+// Beim Betreten und Verlassen des Kinos umschalten - nur dann, nicht in jedem
+// Bild: die Leinwand neu anzulegen ist teuer.
+function scharfTick(dt) {
+  let drin = false;
+  try { drin = imKino(); } catch(e) {}
+  if (drin !== scharfKino) { scharfKino = drin; scharfLangsam = 0; resize(); }
+  // Sicherung: wenn es im Kino wirklich ruckelt (mehr als 30 ms pro Bild über
+  // eine ganze Sekunde), eine Stufe zurückschalten statt Jonah ruckeln lassen.
+  if (!scharfKino || scharfGrenze <= 1.75) return;
+  if (dt > 0.030) scharfLangsam += dt; else scharfLangsam = Math.max(0, scharfLangsam - dt);
+  if (scharfLangsam > 1) {
+    scharfGrenze = scharfGrenze > 2.25 ? 2.25 : 1.75;
+    scharfLangsam = 0; resize();
+  }
+}
+let scharfLangsam = 0;
 
 // ------------------------------ Mesh-Erzeugung -----------------------------
 // Flächen: 0:+X 1:-X 2:+Y 3:-Y 4:+Z 5:-Z  – Ecken gegen den Uhrzeigersinn (außen)
@@ -13062,7 +13089,12 @@ function kinoStempeln(data, cx, cz) {
 // auf einer 22 Blöcke breiten Wand verschwommen: ein Pixel wäre dann fast
 // einen halben Block groß. Der Maßstab wird einmal fest eingestellt, alle
 // Zeichenbefehle rechnen also weiter in 320x180.
-const KINO_B = 320, KINO_HOCH = 180, KINO_SCHARF = 4;
+// Gemalt wird in einem 320x180-Raster, damit sich die Szenen einfach
+// beschreiben lassen - aber jeder Punkt wird 6.4-fach gerechnet. Das ergibt
+// 2048x1152 echte Bildpunkte. So viele braucht es wirklich: aus der mittleren
+// Reihe steht die Leinwand rund 2000 Bildpunkte breit auf dem Handy, und in
+// den vorderen Reihen ist sie sowieso breiter als der ganze Bildschirm.
+const KINO_B = 320, KINO_HOCH = 180, KINO_SCHARF = 6.4;
 const kinoCanvas = document.createElement("canvas");
 kinoCanvas.width = KINO_B * KINO_SCHARF; kinoCanvas.height = KINO_HOCH * KINO_SCHARF;
 const kg = kinoCanvas.getContext("2d");
@@ -13559,7 +13591,7 @@ function kinoWahlZeigen() {
   blip(700,0.05); blip(880,0.06);
 }
 // ---- Die Leinwand im Raum zeichnen ---------------------------------------
-function kinoTexturSetzen() {
+function kinoTexturSetzen(neu) {
   if (!kinoTex) {
     kinoTex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, kinoTex);
@@ -13567,13 +13599,19 @@ function kinoTexturSetzen() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    neu = true;
   } else gl.bindTexture(gl.TEXTURE_2D, kinoTex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, kinoCanvas);
+  // Das Bild zur Grafikkarte zu schicken kostet 8 MB - das muss nicht 60-mal
+  // in der Sekunde sein. 30 Bilder sind Kinotempo und sehen genauso flüssig aus.
+  if (neu) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, kinoCanvas);
 }
+let kinoBildZeit = -1;                  // wann wurde zuletzt neu gemalt?
 function drawKinoLeinwand() {
   if (!imKino()) return;
-  kinoBildMalen();
-  kinoTexturSetzen();
+  const jetzt = performance.now();
+  const neu = jetzt - kinoBildZeit >= 33;
+  if (neu) { kinoBildMalen(); kinoBildZeit = jetzt; }
+  kinoTexturSetzen(neu);
   gl.uniform1f(loc.uAlpha, 1);
   // Die Leinwand hängt an der Wand bei lz = LW_Z und schaut nach +Z
   const x0 = KINO_X + LW_X0, x1 = KINO_X + LW_X1 + 1;
@@ -19619,6 +19657,7 @@ function frame(now) {
   try { gruppeTick(dt); } catch(e) {}    // 🌍 plaudern England und das Dorf miteinander?
   try { engSpawnTick(dt); } catch(e) {}  // 🦊 laufen genug englische Freunde herum?
   try { kinoTick(dt); } catch(e) {}      // 🎬 läuft gerade ein Film im Kino?
+  try { scharfTick(dt); } catch(e) {}    // 🔍 im Kino feiner rechnen
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
