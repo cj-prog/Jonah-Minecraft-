@@ -221,6 +221,35 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- POLIZISTEN BEWACHEN DEINE RIESEN-FESTUNG (v224)! 👮🚔 Drei Polizisten passen
+  auf: WACHTMEISTER BEN und KOMMISSARIN MIA gehen draußen am Haupteingang
+  Streife, POLIZIST TOM bewacht unten im Keller die Zellen. Man erkennt sie an
+  der dunkelblauen Uniform, der Schirmmütze mit goldenem Wappen, dem Dienst-
+  Stern an der Brust und der roten Kelle in der Hand.
+  KOMMT EIN EINBRECHER, geht es los: „Halt! Polizei! 🚨" – über dem Kopf des
+  Polizisten blinkt ein Blaulicht, und er rennt dem Räuber hinterher. Hat er
+  ihn, wandert der Räuber sofort in eine der drei Zellen im Keller, und die
+  Gittertür wird zugemacht. 🔒 Geklautes Geld bekommt Jonah dabei zurück!
+  UND DAS WICHTIGSTE: Der Räuber bleibt drin. Auch wenn Jonah das Spiel
+  schließt und später wieder anfängt, sitzt er immer noch in genau seiner
+  Zelle und die Tür ist immer noch zu. Er jammert dann durch die Gitter
+  („Lasst mich raus! 😭", „Ich war es doch gar nicht!").
+  Sind alle drei Zellen voll, wird der nächste Räuber einfach vor die Mauer
+  gesetzt – sein Diebesgut muss er trotzdem hergeben.
+  EINBRECHER KOMMEN VON SELBST: Ab und zu schleicht sich einer an die Festung
+  heran. Über die große Mauer kommt er nicht – er muss durch eines der vier
+  Tore, und genau da wartet die Polizei.
+  JONAH BESTIMMT: Tippe einen Polizisten an. „🚔 Wie sieht es im Gefängnis
+  aus?" sagt dir, welche Zellen belegt sind, und „🔓 Lass die Räuber wieder
+  laufen!" begnadigt alle – dann gehen die Türen auf und sie rennen davon.
+  Auf dem 🗺️ Plan der Riesen-Festung siehst du im Keller bei jeder Zelle, ob
+  sie belegt (😈) oder frei (🔓) ist. Und wer will, bricht die Gitter einfach
+  selbst auf – dann ist der Räuber weg. 😈💨
+  NEBENBEI GEFUNDEN UND REPARIERT: Beim Testen ist aufgefallen, dass der
+  KINOBODEN Löcher hatte, wenn das Kino zufällig in einem Hügel steht – dann
+  wurde der Hügel unter dem Fußboden weggeschnitten. In einer Welt waren es 25
+  Löcher. Jetzt ist unter jedem Platz im Saal fester Boden, und der Test prüft
+  alle 884 Plätze.
 - DAS FILMBILD WÄCHST JETZT MIT DEINEM PLATZ MIT (v223)! 🎬🪑 Jonah hat gesagt:
   immer noch verschwommen – und zwar sowohl beim Vorhang mit dem „KINO"-Schild
   als auch beim Film. Er hatte wieder recht, und diesmal war MEINE Messung

@@ -896,7 +896,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 223 &middot; Das Filmbild wächst jetzt mit deinem Platz mit – von jedem Sessel gestochen scharf! 🎬🪑</p>
+    Version 224 &middot; Polizisten bewachen deine Riesen-Festung – Einbrecher landen im Gefängnis! 👮🚔</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -942,7 +942,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 223;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 224;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4211,6 +4211,7 @@ function genChunkData(cx, cz, ohneEdits) {
       P(-23,by-4,-12,SIGN);
       const gfs=(B.bx-23)+','+(by-4)+','+(B.bz-12);
       if (!signTexts.has(gfs)) signTexts.set(gfs,'🚔 Königs-Gefängnis - hier kommen freche Räuber rein!');
+      for (const dz of [-18,-13,-8]) P(-29,by-2,dz,TORCH);   // Licht IN jeder Zelle
       P(-23,by-2,-19,TORCH); P(-23,by-2,-7,TORCH); P(23,by-2,15,TORCH); P(-10,by-2,18,TORCH);
       P(27,by-4,-20,CHEST); P(25,by-4,-20,CHEST); P(27,by-4,18,CABINET);   // Keller-Lager
       // 12) das FREUNDE-HAUS neben der Festung 🏠 (auf ebener Wiese)
@@ -4615,7 +4616,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedRaum = null;
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedKnast = [], savedRaum = null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -4675,8 +4676,10 @@ function saveGame() {
       statuen: animals.filter(a=>a.type==='statue').map(a=>
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, Math.round(a.yaw*100)/100,
          a.von==='boss'?'b':a.von==='raeuber'?'r':'z']),
-      diebe: animals.filter(a=>a.type==='raeuber' && a.beute>0).map(a=>   // 💰 Diebe mit Beute
+      diebe: animals.filter(a=>a.type==='raeuber' && a.beute>0 && !a.gefangen).map(a=>   // 💰 Diebe mit Beute
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.beute]),
+      // 🚔 wer im Königs-Gefängnis sitzt, sitzt auch nach dem Neustart noch drin
+      knast: animals.filter(a=>a.gefangen && typeof a.zelle==='number').map(a=>a.zelle),
       ziele: customTargets,
       jet: jetSave,
       raum: raumSave,          // 🚀 wo Jonahs eigene Rakete geparkt steht
@@ -4770,6 +4773,7 @@ function loadGame() {
     if (Array.isArray(s.balls)) savedBalls = s.balls;
     if (Array.isArray(s.statuen)) savedStatuen = s.statuen;
     if (Array.isArray(s.diebe)) savedDiebe = s.diebe;      // 💰 Räuber mit geklautem Geld
+    if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
     if (Array.isArray(s.ziele)) customTargets = s.ziele.filter(t=>t && typeof t.x==='number');
     else if (s.ziel && typeof s.ziel.x==='number') customTargets = [s.ziel];   // alte Speicherstände
     if (Array.isArray(s.jet)) savedJet = s.jet;
@@ -5322,6 +5326,23 @@ atlas.width = atlas.height = T*ATLAS_N;
       }
       return vary(c[0], c[1], c[2], 14);
     });
+  });
+  // 👮 DIE FESTUNGS-POLIZEI: dunkelblaue Uniform (147) und ein freundliches,
+  // wachsames Gesicht (148).
+  tile(147,(x,y)=>{                                                 // Polizei-Uniform
+    if (y>=7 && y<=9) return vary(32,36,48,8);                      // schwarzer Gürtel
+    if (y===8 && x>=6 && x<=9) return vary(226,190,70,10);          // goldene Schnalle
+    if (x>=2 && x<=4 && y>=2 && y<=4) return vary(226,190,70,12);   // Dienst-Stern
+    return vary(38,62,120,14);                                      // dunkelblauer Stoff
+  });
+  tile(148,(x,y)=>{                                                 // Polizei-Gesicht
+    if (y===4 && x>=3 && x<=12) return 'rgb(70,50,30)';             // Augenbrauen
+    if ((x>=3&&x<=4 || x>=11&&x<=12) && y>=5 && y<=6) return 'rgb(40,70,140)';   // wache Augen
+    if (x>=7 && x<=8 && y>=6 && y<=10) return vary(178,132,92,8);   // Nase
+    if (y===11 && x>=5 && x<=10) return 'rgb(90,60,40)';            // Schnurrbart
+    if (y===13 && x>=6 && x<=9) return 'rgb(120,80,60)';            // freundlicher Mund
+    if (y===12 && (x===5 || x===10)) return 'rgb(120,80,60)';       // Mundwinkel nach oben
+    return vary(200,160,120,14);
   });
   tile(130,(x,y)=>{                                                 // 🏄 Surfbrett: bunt gestreift
     if (y < 2 || y > 13) return vary(240,244,250,8);                // weiße Spitze und Ende
@@ -6161,6 +6182,8 @@ const ANIMAL_KIND = {
   knight:   { speed:0.9, half:0.3,  height:1.85, tile:56, face:21 },
   ball:     { speed:0,   half:0.22, height:0.44, tile:10, face:10 },
   engfreund:{ speed:1.1, half:0.28, height:1.7,  tile:131, face:139 },
+  // 👮 schneller als der Räuber (2.0) - sonst könnte er nie einen einholen!
+  polizist: { speed:2.6, half:0.3,  height:1.8,  tile:147, face:148 },
 };
 // 🦊 Die englischen Freunde als Figuren in der Welt: welches Fell, welches
 // Gesicht und welches Erkennungszeichen auf dem Kopf?
@@ -6855,6 +6878,38 @@ function spawnTick() {
           walking:false, t:2, ph:0, onGround:false });
       }
     }
+    // 👮 DIE POLIZEI ist immer da, wenn Jonah in seiner Festung ist
+    if (imBurghof()) {
+      POLIZEI.forEach((pz, i) => {
+        if (animals.some(x => x.type==='polizist' && x.nr===i)) return;
+        const px4 = MB.bx+pz.dx, pz4 = MB.bz+pz.dz;
+        // der Keller-Wächter steht unten bei den Zellen, die anderen draußen
+        const py4 = pz.keller ? MB.base-4 : Math.max(terrainHeight(px4,pz4)+1, MB.base+1);
+        if (pz.keller) {                // nur, wenn der Keller wirklich geladen ist
+          const kc = getChunk(px4>>4, pz4>>4);
+          if (!kc || !kc.data) return;
+        }
+        animals.push({ type:'polizist', nr:i, name:pz.name, friend:3,
+          x:px4+0.5, y:py4, z:pz4+0.5, hx:px4+0.5, hz:pz4+0.5,
+          yaw:Math.random()*6, vy:0, kx:0, kz:0, hp:5,
+          walking:false, t:2, ph:0, onGround:false });
+      });
+    }
+    // 😈 Ab und zu versucht ein Einbrecher, in die Festung zu kommen! Er taucht
+    // vor einem der vier Tore auf - probiert werden alle, denn vor manchen liegt
+    // Wasser oder ein Berg, und weit weg vom Spieler ist die Welt gar nicht da.
+    if (imBurghof() && Math.random() < 0.05 &&
+        !animals.some(x => x.type==='raeuber' && !x.gefangen && imBurgGelaende(x.x, x.z))) {
+      const plaetze = einbruchPlaetze();
+      for (let i = plaetze.length-1; i > 0; i--) {        // Reihenfolge mischen
+        const j = Math.floor(Math.random()*(i+1)); [plaetze[i],plaetze[j]] = [plaetze[j],plaetze[i]];
+      }
+      for (const [ex, ez] of plaetze)                     // die erste Stelle, die geht
+        if (spawnMob('raeuber', ex, ez, {hp:3, einbrecher:true})) {
+          toast('😈 Ein Einbrecher schleicht sich an deine Festung heran! 🏰', 3500);
+          break;
+        }
+    }
     // 🏦 In der Schatzkammer der Festung sitzt dein eigener Bankier am Tresor
     if (imBurghof() && !animals.some(x => x.type==='bankier' && x.home==='burgbank')) {
       const kby = MB.base + 11;
@@ -7476,7 +7531,36 @@ function updateAnimals(dt) {
         !(a.type==='uboot') && !(a.type==='yacht' && !a.fremd) &&
         !(a.befehl==='folgen' || a.befehl==='hierher') &&   // 👑 wer mitkommen soll, bleibt!
         !a.beute &&                       // 💰 ein Räuber mit deiner Beute verschwindet NIE!
+        !a.gefangen &&                    // 🚔 und wer im Gefängnis sitzt, bleibt sitzen!
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
+    if (a.gefangen) {                   // 🚔 sitzt im Königs-Gefängnis und bleibt da
+      a.walking = false; a.kx = a.kz = 0; a.jagt = null;
+      const chG = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
+      if (chG && chG.data) {
+        a.vy = Math.max(a.vy-25*dt, -30);
+        const nyg = a.y + a.vy*dt;
+        if (!collideBox(a.x,nyg,a.z,0.32,1.8)) a.y = nyg; else a.vy = 0;
+        // Erst abschließen (falls das beim Verhaften nicht ging, weil der
+        // Keller nicht geladen war) - und ERST DANN aufs Ausbrechen achten.
+        if (!a.zuGemacht) { if (zelleSchliessen(a.zelle)) a.zuGemacht = true; }
+        // Ausbrechen kann er NUR, wenn Jonah selbst daneben steht und die
+        // Gitter aufgebrochen hat. Sonst würde ein Gefangener schon dann
+        // freikommen, wenn der Keller gerade nicht geladen ist oder Jonah in
+        // einer anderen Welt unterwegs ist - und das wäre gemogelt.
+        else if (weltDim === 0 && Math.hypot(player.x-a.x, player.z-a.z) < 24 &&
+                 zelleOffen(a.zelle)) {
+          a.gefangen = false; a.zelle = undefined;
+          sagen(a, 'Frei! Hihi, danke! 😈', 3);
+          toast('😈 Der Räuber ist durch die aufgebrochene Zellentür entwischt!', 4000);
+          blip(200,0.1); blip(160,0.14); scheduleSave();
+        } else if (Math.hypot(player.x-a.x, player.z-a.z) < 14 && Math.random() < dt*0.3) {
+          sagen(a, ['Lasst mich raus! 😭','Ich war es doch gar nicht!',
+                    'Ich mach das nie wieder, ehrlich!','Buhuuu... 😢',
+                    'Hier ist es so langweilig!'][Math.floor(Math.random()*5)], 3);
+        }
+      } else a.vy = 0;
+      continue;
+    }
     if (a.type==='statue') {            // Stein-Statuen stehen einfach still da
       a.walking = false; a.kx = a.kz = 0;
       const chS = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
@@ -7605,6 +7689,8 @@ function updateAnimals(dt) {
       }
     }
 
+    // 👮 Polizisten schauen zuerst, ob ein Einbrecher in der Festung ist
+    if (a.type==='polizist' && polizeiJagd(a, dt)) { a.spd = 2.6; }
     // KI: abwechselnd stehen und in eine zufällige Richtung laufen
     a.t -= dt;
     if (a.t<=0) {
@@ -7624,6 +7710,15 @@ function updateAnimals(dt) {
         }
         if (a.type==='knight' && Math.hypot(a.hx-a.x, a.hz-a.z) > 9)
           a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
+        // 👮 Polizisten gehen Streife und kommen immer wieder zu ihrem Posten
+        if (a.type==='polizist') {
+          a.spd = 1.3;
+          if (Math.hypot(a.hx-a.x, a.hz-a.z) > 7)
+            a.yaw = Math.atan2(a.hx-a.x, -(a.hz-a.z)) + (Math.random()-0.5);
+          if (Math.hypot(a.x-player.x, a.z-player.z) < 7 && Math.random() < 0.2)
+            sagen(a, ['Alles sicher, König Jonah! 👮','Kein Einbrecher weit und breit.',
+                      'Wir passen schon auf! 🚔','Die Zellen sind bereit. 🔒'][Math.floor(Math.random()*4)], 3);
+        }
         // Festungs-Wächter grüßen ihren König, wenn er vorbeikommt!
         if (a.type==='knight' && a.home==='megaburg' &&
             Math.hypot(a.x-player.x, a.z-player.z) < 7 && Math.random() < 0.25) {
@@ -7695,12 +7790,39 @@ function updateAnimals(dt) {
           if (licht) { werdeStatue(a); continue; }
         }
       }
+      // 😈 EIN EINBRECHER auf dem Weg in die Festung. Über die große Mauer kommt
+      // er nicht - er muss durch das Süd-Tor. Deshalb läuft er erst dorthin und
+      // erst DANN zur Festung in der Mitte.
+      let aufDemWeg = false;            // läuft er gerade zum Burgtor?
+      if (a.type==='raeuber' && a.einbrecher && !a.gefangen) {
+        const drin = inDerBurg(a.x, a.z);
+        if (drin) { a.einbruchT = 0; }
+        else {
+          let tor = null, td = 1e9;     // zum NÄCHSTEN Tor laufen
+          for (const t of burgTore()) {
+            const d = Math.hypot(t.ax-a.x, t.az-a.z);
+            if (d < td) { td = d; tor = t; }
+          }
+          a.yaw = Math.atan2(tor.x-a.x, -(tor.z-a.z)); a.walking = true; a.t = 0.5;
+          // Hängt er doch an der Mauer fest? Dann steht er beim nächsten Versuch
+          // direkt im Tor - über die Mauer kommt er nämlich wirklich nicht.
+          a.einbruchT = (a.einbruchT || 0) + dt;
+          if (a.einbruchT > 20) {
+            a.einbruchT = 0;
+            a.x = tor.x; a.z = tor.z;   // im Tor drin - dort ist die Welt geladen
+            a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1; a.vy = 0;
+          }
+        }
+        aufDemWeg = !drin;              // solange er draußen ist, zählt nur das Tor
+      }
       // 💰 Räuber lieben herumliegendes Geld noch mehr als Jonah!
       const klaut = a.type==='raeuber' && !a.friedlich && geldKlau(a, dt);
       // Friedliche Monster jagen NIEMANDEN - sie spazieren nur herum
       // In der GROSSEN SCHLACHT kennen die Monster kein Pardon: sie kommen
       // von überall her auf Jonah zu, egal wie weit sie noch weg sind.
-      const jagd = a.friedlich || klaut ? -1
+      // Wer noch vor der Mauer steht, lässt sich von Jonah nicht ablenken -
+      // sonst rennt er statt zum Tor gegen die Mauer.
+      const jagd = a.friedlich || klaut || aufDemWeg ? -1
                  : a.schlacht ? 90
                  : a.type==='riese' ? 26 : a.type==='boss' ? 15 : a.type==='zombie' ? 13 : a.type==='raeuber' ? 12 : 9;
       const dx=player.x-a.x, dz=player.z-a.z, dp=Math.hypot(dx,dz);
@@ -8430,6 +8552,19 @@ function drawAnimals() {
         pushBox(arr,a, 0,1.86,-0.3, 0.44,0.05,0.14, 30);           // Schirm
         pushBox(arr,a, 0.34,1.16,-0.22, 0.2,0.26,0.04, 8);         // Stapel Papiere in der Hand
       }
+      if (a.type==='polizist') {                                   // 👮 Mütze, Stern, Kelle
+        pushBox(arr,a, 0,1.92,0, 0.56,0.1,0.56, 147);              // Schirmmütze
+        pushBox(arr,a, 0,2.0,0, 0.4,0.12,0.4, 147);
+        pushBox(arr,a, 0,1.88,-0.31, 0.4,0.05,0.14, 55);           // schwarzer Schirm
+        pushBox(arr,a, 0,2.02,-0.19, 0.14,0.1,0.05, 30);           // goldenes Wappen
+        pushBox(arr,a, -0.16,1.24,-0.16, 0.14,0.14,0.03, 30);      // Dienst-Stern an der Brust
+        pushBox(arr,a, 0.34,1.16,-0.2, 0.18,0.18,0.04, 25);        // rote Kelle in der Hand
+        pushBox(arr,a, 0.34,1.02,-0.2, 0.05,0.16,0.05, 55);
+        if (a.jagt) {                                              // 🚨 Blaulicht bei der Jagd!
+          const bl = Math.sin(performance.now()*0.012) > 0;
+          pushBox(arr,a, 0,2.16,0, 0.16,0.12,0.16, bl?27:9);
+        }
+      }
       if (a.type==='butler') {                                     // 🤵 Hemd, Fliege, Tablett
         pushBox(arr,a, 0,1.14,-0.16, 0.22,0.52,0.02, 49);          // weißes Hemd
         pushBox(arr,a, 0,1.36,-0.17, 0.16,0.08,0.04, 25);          // rote Fliege
@@ -8864,11 +8999,15 @@ function openBurgplan() {
       g.fillStyle='#d8d2c2'; g.fillRect(ox,oy,W,H);
       g.strokeStyle='#5a4630'; g.lineWidth=3; g.strokeRect(ox,oy,W,H);
       g.font='15px sans-serif'; g.fillStyle='#333';
-      g.fillText('🚔', X(-26), Z(-13));
       g.fillText('🪜', X(25), Z(0));
       g.fillText('📦', X(26), Z(-19));
+      // 🚔 die drei Zellen einzeln: belegt (😈) oder frei (🔓)?
+      ZELL_DZ.forEach((dz, nr) => {
+        const drin = animals.some(a2 => a2.gefangen && a2.zelle === nr);
+        g.fillText(drin ? '😈' : '🔓', X(-27), Z(dz));
+      });
       g.font='bold 10px sans-serif'; g.fillStyle='#4a3a22';
-      g.fillText('Gefängnis', X(-22), Z(-6));
+      g.fillText('Gefängnis', X(-22), Z(-2));
       g.fillText('Riesen-Halle', X(0), Z(5));
       g.font='bold 13px sans-serif'; g.fillStyle='#fff'; g.fillText(titel, ox+W/2, oy-13);
       return;
@@ -10761,6 +10900,200 @@ function imBurghof() {                  // ist Jonah HINTER der großen Mauer?
   return player.x > B.bx-60 && player.x < B.bx+62 &&
          player.z > B.bz-32 && player.z < B.bz+32;
 }
+// ============== 👮🚔 DIE POLIZEI IN JONAHS RIESEN-FESTUNG ===================
+// Drei Polizisten passen auf die Festung auf. Kommt ein Einbrecher hinter die
+// große Mauer, rennen sie los, schnappen ihn und sperren ihn unten im Keller
+// in eine der drei Zellen - und schließen ab. Wer einmal drin sitzt, sitzt
+// auch nach dem Neustart noch drin (er wird mitgespeichert).
+//
+// Die Zahlen kommen direkt aus dem Bauplan der Festung: die Gitterwand steht
+// bei dx = -24, die drei Zellen-Türen bei dz = -18/-13/-8, die Zellen selbst
+// liegen dahinter (dx -29 bis -25). Der Kellerboden ist B.base-5, man steht
+// also auf B.base-4.
+const ZELL_DZ = [-18, -13, -8];
+const POLIZEI = [
+  { name:'Wachtmeister Ben', dx: -8, dz: 26 },   // vor dem Haupteingang
+  { name:'Kommissarin Mia',  dx:  8, dz: 26 },
+  { name:'Polizist Tom',     dx:-20, dz:-13, keller:true },   // bewacht die Zellen
+];
+// 🏰 Die vier Tore der großen Burgmauer. Über die Mauer kommt niemand - wer
+// hinein will (oder hinaus), muss durch eines dieser Tore. Die Punkte liegen
+// jeweils schon INNEN, damit man beim Hinlaufen wirklich hindurchgeht.
+function burgTore() {
+  const B = burgPos();
+  return [ { x:B.bx+0.5, z:B.bz+28,  ax:B.bx+0.5, az:B.bz+38 },   // Süd
+           { x:B.bx+0.5, z:B.bz-28,  ax:B.bx+0.5, az:B.bz-38 },   // Nord
+           { x:B.bx-56,  z:B.bz+0.5, ax:B.bx-67,  az:B.bz+0.5 },  // West
+           { x:B.bx+58,  z:B.bz+0.5, ax:B.bx+69,  az:B.bz+0.5 } ];// Ost
+}
+// Wo kann ein Einbrecher auftauchen? Rundherum dicht vor der Mauer - aber nur
+// dort, wo die Welt auch wirklich geladen ist. Weiter weg als etwa 45 Blöcke
+// vom Spieler ist sie das nicht, und dort würde er einfach stehen bleiben.
+function einbruchPlaetze() {
+  const B = burgPos(), p = [];
+  for (let dx = -52; dx <= 54; dx += 10) { p.push([B.bx+dx, B.bz+36]); p.push([B.bx+dx, B.bz-36]); }
+  for (let dz = -26; dz <= 26; dz += 10) { p.push([B.bx-65, B.bz+dz]); p.push([B.bx+67, B.bz+dz]); }
+  return p.filter(q => Math.hypot(q[0]-player.x, q[1]-player.z) < 42);
+}
+function inDerBurg(x, z) {              // wirklich INNEN, nicht im Tor oder davor
+  const B = burgPos();
+  return x > B.bx-58 && x < B.bx+60 && z > B.bz-30 && z < B.bz+30;
+}
+function zellePos(nr) {                 // wo steht der Gefangene, wo ist seine Tür?
+  const B = burgPos();
+  return { x: B.bx - 27 + 0.5, y: B.base - 4, z: B.bz + ZELL_DZ[nr] + 0.5,
+           tx: B.bx - 24, ty: B.base - 4, tz: B.bz + ZELL_DZ[nr] };
+}
+function zelleFrei() {                  // welche Zelle ist noch leer? (-1 = alle voll)
+  for (let i = 0; i < ZELL_DZ.length; i++)
+    if (!animals.some(a => a.gefangen && a.zelle === i)) return i;
+  return -1;
+}
+function zelleSchliessen(nr) {          // die Gitterstäbe in die Tür setzen
+  const p = zellePos(nr);
+  const ch = getChunk(p.tx>>4, p.tz>>4);
+  if (!ch || !ch.data) return false;    // der Keller ist gerade nicht geladen
+  for (let y = p.ty; y <= p.ty+1; y++)
+    if (getBlock(p.tx, y, p.tz) !== GITTER) setBlock(p.tx, y, p.tz, GITTER);
+  return true;
+}
+function zelleOffen(nr) {               // hat jemand die Gitter aufgebrochen?
+  if (nr === undefined || nr === null) return false;
+  const p = zellePos(nr);
+  const ch = getChunk(p.tx>>4, p.tz>>4);
+  if (!ch || !ch.data) return false;    // nicht geladen? Dann wissen wir es nicht
+  return getBlock(p.tx, p.ty, p.tz) !== GITTER && getBlock(p.tx, p.ty+1, p.tz) !== GITTER;
+}
+// 🚔 Geschnappt! Der Räuber gibt die Beute zurück und wandert in die Zelle.
+function verhaften(pol, r) {
+  pol.jagt = null; pol.jagdT = 0;
+  const nah = Math.hypot(player.x - pol.x, player.z - pol.z) < 70;
+  const geklaut = r.beute || 0;
+  if (geklaut) { money += geklaut; r.beute = 0; updateFoodHUD(); }
+  const nr = zelleFrei();
+  if (nr < 0) {                         // alle drei Zellen sind belegt
+    const B = burgPos();
+    r.x = B.bx + 0.5; r.z = B.bz + 44.5;
+    r.y = terrainHeight(Math.floor(r.x), Math.floor(r.z)) + 1;
+    r.vy = 0; r.kx = 0; r.kz = 0; r.einbrecher = false;
+    sagen(pol, 'Alle Zellen voll - und jetzt VERSCHWINDE!', 3);
+    if (nah) toast('🚔 Alle drei Zellen sind voll! ' + pol.name +
+      ' hat den Räuber vor die Tür gesetzt.' +
+      (geklaut ? ' Deine ' + geklaut + ' € bekommst du zurück. 💶' : ''), 4500);
+    scheduleSave();
+    return;
+  }
+  const p = zellePos(nr);
+  r.gefangen = true; r.zelle = nr; r.zuGemacht = false;
+  r.x = p.x; r.y = p.y; r.z = p.z;
+  r.vy = 0; r.kx = 0; r.kz = 0; r.walking = false;
+  r.yaw = Math.PI / 2;                  // schaut durch die Gitter nach draußen
+  r.einbrecher = false; r.klauZiel = null;
+  if (zelleSchliessen(nr)) r.zuGemacht = true;
+  sagen(pol, 'Ab in die Zelle! 🚔', 3);
+  if (nah) {
+    toast('🚔🔒 Geschnappt! ' + pol.name + ' hat den Einbrecher in Zelle ' + (nr+1) +
+      ' gesperrt und abgeschlossen.' +
+      (geklaut ? ' Deine ' + geklaut + ' € sind wieder da! 💶' : '') +
+      ' Schau im Keller nach ihm!', 5200);
+    blip(880,0.1); blip(660,0.1); blip(440,0.18);
+  }
+  scheduleSave();
+}
+// 👮 Was macht ein Polizist gerade? Gibt true, solange er hinter jemandem her ist.
+function polizeiJagd(a, dt) {
+  if (weltDim !== 0) return false;
+  a.suchT = (a.suchT || 0) - dt;
+  if (a.suchT <= 0) {                   // zweimal in der Sekunde Ausschau halten
+    a.suchT = 0.5;
+    if (a.jagt && (!animals.includes(a.jagt) || a.jagt.gefangen ||
+                   !imBurgGelaende(a.jagt.x, a.jagt.z))) { a.jagt = null; a.jagdT = 0; }
+    if (!a.jagt) {
+      let best = null, bestD = 1e9;
+      for (const r of animals) {
+        if (r.type !== 'raeuber' || r.gefangen) continue;
+        if (!imBurgGelaende(r.x, r.z)) continue;          // draußen ist er uns egal
+        if (animals.some(q => q !== a && q.type === 'polizist' && q.jagt === r)) continue;
+        const d = Math.hypot(r.x - a.x, r.z - a.z);
+        if (d < bestD) { bestD = d; best = r; }
+      }
+      if (best) {
+        a.jagt = best; a.jagdT = 0;
+        sagen(a, ['Halt! Polizei! 🚨','Stehen bleiben!','Das ist Jonahs Festung!'][Math.floor(Math.random()*3)], 3);
+        if (Math.hypot(player.x - a.x, player.z - a.z) < 70) {
+          toast('🚨 Ein Einbrecher in deiner Festung! ' + a.name + ' ist schon hinter ihm her!', 4000);
+          blip(880,0.12); blip(587,0.12); blip(880,0.12); blip(587,0.12);
+        }
+      }
+    }
+  }
+  const r = a.jagt;
+  if (!r) return false;
+  const dx = r.x - a.x, dz = r.z - a.z, d = Math.hypot(dx, dz);
+  a.yaw = Math.atan2(dx, -dz); a.walking = true; a.t = 0.5;
+  if (d > 1.5 || Math.abs(r.y - a.y) > 2.2) {
+    if (a.onGround && d < 3 && r.y > a.y + 0.4) a.vy = 8;     // hinterherspringen
+    // Steht eine Mauer im Weg? Ein Polizist kennt jeden Gang in der Festung -
+    // nach 14 Sekunden nimmt er die Abkürzung und steht plötzlich daneben.
+    a.jagdT = (a.jagdT || 0) + dt;
+    if (a.jagdT > 12) {
+      a.jagdT = 0;
+      let platz = null;                 // ein freier Fleck direkt neben dem Räuber
+      for (const [ox,oz] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1],
+                             [2,0],[-2,0],[0,2],[0,-2]])
+        if (!collideBox(r.x+ox, r.y, r.z+oz, 0.3, 1.8)) { platz = [ox,oz]; break; }
+      // Ist ringsum alles zugebaut, stellt er sich eben direkt vor ihn - sonst
+      // könnte sich ein Räuber in einer engen Kammer ewig verstecken.
+      a.x = r.x + (platz ? platz[0] : 0.6);
+      a.z = r.z + (platz ? platz[1] : 0.6);
+      a.y = r.y; a.vy = 0;
+      sagen(a, 'Ich kenne hier jeden Gang! 👮', 2.5);
+    }
+    return true;
+  }
+  verhaften(a, r);
+  return true;
+}
+// 🚔 Der Polizist erzählt, wer gerade einsitzt
+function polizeiBericht(pol) {
+  const drin = animals.filter(a => a.gefangen && typeof a.zelle === 'number');
+  const frei = ZELL_DZ.length - drin.length;
+  if (!drin.length) {
+    sagen(pol, 'Alle drei Zellen sind leer! 🔓', 4);
+    toast('🚔 ' + pol.name + ': „Alle drei Zellen sind leer – deine Festung ist sicher, König Jonah!"', 4500);
+  } else {
+    const nrn = drin.map(a => a.zelle + 1).sort().join(' und ');
+    sagen(pol, drin.length + ' Räuber sitzen ein! 🔒', 4);
+    toast('🚔 ' + pol.name + ': „In Zelle ' + nrn + ' sitzt je ein Räuber – ' +
+      drin.length + ' von 3 Zellen belegt' + (frei ? ', ' + frei + ' noch frei' : ', alles voll') +
+      '. Sie sind unten im Keller, im Westen."', 5500);
+  }
+  blip(700,0.08); blip(520,0.1);
+}
+// 🔓 König Jonah begnadigt: die Türen gehen auf und die Räuber laufen davon
+function knastLeeren(pol) {
+  const drin = animals.filter(a => a.gefangen && typeof a.zelle === 'number');
+  if (!drin.length) {
+    sagen(pol, 'Es sitzt doch gar keiner drin! 🔓', 3);
+    toast('🚔 ' + pol.name + ': „Es sitzt gar kein Räuber im Gefängnis, König Jonah!"', 3500);
+    return;
+  }
+  const B = burgPos();
+  for (const a of drin) {
+    const zp = zellePos(a.zelle);
+    const ch = getChunk(zp.tx>>4, zp.tz>>4);
+    if (ch && ch.data) for (let y = zp.ty; y <= zp.ty+1; y++) setBlock(zp.tx, y, zp.tz, AIR);
+    a.gefangen = false; a.zelle = undefined; a.zuGemacht = false; a.einbrecher = false;
+    a.x = B.bx + 0.5; a.z = B.bz + 46.5;         // draußen vor der Mauer
+    a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1;
+    a.vy = 0; a.kx = 0; a.kz = 0;
+  }
+  sagen(pol, 'Wie Ihr befehlt, König Jonah! 🔓', 4);
+  toast('🔓 ' + drin.length + ' Räuber begnadigt! Die Zellentüren stehen offen und sie laufen ' +
+    'weit weg von der Festung davon. 😈💨', 5000);
+  blip(392,0.1); blip(523,0.1); blip(659,0.14);
+  scheduleSave();
+}
 function meldeSchaden(x, y, z) {
   if (keinSchaden || schadenListe.length > 60) return;
   if (typeof _burg === 'undefined' || !imBurgGelaende(x, z)) return;
@@ -10892,7 +11225,7 @@ function hausmeisterTick(a, dt) {
 // 👑 ALLE MENSCHEN HÖREN AUF KÖNIG JONAH
 // Diese Leute kann Jonah antippen und ihnen etwas sagen:
 const MENSCH_TYPEN = new Set(['villager','kid','trader','knight','hausmeister','engfreund',
-                              'bankier','butler']);
+                              'bankier','butler','polizist']);
 const MENSCH_JA = [
   'Ja, König Jonah!', 'Sofort, Majestät! 👑', 'Wie Ihr befiehlt!',
   'Zu Befehl!', 'Sehr wohl, mein König!',
@@ -11031,6 +11364,10 @@ function openMensch(a) {
     BEFEHLE.push(['🏦 Ich will zur Bank!', () => openBank(a)]);
   if (a.type === 'trader')
     BEFEHLE.push(['🛒 Zeig mir deinen Laden!', () => openShop(a)]);
+  if (a.type === 'polizist') {
+    BEFEHLE.push(['🚔 Wie sieht es im Gefängnis aus?', () => polizeiBericht(a)]);
+    BEFEHLE.push(['🔓 Lass die Räuber wieder laufen!', () => knastLeeren(a)]);
+  }
   if (a.type === 'hausmeister')
     BEFEHLE.push([a.pause ? '🔧 Arbeite wieder!' : '☕ Mach mal Pause!', () => {
       a.pause = !a.pause;
@@ -11080,7 +11417,8 @@ function openMensch(a) {
 let menschAktiv = null;
 const MENSCH_NAME = { villager:'Der Dorfbewohner', kid:'Das Kind', trader:'Der Händler',
                       knight:'Der Ritter', hausmeister:'Der Hausmeister',
-                      bankier:'Der Bankier', butler:'Der Butler' };
+                      bankier:'Der Bankier', butler:'Der Butler',
+                      polizist:'Der Polizist' };
 const BUTLER_TALK = [
   'Sehr wohl, König Jonah! 🤵',
   'Wie Sie wünschen!',
@@ -12996,8 +13334,11 @@ function kinoBlock(lx, ly, lz) {
     if (lz === KINO_D && ly === KINO_Y + KINO_H - 1 && lx >= 6 && lx <= 19) return GOLD;
     return BRICK;
   }
-  // --- Der Sockel unter dem Saal: bis hinunter aufs Gelände alles fest
-  if (ly < boden) return ly >= gelaende - 2 ? STONE : AIR;
+  // --- Der Sockel unter dem Saal: bis hinunter aufs Gelände alles fest.
+  // WICHTIG das Math.min: steht das Kino in einem HÜGEL, ist das Gelände höher
+  // als der Saalboden. Ohne das Math.min käme unter dem Boden dann Luft heraus -
+  // der Hügel würde weggeschnitten und im Kino wären Löcher im Fußboden.
+  if (ly < boden) return ly >= Math.min(gelaende, KINO_Y) - 2 ? STONE : AIR;
   if (ly === KINO_Y + KINO_H) return STONE;       // das Dach
   if (ly > KINO_Y + KINO_H) return AIR;
   // (Die Türen sitzen in der Außenwand - siehe oben.)
@@ -20005,6 +20346,15 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   for (const d of savedDiebe) {
     animals.push({type:'raeuber', x:d[0], y:d[1], z:d[2], beute:d[3]||1,
       hx:d[0], hz:d[2], yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false});
+  }
+  // 🚔 Die Räuber, die die Polizei eingesperrt hat, sitzen weiter in ihrer Zelle
+  for (const nr of savedKnast) {
+    if (!(nr >= 0 && nr < ZELL_DZ.length)) continue;
+    if (animals.some(a => a.gefangen && a.zelle === nr)) continue;
+    const zp = zellePos(nr);
+    animals.push({ type:'raeuber', gefangen:true, zelle:nr, zuGemacht:false, beute:0,
+      x:zp.x, y:zp.y, z:zp.z, yaw:Math.PI/2, vy:0, kx:0, kz:0, hp:3,
+      walking:false, t:9, ph:0, onGround:false });
   }
   // Versteinerte Monster stehen noch als Statuen herum
   for (const p of savedStatuen) {
