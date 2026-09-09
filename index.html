@@ -896,7 +896,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 224 &middot; Polizisten bewachen deine Riesen-Festung – Einbrecher landen im Gefängnis! 👮🚔</p>
+    Version 225 &middot; Je länger du am Stück spielst, desto öfter kommen die Rechenaufgaben! 🧮⏱️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -942,7 +942,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 224;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 225;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4699,7 +4699,10 @@ function saveGame() {
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
       mathe: { stufe: matheStufe, gesamt: matheGesamt, inStufe: matheInStufe,
-               letzte: matheLetzte.slice(-10), fehler: matheFehler },   // 🧮 der Rechen-Stand
+               letzte: matheLetzte.slice(-10), fehler: matheFehler,
+               gespielt: Math.round(matheGespielt),   // 🧮 wie lange am Stück?
+               zuletzt: Date.now() },                 //    und wann war das?
+
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
       regrow: appleRegrow.map(r=>[r[0],r[1],r[2],Math.round(r[3])]),
@@ -4819,6 +4822,13 @@ function loadGame() {
       matheInStufe = s.mathe.inStufe|0;
       if (Array.isArray(s.mathe.letzte)) matheLetzte = s.mathe.letzte.slice(-10);
       if (s.mathe.fehler && typeof s.mathe.fehler === 'object') matheFehler = s.mathe.fehler;
+      // War die Pause kurz, geht die Spielzeit weiter - sonst fängt sie neu an.
+      const weg = Date.now() - (s.mathe.zuletzt || 0);
+      if (s.mathe.zuletzt && weg >= 0 && weg < MATHE_PAUSE_AUS)
+        matheGespielt = Math.max(0, s.mathe.gespielt|0);
+      else matheGespielt = 0;
+      matheTaktNr = matheTaktIndex();
+      matheZeit = Math.min(matheZeit, matheAbstand());
     }
     if (s.krone) hatKrone = true;
     if (s.zepter) hatZepter = true;
@@ -13395,8 +13405,18 @@ function kinoStempeln(data, cx, cz) {
       const gel = terrainHeight(KINO_X+lx, KINO_Z+lz);
       // Im Auslauf hinter dem Vorplatz wird nur noch angefasst, was wirklich
       // nicht passt - sonst hätte das Kino eine riesige kahle Fläche um sich.
+      // 🌳 Hinter dem Vorplatz beginnt wieder die echte Welt. Dort wird nur noch
+      // AUFGEFÜLLT, wo es zu tief ist - niemals ein Berg durchgeschnitten. Sonst
+      // gräbt sich in einem steilen Hügel ein Graben mit acht Blöcken hohen
+      // Wänden, und das ist schlimmer als der Hügel selbst.
       const auslauf = lz > KINO_D + KINO_VORPLATZ;
-      if (auslauf && platzY === gel) continue;
+      if (auslauf && gel >= platzY) {
+        // Gelände passt oder ist höher: die Welt bleibt stehen. Nur direkt vor
+        // der Tür wird ein schmaler Weg von Bäumen frei geräumt.
+        if (lx >= 9 && lx <= 17 && gel === platzY)
+          for (let y = platzY + 1; y <= platzY + 6; y++) data[bidx(lx2, y, lz2)] = AIR;
+        continue;
+      }
       // auffüllen, wo es zu tief ist (wo das Gelände schon passt, bleibt
       // der Boden so wie er ist - dann sieht der Vorplatz natürlich aus) ...
       if (platzY !== gel)
@@ -17783,7 +17803,30 @@ function jetPhysics(dt) {
 // Einmaleins-Aufgabe. Erst wenn sie gelöst ist, geht es weiter. Die Aufgaben
 // werden ganz langsam schwerer: Jonah muss eine Stufe richtig sicher können,
 // bevor die nächste Reihe dazukommt - und alte Reihen kommen immer wieder dran.
-const MATHE_ABSTAND = 240;              // alle 4 Minuten eine Aufgabe
+// 🧮 WIE OFT KOMMEN DIE AUFGABEN? Das hängt davon ab, wie lange Jonah schon
+// AM STÜCK spielt. Am Anfang lassen wir ihn in Ruhe bauen, aber je länger er
+// dranbleibt, desto dichter kommen die Aufgaben.
+//   [ab wie vielen Sekunden Spielzeit, Abstand zwischen zwei Aufgaben ]
+const MATHE_TAKT = [
+  [   0, 240, 'alle 4 Minuten'          ],   // die ersten 10 Minuten
+  [ 600, 180, 'alle 3 Minuten'          ],   // ab 10 Minuten
+  [1200, 120, 'alle 2 Minuten'          ],   // ab 20 Minuten
+  [1800,  60, 'jede Minute'             ],   // ab 30 Minuten
+  [2400,  20, '3 Aufgaben pro Minute'   ],   // ab 40 Minuten
+  [3000,  12, '5 Aufgaben pro Minute'   ],   // ab 50 Minuten
+];
+// Eine Pause zählt als Pause: wer länger als 10 Minuten weg war, fängt wieder
+// ganz gemütlich an. Kurz neu laden hilft also nicht. 😉
+const MATHE_PAUSE_AUS = 10 * 60 * 1000;
+let matheGespielt = 0;                  // Sekunden am Stück gespielt
+let matheTaktNr = 0;                    // in welcher Stufe der Takt gerade ist
+function matheTaktIndex() {
+  let i = 0;
+  for (let k = 0; k < MATHE_TAKT.length; k++) if (matheGespielt >= MATHE_TAKT[k][0]) i = k;
+  return i;
+}
+function matheAbstand() { return MATHE_TAKT[matheTaktIndex()][1]; }
+const MATHE_ABSTAND = 240;              // so fängt jede Spielrunde an
 const MATHE_STUFEN = [
   { reihen:[1,2,10],                 neu:[2],  name:'Die 1er-, 2er- und 10er-Reihe' },
   { reihen:[1,2,5,10],               neu:[5],  name:'Jetzt auch die 5er-Reihe' },
@@ -17920,7 +17963,7 @@ function matheFertig() {
   box.style.display = 'none';
   mathePause = false;
   matheJetzt = null;
-  matheZeit = MATHE_ABSTAND;
+  matheZeit = matheAbstand();
   if (!aufgestiegen)
     toast('🧮✅ RICHTIG! Super gemacht - und 2 € dazu. Spiel weiter! 🎉', 3500);
   scheduleSave();
@@ -17949,8 +17992,24 @@ function matheStufeCheck() {
   }
   return false;
 }
+let matheSpeicherT = 0;                 // damit die Spielzeit auch gespeichert wird
 function matheTick(dt) {
   if (mathePause || !started || flugT > 0) return;   // nicht mitten im Raketenflug
+  matheGespielt += dt;
+  // Ist gerade eine neue Takt-Stufe erreicht? Dann sagen wir Bescheid - sonst
+  // wüsste Jonah nicht, warum die Aufgaben plötzlich schneller kommen.
+  const nr = matheTaktIndex();
+  if (nr > matheTaktNr) {
+    matheTaktNr = nr;
+    const t = MATHE_TAKT[nr];
+    toast('🧮⏱️ Du spielst jetzt schon ' + Math.round(t[0]/60) +
+          ' Minuten am Stück – ab jetzt kommen die Rechenaufgaben ' + t[2] + '!', 6000);
+    blip(660,0.09); blip(880,0.12);
+    if (matheZeit > t[1]) matheZeit = t[1];    // gleich im neuen Takt weiter
+    scheduleSave();
+  }
+  matheSpeicherT += dt;
+  if (matheSpeicherT > 60) { matheSpeicherT = 0; scheduleSave(); }
   matheZeit -= dt;
   if (matheZeit <= 0) matheStellen();
 }

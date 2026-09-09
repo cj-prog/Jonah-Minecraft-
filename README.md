@@ -221,6 +221,28 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JE LÄNGER DU SPIELST, DESTO ÖFTER KOMMT DAS RECHNEN (v225)! 🧮⏱️ Vorher kam
+  alle 4 Minuten eine Aufgabe – egal, ob Jonah fünf Minuten oder zwei Stunden
+  spielt. Jetzt schaut das Spiel, wie lange er AM STÜCK spielt:
+  - die ersten 10 Minuten: alle 4 Minuten eine Aufgabe (in Ruhe bauen!)
+  - ab 10 Minuten: alle 3 Minuten
+  - ab 20 Minuten: alle 2 Minuten
+  - ab 30 Minuten: jede Minute
+  - ab 40 Minuten: 3 Aufgaben pro Minute
+  - ab 50 Minuten: 5 Aufgaben pro Minute
+  In einer Stunde sind das rund 100 Aufgaben statt 15. Jede neue Stufe wird
+  angesagt: „Du spielst jetzt schon 20 Minuten am Stück – ab jetzt kommen die
+  Rechenaufgaben alle 2 Minuten!"
+  Die Spielzeit wird MITGESPEICHERT: Kurz die Seite neu zu laden bringt also
+  nichts, der Takt bleibt. Erst nach einer richtigen Pause von 10 Minuten
+  fängt alles wieder gemütlich bei 4 Minuten an. Während einer offenen Aufgabe
+  und im Raketenflug zählt die Uhr nicht mit.
+  AUSSERDEM AM KINO NACHGEBESSERT: Hinter dem Vorplatz wird jetzt nur noch
+  aufgefüllt, wo es zu tief ist – vorher hat sich die Rampe in einem steilen
+  Hügel einen Graben mit acht Blöcken hohen Wänden gegraben. Und direkt vor der
+  Tür wird ein schmaler Weg von Bäumen frei geräumt, damit dort keiner im Weg
+  steht. Der Vorplatz selbst führt weiterhin in Einer-Stufen zur Tür – in zwölf
+  nachgemessenen Welten ohne eine einzige größere Stufe.
 - POLIZISTEN BEWACHEN DEINE RIESEN-FESTUNG (v224)! 👮🚔 Drei Polizisten passen
   auf: WACHTMEISTER BEN und KOMMISSARIN MIA gehen draußen am Haupteingang
   Streife, POLIZIST TOM bewacht unten im Keller die Zellen. Man erkennt sie an
