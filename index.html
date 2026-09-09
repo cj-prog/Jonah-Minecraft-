@@ -115,6 +115,31 @@
   #matheTasten .ok { background:rgba(90,220,130,.45); border-color:#7fe6a0; }
   #matheTasten .weg { background:rgba(255,150,150,.3); border-color:#ffb0b0; }
   #matheStern { font-size:min(3.4vw,14px); color:#ffe07a; }
+  /* 🇬🇧 Der Vokabel-Test: englisches Wort oben, drei Bild-Karten darunter */
+  #vokBox { left:0; top:0; width:100%; height:100%; display:none;
+    flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    background:rgba(8,26,20,.94); z-index:60; color:#fff; text-align:center;
+    padding:8px; box-sizing:border-box; overflow-y:auto; }
+  #vokKopf { font-size:min(3.4vw,14px); color:#9bf0c0; font-weight:bold; }
+  #vokWort { font-size:min(11vw,46px); font-weight:bold; letter-spacing:1px;
+    text-shadow:0 3px 10px #000; }
+  #vokHoeren { font-size:min(4.6vw,19px); padding:5px 16px; border-radius:20px;
+    background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.4);
+    user-select:none; -webkit-user-select:none; }
+  #vokHoeren:active { background:rgba(255,255,255,.4); }
+  #vokHinweis { font-size:min(3.4vw,14px); opacity:.95; max-width:340px;
+    line-height:1.4; min-height:34px; }
+  #vokKarten { display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+    max-width:min(96vw,420px); }
+  #vokKarten div { width:min(26vw,110px); padding:8px 4px; border-radius:14px;
+    background:rgba(255,255,255,.16); border:3px solid rgba(255,255,255,.35);
+    user-select:none; -webkit-user-select:none; }
+  #vokKarten div:active { background:rgba(255,255,255,.4); }
+  #vokKarten .bild { font-size:min(13vw,54px); line-height:1.1; }
+  #vokKarten .wort { font-size:min(3.6vw,15px); font-weight:bold; margin-top:2px; }
+  #vokKarten .gut { background:rgba(90,220,130,.5); border-color:#7fe6a0; }
+  #vokKarten .weg { background:rgba(255,150,150,.35); border-color:#ffb0b0; }
+  #vokStern { font-size:min(3.4vw,14px); color:#ffe07a; }
   #robBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(10,30,20,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
@@ -763,6 +788,15 @@
   <div id="matheStern"></div>
 </div>
 
+<div class="hud" id="vokBox">
+  <div id="vokKopf"></div>
+  <div id="vokWort"></div>
+  <div id="vokHoeren">🔊 Nochmal hören</div>
+  <div id="vokHinweis"></div>
+  <div id="vokKarten"></div>
+  <div id="vokStern"></div>
+</div>
+
 <div class="hud" id="robBox">
   <h3>📏 Wie groß soll dein Roboter sein?</h3>
   <p id="robText">Tipp eine Größe an - oder schreib selbst hin, wie viele Blöcke hoch er werden soll!</p>
@@ -896,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 225 &middot; Je länger du am Stück spielst, desto öfter kommen die Rechenaufgaben! 🧮⏱️</p>
+    Version 226 &middot; Neu: englische Vokabeln zum Antippen – abwechselnd mit dem Rechnen! 🇬🇧🧮</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -942,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 225;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 226;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4701,7 +4735,10 @@ function saveGame() {
       mathe: { stufe: matheStufe, gesamt: matheGesamt, inStufe: matheInStufe,
                letzte: matheLetzte.slice(-10), fehler: matheFehler,
                gespielt: Math.round(matheGespielt),   // 🧮 wie lange am Stück?
-               zuletzt: Date.now() },                 //    und wann war das?
+               zuletzt: Date.now(),                   //    und wann war das?
+               dran: lernDran },                      //    Rechnen oder Englisch?
+      vok: { stufe: vokStufe, gesamt: vokGesamt, inStufe: vokInStufe,   // 🇬🇧 der Wort-Stand
+             letzte: vokLetzte.slice(-10), fehler: vokFehler },
 
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -4829,6 +4866,14 @@ function loadGame() {
       else matheGespielt = 0;
       matheTaktNr = matheTaktIndex();
       matheZeit = Math.min(matheZeit, matheAbstand());
+      if (typeof s.mathe.dran === 'number') lernDran = s.mathe.dran ? 1 : 0;
+    }
+    if (s.vok) {                         // 🇬🇧 so viel Englisch kann Jonah schon
+      vokStufe = Math.max(0, Math.min(VOKABEL_STUFEN.length-1, s.vok.stufe|0));
+      vokGesamt = s.vok.gesamt|0;
+      vokInStufe = s.vok.inStufe|0;
+      if (Array.isArray(s.vok.letzte)) vokLetzte = s.vok.letzte.slice(-10);
+      if (s.vok.fehler && typeof s.vok.fehler === 'object') vokFehler = s.vok.fehler;
     }
     if (s.krone) hatKrone = true;
     if (s.zepter) hatZepter = true;
@@ -8982,6 +9027,9 @@ function closePainter(save) {
   paintKey = null;
   paintBox.style.display = 'none';
 }
+document.getElementById('vokHoeren').addEventListener('click', () => {
+  if (vokJetzt) { msgrSprich(vokJetzt.en); blip(900,0.05); }
+});
 document.getElementById('paintDone').addEventListener('click', ()=>closePainter(true));
 document.getElementById('paintClear').addEventListener('click', ()=>{ paintData.fill('0'); renderPaint(); });
 
@@ -17911,7 +17959,7 @@ function matheTastenBauen() {
   }
 }
 function matheTaste(t) {
-  if (!mathePause) return;
+  if (!mathePause || !matheJetzt) return;   // während einer Vokabel-Pause: nichts
   if (t === '⌫') { matheEingabe = matheEingabe.slice(0, -1); blip(300,0.04); matheZeichnen(document.getElementById('matheHinweis').textContent); return; }
   if (t === '✓') { mathePruefen(); return; }
   if (matheEingabe.length < 3) { matheEingabe += t; blip(700+Number(t)*30, 0.03); }
@@ -17993,6 +18041,202 @@ function matheStufeCheck() {
   return false;
 }
 let matheSpeicherT = 0;                 // damit die Spielzeit auch gespeichert wird
+// ============== 🇬🇧 DER VOKABEL-TEST ========================================
+// Genau wie die Rechen-Pause, nur mit englischen Wörtern. Jonah kann noch kein
+// Englisch schreiben - deshalb wird NICHTS getippt: das englische Wort steht
+// groß da, wird vorgelesen, und darunter stehen drei Bilder zum Antippen.
+//
+// Die ersten Stufen sind die einfachen Wörter, die auch in der Englisch-App
+// vorkommen (app:1) - was Jonah hier lernt, zählt drüben mit. Danach kommen
+// neue Bild-Wörter aus seiner eigenen Welt dazu.
+const VOKABEL_STUFEN = [
+  { name:'Tiere', words:[
+    { en:'dog',   de:'Hund',    pic:'🐕', app:1 },
+    { en:'cat',   de:'Katze',   pic:'🐈', app:1 },
+    { en:'horse', de:'Pferd',   pic:'🐴', app:1 },
+    { en:'wolf',  de:'Wolf',    pic:'🐺', app:1 },
+    { en:'fish',  de:'Fisch',   pic:'🐟' },
+    { en:'bird',  de:'Vogel',   pic:'🐦' } ] },
+  { name:'Essen', words:[
+    { en:'pizza',     de:'Pizza',      pic:'🍕', app:1 },
+    { en:'apple',     de:'Apfel',      pic:'🍎', app:1 },
+    { en:'chocolate', de:'Schokolade', pic:'🍫', app:1 },
+    { en:'cake',      de:'Kuchen',     pic:'🍰' },
+    { en:'bread',     de:'Brot',       pic:'🍞' },
+    { en:'milk',      de:'Milch',      pic:'🥛' } ] },
+  { name:'Farben', words:[
+    { en:'red',    de:'rot',     pic:'🔴', app:1 },
+    { en:'blue',   de:'blau',    pic:'🔵', app:1 },
+    { en:'green',  de:'grün',    pic:'🟢', app:1 },
+    { en:'yellow', de:'gelb',    pic:'🟡', app:1 },
+    { en:'black',  de:'schwarz', pic:'⬛' },
+    { en:'white',  de:'weiß',    pic:'⬜' } ] },
+  { name:'Werkstatt', words:[
+    { en:'hammer', de:'Hammer',   pic:'🔨', app:1 },
+    { en:'saw',    de:'Säge',     pic:'🪚', app:1 },
+    { en:'wood',   de:'Holz',     pic:'🪵', app:1 },
+    { en:'screw',  de:'Schraube', pic:'🔩', app:1 },
+    { en:'nail',   de:'Nagel',    pic:'📌' },
+    { en:'key',    de:'Schlüssel',pic:'🔑' } ] },
+  { name:'JonahCraft', words:[
+    { en:'sword',   de:'Schwert',  pic:'⚔️' },
+    { en:'diamond', de:'Diamant',  pic:'💎' },
+    { en:'house',   de:'Haus',     pic:'🏠' },
+    { en:'tree',    de:'Baum',     pic:'🌳' },
+    { en:'stone',   de:'Stein',    pic:'🪨' },
+    { en:'boat',    de:'Boot',     pic:'⛵' } ] },
+  { name:'Draußen', words:[
+    { en:'sun',   de:'Sonne',  pic:'☀️' },
+    { en:'moon',  de:'Mond',   pic:'🌙' },
+    { en:'star',  de:'Stern',  pic:'⭐' },
+    { en:'water', de:'Wasser', pic:'💧' },
+    { en:'snow',  de:'Schnee', pic:'❄️' },
+    { en:'fire',  de:'Feuer',  pic:'🔥' } ] },
+  { name:'Fahrzeuge', words:[
+    { en:'car',    de:'Auto',      pic:'🚗' },
+    { en:'bus',    de:'Bus',       pic:'🚌' },
+    { en:'rocket', de:'Rakete',    pic:'🚀' },
+    { en:'train',  de:'Zug',       pic:'🚂' },
+    { en:'plane',  de:'Flugzeug',  pic:'✈️' },
+    { en:'bike',   de:'Fahrrad',   pic:'🚲' } ] },
+  { name:'Noch mehr Tiere', words:[
+    { en:'pig',     de:'Schwein', pic:'🐷' },
+    { en:'cow',     de:'Kuh',     pic:'🐄' },
+    { en:'sheep',   de:'Schaf',   pic:'🐑' },
+    { en:'chicken', de:'Huhn',    pic:'🐔' },
+    { en:'frog',    de:'Frosch',  pic:'🐸' },
+    { en:'bear',    de:'Bär',     pic:'🐻' } ] },
+  { name:'Zu Hause', words:[
+    { en:'door',  de:'Tür',   pic:'🚪' },
+    { en:'bed',   de:'Bett',  pic:'🛏️' },
+    { en:'book',  de:'Buch',  pic:'📖' },
+    { en:'ball',  de:'Ball',  pic:'⚽' },
+    { en:'clock', de:'Uhr',   pic:'⏰' },
+    { en:'chair', de:'Stuhl', pic:'🪑' } ] },
+];
+let vokStufe = 0;                       // welche Wort-Gruppe ist dran?
+let vokGesamt = 0;                      // wie viele Wörter insgesamt gewusst?
+let vokInStufe = 0;                     // wie viele auf DIESER Stufe?
+let vokLetzte = [];                     // die letzten Ergebnisse (1 = auf Anhieb)
+let vokFehler = {};                     // "dog" -> wie oft daneben
+let vokJetzt = null;                    // das Wort, das gerade dransteht
+let vokKarten = [];                     // die drei Bilder zur Auswahl
+let vokVersuch = 0;
+// Alle Wörter bis zur aktuellen Stufe - daraus wird gefragt.
+function vokVorrat() {
+  const alle = [];
+  for (let i = 0; i <= Math.min(vokStufe, VOKABEL_STUFEN.length-1); i++)
+    for (const w of VOKABEL_STUFEN[i].words) alle.push(w);
+  return alle;
+}
+// Ein Wort aussuchen: die neueste Gruppe oft, alte Fehler oft, sonst gemischt.
+function vokWaehlen() {
+  const neu = VOKABEL_STUFEN[Math.min(vokStufe, VOKABEL_STUFEN.length-1)].words;
+  const alle = vokVorrat();
+  const wackelig = alle.filter(w => (vokFehler[w.en] || 0) > 0);
+  const r = Math.random();
+  const topf = (r < 0.45 || alle.length === neu.length) ? neu
+             : (r < 0.7 && wackelig.length) ? wackelig : alle;
+  return topf[Math.floor(Math.random() * topf.length)];
+}
+function vokabelStellen() {
+  if (mathePause || !started) return;
+  vokJetzt = vokWaehlen();
+  vokVersuch = 0;
+  mathePause = true;                    // die Welt hält an - wie beim Rechnen
+  // zwei falsche Bilder dazu, die ganz anders aussehen
+  const andere = vokVorrat().filter(w => w.en !== vokJetzt.en && w.pic !== vokJetzt.pic);
+  for (let i = andere.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1)); [andere[i],andere[j]] = [andere[j],andere[i]];
+  }
+  vokKarten = [vokJetzt, andere[0], andere[1]].filter(Boolean);
+  for (let i = vokKarten.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1)); [vokKarten[i],vokKarten[j]] = [vokKarten[j],vokKarten[i]];
+  }
+  document.getElementById('vokBox').style.display = 'flex';
+  vokZeichnen('Was heißt das? Tipp das richtige Bild an!');
+  msgrSprich(vokJetzt.en);
+  blip(880,0.07); blip(1180,0.1);
+}
+function vokZeichnen(hinweis) {
+  const st = VOKABEL_STUFEN[Math.min(vokStufe, VOKABEL_STUFEN.length-1)];
+  document.getElementById('vokKopf').textContent =
+    '🇬🇧 Englisch-Pause · Stufe ' + (vokStufe+1) + ': ' + st.name;
+  document.getElementById('vokWort').textContent = vokJetzt ? vokJetzt.en : '';
+  document.getElementById('vokHinweis').textContent = hinweis || '';
+  document.getElementById('vokStern').textContent =
+    '⭐ Schon ' + vokGesamt + ' Wörter gewusst!';
+  const feld = document.getElementById('vokKarten');
+  feld.innerHTML = '';
+  vokKarten.forEach(w => {
+    const d = document.createElement('div');
+    d.innerHTML = '<div class="bild">' + w.pic + '</div><div class="wort">' + w.de + '</div>';
+    d.onclick = () => vokTippen(w, d);
+    feld.appendChild(d);
+  });
+}
+function vokTippen(w, knopf) {
+  if (!mathePause || !vokJetzt) return;
+  if (w.en === vokJetzt.en) {
+    knopf.classList.add('gut');
+    if (vokVersuch === 0) {             // auf Anhieb richtig
+      vokLetzte.push(1); vokInStufe++;
+      const eng = engLaden();           // 📚 zählt auch in der Englisch-App
+      if (vokJetzt.app) {
+        if (!eng.learned) eng.learned = [];
+        if (eng.learned.indexOf(vokJetzt.en) < 0) eng.learned.push(vokJetzt.en);
+        engSpeichern(eng);
+      }
+      delete vokFehler[vokJetzt.en];
+    } else vokLetzte.push(0);
+    if (vokLetzte.length > 10) vokLetzte = vokLetzte.slice(-10);
+    vokGesamt++;
+    setTimeout(vokFertig, 550);
+    return;
+  }
+  // daneben: das falsche Bild wird blass, das richtige leuchtet auf
+  vokVersuch++;
+  vokFehler[vokJetzt.en] = (vokFehler[vokJetzt.en] || 0) + 1;
+  knopf.classList.add('weg');
+  blip(200,0.14);
+  for (const d of document.getElementById('vokKarten').children)
+    if (d.querySelector('.wort').textContent === vokJetzt.de) d.classList.add('gut');
+  vokZeichnenHinweis('Fast! „' + vokJetzt.en + '" heißt „' + vokJetzt.de +
+                     '". Tipp das grüne Bild an, dann geht es weiter. 💪');
+}
+function vokZeichnenHinweis(text) {      // nur den Hinweis ändern, Karten stehen lassen
+  document.getElementById('vokHinweis').textContent = text;
+}
+function vokFertig() {
+  document.getElementById('vokBox').style.display = 'none';
+  mathePause = false;
+  vokJetzt = null;
+  matheZeit = matheAbstand();
+  money += 2; updateFoodHUD();
+  blip(660,0.07); blip(880,0.07); blip(1180,0.16);
+  for (let n=0; n<20; n++)
+    fireworks.push({x:player.x+(Math.random()-0.5)*4, y:player.y+1+Math.random()*3,
+      z:player.z+(Math.random()-0.5)*4, vx:(Math.random()-0.5)*4, vy:1+Math.random()*3,
+      vz:(Math.random()-0.5)*4, tile:[27,30,94][n%3], t:1});
+  if (!vokStufeCheck())
+    toast('🇬🇧✅ Richtig! Super - und 2 € dazu. Spiel weiter! 🎉', 3500);
+  scheduleSave();
+}
+// Eine neue Wort-Gruppe gibt es erst, wenn die alte wirklich sitzt.
+function vokStufeCheck() {
+  const letzte = vokLetzte.slice(-10);
+  const richtig = letzte.reduce((s2,v)=>s2+v, 0);
+  if (vokStufe < VOKABEL_STUFEN.length-1 && vokInStufe >= 12 &&
+      letzte.length >= 10 && richtig >= 9) {
+    vokStufe++; vokInStufe = 0; vokLetzte = [];
+    money += 20; updateFoodHUD();
+    blip(523,0.1); blip(659,0.1); blip(784,0.1); blip(1047,0.25);
+    toast('🇬🇧🏆 WORT-STUFE GESCHAFFT! Jetzt kommen neue Wörter dazu: ' +
+          VOKABEL_STUFEN[vokStufe].name + ' - und 20 € Belohnung!', 7000);
+    return true;
+  }
+  return false;
+}
 function matheTick(dt) {
   if (mathePause || !started || flugT > 0) return;   // nicht mitten im Raketenflug
   matheGespielt += dt;
@@ -18011,8 +18255,15 @@ function matheTick(dt) {
   matheSpeicherT += dt;
   if (matheSpeicherT > 60) { matheSpeicherT = 0; scheduleSave(); }
   matheZeit -= dt;
-  if (matheZeit <= 0) matheStellen();
+  // 🧮🇬🇧 Abwechselnd: einmal Rechnen, einmal Englisch. Die Häufigkeit bleibt
+  // dabei genau dieselbe - es ist nur jede zweite Pause eine andere Sorte.
+  if (matheZeit <= 0) {
+    lernDran = 1 - lernDran;
+    if (lernDran === 1) vokabelStellen(); else matheStellen();
+    if (!mathePause) matheZeit = matheAbstand();   // konnte nicht gestellt werden
+  }
 }
+let lernDran = 0;                       // 0 = als Nächstes Rechnen, 1 = Englisch
 
 // ------------------------ 🏄 DAS SURFBRETT ------------------------------------
 // Aufs Wasser ODER auf die Lava legen, antippen - und los! Das Brett gleitet

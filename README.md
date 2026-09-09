@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JETZT AUCH ENGLISCHE VOKABELN – ZUM ANTIPPEN (v226)! 🇬🇧🧮 Zwischendurch gibt
+  es nicht mehr nur Rechenaufgaben: Jede ZWEITE Lern-Pause ist jetzt Englisch.
+  Die Häufigkeit bleibt dabei genau gleich – es ist nur abwechselnd.
+  SO GEHT ES: Das englische Wort steht groß da und wird vorgelesen 🔊 (mit dem
+  Knopf „Nochmal hören" so oft du willst). Darunter stehen DREI große Bilder –
+  eines antippen, fertig. Kein Tippen, kein Schreiben: Jonah lernt Englisch ja
+  gerade erst.
+  DIE WÖRTER sind alle zum Angucken: 🐕 dog, 🍕 pizza, 🔴 red, 🔨 hammer,
+  ⚔️ sword, ☀️ sun, 🚀 rocket, 🐷 pig, 🚪 door … 54 Stück in 9 Stufen, jedes mit
+  seinem eigenen Bild. Die ersten Stufen sind genau die Wörter, die er aus der
+  Englisch-App schon kennt – was er hier lernt, ZÄHLT DORT MIT.
+  FALSCH IST NIE SCHLIMM: Die falsche Karte wird blass, die richtige leuchtet
+  grün auf, und es steht da, was das Wort heißt. Einmal auf die grüne tippen,
+  weiter geht's.
+  BELOHNUNG wie beim Rechnen: 2 € pro Wort, 20 € für eine geschaffte Stufe.
+  Eine neue Wort-Gruppe gibt es erst, wenn 12 Wörter sitzen und 9 von 10 auf
+  Anhieb richtig waren.
 - JE LÄNGER DU SPIELST, DESTO ÖFTER KOMMT DAS RECHNEN (v225)! 🧮⏱️ Vorher kam
   alle 4 Minuten eine Aufgabe – egal, ob Jonah fünf Minuten oder zwei Stunden
   spielt. Jetzt schaut das Spiel, wie lange er AM STÜCK spielt:
