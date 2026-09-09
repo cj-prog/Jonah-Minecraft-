@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JETZT IST DIE LEINWAND WIRKLICH SCHARF (v222)! 🎬🔍 Jonah hat gemeldet: das
+  Bild ist immer noch verpixelt. Und er hatte recht – die Ursache lag ganz
+  woanders, als wir dachten.
+  Das Filmbild selbst war völlig glatt. Aber JonahCraft rechnet, damit alles
+  flüssig bleibt, höchstens mit 1,75 Bildpunkten pro Zeichen-Punkt – ein Handy
+  hat aber oft 3. Die Leinwand ist auf dem Handy rund 1600 Bildpunkte breit,
+  gerechnet wurde sie aber nur mit gut 900. Der Rest wurde aufgeblasen – daher
+  die Treppchen.
+  IM KINO WIRD JETZT VOLL AUFGEDREHT: Drinnen sieht man ohnehin nur den Saal,
+  das kostet fast nichts – also wird dort mit ALLEN Bildpunkten des Handys
+  gerechnet (das sind 1,7-mal so viele). Beim Rausgehen schaltet das Spiel von
+  selbst wieder zurück, damit die große Welt flüssig bleibt. Und falls es doch
+  einmal ruckelt, geht es automatisch eine Stufe herunter – lieber flüssig als
+  scharf.
+  Dazu hat das Filmbild jetzt 2048×1152 Punkte statt 1280×720, damit es auch
+  aus der mittleren Reihe nicht aufgeblasen werden muss. Damit das nicht am
+  Akku zieht, wird es nur noch 30-mal pro Sekunde zur Grafikkarte geschickt
+  statt 60-mal – Kinotempo, und man sieht keinen Unterschied.
 - DAS KINO STEHT JETZT FEST AUF DEM BODEN – UND DAS BILD IST SCHARF (v221)! 🎬🏞️
   Jonah hatte zwei Beschwerden – beide sind weg.
   ERSTENS: Das Kino hing über einem tiefen Abgrund ohne Boden, und die Straße
