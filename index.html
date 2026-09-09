@@ -896,7 +896,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 222 &middot; Die Kino-Leinwand ist jetzt wirklich scharf – kein einziges Treppchen mehr! 🎬🔍</p>
+    Version 223 &middot; Das Filmbild wächst jetzt mit deinem Platz mit – von jedem Sessel gestochen scharf! 🎬🪑</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -942,7 +942,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 222;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 223;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -13094,11 +13094,41 @@ function kinoStempeln(data, cx, cz) {
 // 2048x1152 echte Bildpunkte. So viele braucht es wirklich: aus der mittleren
 // Reihe steht die Leinwand rund 2000 Bildpunkte breit auf dem Handy, und in
 // den vorderen Reihen ist sie sowieso breiter als der ganze Bildschirm.
-const KINO_B = 320, KINO_HOCH = 180, KINO_SCHARF = 6.4;
+// Gemalt wird in einem 320x180-Raster, damit sich die Szenen einfach
+// beschreiben lassen. Wie viele echte Bildpunkte daraus werden, richtet sich
+// danach, wie groß die Leinwand gerade auf dem Bildschirm steht:
+//  - macht man das Bild GRÖSSER als nötig, muss die Grafikkarte es wieder
+//    verkleinern. Das flimmert und sieht verwaschen aus.
+//  - macht man es KLEINER, wird es aufgeblasen und ist unscharf.
+// Also wird es genau passend gewählt. Aus der hinteren Reihe steht die
+// Leinwand rund 950 Bildpunkte breit, ganz vorne rund 2500.
+const KINO_B = 320, KINO_HOCH = 180;
+const KINO_GROESSEN = [768, 1024, 1280, 1536, 1792, 2048];
+let KINO_TEX_B = 1024, KINO_TEX_H = 512;
+let KINO_SCHARF_X = KINO_TEX_B / KINO_B, KINO_SCHARF_Y = KINO_TEX_H / KINO_HOCH;
 const kinoCanvas = document.createElement("canvas");
-kinoCanvas.width = KINO_B * KINO_SCHARF; kinoCanvas.height = KINO_HOCH * KINO_SCHARF;
+kinoCanvas.width = KINO_TEX_B; kinoCanvas.height = KINO_TEX_H;
 const kg = kinoCanvas.getContext("2d");
-kg.scale(KINO_SCHARF, KINO_SCHARF);
+kg.scale(KINO_SCHARF_X, KINO_SCHARF_Y);
+// Wie breit steht die Leinwand gerade auf dem Bildschirm?
+function kinoBreiteAmSchirm() {
+  const dz = Math.max(1, Math.abs(player.z - (KINO_Z + LW_Z + 1.12)));
+  const f = (canvas.height / 2) / Math.tan(FOV / 2);
+  return (LW_X1 - LW_X0 + 1) * f / dz;
+}
+// ... und danach die Größe des Filmbildes wählen (nur wenn sie sich ändert -
+// den Malgrund neu anzulegen kostet Zeit).
+function kinoGroessePruefen() {
+  const noetig = kinoBreiteAmSchirm();
+  let b = KINO_GROESSEN[KINO_GROESSEN.length - 1];
+  for (const g of KINO_GROESSEN) if (g >= noetig) { b = g; break; }
+  if (b === KINO_TEX_B) return false;
+  KINO_TEX_B = b; KINO_TEX_H = b >> 1;
+  KINO_SCHARF_X = KINO_TEX_B / KINO_B; KINO_SCHARF_Y = KINO_TEX_H / KINO_HOCH;
+  kinoCanvas.width = KINO_TEX_B; kinoCanvas.height = KINO_TEX_H;
+  kg.setTransform(KINO_SCHARF_X, 0, 0, KINO_SCHARF_Y, 0, 0);
+  return true;                          // das Bild muss neu gemalt werden
+}
 function kHimmel(oben, unten) {
   const gr = kg.createLinearGradient(0, 0, 0, KINO_HOCH);
   gr.addColorStop(0, oben); gr.addColorStop(1, unten);
@@ -13527,7 +13557,7 @@ function kinoBildMalen() {
   kg.save();
   try { sz.mal(Math.min(1, rest / sz.s)); } catch(e) { kinoStandbild(); }
   kg.restore();
-  kg.setTransform(KINO_SCHARF, 0, 0, KINO_SCHARF, 0, 0);   // Maßstab sicher zurück
+  kg.setTransform(KINO_SCHARF_X, 0, 0, KINO_SCHARF_Y, 0, 0);   // Maßstab sicher zurück
   // Am Anfang und am Ende sanft auf- und abblenden - wie im echten Kino
   const blende = Math.min(1, kinoZeit / 0.8, (kinoFilm.dauer - kinoZeit) / 0.8);
   if (blende < 1) {
@@ -13603,13 +13633,16 @@ function kinoTexturSetzen(neu) {
   } else gl.bindTexture(gl.TEXTURE_2D, kinoTex);
   // Das Bild zur Grafikkarte zu schicken kostet 8 MB - das muss nicht 60-mal
   // in der Sekunde sein. 30 Bilder sind Kinotempo und sehen genauso flüssig aus.
-  if (neu) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, kinoCanvas);
+  if (neu) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, kinoCanvas);
+  }
 }
 let kinoBildZeit = -1;                  // wann wurde zuletzt neu gemalt?
 function drawKinoLeinwand() {
   if (!imKino()) return;
   const jetzt = performance.now();
-  const neu = jetzt - kinoBildZeit >= 33;
+  // beim Platzwechsel sofort neu malen, sonst 30-mal in der Sekunde
+  const neu = kinoGroessePruefen() || jetzt - kinoBildZeit >= 33;
   if (neu) { kinoBildMalen(); kinoBildZeit = jetzt; }
   kinoTexturSetzen(neu);
   gl.uniform1f(loc.uAlpha, 1);

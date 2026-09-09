@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS FILMBILD WÄCHST JETZT MIT DEINEM PLATZ MIT (v223)! 🎬🪑 Jonah hat gesagt:
+  immer noch verschwommen – und zwar sowohl beim Vorhang mit dem „KINO"-Schild
+  als auch beim Film. Er hatte wieder recht, und diesmal war MEINE Messung
+  schuld: ich hatte den Blickwinkel des Spiels geschätzt statt nachgeschaut.
+  In Wirklichkeit sind es 70 Grad, nicht 45 – die Leinwand steht also gar nicht
+  2000 Bildpunkte breit auf dem Handy, sondern nur knapp 1000.
+  Damit war das Filmbild aus v222 mit 2048 Punkten VIEL ZU GROSS. Die
+  Grafikkarte musste es wieder herunterrechnen, und genau das flimmert und
+  verwäscht – zu groß ist also genauso schlecht wie zu klein.
+  JETZT WIRD ES PASSEND GEMALT: Das Spiel rechnet aus, wie breit die Leinwand
+  gerade wirklich im Bild steht, und wählt die Größe des Filmbildes danach –
+  768, 1024, 1280, 1536, 1792 oder 2048 Punkte. Ganz hinten im Saal reichen
+  1024, in der ersten Reihe sind es 2048. Wechselt Jonah den Sessel, wird sofort
+  neu gemalt. Nichts wird mehr aufgeblasen und nichts mehr heruntergerechnet.
+  (Mit Mipmaps habe ich es auch versucht – das wurde noch matschiger, deshalb
+  ist es die passende Größe geworden.)
 - JETZT IST DIE LEINWAND WIRKLICH SCHARF (v222)! 🎬🔍 Jonah hat gemeldet: das
   Bild ist immer noch verpixelt. Und er hatte recht – die Ursache lag ganz
   woanders, als wir dachten.
