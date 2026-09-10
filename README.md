@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- LEBEN IN DER ZELLE – UND MANCHMAL ZU ZWEIT (v229)! 😈👊 Zwei Wünsche von dir.
+  SIE LAUFEN HERUM: Ein Räuber steht nicht mehr wie festgeklebt da. Er sucht
+  sich alle paar Sekunden ein neues Eckchen in seiner Zelle und läuft dorthin –
+  die Beine laufen richtig mit, und er dreht sich in seine Laufrichtung. Aus
+  der Zelle kommt er dabei natürlich nicht heraus.
+  SIE KLOPFEN AN DIE WAND: Alle 7 bis 21 Sekunden haut einer gegen die Mauer –
+  „Klopf! Klopf! 👊", „Hallo? Ist da wer? 🚪" oder „Diese Wand muss weg! 😤".
+  Man hört es dumpf bumsen und sieht Staub rieseln. 💨
+  MANCHMAL ZU ZWEIT: Ungefähr jeder dritte Räuber wird zu einem Kumpel in eine
+  Zelle gesteckt statt in eine eigene – bis zu DREI passen hinein. Dann wird es
+  eng und sie maulen sich an: „Hier ist es viel zu eng! 😤", „Rutsch mal
+  rüber!", „Aua, mein Fuß! 😖". Erst wenn wirklich alle Zellen voll sind, baut
+  die Polizei eine neue.
+  Auf dem 🗺️ Burgplan steht jetzt ein kleines ×2 oder ×3 neben der Zelle, wenn
+  mehrere drinstecken. Und wenn du einen Polizisten fragst, sagt er dir genau,
+  wer wo sitzt.
 - DIE RÄUBER VERSUCHEN AUSZUBRECHEN (v228)! 😈🚨 Ein Räuber sitzt jetzt nicht
   mehr brav in seiner Zelle: Etwa alle halbe Minute RÜTTELT ER AN DER GITTERTÜR
   – du hörst es scheppern, siehst den Staub fliegen und er ruft „Grrr! Die Tür
