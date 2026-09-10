@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 228 &middot; Die Räuber rütteln an den Gittern – manchmal brechen sie wirklich aus! 😈🚨</p>
+    Version 229 &middot; Die Räuber laufen in der Zelle herum, klopfen an die Wand – und sitzen manchmal zu zweit! 😈👊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 228;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 229;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7613,7 +7613,7 @@ function updateAnimals(dt) {
         !a.gefangen &&                    // 🚔 und wer im Gefängnis sitzt, bleibt sitzen!
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.gefangen) {                   // 🚔 sitzt im Königs-Gefängnis und bleibt da
-      a.walking = false; a.kx = a.kz = 0; a.jagt = null;
+      a.kx = a.kz = 0; a.jagt = null;
       const chG = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
       if (chG && chG.data) {
         a.vy = Math.max(a.vy-25*dt, -30);
@@ -7637,6 +7637,7 @@ function updateAnimals(dt) {
           toast('😈 Der Räuber ist durch die aufgebrochene Zellentür entwischt!', 4000);
           blip(200,0.1); blip(160,0.14); scheduleSave();
         } else {
+          zellenLeben(a, dt);           // 🚶 in der Zelle herumlaufen und klopfen
           // 😈 UND MANCHMAL VERSUCHT ER AUSZUBRECHEN - auch bei zu(!) Tür.
           ausbruchTick(a, dt);
           if (a.gefangen && Math.hypot(player.x-a.x, player.z-a.z) < 14 &&
@@ -9094,8 +9095,14 @@ function openBurgplan() {
       g.fillText('📦', X(26), Z(-19));
       // 🚔 die drei Zellen einzeln: belegt (😈) oder frei (🔓)?
       ZELL_ALLE.slice(0, zellenAnzahl).forEach((dz, nr) => {
-        const drin = animals.some(a2 => a2.gefangen && a2.zelle === nr);
-        g.fillText(drin ? '😈' : '🔓', X(-27), Z(dz));
+        const n2 = zelleBelegt(nr);
+        g.fillText(n2 ? '😈' : '🔓', X(-27), Z(dz));
+        if (n2 > 1) {                   // stecken mehrere drin: die Zahl dazu
+          const alt = g.font, altF = g.fillStyle;
+          g.font = 'bold 9px sans-serif'; g.fillStyle = '#b03030';
+          g.fillText('×' + n2, X(-27) + 9, Z(dz) + 6);
+          g.font = alt; g.fillStyle = altF;
+        }
       });
       g.font='bold 10px sans-serif'; g.fillStyle='#4a3a22';
       g.fillText('Gefängnis', X(-22), Z(-2));
@@ -11040,8 +11047,80 @@ function zellePos(nr) {                 // wo steht der Gefangene, wo ist seine 
 }
 function zelleFrei() {                  // welche Zelle ist noch leer? (-1 = alle voll)
   for (let i = 0; i < zellenAnzahl; i++)
-    if (!animals.some(a => a.gefangen && a.zelle === i)) return i;
+    if (!zelleBelegt(i)) return i;
   return -1;
+}
+function zelleBelegt(nr) {              // wie viele sitzen in dieser Zelle?
+  let n = 0;
+  for (const a of animals) if (a.gefangen && a.zelle === nr) n++;
+  return n;
+}
+// In eine Zelle passen bis zu drei Räuber. Und manchmal steckt die Polizei
+// einen Neuen absichtlich zu einem Kumpel dazu - dann ist was los da drin!
+const ZELLE_PLATZ = 3;
+let ZUSAMMEN_CHANCE = 0.35;
+// auchVoll = true heißt: notfalls zusammenrücken, weil nichts mehr gebaut
+// werden kann. Sonst hat eine eigene (oder neu gebaute) Zelle Vorrang.
+function zelleWaehlen(auchVoll) {
+  const mitKumpel = [];                 // Zellen, in denen schon wer sitzt und Platz ist
+  let leer = -1;
+  for (let i = 0; i < zellenAnzahl; i++) {
+    const n = zelleBelegt(i);
+    if (n === 0) { if (leer < 0) leer = i; }
+    else if (n < ZELLE_PLATZ) mitKumpel.push(i);
+  }
+  if (mitKumpel.length && Math.random() < ZUSAMMEN_CHANCE)
+    return mitKumpel[Math.floor(Math.random()*mitKumpel.length)];
+  if (leer >= 0) return leer;
+  if (auchVoll && mitKumpel.length) {   // zu dem mit dem meisten Platz
+    mitKumpel.sort((x,y) => zelleBelegt(x) - zelleBelegt(y));
+    return mitKumpel[0];
+  }
+  return -1;                            // erst mal lieber eine neue bauen
+}
+// 🚶 In der Zelle wird nicht nur gestanden: die Räuber laufen herum und klopfen
+// ab und zu gegen die Wände. Sie bleiben dabei immer in ihrer Zelle.
+function zellenLeben(a, dt) {
+  if (a.zelle === undefined || a.zelle === null) return;
+  const B = burgPos(), d = ZELL_ALLE[a.zelle];
+  const x0 = B.bx - 28.6, x1 = B.bx - 25.4;     // die Zelle von innen
+  const z0 = B.bz + d - 1.6, z1 = B.bz + d + 1.6;
+  a.zielT = (a.zielT || 0) - dt;
+  if (a.zielT <= 0) {                   // alle paar Sekunden ein neues Eckchen
+    a.zielT = 1.5 + Math.random()*3;
+    a.zx = x0 + Math.random()*(x1-x0);
+    a.zz = z0 + Math.random()*(z1-z0);
+  }
+  const dx = (a.zx === undefined ? a.x : a.zx) - a.x;
+  const dz = (a.zz === undefined ? a.z : a.zz) - a.z;
+  const dd = Math.hypot(dx, dz);
+  if (dd > 0.12) {
+    a.yaw = Math.atan2(dx, -dz);
+    const weit = Math.min(1.1 * dt, dd);
+    a.x += dx/dd * weit; a.z += dz/dd * weit;
+    a.walking = true; a.ph = (a.ph || 0) + dt*7;
+  } else a.walking = false;
+  // ganz sicher in der Zelle bleiben (auch wenn ihn wer angeschubst hat)
+  a.x = Math.min(x1, Math.max(x0, a.x));
+  a.z = Math.min(z1, Math.max(z0, a.z));
+  // 👊 und ab und zu klopft er gegen die Wand
+  if (a.klopfT === undefined) a.klopfT = 5 + Math.random()*12;
+  a.klopfT -= dt;
+  if (a.klopfT <= 0) { a.klopfT = 7 + Math.random()*14; anDieWandKlopfen(a); }
+}
+function anDieWandKlopfen(a) {
+  if (Math.hypot(player.x - a.x, player.z - a.z) > 26) return;   // hört ja keiner
+  const kumpel = zelleBelegt(a.zelle) > 1;
+  sagen(a, kumpel
+    ? ['Klopf, klopf! 👊','Hier ist es viel zu eng! 😤','Rutsch mal rüber!',
+       'Aua, mein Fuß! 😖'][Math.floor(Math.random()*4)]
+    : ['Klopf! Klopf! 👊','Hallo? Ist da wer? 🚪','Diese Wand muss weg! 😤',
+       'Bum! Bum! Bum!'][Math.floor(Math.random()*4)], 3);
+  blip(95,0.09); blip(80,0.09);
+  for (let n = 0; n < 6; n++)
+    fireworks.push({ x: a.x, y: a.y + 0.6 + Math.random(), z: a.z,
+      vx:(Math.random()-0.5)*1.6, vy:Math.random()*1.2, vz:(Math.random()-0.5)*1.6,
+      tile: 3, t: 0.35 });
 }
 // 🔨 Die Polizei mauert eine neue Zelle: Trennwände, Gitterwand, Gittertür,
 // Fackel - und der Raum dahinter wird leer geräumt.
@@ -11101,8 +11180,9 @@ function verhaften(pol, r) {
   const nah = Math.hypot(player.x - pol.x, player.z - pol.z) < 70;
   const geklaut = r.beute || 0;
   if (geklaut) { money += geklaut; r.beute = 0; updateFoodHUD(); }
-  let nr = zelleFrei();
-  if (nr < 0) nr = zelleAnbauen(pol);   // 🔨 alles voll? Dann wird angebaut!
+  let nr = zelleWaehlen();              // leer oder zu einem Kumpel
+  if (nr < 0) nr = zelleAnbauen(pol);   // 🔨 alles belegt? Dann wird angebaut!
+  if (nr < 0) nr = zelleWaehlen(true);  // kein Platz zum Bauen mehr: zusammenrücken
   if (nr < 0) {                         // der Keller ist wirklich rappelvoll
     const B = burgPos();
     r.x = B.bx + 0.5; r.z = B.bz + 44.5;
@@ -11116,10 +11196,13 @@ function verhaften(pol, r) {
     return;
   }
   const p = zellePos(nr);
+  const schonDa = zelleBelegt(nr);      // sitzt da schon jemand? Dann Platz machen!
   r.gefangen = true; r.zelle = nr; r.zuGemacht = false;
   r.tuerT = performance.now() + 900;    // so lange darf die Tür offen stehen
+  r.zielT = 0; r.klopfT = 2 + Math.random()*8;
   zelleTuer(nr, false);                 // 🚪 die Gittertür geht auf ...
-  r.x = p.x; r.y = p.y; r.z = p.z;      // ... der Räuber geht hinein ...
+  r.x = p.x - schonDa * 0.8;            // ... der Räuber geht hinein ...
+  r.y = p.y; r.z = p.z + (schonDa === 2 ? 0.9 : 0);
   r.vy = 0; r.kx = 0; r.kz = 0; r.walking = false;
   r.yaw = Math.PI / 2;                  // schaut durch die Gitter nach draußen
   r.einbrecher = false; r.klauZiel = null;
@@ -11133,7 +11216,9 @@ function verhaften(pol, r) {
   }, 900);
   if (nah) {
     toast('🚔🔒 Geschnappt! ' + pol.name + ' hat den Einbrecher in Zelle ' + (nr+1) +
-      ' gesteckt – die Gittertür fällt von selbst ins Schloss.' +
+      (schonDa ? ' zu ' + (schonDa === 1 ? 'seinem Kumpel' : 'den anderen beiden') +
+                 ' gesteckt – jetzt sind sie zu ' + (schonDa+1) + ' da drin!'
+               : ' gesteckt – die Gittertür fällt von selbst ins Schloss.') +
       (geklaut ? ' Deine ' + geklaut + ' € sind wieder da! 💶' : '') +
       ' Schau im Keller nach ihm!', 5200);
     blip(880,0.1); blip(660,0.1); blip(440,0.18);
@@ -11258,16 +11343,23 @@ function polizeiJagd(a, dt) {
 // 🚔 Der Polizist erzählt, wer gerade einsitzt
 function polizeiBericht(pol) {
   const drin = animals.filter(a => a.gefangen && typeof a.zelle === 'number');
-  const frei = zellenAnzahl - drin.length;
+  let leereZellen = 0;                  // wirklich LEERE Zellen zählen
+  for (let i = 0; i < zellenAnzahl; i++) if (!zelleBelegt(i)) leereZellen++;
+  const frei = leereZellen;
   if (!drin.length) {
     sagen(pol, 'Alle Zellen sind leer! 🔓', 4);
     toast('🚔 ' + pol.name + ': „Alle ' + zellenAnzahl +
       ' Zellen sind leer – deine Festung ist sicher, König Jonah!"', 4500);
   } else {
-    const nrn = drin.map(a => a.zelle + 1).sort().join(' und ');
+    const teile = [];
+    for (let i = 0; i < zellenAnzahl; i++) {
+      const n2 = zelleBelegt(i);
+      if (n2) teile.push('Zelle ' + (i+1) + ': ' + (n2 === 1 ? 'einer' : n2 + ' Stück'));
+    }
+    const nrn = teile.join(', ');
     sagen(pol, drin.length + ' Räuber sitzen ein! 🔒', 4);
-    toast('🚔 ' + pol.name + ': „In Zelle ' + nrn + ' sitzt je ein Räuber – ' +
-      drin.length + ' von ' + zellenAnzahl + ' Zellen belegt' +
+    toast('🚔 ' + pol.name + ': „' + nrn + ' – ' +
+      drin.length + ' Räuber in ' + teile.length + ' von ' + zellenAnzahl + ' Zellen' +
       (frei ? ', ' + frei + ' noch frei' : ' – aber wir bauen einfach eine dazu') +
       '. Sie sind unten im Keller, im Westen."', 5500);
   }
@@ -12765,6 +12857,7 @@ function abstandHalten(dt) {
   const nah = [];
   for (const a of animals) {
     if (a === riding || a === carRiding) continue;
+    if (a.gefangen) continue;           // 🚔 Gefangene regeln das in ihrer Zelle selbst
     if (OHNE_ABSTAND.has(a.type)) continue;
     if (Math.hypot(a.x - player.x, a.z - player.z) > 48) continue;
     const k = ANIMAL_KIND[a.type];
@@ -20824,14 +20917,21 @@ document.getElementById('playBtn').addEventListener('click',()=>{
       hx:d[0], hz:d[2], yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false});
   }
   // 🚔 Die Räuber, die die Polizei eingesperrt hat, sitzen weiter in ihrer Zelle
+  // In einer Zelle können mehrere sitzen - die Liste darf dieselbe Zellennummer
+  // also mehrfach enthalten. Jeder bekommt seinen eigenen Platz darin.
+  const proZelle = {};
   for (const nr of savedKnast) {
     if (!(nr >= 0 && nr < ZELL_ALLE.length)) continue;
-    if (animals.some(a => a.gefangen && a.zelle === nr)) continue;
+    const k = proZelle[nr] || 0;
+    if (k >= ZELLE_PLATZ) continue;     // mehr als drei passen nicht hinein
+    proZelle[nr] = k + 1;
     const zp = zellePos(nr);
     animals.push({ type:'raeuber', gefangen:true, zelle:nr, zuGemacht:false, beute:0,
-      x:zp.x, y:zp.y, z:zp.z, yaw:Math.PI/2, vy:0, kx:0, kz:0, hp:3,
+      x:zp.x - k*0.8, y:zp.y, z:zp.z + (k === 2 ? 0.9 : 0),
+      yaw:Math.PI/2, vy:0, kx:0, kz:0, hp:3,
       walking:false, t:9, ph:0, onGround:false });
   }
+  savedKnast = [];                      // nur einmal einsetzen
   // Versteinerte Monster stehen noch als Statuen herum
   for (const p of savedStatuen) {
     const sty = p[1] <= CH_MIN+3 ? terrainHeight(Math.floor(p[0]), Math.floor(p[2]))+1 : p[1];
