@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RÄUBER VERSUCHEN AUSZUBRECHEN (v228)! 😈🚨 Ein Räuber sitzt jetzt nicht
+  mehr brav in seiner Zelle: Etwa alle halbe Minute RÜTTELT ER AN DER GITTERTÜR
+  – du hörst es scheppern, siehst den Staub fliegen und er ruft „Grrr! Die Tür
+  hält! 😠" oder „Ich komm hier raus, wartet nur!".
+  MEISTENS HÄLT DIE TÜR. Aber ungefähr bei jedem vierten Versuch springt sie
+  auf – dann steht er schon im Gang und rennt los! 💥 Sofort geht der Alarm los:
+  „ALARM! Ausbruch! 🚨" – und deine Polizisten sind hinter ihm her und stecken
+  ihn wieder rein.
+  DEIN WACHMANN HILFT WIRKLICH: Steht ein Polizist höchstens 9 Blöcke vor der
+  Zelle, traut sich der Räuber gar nicht erst („Mist, der Wachtmeister! 😒") –
+  dann klappt KEIN einziger Versuch. Deshalb lohnt es sich, dass Polizist Tom
+  unten im Keller Wache steht.
+  Ausgebrochen wird nur, wenn du in der Nähe bist – du sollst es ja sehen und
+  nicht irgendwann vor einem heimlich leeren Gefängnis stehen.
 - ECHTE GITTERTÜREN – UND DIE POLIZEI BAUT NEUE ZELLEN (v227)! 🚔🔨 Zwei
   Wünsche von Jonah auf einmal.
   DIE GITTERTÜR: In der Gitterwand steckt jetzt eine richtige Tür – zwei Blöcke

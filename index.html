@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 227 &middot; Echte Gittertüren am Gefängnis – und die Polizei baut neue Zellen dazu! 🚔🔨</p>
+    Version 228 &middot; Die Räuber rütteln an den Gittern – manchmal brechen sie wirklich aus! 😈🚨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 227;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 228;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7636,10 +7636,15 @@ function updateAnimals(dt) {
           sagen(a, 'Frei! Hihi, danke! 😈', 3);
           toast('😈 Der Räuber ist durch die aufgebrochene Zellentür entwischt!', 4000);
           blip(200,0.1); blip(160,0.14); scheduleSave();
-        } else if (Math.hypot(player.x-a.x, player.z-a.z) < 14 && Math.random() < dt*0.3) {
-          sagen(a, ['Lasst mich raus! 😭','Ich war es doch gar nicht!',
-                    'Ich mach das nie wieder, ehrlich!','Buhuuu... 😢',
-                    'Hier ist es so langweilig!'][Math.floor(Math.random()*5)], 3);
+        } else {
+          // 😈 UND MANCHMAL VERSUCHT ER AUSZUBRECHEN - auch bei zu(!) Tür.
+          ausbruchTick(a, dt);
+          if (a.gefangen && Math.hypot(player.x-a.x, player.z-a.z) < 14 &&
+              Math.random() < dt*0.3) {
+            sagen(a, ['Lasst mich raus! 😭','Ich war es doch gar nicht!',
+                      'Ich mach das nie wieder, ehrlich!','Buhuuu... 😢',
+                      'Hier ist es so langweilig!'][Math.floor(Math.random()*5)], 3);
+          }
         }
       } else a.vy = 0;
       continue;
@@ -11134,6 +11139,67 @@ function verhaften(pol, r) {
     blip(880,0.1); blip(660,0.1); blip(440,0.18);
   }
   scheduleSave();
+}
+// ============== 😈 AUSBRUCH-VERSUCHE =======================================
+// Ein Räuber sitzt nicht einfach brav da: alle halbe Minute rüttelt er an der
+// Gittertür. Meistens hält sie - aber manchmal springt sie auf und er ist weg!
+// Steht ein Polizist in der Nähe, traut er sich gar nicht erst.
+const AUSBRUCH_PAUSE = 25;              // frühestens so viele Sekunden bis zum nächsten Versuch
+let AUSBRUCH_CHANCE = 0.25;             // so oft klappt ein Versuch wirklich
+const AUSBRUCH_WACHE = 9;               // so nah muss ein Polizist sein, damit er kneift
+function ausbruchTick(a, dt) {
+  if (!a.gefangen || !a.zuGemacht || weltDim !== 0) return;
+  // Nur wenn Jonah in der Nähe ist - sonst würde das Gefängnis leer sein,
+  // ohne dass er je etwas davon mitbekommt.
+  if (Math.hypot(player.x - a.x, player.z - a.z) > 60) return;
+  if (a.ausbruchT === undefined) a.ausbruchT = AUSBRUCH_PAUSE + Math.random()*25;
+  a.ausbruchT -= dt;
+  if (a.ausbruchT > 0) return;
+  a.ausbruchT = AUSBRUCH_PAUSE + Math.random()*25;
+  ausbruchVersuch(a);
+}
+function ausbruchVersuch(a) {
+  const nah = Math.hypot(player.x - a.x, player.z - a.z) < 30;
+  // 👮 Steht ein Polizist davor? Dann lässt er es lieber.
+  const wache = animals.find(p => p.type === 'polizist' &&
+                  Math.hypot(p.x - a.x, p.z - a.z) < AUSBRUCH_WACHE);
+  if (wache) {
+    sagen(a, ['Mist, der Wachtmeister! 😒','Später... 😤'][Math.floor(Math.random()*2)], 3);
+    sagen(wache, ['Schön sitzen bleiben! 👮','Ich seh dich!'][Math.floor(Math.random()*2)], 3);
+    if (nah) blip(500,0.07);
+    return false;
+  }
+  // 🔊 Er rüttelt an den Gittern - man hört und sieht es.
+  const p = zellePos(a.zelle);
+  if (nah) {
+    blip(140,0.09); blip(110,0.09); blip(150,0.08);
+    for (let n2 = 0; n2 < 8; n2++)
+      fireworks.push({ x: p.tx+0.5, y: p.ty+0.5+Math.random(), z: p.tz+0.5,
+        vx:(Math.random()-0.5)*2, vy:Math.random()*1.5, vz:(Math.random()-0.5)*2,
+        tile: 3, t: 0.4 });
+  }
+  if (Math.random() >= AUSBRUCH_CHANCE) {          // die Tür hält
+    sagen(a, ['Grrr! Die Tür hält! 😠','Aufmachen! 😤','Ich komm hier raus, wartet nur!',
+              'Rüttel... rüttel... 😾'][Math.floor(Math.random()*4)], 3);
+    if (nah) toast('😈🔒 Der Räuber in Zelle ' + (a.zelle+1) +
+      ' rüttelt an der Gittertür – aber sie hält!', 3500);
+    return false;
+  }
+  // 💥 Geschafft: die Tür springt auf - und er steht schon im Gang!
+  zelleTuer(a.zelle, false);
+  a.x = p.tx + 1.5; a.z = p.tz + 0.5; a.y = p.ty; a.vy = 0;
+  a.gefangen = false; a.zelle = undefined; a.zuGemacht = false; a.ausbruchT = undefined;
+  sagen(a, 'HA! Die Tür ist auf! Ich bin frei! 😈', 4);
+  toast('🚨😈 AUSBRUCH! Ein Räuber hat die Gittertür aufgedrückt und rennt davon! ' +
+    'Die Polizei ist schon hinter ihm her!', 5000);
+  blip(300,0.1); blip(220,0.1); blip(160,0.2);
+  // 🚨 Die Polizei bekommt sofort Alarm
+  for (const pol of animals) if (pol.type === 'polizist') {
+    pol.suchT = 0;                      // sofort nachschauen statt erst in einer halben Sekunde
+    if (Math.hypot(pol.x - a.x, pol.z - a.z) < 40) sagen(pol, 'ALARM! Ausbruch! 🚨', 4);
+  }
+  scheduleSave();
+  return true;
 }
 // 👮 Was macht ein Polizist gerade? Gibt true, solange er hinter jemandem her ist.
 function polizeiJagd(a, dt) {
