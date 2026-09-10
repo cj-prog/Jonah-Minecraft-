@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 226 &middot; Neu: englische Vokabeln zum Antippen – abwechselnd mit dem Rechnen! 🇬🇧🧮</p>
+    Version 227 &middot; Echte Gittertüren am Gefängnis – und die Polizei baut neue Zellen dazu! 🚔🔨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 226;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 227;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1016,7 +1016,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SURFBRETT=97,                     // 🏄 das Surfbrett für Wasser UND Lava!
       FAHNE=98, ZIEL=99,                // 🚩 die Fahne und 🟨 das Ziel-Feld in der Halle
       HOLOKNOPF=100,                    // 🔴 der große rote Startknopf an der Hallenwand
-      SEIL=101;                         // 🪢 ein Seil von der Decke: antippen = schwingen!
+      SEIL=101,                         // 🪢 ein Seil von der Decke: antippen = schwingen!
+      GTUER=102, GTUER_AUF=103;         // 🚔 die Gittertür am Gefängnis: zu und offen
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1159,6 +1160,26 @@ const BLOCKS = {
     [0.06,0,0.42, 0.18,1,0.58, 85], [0.32,0,0.42, 0.44,1,0.58, 85],
     [0.56,0,0.42, 0.68,1,0.58, 85], [0.82,0,0.42, 0.94,1,0.58, 85],
     [0,0.88,0.44, 1,0.98,0.56, 85], [0,0.02,0.44, 1,0.12,0.56, 85]] },
+  // 🚔 DIE GITTERTÜR: sieht aus wie die Gitterstäbe, hat aber einen Rahmen und
+  // ein dickes Schloss. Antippen macht sie auf und zu - und wenn ein Räuber in
+  // der Zelle steht, fällt sie von allein ins Schloss.
+  [GTUER]: { name:'Gittertür 🚔 (antippen = auf/zu!)', tiles:[85,85,85], solid:true, model:[
+    [0.02,0.00,0.42, 0.14,1.00,0.58, 85],           // Rahmen links
+    [0.86,0.00,0.42, 0.98,1.00,0.58, 85],           // Rahmen rechts
+    [0.02,0.92,0.42, 0.98,1.00,0.58, 85],           // Rahmen oben
+    [0.02,0.00,0.42, 0.98,0.08,0.58, 85],           // Rahmen unten
+    [0.30,0.08,0.44, 0.40,0.92,0.56, 85],           // die Gitterstäbe
+    [0.56,0.08,0.44, 0.66,0.92,0.56, 85],
+    [0.02,0.46,0.44, 0.98,0.54,0.56, 85],           // Querstrebe
+    [0.70,0.40,0.36, 0.86,0.60,0.64, 30]] },        // das goldene Schloss
+  [GTUER_AUF]: { name:'Gittertür (offen)', tiles:[85,85,85], solid:false, model:[
+    [0.00,0.00,0.02, 0.16,1.00,0.14, 85],           // zur Seite geschwungen
+    [0.00,0.00,0.86, 0.16,1.00,0.98, 85],
+    [0.00,0.92,0.02, 0.16,1.00,0.98, 85],
+    [0.00,0.00,0.02, 0.16,0.08,0.98, 85],
+    [0.00,0.08,0.30, 0.16,0.92,0.40, 85],
+    [0.00,0.08,0.56, 0.16,0.92,0.66, 85],
+    [0.00,0.40,0.70, 0.16,0.60,0.86, 30]] },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
@@ -4239,7 +4260,7 @@ function genChunkData(cx, cz, ohneEdits) {
       if (!signTexts.has(kks)) signTexts.set(kks,'⬇️ Hier geht es in den RIESEN-KELLER!');
       // das Gefängnis (Keller-Westen): 3 Zellen hinter Gitterstäben
       for (let dz=-20; dz<=-6; dz++) for (let y=by-4; y<=by-1; y++) P(-24,y,dz,GITTER);
-      for (const dz of [-18,-13,-8]) for (let y=by-4; y<=by-3; y++) P(-24,y,dz,AIR);   // Zellen-Türen
+      for (const dz of [-18,-13,-8]) for (let y=by-4; y<=by-3; y++) P(-24,y,dz,GTUER_AUF);   // Zellen-Türen (offen)
       for (const dz of [-16,-11]) for (let dx=-29; dx<=-25; dx++)
         for (let y=by-4; y<=by-1; y++) P(dx,y,dz,S_);  // Trennwände
       P(-23,by-4,-12,SIGN);
@@ -4714,6 +4735,7 @@ function saveGame() {
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.beute]),
       // 🚔 wer im Königs-Gefängnis sitzt, sitzt auch nach dem Neustart noch drin
       knast: animals.filter(a=>a.gefangen && typeof a.zelle==='number').map(a=>a.zelle),
+      zellen: zellenAnzahl,              // 🔨 so viele Zellen hat die Polizei gebaut
       ziele: customTargets,
       jet: jetSave,
       raum: raumSave,          // 🚀 wo Jonahs eigene Rakete geparkt steht
@@ -4814,6 +4836,8 @@ function loadGame() {
     if (Array.isArray(s.statuen)) savedStatuen = s.statuen;
     if (Array.isArray(s.diebe)) savedDiebe = s.diebe;      // 💰 Räuber mit geklautem Geld
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
+    if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
+      zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
     if (Array.isArray(s.ziele)) customTargets = s.ziele.filter(t=>t && typeof t.x==='number');
     else if (s.ziel && typeof s.ziel.x==='number') customTargets = [s.ziel];   // alte Speicherstände
     if (Array.isArray(s.jet)) savedJet = s.jet;
@@ -7597,7 +7621,11 @@ function updateAnimals(dt) {
         if (!collideBox(a.x,nyg,a.z,0.32,1.8)) a.y = nyg; else a.vy = 0;
         // Erst abschließen (falls das beim Verhaften nicht ging, weil der
         // Keller nicht geladen war) - und ERST DANN aufs Ausbrechen achten.
-        if (!a.zuGemacht) { if (zelleSchliessen(a.zelle)) a.zuGemacht = true; }
+        // Direkt nach dem Verhaften steht die Tür absichtlich noch kurz offen -
+        // erst danach greift die Sicherung, die sie auf jeden Fall zumacht.
+        if (!a.zuGemacht && (!a.tuerT || performance.now() > a.tuerT)) {
+          if (zelleSchliessen(a.zelle)) a.zuGemacht = true;
+        } else if (!a.zuGemacht) { /* die Tür schwingt gerade zu */ }
         // Ausbrechen kann er NUR, wenn Jonah selbst daneben steht und die
         // Gitter aufgebrochen hat. Sonst würde ein Gefangener schon dann
         // freikommen, wenn der Keller gerade nicht geladen ist oder Jonah in
@@ -9060,7 +9088,7 @@ function openBurgplan() {
       g.fillText('🪜', X(25), Z(0));
       g.fillText('📦', X(26), Z(-19));
       // 🚔 die drei Zellen einzeln: belegt (😈) oder frei (🔓)?
-      ZELL_DZ.forEach((dz, nr) => {
+      ZELL_ALLE.slice(0, zellenAnzahl).forEach((dz, nr) => {
         const drin = animals.some(a2 => a2.gefangen && a2.zelle === nr);
         g.fillText(drin ? '😈' : '🔓', X(-27), Z(dz));
       });
@@ -10968,7 +10996,10 @@ function imBurghof() {                  // ist Jonah HINTER der großen Mauer?
 // bei dx = -24, die drei Zellen-Türen bei dz = -18/-13/-8, die Zellen selbst
 // liegen dahinter (dx -29 bis -25). Der Kellerboden ist B.base-5, man steht
 // also auf B.base-4.
-const ZELL_DZ = [-18, -13, -8];
+// Drei Zellen sind von Anfang an gebaut. Wird es zu voll, MAUERT DIE POLIZEI
+// EINFACH NEUE dazu - der Keller ist ja riesig. Platz ist für acht.
+const ZELL_ALLE = [-18, -13, -8, -3, 3, 9, 15];
+let zellenAnzahl = 3;                   // so viele Zellen gibt es gerade
 const POLIZEI = [
   { name:'Wachtmeister Ben', dx: -8, dz: 26 },   // vor dem Haupteingang
   { name:'Kommissarin Mia',  dx:  8, dz: 26 },
@@ -10999,28 +11030,65 @@ function inDerBurg(x, z) {              // wirklich INNEN, nicht im Tor oder dav
 }
 function zellePos(nr) {                 // wo steht der Gefangene, wo ist seine Tür?
   const B = burgPos();
-  return { x: B.bx - 27 + 0.5, y: B.base - 4, z: B.bz + ZELL_DZ[nr] + 0.5,
-           tx: B.bx - 24, ty: B.base - 4, tz: B.bz + ZELL_DZ[nr] };
+  return { x: B.bx - 27 + 0.5, y: B.base - 4, z: B.bz + ZELL_ALLE[nr] + 0.5,
+           tx: B.bx - 24, ty: B.base - 4, tz: B.bz + ZELL_ALLE[nr] };
 }
 function zelleFrei() {                  // welche Zelle ist noch leer? (-1 = alle voll)
-  for (let i = 0; i < ZELL_DZ.length; i++)
+  for (let i = 0; i < zellenAnzahl; i++)
     if (!animals.some(a => a.gefangen && a.zelle === i)) return i;
   return -1;
 }
-function zelleSchliessen(nr) {          // die Gitterstäbe in die Tür setzen
+// 🔨 Die Polizei mauert eine neue Zelle: Trennwände, Gitterwand, Gittertür,
+// Fackel - und der Raum dahinter wird leer geräumt.
+function zelleBauen(nr) {
+  if (nr < 0 || nr >= ZELL_ALLE.length) return false;
+  const B = burgPos(), by = B.base, d = ZELL_ALLE[nr];
+  const ch = getChunk((B.bx-24)>>4, (B.bz+d)>>4);
+  if (!ch || !ch.data) return false;    // der Keller ist gerade nicht geladen
+  for (let y = by-4; y <= by-1; y++) {
+    for (let dz = d-2; dz <= d+2; dz++)                    // erst den Raum leeren
+      for (let dx = -29; dx <= -25; dx++) setBlock(B.bx+dx, y, B.bz+dz, AIR);
+    for (let dx = -29; dx <= -25; dx++) {                  // Trennwände links und rechts
+      setBlock(B.bx+dx, y, B.bz+d-3, SCHUTZ);
+      setBlock(B.bx+dx, y, B.bz+d+3, SCHUTZ);
+    }
+    for (let dz = d-2; dz <= d+2; dz++)                    // die Gitterwand nach vorne
+      setBlock(B.bx-24, y, B.bz+dz, GITTER);
+  }
+  setBlock(B.bx-24, by-4, B.bz+d, GTUER_AUF);              // die Tür - erst mal offen
+  setBlock(B.bx-24, by-3, B.bz+d, GTUER_AUF);
+  setBlock(B.bx-29, by-2, B.bz+d, TORCH);                  // Licht in der Zelle
+  return true;
+}
+// Alle Zellen voll? Dann wird eben angebaut.
+function zelleAnbauen(pol) {
+  if (zellenAnzahl >= ZELL_ALLE.length) return -1;
+  if (!zelleBauen(zellenAnzahl)) return -1;
+  const nr = zellenAnzahl++;
+  if (pol) sagen(pol, 'Kein Platz mehr? Dann bauen wir eine neue! 🔨', 4);
+  if (imBurghof())
+    toast('🚔🔨 Alle Zellen waren voll – die Polizei hat schnell Zelle ' + (nr+1) +
+          ' dazugebaut! Jetzt sind es ' + zellenAnzahl + '.', 5000);
+  blip(300,0.08); blip(240,0.08); blip(380,0.14);
+  scheduleSave();
+  return nr;
+}
+function zelleTuer(nr, zu) {            // die Gittertür auf- oder zumachen
   const p = zellePos(nr);
   const ch = getChunk(p.tx>>4, p.tz>>4);
   if (!ch || !ch.data) return false;    // der Keller ist gerade nicht geladen
-  for (let y = p.ty; y <= p.ty+1; y++)
-    if (getBlock(p.tx, y, p.tz) !== GITTER) setBlock(p.tx, y, p.tz, GITTER);
+  for (let y = p.ty; y <= p.ty+1; y++) setBlock(p.tx, y, p.tz, zu ? GTUER : GTUER_AUF);
   return true;
 }
-function zelleOffen(nr) {               // hat jemand die Gitter aufgebrochen?
+function zelleSchliessen(nr) { return zelleTuer(nr, true); }
+function zelleOffen(nr) {               // steht die Tür offen (oder ist sie weg)?
   if (nr === undefined || nr === null) return false;
   const p = zellePos(nr);
   const ch = getChunk(p.tx>>4, p.tz>>4);
   if (!ch || !ch.data) return false;    // nicht geladen? Dann wissen wir es nicht
-  return getBlock(p.tx, p.ty, p.tz) !== GITTER && getBlock(p.tx, p.ty+1, p.tz) !== GITTER;
+  // GITTER zählt als zu - aus Spielständen, die es noch von früher gibt.
+  const zu = b => b === GTUER || b === GITTER;
+  return !zu(getBlock(p.tx, p.ty, p.tz)) && !zu(getBlock(p.tx, p.ty+1, p.tz));
 }
 // 🚔 Geschnappt! Der Räuber gibt die Beute zurück und wandert in die Zelle.
 function verhaften(pol, r) {
@@ -11028,30 +11096,39 @@ function verhaften(pol, r) {
   const nah = Math.hypot(player.x - pol.x, player.z - pol.z) < 70;
   const geklaut = r.beute || 0;
   if (geklaut) { money += geklaut; r.beute = 0; updateFoodHUD(); }
-  const nr = zelleFrei();
-  if (nr < 0) {                         // alle drei Zellen sind belegt
+  let nr = zelleFrei();
+  if (nr < 0) nr = zelleAnbauen(pol);   // 🔨 alles voll? Dann wird angebaut!
+  if (nr < 0) {                         // der Keller ist wirklich rappelvoll
     const B = burgPos();
     r.x = B.bx + 0.5; r.z = B.bz + 44.5;
     r.y = terrainHeight(Math.floor(r.x), Math.floor(r.z)) + 1;
     r.vy = 0; r.kx = 0; r.kz = 0; r.einbrecher = false;
-    sagen(pol, 'Alle Zellen voll - und jetzt VERSCHWINDE!', 3);
-    if (nah) toast('🚔 Alle drei Zellen sind voll! ' + pol.name +
-      ' hat den Räuber vor die Tür gesetzt.' +
+    sagen(pol, 'Kein Platz mehr - und jetzt VERSCHWINDE!', 3);
+    if (nah) toast('🚔 Das ganze Gefängnis ist voll (' + zellenAnzahl + ' Zellen)! ' +
+      pol.name + ' hat den Räuber vor die Tür gesetzt.' +
       (geklaut ? ' Deine ' + geklaut + ' € bekommst du zurück. 💶' : ''), 4500);
     scheduleSave();
     return;
   }
   const p = zellePos(nr);
   r.gefangen = true; r.zelle = nr; r.zuGemacht = false;
-  r.x = p.x; r.y = p.y; r.z = p.z;
+  r.tuerT = performance.now() + 900;    // so lange darf die Tür offen stehen
+  zelleTuer(nr, false);                 // 🚪 die Gittertür geht auf ...
+  r.x = p.x; r.y = p.y; r.z = p.z;      // ... der Räuber geht hinein ...
   r.vy = 0; r.kx = 0; r.kz = 0; r.walking = false;
   r.yaw = Math.PI / 2;                  // schaut durch die Gitter nach draußen
   r.einbrecher = false; r.klauZiel = null;
-  if (zelleSchliessen(nr)) r.zuGemacht = true;
   sagen(pol, 'Ab in die Zelle! 🚔', 3);
+  // ... und nach einem Moment fällt sie von selbst ins Schloss. KLACK.
+  setTimeout(() => {
+    if (!r.gefangen || r.zelle !== nr) return;
+    if (zelleSchliessen(nr)) r.zuGemacht = true;
+    if (Math.hypot(player.x - r.x, player.z - r.z) < 40) { blip(180,0.1); blip(140,0.14); }
+    scheduleSave();
+  }, 900);
   if (nah) {
     toast('🚔🔒 Geschnappt! ' + pol.name + ' hat den Einbrecher in Zelle ' + (nr+1) +
-      ' gesperrt und abgeschlossen.' +
+      ' gesteckt – die Gittertür fällt von selbst ins Schloss.' +
       (geklaut ? ' Deine ' + geklaut + ' € sind wieder da! 💶' : '') +
       ' Schau im Keller nach ihm!', 5200);
     blip(880,0.1); blip(660,0.1); blip(440,0.18);
@@ -11115,15 +11192,17 @@ function polizeiJagd(a, dt) {
 // 🚔 Der Polizist erzählt, wer gerade einsitzt
 function polizeiBericht(pol) {
   const drin = animals.filter(a => a.gefangen && typeof a.zelle === 'number');
-  const frei = ZELL_DZ.length - drin.length;
+  const frei = zellenAnzahl - drin.length;
   if (!drin.length) {
-    sagen(pol, 'Alle drei Zellen sind leer! 🔓', 4);
-    toast('🚔 ' + pol.name + ': „Alle drei Zellen sind leer – deine Festung ist sicher, König Jonah!"', 4500);
+    sagen(pol, 'Alle Zellen sind leer! 🔓', 4);
+    toast('🚔 ' + pol.name + ': „Alle ' + zellenAnzahl +
+      ' Zellen sind leer – deine Festung ist sicher, König Jonah!"', 4500);
   } else {
     const nrn = drin.map(a => a.zelle + 1).sort().join(' und ');
     sagen(pol, drin.length + ' Räuber sitzen ein! 🔒', 4);
     toast('🚔 ' + pol.name + ': „In Zelle ' + nrn + ' sitzt je ein Räuber – ' +
-      drin.length + ' von 3 Zellen belegt' + (frei ? ', ' + frei + ' noch frei' : ', alles voll') +
+      drin.length + ' von ' + zellenAnzahl + ' Zellen belegt' +
+      (frei ? ', ' + frei + ' noch frei' : ' – aber wir bauen einfach eine dazu') +
       '. Sie sind unten im Keller, im Westen."', 5500);
   }
   blip(700,0.08); blip(520,0.1);
@@ -11138,9 +11217,7 @@ function knastLeeren(pol) {
   }
   const B = burgPos();
   for (const a of drin) {
-    const zp = zellePos(a.zelle);
-    const ch = getChunk(zp.tx>>4, zp.tz>>4);
-    if (ch && ch.data) for (let y = zp.ty; y <= zp.ty+1; y++) setBlock(zp.tx, y, zp.tz, AIR);
+    zelleTuer(a.zelle, false);          // die Gittertüren gehen auf
     a.gefangen = false; a.zelle = undefined; a.zuGemacht = false; a.einbrecher = false;
     a.x = B.bx + 0.5; a.z = B.bz + 46.5;         // draußen vor der Mauer
     a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1;
@@ -16273,7 +16350,7 @@ const MAP_BLOCK_COL = {
   [TOILET]:'#e8eef4', [SINK]:'#e8eef4', [LAUFBAND]:'#9aa0a8', [TRAMPOLIN]:'#2850b4',
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
-  [GITTER]:'#5a6070', [FAHRSTUHL]:'#a8b0be',
+  [GITTER]:'#5a6070', [GTUER]:'#6a7080', [GTUER_AUF]:'#6a7080', [FAHRSTUHL]:'#a8b0be',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -19153,6 +19230,25 @@ function doBreak(dir) {
   }
   blip(160,0.09);
 }
+// 🚔 Eine Gittertür auf- oder zumachen. Beide Hälften gehören zusammen.
+function gittertuerSchalten(x, y, z) {
+  const b = getBlock(x, y, z);
+  if (b !== GTUER && b !== GTUER_AUF) return false;
+  const auf = b === GTUER_AUF;
+  const drunter = getBlock(x, y-1, z);
+  const unten = (drunter === GTUER || drunter === GTUER_AUF) ? y-1 : y;
+  if (auf) {                            // beim Zumachen: steht Jonah in der Tür?
+    const drin = Math.abs(x+0.5-player.x) < 0.5+P_HALF &&
+                 Math.abs(z+0.5-player.z) < 0.5+P_HALF &&
+                 player.y < unten+2 && player.y+P_HEIGHT > unten;
+    if (drin) { toast('Du stehst in der Tür! 😄 Geh erst einen Schritt weiter.', 2500); return false; }
+  }
+  setBlock(x, unten,   z, auf ? GTUER : GTUER_AUF);
+  setBlock(x, unten+1, z, auf ? GTUER : GTUER_AUF);
+  toast(auf ? '🚔 Gittertür zu! Klack.' : '🚔 Gittertür auf!', 1800);
+  blip(auf?180:340, 0.09); blip(auf?140:420, 0.07);
+  return true;
+}
 function toggleGate(x, y, z) {          // alle verbundenen Tor-Blöcke zusammen schalten
   const opening = getBlock(x,y,z) === GATE;
   const seen = new Set();
@@ -19335,6 +19431,10 @@ function doPlace(dir) {
     setBlock(hit.x, by+1, hit.z, open ? DOOR_TOP : DOOR_TOP_OPEN);
     toast(open ? '🚪 Tür zu!' : '🚪 Tür auf!', 1500);
     blip(open?220:320, 0.08);
+    return;
+  }
+  if (hit.block===GTUER || hit.block===GTUER_AUF) {   // 🚔 die Gittertür auf/zu
+    gittertuerSchalten(hit.x, hit.y, hit.z);
     return;
   }
   if (hit.block===THRON && !riding) {    // 🪑👑 auf den Thron setzen und befehlen!
@@ -20659,7 +20759,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   }
   // 🚔 Die Räuber, die die Polizei eingesperrt hat, sitzen weiter in ihrer Zelle
   for (const nr of savedKnast) {
-    if (!(nr >= 0 && nr < ZELL_DZ.length)) continue;
+    if (!(nr >= 0 && nr < ZELL_ALLE.length)) continue;
     if (animals.some(a => a.gefangen && a.zelle === nr)) continue;
     const zp = zellePos(nr);
     animals.push({ type:'raeuber', gefangen:true, zelle:nr, zuGemacht:false, beute:0,

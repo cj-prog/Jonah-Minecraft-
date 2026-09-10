@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ECHTE GITTERTÜREN – UND DIE POLIZEI BAUT NEUE ZELLEN (v227)! 🚔🔨 Zwei
+  Wünsche von Jonah auf einmal.
+  DIE GITTERTÜR: In der Gitterwand steckt jetzt eine richtige Tür – zwei Blöcke
+  hoch, mit Rahmen, Querstrebe und einem dicken goldenen Schloss. Sie steht
+  offen, solange die Zelle leer ist. Bringt die Polizei einen Räuber herein,
+  geht sie auf, er geht hinein – und dann fällt sie von selbst ins Schloss.
+  KLACK. 🔒 Antippen kann Jonah sie auch selbst: einmal für auf, einmal für zu
+  (beide Hälften zusammen). Lässt er sie offen, spaziert der Räuber wieder
+  hinaus. 😈
+  NEUE ZELLEN: Sind alle Zellen voll, wird der nächste Räuber nicht mehr vor
+  die Tür gesetzt – die Polizei MAUERT EINFACH EINE NEUE ZELLE dazu: Trennwände,
+  Gitterwand, Gittertür und eine Fackel. „Kein Platz mehr? Dann bauen wir eine
+  neue! 🔨" Platz ist im Keller für insgesamt SIEBEN Zellen.
+  Alles bleibt nach dem Neustart: die angebauten Zellen, wer wo sitzt, und dass
+  die Türen zu sind. Auf dem 🗺️ Burgplan siehst du jede Zelle einzeln – 😈 heißt
+  belegt, 🔓 heißt frei.
 - JETZT AUCH ENGLISCHE VOKABELN – ZUM ANTIPPEN (v226)! 🇬🇧🧮 Zwischendurch gibt
   es nicht mehr nur Rechenaufgaben: Jede ZWEITE Lern-Pause ist jetzt Englisch.
   Die Häufigkeit bleibt dabei genau gleich – es ist nur abwechselnd.
