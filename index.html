@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 229 &middot; Die Räuber laufen in der Zelle herum, klopfen an die Wand – und sitzen manchmal zu zweit! 😈👊</p>
+    Version 230 &middot; Im Weltall leben Aliens – rede dreimal mit einem, dann wird er dein Diener! 👽🤵</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 229;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 230;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4671,7 +4671,7 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedKnast = [], savedRaum = null;
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedKnast = [], savedAliens = [], savedRaum = null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
@@ -4735,6 +4735,8 @@ function saveGame() {
         [Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10, a.beute]),
       // 🚔 wer im Königs-Gefängnis sitzt, sitzt auch nach dem Neustart noch drin
       knast: animals.filter(a=>a.gefangen && typeof a.zelle==='number').map(a=>a.zelle),
+      // 👽 deine Alien-Diener bleiben dir erhalten
+      aliens: animals.filter(a=>a.type==='alien' && a.diener).map(a=>[a.name, a.befehl||'folgen']),
       zellen: zellenAnzahl,              // 🔨 so viele Zellen hat die Polizei gebaut
       ziele: customTargets,
       jet: jetSave,
@@ -4835,6 +4837,7 @@ function loadGame() {
     if (Array.isArray(s.balls)) savedBalls = s.balls;
     if (Array.isArray(s.statuen)) savedStatuen = s.statuen;
     if (Array.isArray(s.diebe)) savedDiebe = s.diebe;      // 💰 Räuber mit geklautem Geld
+    if (Array.isArray(s.aliens)) savedAliens = s.aliens;   // 👽 deine Alien-Diener
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
     if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
       zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
@@ -5405,6 +5408,25 @@ atlas.width = atlas.height = T*ATLAS_N;
       }
       return vary(c[0], c[1], c[2], 14);
     });
+  });
+  // 👽 DIE ALIENS: grüne Haut (149) und ein Gesicht mit riesigen schwarzen
+  // Augen (150). Ihr Anzug schimmert silbrig-lila (151).
+  tile(149,(x,y)=> (x+y)%7===0 ? vary(126,214,120,10) : vary(104,196,96,14));
+  tile(150,(x,y)=>{                                                 // Alien-Gesicht
+    // zwei riesige schräge Augen
+    const auge = (ax) => { const dx=(x-ax)/3.4, dy=(y-6)/4.2;
+      return dx*dx + dy*dy < 1; };
+    if (auge(4) || auge(11)) {
+      if ((x===3||x===10) && y===4) return 'rgb(250,250,255)';      // Glanzpunkt
+      return 'rgb(16,14,26)';
+    }
+    if (y===12 && x>=6 && x<=9) return 'rgb(58,120,58)';            // winziger Mund
+    return vary(104,196,96,12);
+  });
+  tile(151,(x,y)=>{                                                 // Raumanzug
+    if (y===7 || y===8) return vary(206,196,230,10);                // Gürtel
+    if (x>=6 && x<=9 && y>=3 && y<=5) return vary(120,240,220,16);  // leuchtende Brustplatte
+    return vary(126,118,166,14);
   });
   // 👮 DIE FESTUNGS-POLIZEI: dunkelblaue Uniform (147) und ein freundliches,
   // wachsames Gesicht (148).
@@ -6263,6 +6285,8 @@ const ANIMAL_KIND = {
   engfreund:{ speed:1.1, half:0.28, height:1.7,  tile:131, face:139 },
   // 👮 schneller als der Räuber (2.0) - sonst könnte er nie einen einholen!
   polizist: { speed:2.6, half:0.3,  height:1.8,  tile:147, face:148 },
+  // 👽 die Aliens: klein, neugierig und immer ein bisschen am Schweben
+  alien:    { speed:1.4, half:0.28, height:1.5,  tile:151, face:150 },
 };
 // 🦊 Die englischen Freunde als Figuren in der Welt: welches Fell, welches
 // Gesicht und welches Erkennungszeichen auf dem Kopf?
@@ -6903,7 +6927,11 @@ function hofstaatTick() {
 }
 function spawnTick() {
   // 🚀 Auf den Planeten ist es still: dort gibt es keine Tiere, Dorfleute oder Monster
-  if (weltDim >= 2) { if (weltDim === 9) hofstaatTick(); return; }
+  if (weltDim >= 2) {
+    if (weltDim === 9) hofstaatTick();
+    alienSpawnTick();                   // 👽 auf den Planeten wohnen Aliens!
+    return;
+  }
   if (halleAn) return;                  // 🏟️ in der Halle stört niemand beim Üben
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
   // 👹 DIE RIESEN streifen frei durch die Welt - bei Tag UND bei Nacht.
@@ -7611,6 +7639,7 @@ function updateAnimals(dt) {
         !(a.befehl==='folgen' || a.befehl==='hierher') &&   // 👑 wer mitkommen soll, bleibt!
         !a.beute &&                       // 💰 ein Räuber mit deiner Beute verschwindet NIE!
         !a.gefangen &&                    // 🚔 und wer im Gefängnis sitzt, bleibt sitzen!
+        !a.diener &&                      // 👽 dein Alien-Diener geht nie verloren
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.gefangen) {                   // 🚔 sitzt im Königs-Gefängnis und bleibt da
       a.kx = a.kz = 0; a.jagt = null;
@@ -7696,6 +7725,10 @@ function updateAnimals(dt) {
 
     if (a.type==='hausmeister') hausmeisterTick(a, dt);   // 🔧 flickt, was kaputt ist
     if (a.type==='butler') butlerTick(a, dt);             // 🤵 macht, was Jonah sagt
+    if (a.type==='alien') {                                // 👽 neugierig oder Diener?
+      if (a.diener) butlerTick(a, dt); else alienTick(a, dt);
+      alienSchweben(a, dt);             // hängengeblieben? Dann schwebt er drüber
+    }
     // 👑 KÖNIG JONAH HAT GESPROCHEN: wer einen Befehl hat, macht GENAU den.
     // Das muss hier stehen - nach der normalen KI, aber VOR dem Laufen -,
     // damit es die normale KI überschreibt und die Beine sich auch bewegen.
@@ -8598,6 +8631,27 @@ function drawAnimals() {
         pushBox(arr,a, 0,2.0,0, 0.15,0.15,0.15, 27);
       }
       if (a.befehl === 'folgen') drawHeart(arr, a, 2.25);          // ❤️ er kommt mit!
+    } else if (a.type==='alien') {                                 // 👽 ein Alien!
+      // Sie schweben immer ein kleines bisschen über dem Boden.
+      const schweb = Math.sin(performance.now()*0.003 + a.x) * 0.05;
+      const hs = a.diener ? 0.06 : 0;   // Diener schweben etwas höher - stolz!
+      const H = (y2) => y2 + schweb + hs;
+      pushBox(arr,a, -0.13,H(0.2), sw*0.25, 0.16,0.4,0.16, 151);   // dünne Beine
+      pushBox(arr,a,  0.13,H(0.2),-sw*0.25, 0.16,0.4,0.16, 151);
+      pushBox(arr,a, 0,H(0.68),0, 0.42,0.58,0.28, 151);            // schlanker Anzug
+      pushBox(arr,a, -0.28,H(0.72),0, 0.12,0.42,0.12, 149);        // grüne dünne Arme
+      pushBox(arr,a,  0.28,H(0.72),0, 0.12,0.42,0.12, 149);
+      pushBox(arr,a, 0,H(1.02),0, 0.18,0.12,0.18, 149);            // Hals
+      pushBox(arr,a, 0,H(1.34),0, 0.62,0.56,0.5, 149, 150);        // DER GROSSE KOPF
+      pushBox(arr,a, -0.16,H(1.68),0, 0.05,0.22,0.05, 149);        // zwei Fühler
+      pushBox(arr,a,  0.16,H(1.68),0, 0.05,0.22,0.05, 149);
+      pushBox(arr,a, -0.16,H(1.82),0, 0.13,0.13,0.13, 27);         // leuchtende Kugeln
+      pushBox(arr,a,  0.16,H(1.82),0, 0.13,0.13,0.13, 27);
+      if (a.diener) {                                              // 🤵 als Diener mit Fliege und Tablett
+        pushBox(arr,a, 0,H(0.92),-0.15, 0.14,0.07,0.04, 25);       // rote Fliege
+        pushBox(arr,a, 0.3,H(0.86),-0.24, 0.3,0.04,0.24, 49);      // silbernes Tablett
+        drawHeart(arr, a, 2.15 + schweb);                          // ❤️ er gehört zu dir
+      }
     } else if (a.type==='kid') {                                   // Dorf-Kind
       pushBox(arr,a, 0,0.22, sw*0.3, 0.36,0.44,0.24, k.tile);      // Beine/Hose
       pushBox(arr,a, 0,0.62,0, 0.4,0.4,0.24, k.tile);              // Körper
@@ -11780,7 +11834,10 @@ function butlerTick(a, dt) {
       a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
       a.walking = true; a.spd = 3.4;
     } else { a.walking = false; a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z)); }
-    if (Math.random() < dt*0.01) sagen(a, BUTLER_TALK[Math.floor(Math.random()*BUTLER_TALK.length)], 3);
+    if (Math.random() < dt*0.01) {     // 👽 der Alien-Diener redet natürlich anders
+      const topf = a.type === 'alien' ? ALIEN_DIENER_TALK : BUTLER_TALK;
+      sagen(a, topf[Math.floor(Math.random()*topf.length)], 3);
+    }
   } else if (a.befehl==='warten') {
     a.walking = false; a.t = 9;
     if (dp < 12) a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));   // schaut dich an
@@ -11800,6 +11857,9 @@ function butlerTick(a, dt) {
 let butlerAktiv = null;
 function openButler(a) {
   butlerAktiv = a;
+  document.getElementById('butlerBox').querySelector('h3').textContent =
+    a.type === 'alien' ? '👽 ' + a.name + ', dein Alien-Diener'
+                       : '🤵 Was soll ich tun, König Jonah?';
   const list = document.getElementById('butlerList');
   list.innerHTML = '';
   const BEFEHLE = [
@@ -12164,7 +12224,8 @@ function weltWechsel(neu) {
   fallende.length = 0; flowQ.length = 0; fallQ.length = 0;
   for (let i=animals.length-1; i>=0; i--) {  // Haustiere, Begleiter UND alle Fahrzeuge kommen mit!
     const a = animals[i];
-    if (!(a.tame || a.follow || MITREISER.has(a.type))) animals.splice(i,1);
+    // 👽 Alien-Diener kommen überallhin mit - auch zurück zur Erde!
+    if (!(a.tame || a.follow || a.diener || MITREISER.has(a.type))) animals.splice(i,1);
   }
 }
 function portalBauen(x, y, z) {         // ein Portal mit Torbogen - vorne offen!
@@ -15199,6 +15260,138 @@ function landeAufErde() {
   blip(300,0.08); blip(500,0.08); blip(700,0.12);
   toast('🌍 Wieder daheim auf der Erde! Du sitzt in deiner großen Rakete auf der Raketenstation.', 6000);
   scheduleSave();
+}
+// ============== 👽 DIE ALIENS ===============================================
+// Auf jedem Planeten leben Aliens: kleine grüne Wesen mit riesigen Augen und
+// leuchtenden Fühlern. Sie sind neugierig und überhaupt nicht gefährlich -
+// sie kommen angeschwebt und quasseln in ihrer Sprache. Wer dreimal mit einem
+// redet, wird sein Freund - und dann wird er dein DIENER und kommt mit.
+const ALIEN_NAMEN = ['Blipp', 'Zork', 'Nova', 'Glib', 'Xeno', 'Plim', 'Wusel',
+                     'Quark', 'Zippy', 'Moop', 'Fizzel', 'Tok'];
+// Was sie sagen - und was es heißt. Jonah soll ja verstehen, was los ist.
+const ALIEN_SPRUECHE = [
+  ['Blipp blopp?',        'Wer bist denn du?'],
+  ['Zzzrk tok tok!',      'Du siehst lustig aus!'],
+  ['Wubba lubba!',        'Hallo, hallo!'],
+  ['Fnord zipp?',         'Kommst du vom blauen Planeten?'],
+  ['Mjam mjam glib!',     'Hast du was zu essen dabei?'],
+  ['Pling! Pling!',       'Deine Krone glitzert so schön!'],
+  ['Tak tak wusel?',      'Willst du mein Freund sein?'],
+];
+const ALIEN_DIENER_TALK = [
+  'Blipp! Zu Diensten, König Jonah! 👽',
+  'Zzzrk - was darf ich tun?',
+  'Ich bin der beste Diener im ganzen Weltall!',
+  'Auf meinem Planeten wäre ich jetzt berühmt! ✨',
+  'Wubba! Ich mag die Erde. 🌍',
+];
+function alienName() {
+  const frei = ALIEN_NAMEN.filter(n => !animals.some(a => a.name === n));
+  const topf = frei.length ? frei : ALIEN_NAMEN;
+  return topf[Math.floor(Math.random()*topf.length)];
+}
+function alienSpawnTick() {
+  if (weltDim < 2) return;
+  if (countType(a => a.type === 'alien' && !a.diener) >= 4) return;
+  if (Math.random() > 0.25) return;
+  const w = Math.random()*Math.PI*2, d = 14 + Math.random()*20;
+  const ax = Math.floor(player.x + Math.cos(w)*d), az = Math.floor(player.z + Math.sin(w)*d);
+  const h = planetHoehe(ax, az, weltDim);
+  if (h <= CH_MIN + 2) return;
+  if (collideBox(ax+0.5, h+1, az+0.5, 0.28, 1.5)) return;
+  animals.push({ type:'alien', name: alienName(), freund: 0,
+    x: ax+0.5, y: h+1, z: az+0.5, heimDim: weltDim,
+    yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:3,
+    walking:false, t: Math.random()*2, ph:0, onGround:false });
+  if (Math.random() < 0.4)
+    toast('👽 Da drüben schwebt ein Alien herum! Tipp es an und rede mit ihm.', 4000);
+}
+// 🛸 Aliens SCHWEBEN. Bleibt einer an einem Mondfelsen oder einer Kraterkante
+// hängen, hebt er einfach ab, statt ewig dagegenzulaufen.
+function alienSchweben(a, dt) {
+  const k = ANIMAL_KIND.alien;
+  // Steckt er MITTEN in einem Block? Dann sofort abheben - sonst hängt er
+  // für immer fest und rührt sich keinen Millimeter mehr.
+  if (collideBox(a.x, a.y, a.z, k.half, k.height)) {
+    a.vy = Math.max(a.vy, 5.5);
+    return;
+  }
+  a.steckT = (a.steckT || 0) + dt;
+  if (a.steckT < 1.2) return;
+  const weit = Math.hypot(a.x - (a.hxAlt === undefined ? a.x : a.hxAlt),
+                          a.z - (a.hzAlt === undefined ? a.z : a.hzAlt));
+  if (a.walking && weit < 0.5) {        // läuft, kommt aber nicht vom Fleck
+    // Er SCHWEBT über das Hindernis hinweg - eine Kraterwand hält ein Alien
+    // nicht auf. Er setzt einen Blöck weiter auf festem Boden auf.
+    const nx = a.x + Math.sin(a.yaw)*1.2, nz = a.z - Math.cos(a.yaw)*1.2;
+    const h = weltDim >= 2 ? planetHoehe(Math.floor(nx), Math.floor(nz), weltDim)
+                           : terrainHeight(Math.floor(nx), Math.floor(nz));
+    if (h > CH_MIN + 1 && !collideBox(nx, h+1, nz, k.half, k.height)) {
+      a.x = nx; a.z = nz; a.y = h + 1; a.vy = 0;
+    } else a.vy = 5.5;                  // sonst wenigstens ein Hüpfer
+    if (Math.hypot(player.x-a.x, player.z-a.z) < 20) blip(1500,0.03);
+  }
+  a.steckT = 0; a.hxAlt = a.x; a.hzAlt = a.z;
+}
+// 🛸 Was ein wildes Alien so treibt: neugierig auf Jonah zukommen und quasseln.
+function alienTick(a, dt) {
+  if (a.diener) return false;           // Diener macht butlerTick
+  const dp = Math.hypot(player.x - a.x, player.z - a.z);
+  if (dp < 16 && dp > 2.2) {            // neugierig näher kommen
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = true; a.t = 0.5; a.spd = 2.0;
+  } else if (dp <= 2.2) {               // ganz nah: stehen bleiben und gucken
+    a.walking = false; a.t = 0.6;
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+  }
+  if (dp < 14 && Math.random() < dt*0.25) {
+    const sp = ALIEN_SPRUECHE[Math.floor(Math.random()*ALIEN_SPRUECHE.length)];
+    sagen(a, sp[0], 3);
+    blip(900+Math.random()*600, 0.05); blip(1200+Math.random()*500, 0.05);
+  }
+  return true;
+}
+// 👋 Mit einem Alien reden. Nach dem dritten Mal wird es dein Diener.
+function alienReden(a) {
+  a.freund = (a.freund || 0) + 1;
+  blip(900,0.06); blip(1300,0.07);
+  if (a.freund < 3) {
+    const sp = ALIEN_SPRUECHE[Math.floor(Math.random()*ALIEN_SPRUECHE.length)];
+    sagen(a, sp[0], 4);
+    toast('👽 ' + a.name + ': „' + sp[0] + '" – das heißt: „' + sp[1] + '" ' +
+      'Noch ' + (3 - a.freund) + '-mal reden, dann seid ihr Freunde! (' +
+      a.freund + '/3)', 5200);
+    return;
+  }
+  if (a.diener) return;
+  a.diener = true; a.befehl = 'folgen'; a.friend = 3;
+  sagen(a, 'Blipp! Ich diene dir, König Jonah! 👽', 5);
+  toast('👽🤵 ' + a.name + ' ist jetzt DEIN ALIEN-DIENER! Er kommt überall mit – ' +
+    'auch zurück zur Erde. Tipp ihn an, dann sagst du ihm, was er tun soll!', 6500);
+  for (const f of [523,659,784,1047,1319]) blip(f,0.09);
+  for (let n = 0; n < 26; n++)
+    fireworks.push({ x:a.x, y:a.y+1.4, z:a.z, vx:(Math.random()-0.5)*4,
+      vy:1.5+Math.random()*3, vz:(Math.random()-0.5)*4, tile:[27,30,149][n%3], t:1.1 });
+  scheduleSave();
+}
+// 👽 Das Menü, wenn Jonah ein Alien antippt
+function openAlien(a) {
+  if (a.diener) { openButler(a); return; }
+  butlerAktiv = a;
+  const list = document.getElementById('butlerList');
+  document.getElementById('butlerBox').querySelector('h3').textContent =
+    '👽 ' + a.name + ' schaut dich neugierig an';
+  list.innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'liftBtn';
+  b.textContent = '👋 Hallo sagen! (' + (a.freund||0) + '/3)';
+  b.addEventListener('click', () => {
+    document.getElementById('butlerBox').style.display = 'none';
+    alienReden(a);
+  });
+  list.appendChild(b);
+  document.getElementById('butlerBox').style.display = 'flex';
+  blip(900,0.05); blip(1200,0.05);
 }
 // 🕹️ Jonah steigt in seine eigene kleine Rakete und fliegt selbst los
 function selberFliegen() {
@@ -19004,6 +19197,12 @@ function hitEntity(a, dir) {
   }
   // 👑 ALLE MENSCHEN hören auf König Jonah! Der Bankier und der Hausmeister
   // haben in ihrem Menü zusätzlich noch ihre eigenen Knöpfe.
+  if (a.type==='alien') {              // 👽 mit dem Alien reden
+    a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+    a.walking = false; a.t = 3;
+    openAlien(a);
+    return;
+  }
   if (a.type==='engfreund') {          // 🦊 mit dem englischen Freund reden
     engFigurAntippen(a);
     return;
@@ -20916,6 +21115,15 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     animals.push({type:'raeuber', x:d[0], y:d[1], z:d[2], beute:d[3]||1,
       hx:d[0], hz:d[2], yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false});
   }
+  // 👽 Deine Alien-Diener stehen wieder neben dir
+  for (const al of savedAliens) {
+    if (animals.some(a => a.type === 'alien' && a.name === al[0])) continue;
+    animals.push({ type:'alien', name: al[0], diener:true, freund:3, friend:3,
+      befehl: al[1] === 'warten' ? 'warten' : 'folgen',
+      x: player.x + (Math.random()*3-1.5), y: player.y, z: player.z + (Math.random()*3-1.5),
+      yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:1, ph:0, onGround:false });
+  }
+  savedAliens = [];
   // 🚔 Die Räuber, die die Polizei eingesperrt hat, sitzen weiter in ihrer Zelle
   // In einer Zelle können mehrere sitzen - die Liste darf dieselbe Zellennummer
   // also mehrfach enthalten. Jeder bekommt seinen eigenen Platz darin.

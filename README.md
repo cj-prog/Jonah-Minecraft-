@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ECHTE ALIENS IM WELTALL – UND SIE WERDEN DEINE DIENER (v230)! 👽🤵 Auf JEDEM
+  Planeten leben jetzt Aliens: kleine grüne Wesen mit riesigen schwarzen Augen,
+  zwei leuchtenden Fühlern und einem lila Raumanzug. Sie schweben immer ein
+  bisschen über dem Boden.
+  SIE SIND NEUGIERIG, aber überhaupt nicht gefährlich: Sie kommen zu dir
+  geschwebt, bleiben kurz vor dir stehen und quasseln in ihrer Sprache –
+  „Blipp blopp?", „Zzzrk tok tok!", „Wubba lubba!". Bleibt einer an einer
+  Kraterwand hängen, schwebt er einfach darüber hinweg.
+  ZUM DIENER MACHEN: Tipp ein Alien an und sag „👋 Hallo sagen!". Jedes Mal
+  erfährst du, was sein Spruch bedeutet („Tak tak wusel?" heißt „Willst du mein
+  Freund sein?"). Beim DRITTEN Mal ist es soweit: „Blipp! Ich diene dir, König
+  Jonah! 👽" – dann trägt er eine Fliege und ein silbernes Tablett, über ihm
+  schwebt ein Herz, und er kann alles, was dein Butler kann: mitkommen, warten,
+  Snacks bringen, Licht machen, aufräumen, eigene Aufträge und tanzen. 💃
+  ER KOMMT ÜBERALL MIT – auch zurück zur Erde! Die wilden Aliens bleiben auf
+  ihrem Planeten, dein Diener nicht. Und nach dem Neuladen steht er wieder
+  neben dir. Bis zu 12 verschiedene Namen gibt es: Blipp, Zork, Nova, Glib,
+  Xeno, Plim, Wusel, Quark, Zippy, Moop, Fizzel und Tok.
 - LEBEN IN DER ZELLE – UND MANCHMAL ZU ZWEIT (v229)! 😈👊 Zwei Wünsche von dir.
   SIE LAUFEN HERUM: Ein Räuber steht nicht mehr wie festgeklebt da. Er sucht
   sich alle paar Sekunden ein neues Eckchen in seiner Zelle und läuft dorthin –
