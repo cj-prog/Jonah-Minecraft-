@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 230 &middot; Im Weltall leben Aliens – rede dreimal mit einem, dann wird er dein Diener! 👽🤵</p>
+    Version 231 &middot; Die Aliens haben UFOs! Sie schwirren über den Planeten – und manchmal landet eins auf der Erde. 🛸👽</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 230;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 231;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5428,6 +5428,22 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x>=6 && x<=9 && y>=3 && y<=5) return vary(120,240,220,16);  // leuchtende Brustplatte
     return vary(126,118,166,14);
   });
+  // 🛸 DIE UFOS: silberne Hülle (152), leuchtende Glaskuppel (153) und die
+  // grellen Lichter am Rand und im Leuchtstrahl (154).
+  tile(152,(x,y)=>{                                                 // 🛸 UFO-Hülle
+    if (y===3 || y===12) return vary(150,158,178,8);                // Nahtstellen
+    if ((x+y)%9===0) return 'rgb(255,255,255)';                     // blitzende Nieten
+    return vary(226,232,246,10);                                    // helles, blankes Silber
+  });
+  tile(153,(x,y)=>{                                                 // 🛸 die Glaskuppel
+    const dx=(x-7.5)/7.4, dy=(y-7.5)/7.4;
+    if (dx*dx+dy*dy > 1) return vary(146,156,178,10);               // Rahmen aussen herum
+    if ((x===6||x===9) && y>=8 && y<=9) return 'rgb(16,14,26)';     // seine grossen Augen
+    if (y>=7 && x>=5 && x<=10) return vary(104,196,96,12);          // ein Alien sitzt drin!
+    if (x===4 && y<=6) return 'rgb(240,255,255)';                   // Glanzstreifen im Glas
+    return vary(120,225,225,16);
+  });
+  tile(154,(x,y)=> (x+y)%5===0 ? 'rgb(255,255,255)' : vary(150,250,245,22));   // 🛸 Licht
   // 👮 DIE FESTUNGS-POLIZEI: dunkelblaue Uniform (147) und ein freundliches,
   // wachsames Gesicht (148).
   tile(147,(x,y)=>{                                                 // Polizei-Uniform
@@ -6287,6 +6303,7 @@ const ANIMAL_KIND = {
   polizist: { speed:2.6, half:0.3,  height:1.8,  tile:147, face:148 },
   // 👽 die Aliens: klein, neugierig und immer ein bisschen am Schweben
   alien:    { speed:1.4, half:0.28, height:1.5,  tile:151, face:150 },
+  ufo:      { speed:0,   half:1.6,  height:1.6,  tile:152, face:153 },   // 🛸 ihre Untertasse
 };
 // 🦊 Die englischen Freunde als Figuren in der Welt: welches Fell, welches
 // Gesicht und welches Erkennungszeichen auf dem Kopf?
@@ -6930,9 +6947,11 @@ function spawnTick() {
   if (weltDim >= 2) {
     if (weltDim === 9) hofstaatTick();
     alienSpawnTick();                   // 👽 auf den Planeten wohnen Aliens!
+    ufoSpawnTick();                     // 🛸 und sie fliegen mit ihren Untertassen herum
     return;
   }
   if (halleAn) return;                  // 🏟️ in der Halle stört niemand beim Üben
+  ufoSpawnTick();                       // 🛸 ganz selten besucht ein UFO die Erde!
   if (countType(a=>a.type!=='villager' && a.type!=='bird' && a.type!=='fish' && !a.tame) < 12) trySpawnAnimal(16,45);
   // 👹 DIE RIESEN streifen frei durch die Welt - bei Tag UND bei Nacht.
   // Sie wohnen nirgendwo, sie stapfen einfach herum und stürmen auf Jonah zu!
@@ -7698,6 +7717,10 @@ function updateAnimals(dt) {
     }
     if (a.type==='bird') { updateBird(a, dt); continue; }   // Vögel fliegen frei
     if (a.type==='fish') { updateFish(a, dt); continue; }   // Fische schwimmen frei
+    if (a.type==='ufo') {               // 🛸 fliegt frei in der Luft, ganz ohne Boden
+      if (!ufoTick(a, dt)) animals.splice(i,1);
+      continue;
+    }
     const ch = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
     if (!ch || !ch.data) continue;
     const k = ANIMAL_KIND[a.type];
@@ -8647,10 +8670,62 @@ function drawAnimals() {
       pushBox(arr,a,  0.16,H(1.68),0, 0.05,0.22,0.05, 149);
       pushBox(arr,a, -0.16,H(1.82),0, 0.13,0.13,0.13, 27);         // leuchtende Kugeln
       pushBox(arr,a,  0.16,H(1.82),0, 0.13,0.13,0.13, 27);
+      if (a.flug) {                                                // 🛸 er schwebt gerade!
+        pushBox(arr,a, 0,H(-0.06),0, 0.62,0.07,0.62, 154);         // Anti-Schwerkraft-Schein
+        pushBox(arr,a, 0,H(-0.14),0, 0.34,0.06,0.34, 27);
+      }
       if (a.diener) {                                              // 🤵 als Diener mit Fliege und Tablett
         pushBox(arr,a, 0,H(0.92),-0.15, 0.14,0.07,0.04, 25);       // rote Fliege
         pushBox(arr,a, 0.3,H(0.86),-0.24, 0.3,0.04,0.24, 49);      // silbernes Tablett
         drawHeart(arr, a, 2.15 + schweb);                          // ❤️ er gehört zu dir
+      }
+    } else if (a.type==='ufo') {                                   // 🛸 EIN ECHTES UFO!
+      // Eine silberne Untertasse: unten flache Scheiben, oben eine leuchtende
+      // Glaskuppel mit einem Alien darin - und rundherum blinken die Lichter.
+      // Die ganze Scheibe dreht sich langsam (das macht a.yaw in ufoTick).
+      // Das Profil macht die Untertasse: in der Mitte am breitesten, nach
+      // oben UND unten schmaler. Eine Stufenpyramide wäre keine Scheibe.
+      pushBox(arr,a, 0,0.12,0, 1.90,0.22,1.90, 152);               // schmale Unterseite
+      pushBox(arr,a, 0,0.31,0, 2.70,0.22,2.70, 152);
+      pushBox(arr,a, 0,0.50,0, 3.40,0.20,3.40, 152);               // DER BREITE RAND
+      pushBox(arr,a, 0,0.69,0, 2.40,0.22,2.40, 152);
+      pushBox(arr,a, 0,0.88,0, 1.50,0.20,1.50, 152);
+      pushBox(arr,a, 0,1.12,0, 1.30,0.40,1.30, 153);               // DIE GLASKUPPEL
+      pushBox(arr,a, 0,1.44,0, 0.80,0.26,0.80, 153);               // (hoch genug, dass
+      pushBox(arr,a, 0,1.62,0, 0.34,0.14,0.34, 153);               //  man sie auch sieht)
+      pushBox(arr,a, 0,1.78,0, 0.10,0.22,0.10, 152);               // Antenne obendrauf
+      pushBox(arr,a, 0,1.92,0, 0.19,0.19,0.19, 27);                // mit Blinklicht
+      for (let li=0; li<8; li++) {                                 // acht bunte Lichter
+        const lw = li/8*Math.PI*2;
+        const an = Math.sin(a.ph*5 + li*0.8) > -0.2;               // sie blinken der Reihe nach
+        // Etwas WEITER AUSSEN als der Rand (1,70) - sonst steckten sie
+        // vollständig in der Scheibe und man sah kein einziges Licht.
+        pushBox(arr,a, Math.cos(lw)*1.84,0.50,Math.sin(lw)*1.84, 0.34,0.32,0.34, an?154:3);
+      }
+      // Und LICHTER AUF DER UNTERSEITE - genau die sieht Jonah, wenn das UFO
+      // hoch über ihm am Himmel schwebt. Von unten ist die Scheibe im
+      // Schatten, deshalb darf es hier ruhig ordentlich leuchten.
+      pushBox(arr,a, 0,-0.01,0, 1.30,0.08,1.30, 154);              // das große Mittellicht
+      for (let li=0; li<6; li++) {
+        const lw = li/6*Math.PI*2 + Math.PI/6;
+        const an = Math.sin(a.ph*5 + li*1.1) > -0.4;
+        pushBox(arr,a, Math.cos(lw)*1.25,0.01,Math.sin(lw)*1.25, 0.50,0.07,0.50, an?154:3);
+      }
+      if (a.phase==='gelandet') {                                  // ausgefahrene Landebeine
+        for (const [lx2,lz2] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+          pushBox(arr,a, lx2*0.95,-0.20,lz2*0.95, 0.13,1.00,0.13, 3);
+          pushBox(arr,a, lx2*0.95,-0.66,lz2*0.95, 0.34,0.12,0.34, 152);
+        }
+      }
+      if (a.strahl > 0.05) {                                       // 🔦 DER LEUCHTSTRAHL
+        // Als sechs dünne Leuchtstäbe - so sieht man noch hindurch, was unten
+        // passiert. Ein einziger dicker Balken würde alles zudecken.
+        const len = a.strahl;
+        for (let si=0; si<6; si++) {
+          const sw2 = si/6*Math.PI*2 + a.ph*1.5;
+          pushBox(arr,a, Math.cos(sw2)*0.5,0.2-len/2,Math.sin(sw2)*0.5, 0.10,len,0.10, 154);
+        }
+        pushBox(arr,a, 0,0.26-len,0, 1.15,0.07,1.15, 154);         // heller Fleck am Strahlende
       }
     } else if (a.type==='kid') {                                   // Dorf-Kind
       pushBox(arr,a, 0,0.22, sw*0.3, 0.36,0.44,0.24, k.tile);      // Beine/Hose
@@ -12865,7 +12940,10 @@ async function msgrKiAntwort(f, text, s) {
 
 // Kleine, wuselige Wesen brauchen keinen Abstand (Vögel fliegen, Fische
 // schwimmen, der Ball soll ja getreten werden).
-const OHNE_ABSTAND = new Set(["fish", "bird", "ball", "laser"]);
+// 🛸 Das UFO gehört auch dazu: es ist ein Flugzeug und kein Wesen, das sich
+// in eine Reihe stellt. Sonst schubst eine gelandete Untertasse die Aliens
+// von ihrem Platz weg - und wird selbst von ihnen verschoben.
+const OHNE_ABSTAND = new Set(["fish", "bird", "ball", "laser", "ufo"]);
 // Was fest an seinem Platz steht, schiebt die anderen weg, bewegt sich aber
 // selbst nicht: Statuen, Fahrstuhlkabinen und alles in der Halle.
 function stehtFest(a) { return a.type === "statue" || a.type === "kabine" || !!a.halle; }
@@ -15306,30 +15384,100 @@ function alienSpawnTick() {
   if (Math.random() < 0.4)
     toast('👽 Da drüben schwebt ein Alien herum! Tipp es an und rede mit ihm.', 4000);
 }
-// 🛸 Aliens SCHWEBEN. Bleibt einer an einem Mondfelsen oder einer Kraterkante
-// hängen, hebt er einfach ab, statt ewig dagegenzulaufen.
+// 🛸 Aliens SCHWEBEN. Bleibt einer an einem Mondfelsen, einer Kraterkante,
+// einem Baum oder an Jonahs Festungsmauer hängen, HEBT ER EINFACH AB: er steigt
+// über das Hindernis, schwebt darüber hinweg und setzt dahinter wieder auf.
 function alienSchweben(a, dt) {
   const k = ANIMAL_KIND.alien;
-  // Steckt er MITTEN in einem Block? Dann sofort abheben - sonst hängt er
-  // für immer fest und rührt sich keinen Millimeter mehr.
+  // ---- 0. Er geht gerade UM ein Hindernis HERUM --------------------------
+  // Nach oben geht es nicht immer: unter einem Blätterdach stößt er gegen die
+  // Decke. Dann läuft er ein Stück schräg weiter und probiert es daneben.
+  if (a.umwegT > 0) {
+    a.umwegT -= dt;
+    a.yaw += a.umweg;                   // butlerTick setzt yaw jedes Bild neu,
+    a.walking = true;                   // deshalb hier jedes Bild draufrechnen
+    a.steckT = 0; a.hxAlt = a.x; a.hzAlt = a.z;
+    return;
+  }
+  // ---- 1. Er schwebt gerade über etwas hinweg ----------------------------
+  if (a.schwebT > 0) {
+    a.schwebT -= dt;
+    a.flug = true;                      // a.flug schaltet die Schwerkraft ab
+    a.walking = true;                   // und vorwärts geht es auch in der Luft
+    if (a.y < a.schwebY - 0.15) {
+      a.steig = 5.5;                    // erst steigen ...
+      // ... aber wenn er dabei nicht höher kommt, ist über ihm eine Decke.
+      // Weiter zu drücken wäre sinnlos - er geht lieber außen herum.
+      if (a.y > a.steigYalt + 0.2) { a.steigYalt = a.y; a.steigT = 0; }
+      else a.steigT = (a.steigT || 0) + dt;
+      if (a.steigT > 0.6) {
+        a.schwebT = 0; a.flug = false; a.steig = 0; a.steigT = 0;
+        a.umwegT = 1.8; a.umweg = Math.random() < 0.5 ? 1.25 : -1.25;
+      }
+      return;
+    }
+    a.steig = 0;                        // oben: waagerecht drüber hinweg
+    if (Math.random() < dt*9)           // ein paar Funken unter den Füßen
+      fireworks.push({ x:a.x, y:a.y+0.1, z:a.z, vx:(Math.random()-0.5)*0.4,
+        vy:-0.6, vz:(Math.random()-0.5)*0.4, tile:27, t:0.4 });
+    // Kommt er oben auch wirklich voran? Wenn nicht, steigt er noch ein
+    // Stück höher. So findet er auch über Mauern, die dicker sind als die
+    // kleine Vorschau von unten reicht.
+    a.hochT = (a.hochT || 0) + dt;
+    if (a.hochT > 0.7) {
+      if (Math.hypot(a.x - a.hochX, a.z - a.hochZ) < 0.3 && a.schwebY < a.schwebMax)
+        a.schwebY += 1;
+      a.hochT = 0; a.hochX = a.x; a.hochZ = a.z;
+    }
+    // Ist unter ihm wieder Platz? Dann Schwerkraft an und sanft aufsetzen.
+    // WICHTIG: erst, wenn er das Hindernis auch wirklich hinter sich hat.
+    // Sonst setzt er direkt beim Abheben wieder auf - er startet ja über
+    // freiem Boden - und stünde dann für immer vor derselben Mauer.
+    const h = ufoBoden(a.x, a.z);
+    const gereist = Math.hypot(a.x - a.schwebX, a.z - a.schwebZ);
+    if (gereist > 1.6 && h > CH_MIN + 1 && !collideBox(a.x, h+1, a.z, k.half, k.height)) {
+      a.schwebT = 0; a.flug = false; a.steig = 0; a.vy = 0;
+    } else if (a.schwebT <= 0) {        // Zeit um - sonst schwebt er ewig
+      a.flug = false; a.steig = 0;
+    }
+    return;
+  }
+  // ---- 2. Steckt er MITTEN in einem Block (z.B. in einem Baumstamm)? -----
+  // Dann steigt er senkrecht heraus. Ein Sprung hilft da nicht: der Weg nach
+  // oben wird ja genauso auf Blöcke geprüft - er wäre für immer eingemauert.
   if (collideBox(a.x, a.y, a.z, k.half, k.height)) {
+    for (let n = 1; n <= 12; n++)
+      if (!collideBox(a.x, a.y + n, a.z, k.half, k.height)) {
+        a.y += n; a.vy = 0; return;
+      }
     a.vy = Math.max(a.vy, 5.5);
     return;
   }
+  // ---- 3. Kommt er nicht vom Fleck? --------------------------------------
   a.steckT = (a.steckT || 0) + dt;
   if (a.steckT < 1.2) return;
   const weit = Math.hypot(a.x - (a.hxAlt === undefined ? a.x : a.hxAlt),
                           a.z - (a.hzAlt === undefined ? a.z : a.hzAlt));
-  if (a.walking && weit < 0.5) {        // läuft, kommt aber nicht vom Fleck
-    // Er SCHWEBT über das Hindernis hinweg - eine Kraterwand hält ein Alien
-    // nicht auf. Er setzt einen Blöck weiter auf festem Boden auf.
-    const nx = a.x + Math.sin(a.yaw)*1.2, nz = a.z - Math.cos(a.yaw)*1.2;
-    const h = weltDim >= 2 ? planetHoehe(Math.floor(nx), Math.floor(nz), weltDim)
-                           : terrainHeight(Math.floor(nx), Math.floor(nz));
-    if (h > CH_MIN + 1 && !collideBox(nx, h+1, nz, k.half, k.height)) {
-      a.x = nx; a.z = nz; a.y = h + 1; a.vy = 0;
-    } else a.vy = 5.5;                  // sonst wenigstens ein Hüpfer
-    if (Math.hypot(player.x-a.x, player.z-a.z) < 20) blip(1500,0.03);
+  if (a.walking && weit < 0.5) {        // läuft, aber es geht nicht weiter
+    // Wie hoch muss er steigen, damit er vorne vorbeikommt? Von seiner Höhe
+    // aus nach oben durchprobieren, und zwar direkt vor ihm UND einen Schritt
+    // weiter - sonst stößt er oben doch noch an die Kante.
+    const s1 = Math.sin(a.yaw), c1 = Math.cos(a.yaw);
+    let ziel = Math.floor(a.y) + 1;
+    for (let n = 0; n < 10; n++) {
+      const frei = !collideBox(a.x + s1*0.6, ziel, a.z - c1*0.6, k.half, k.height) &&
+                   !collideBox(a.x + s1*1.3, ziel, a.z - c1*1.3, k.half, k.height);
+      if (frei) break;
+      ziel++;
+    }
+    a.schwebT = 4;                      // höchstens so lange schwebt er
+    a.schwebY = ziel + 0.15;
+    a.schwebMax = ziel + 8;             // und höchstens so hoch
+    a.schwebX = a.x; a.schwebZ = a.z;   // von hier ist er abgehoben
+    a.hochX = a.x; a.hochZ = a.z; a.hochT = 0;
+    a.steigYalt = a.y; a.steigT = 0;    // und von hier aus soll er steigen
+    a.vy = 0;
+    if (Math.hypot(player.x-a.x, player.z-a.z) < 24) { blip(1500,0.03); blip(1800,0.03); }
   }
   a.steckT = 0; a.hxAlt = a.x; a.hzAlt = a.z;
 }
@@ -15392,6 +15540,186 @@ function openAlien(a) {
   list.appendChild(b);
   document.getElementById('butlerBox').style.display = 'flex';
   blip(900,0.05); blip(1200,0.05);
+}
+// ============== 🛸 DIE UFOS =================================================
+// Die Aliens laufen natürlich nicht zu Fuß durchs Weltall! Über jedem Planeten
+// schwirren silberne Untertassen mit blinkenden Lichtern herum. Ab und zu sucht
+// sich eine einen flachen Platz, schwebt an einem Leuchtstrahl herunter und
+// lässt ein oder zwei Aliens heraus. Und ganz selten kommt eins bis zur ERDE -
+// dann kann Jonah auch daheim mit einem Alien Freundschaft schließen.
+let UFO_ERD_CHANCE = 0.003;      // wie oft ein UFO die Erde besucht: spawnTick
+                                 // läuft alle 1,5 s, das ist also etwa alle
+                                 // acht Minuten mal Besuch - selten genug,
+                                 // dass es jedes Mal aufregend bleibt
+let UFO_PLANET_CHANCE = 0.2;     // und wie oft eins über einem Planeten auftaucht
+const UFO_HOCH = 15;             // Reiseflughöhe über dem Boden
+const UFO_STRAHL = 3.2;          // so lang leuchtet der Strahl unter der Scheibe
+let ufoNr = 0;                   // jedes UFO bekommt eine Nummer - so weiß jedes
+                                 // Alien, aus welchem es ausgestiegen ist
+function ufoBoden(x, z) {        // wie hoch ist der Boden unter dem UFO?
+  return weltDim >= 2 ? planetHoehe(Math.floor(x), Math.floor(z), weltDim)
+                      : terrainHeight(Math.floor(x), Math.floor(z));
+}
+function ufoSpawnTick() {
+  if (weltDim === 1) return;                  // in der Wolken-Wunderwelt nicht
+  const da = countType(a => a.type === 'ufo');
+  if (weltDim >= 2) {
+    if (da >= 2 || Math.random() > UFO_PLANET_CHANCE) return;
+  } else {
+    if (da >= 1 || Math.random() > UFO_ERD_CHANCE) return;
+  }
+  const w = Math.random()*Math.PI*2, d = 26 + Math.random()*12;
+  const x = player.x + Math.cos(w)*d, z = player.z + Math.sin(w)*d;
+  animals.push({ type:'ufo', nr: ++ufoNr, x, z,
+    y: ufoBoden(x, z) + UFO_HOCH + 10, yaw: Math.random()*6, ph: Math.random()*10,
+    phase:'fliegen', zx:x, zz:z, zielT:0, strahl:0, t:0, hp:99,
+    // auf der Erde ist es nur kurz zu Besuch und landet fast gleich
+    landeT: weltDim >= 2 ? 14 + Math.random()*22 : 4 + Math.random()*4 });
+  for (const f of [1500, 1150, 1750]) blip(f, 0.05);
+  if (weltDim < 2)
+    toast('🛸 Schau schnell in den Himmel – ein echtes UFO kommt zur Erde!', 6000);
+  else if (Math.random() < 0.5)
+    toast('🛸 Ein UFO schwirrt über dem Planeten herum!', 3500);
+}
+// fliegt auf ein Ziel zu und schwebt dabei auf die gewünschte Höhe.
+// Rückgabe: wie weit es waagerecht noch hin ist.
+function ufoFliegen(a, zx, zz, zy, dt, spd) {
+  const dx = zx - a.x, dz = zz - a.z, d = Math.hypot(dx, dz);
+  if (d > 0.12) {
+    const s = Math.min(spd*dt, d);
+    a.x += dx/d*s; a.z += dz/d*s;
+  }
+  const dy = zy - a.y;
+  a.y += Math.max(-4.5*dt, Math.min(4.5*dt, dy));
+  return d;
+}
+// 🛬 Wo kann so eine breite Scheibe überhaupt landen? Sie braucht es FLACH.
+function ufoLandeplatz() {
+  for (let n = 0; n < 26; n++) {
+    const w = Math.random()*Math.PI*2, d = 9 + Math.random()*9;
+    const x = Math.floor(player.x + Math.cos(w)*d) + 0.5;
+    const z = Math.floor(player.z + Math.sin(w)*d) + 0.5;
+    const h = ufoBoden(x, z);
+    if (h <= (weltDim >= 2 ? CH_MIN + 3 : SEA + 1)) continue;   // kein Wasser, kein Abgrund
+    let eben = true;                          // ringsherum flach genug?
+    for (const [ox, oz] of [[-2,-2],[2,-2],[-2,2],[2,2],[0,2],[0,-2],[2,0],[-2,0]])
+      if (Math.abs(ufoBoden(x+ox, z+oz) - h) > 1.5) eben = false;
+    if (!eben) continue;
+    if (collideBox(x, h+1, z, 1.9, 2.2)) continue;              // und Platz für die Scheibe
+    return [x, z, h];
+  }
+  return null;                                // diesmal nichts - später nochmal schauen
+}
+// 👽 Die Luke geht auf: ein oder zwei Aliens funkeln an Bord herunter.
+function ufoBeamen(a) {
+  blip(220,0.10); blip(150,0.14);
+  if (countType(x => x.type === 'alien' && !x.diener) >= 6) return;
+  const wie = Math.random() < 0.4 ? 2 : 1;
+  let raus = 0;
+  for (let n = 0; n < wie; n++) {
+    // Einen freien Fleck neben der Untertasse suchen. Daneben kann der Boden
+    // eine Stufe höher oder tiefer sein, da hilft eine feste Höhe nicht -
+    // deshalb werden mehrere Richtungen UND mehrere Höhen durchprobiert.
+    let platz = null;
+    for (let v = 0; v < 16 && !platz; v++) {
+      const w = Math.random()*Math.PI*2, r = 1.1 + Math.random()*1.7;
+      const ax = a.x + Math.cos(w)*r, az = a.z + Math.sin(w)*r;
+      const h = ufoBoden(ax, az);
+      for (const y of [h+1, h+2, h+3])
+        if (!collideBox(ax, y, az, 0.28, 1.5)) { platz = [ax, y, az]; break; }
+    }
+    // Notfalls kommt er einfach an der Luke heraus und schwebt herunter -
+    // es darf NIE passieren, dass ein UFO landet und niemand aussteigt.
+    if (!platz) platz = [a.x, a.y + 1.0, a.z];
+    animals.push({ type:'alien', name: alienName(), freund:0, ufo: a.nr,
+      x: platz[0], y: platz[1], z: platz[2], heimDim: weltDim,
+      yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:3,
+      walking:false, t: Math.random()*2, ph:0, onGround:false });
+    for (let pf = 0; pf < 16; pf++)
+      fireworks.push({ x:platz[0], y:platz[1]-0.6+Math.random()*2.6, z:platz[2],
+        vx:(Math.random()-0.5)*1.2, vy:(Math.random()-0.5)*1.2, vz:(Math.random()-0.5)*1.2,
+        tile:[154,27,149][pf%3], t:0.9 });
+    raus++;
+  }
+  if (!raus) return;
+  toast(weltDim < 2
+    ? '🛸👽 Das UFO ist auf der ERDE gelandet – und ' +
+      (raus>1 ? 'zwei Aliens steigen' : 'ein Alien steigt') + ' aus! Geh hin und rede mit ' +
+      (raus>1 ? 'ihnen' : 'ihm') + ', dann wird ' + (raus>1 ? 'einer' : 'er') + ' dein Diener!'
+    : '🛸👽 Ein UFO landet und lässt ' + (raus>1 ? 'zwei Aliens' : 'ein Alien') +
+      ' heraus!', 6500);
+}
+// 🛫 Das UFO will wieder los und saugt seine Aliens ein. DEINE Diener bleiben!
+function ufoEinsammeln(a) {
+  let mit = 0;
+  for (let i = animals.length-1; i >= 0; i--) {
+    const al = animals[i];
+    if (al.type !== 'alien' || al.ufo !== a.nr) continue;
+    if (al.diener) { al.ufo = 0; continue; }        // dein Diener fliegt NIE mit weg
+    for (let pf = 0; pf < 12; pf++)
+      fireworks.push({ x:al.x, y:al.y+0.5+Math.random()*2, z:al.z,
+        vx:(Math.random()-0.5), vy:2.5+Math.random()*2, vz:(Math.random()-0.5),
+        tile:[154,27,149][pf%3], t:0.9 });
+    animals.splice(i, 1); mit++;
+  }
+  blip(900,0.06); blip(1300,0.06); blip(1700,0.08);
+  if (mit && Math.hypot(player.x-a.x, player.z-a.z) < 50)
+    toast('🛸 Das UFO saugt seine Aliens wieder ein und fliegt davon! 👋', 4500);
+}
+// 🛸 Der Takt eines UFOs. Rückgabe false = es ist weggeflogen und darf weg.
+function ufoTick(a, dt) {
+  a.ph += dt;
+  a.yaw += dt * (a.phase === 'gelandet' ? 0.25 : 0.9);    // die Scheibe dreht sich
+  const bodenY = ufoBoden(a.x, a.z);
+  const dp = Math.hypot(player.x - a.x, player.z - a.z);
+  a.summT = (a.summT || 0) - dt;                          // das tiefe Brummen
+  if (a.summT <= 0 && dp < 46) { a.summT = 0.55; blip(58 + Math.sin(a.ph)*14, 0.12); }
+
+  if (a.phase === 'fliegen') {
+    a.zielT -= dt;                                        // gemütlich im Kreis herum
+    if (a.zielT <= 0 || Math.hypot(a.zx - a.x, a.zz - a.z) < 3) {
+      const w = Math.random()*Math.PI*2, d = 10 + Math.random()*16;
+      a.zx = player.x + Math.cos(w)*d; a.zz = player.z + Math.sin(w)*d;
+      a.zielT = 5 + Math.random()*6;
+    }
+    ufoFliegen(a, a.zx, a.zz, bodenY + UFO_HOCH, dt, 7);
+    a.landeT -= dt;
+    if (a.landeT <= 0) {
+      const pl = ufoLandeplatz();
+      if (pl) { a.phase = 'landen'; a.lx = pl[0]; a.lz = pl[1]; a.ly = pl[2]; }
+      else a.landeT = 6;                    // nichts Flaches gefunden - gleich nochmal
+    }
+  } else if (a.phase === 'landen') {
+    const weit = Math.hypot(a.lx - a.x, a.lz - a.z);
+    if (weit >= 0.8) {                      // erst genau über den Platz fliegen
+      ufoFliegen(a, a.lx, a.lz, a.ly + UFO_HOCH, dt, 7);
+    } else {
+      // Jetzt sinken - und zwar OHNE ufoFliegen: das würde die Scheibe mit
+      // derselben Geschwindigkeit wieder auf Reisehöhe hochziehen, und dann
+      // hing das UFO für immer in der Luft und landete nie.
+      a.x = a.lx; a.z = a.lz;
+      a.strahl = Math.min(a.strahl + dt*6, Math.min(UFO_STRAHL, a.y - a.ly - 0.7));
+      a.y = Math.max(a.ly + 0.7, a.y - 4.5*dt);
+      if (a.y <= a.ly + 0.75) {
+        a.y = a.ly + 0.7; a.phase = 'gelandet';
+        a.t = 55 + Math.random()*45;        // so lange bleibt es stehen
+        a.strahl = 0.9; ufoBeamen(a);
+      }
+    }
+  } else if (a.phase === 'gelandet') {
+    a.strahl = Math.max(0, a.strahl - dt*1.2);
+    a.t -= dt;
+    if (a.t <= 0) { a.phase = 'starten'; a.strahl = 0.4; ufoEinsammeln(a); }
+  } else if (a.phase === 'starten') {
+    a.strahl = Math.max(0, a.strahl - dt*1.5);
+    a.y += 5.5*dt;
+    if (a.y > bodenY + UFO_HOCH + 4) {
+      if (weltDim >= 2) {                   // auf dem Planeten wohnt es ja - weiterfliegen
+        a.phase = 'fliegen'; a.landeT = 25 + Math.random()*35; a.zielT = 0;
+      } else if (a.y > bodenY + 70) return false;   // von der Erde fliegt es ganz weg
+    }
+  }
+  return true;
 }
 // 🕹️ Jonah steigt in seine eigene kleine Rakete und fliegt selbst los
 function selberFliegen() {
@@ -16820,6 +17148,7 @@ function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der 
     else if (a.type==='heli') out.push({x:a.x, z:a.z, e:'🚁'});
     else if (a.type==='jet') out.push({x:a.x, z:a.z, e:'✈️'});
     else if (a.type==='raumschiff') out.push({x:a.x, z:a.z, e:'🚀'});
+    else if (a.type==='ufo') out.push({x:a.x, z:a.z, e:'🛸'});     // 🛸 da ist es!
     else if (a.type==='raeuber' && a.beute>0) out.push({x:a.x, z:a.z, e:'💰'});  // der Dieb!
   }
   return out;
@@ -19197,6 +19526,14 @@ function hitEntity(a, dir) {
   }
   // 👑 ALLE MENSCHEN hören auf König Jonah! Der Bankier und der Hausmeister
   // haben in ihrem Menü zusätzlich noch ihre eigenen Knöpfe.
+  if (a.type==='ufo') {                // 🛸 das UFO antippen: die Lichter gehen los
+    a.ph += 3;
+    blip(1400,0.06); blip(1700,0.06); blip(2100,0.08);
+    toast(a.phase==='gelandet'
+      ? '🛸 Das UFO brummt leise und alle Lichter blinken! Die Aliens sind gerade draußen.'
+      : '🛸 Es schwebt zu hoch! Warte, bis es landet – dann kannst du es anfassen.', 4200);
+    return;
+  }
   if (a.type==='alien') {              // 👽 mit dem Alien reden
     a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
     a.walking = false; a.t = 3;

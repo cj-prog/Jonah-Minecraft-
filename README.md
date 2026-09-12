@@ -221,6 +221,31 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE ALIENS HABEN UFOS (v231)! 🛸👽 Natürlich laufen die Aliens nicht zu Fuß
+  durchs Weltall! Über jedem Planeten schwirren jetzt echte fliegende
+  Untertassen herum: eine silberne Scheibe mit einem breiten Rand, oben eine
+  leuchtende Glaskuppel (da sitzt ein Alien drin und schaut heraus!), eine
+  Antenne mit Blinklicht und rundherum acht Lichter, die der Reihe nach
+  blinken. Die ganze Scheibe dreht sich langsam und brummt ganz tief, wenn du
+  in der Nähe bist.
+  SIE LANDEN: Alle paar Minuten sucht sich ein UFO einen richtig FLACHEN Platz
+  in deiner Nähe, schwebt genau darüber und kommt an einem Leuchtstrahl
+  herunter. Vier Landebeine fahren aus – und dann funkeln ein oder zwei Aliens
+  an Bord heraus! Mit denen kannst du reden wie immer: dreimal „Hallo sagen"
+  und schon hast du einen neuen Alien-Diener. 🤵
+  SIE SCHWEBEN ÜBER ALLES: Bleibt ein Alien an einem Mondfelsen, einem Baum
+  oder an deiner Festungsmauer hängen, HEBT ES EINFACH AB. Es steigt so hoch,
+  wie es sein muss, schwebt mit einem leuchtenden Schein unter den Füßen
+  darüber hinweg und setzt auf der anderen Seite wieder auf. Dein Alien-Diener
+  kommt damit überall zu dir – auch mitten im Wald.
+  UND MANCHMAL AUF DER ERDE! Ganz selten kommt ein UFO bis zu dir nach Hause.
+  Dann steht „🛸 Schau schnell in den Himmel!" auf dem Bildschirm – und kurz
+  darauf landet es neben dir. So bekommst du sogar auf der Erde ein Alien als
+  Diener, ohne erst ins Weltall zu fliegen!
+  WIEDER LOS: Nach einer Weile saugt das UFO seine Aliens ein und fliegt
+  davon. Aber DEINEN Diener nimmt es nie mit – der bleibt bei dir. 💚
+  Auf der Karte siehst du jedes UFO als 🛸, und wenn du ein gelandetes
+  antippst, blinken alle Lichter auf einmal los.
 - ECHTE ALIENS IM WELTALL – UND SIE WERDEN DEINE DIENER (v230)! 👽🤵 Auf JEDEM
   Planeten leben jetzt Aliens: kleine grüne Wesen mit riesigen schwarzen Augen,
   zwei leuchtenden Fühlern und einem lila Raumanzug. Sie schweben immer ein
