@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 232 &middot; Deine Alien-Freunde bleiben jetzt auf ihrem Planeten und warten dort auf dich! 👽🪐</p>
+    Version 233 &middot; Du kannst jetzt SELBER UFO fliegen! Auf jedem Planeten gibt es einen Alien-Parkplatz. 🛸🅿️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 232;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 233;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1017,7 +1017,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       FAHNE=98, ZIEL=99,                // 🚩 die Fahne und 🟨 das Ziel-Feld in der Halle
       HOLOKNOPF=100,                    // 🔴 der große rote Startknopf an der Hallenwand
       SEIL=101,                         // 🪢 ein Seil von der Decke: antippen = schwingen!
-      GTUER=102, GTUER_AUF=103;         // 🚔 die Gittertür am Gefängnis: zu und offen
+      GTUER=102, GTUER_AUF=103,         // 🚔 die Gittertür am Gefängnis: zu und offen
+      UFOPAD=104, UFOMARK=105;          // 🛸 der Belag und die Leuchtstreifen auf dem UFO-Parkplatz
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1180,6 +1181,10 @@ const BLOCKS = {
     [0.00,0.08,0.30, 0.16,0.92,0.40, 85],
     [0.00,0.08,0.56, 0.16,0.92,0.66, 85],
     [0.00,0.40,0.70, 0.16,0.60,0.86, 30]] },
+  // 🛸 DER UFO-PARKPLATZ der Aliens: dunkle Metallplatten mit leuchtenden
+  // türkisfarbenen Streifen - da stellen die Aliens ihre Untertassen ab.
+  [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
+  [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
     tiles:[86,86,86], solid:true },
   [ZUGBRUECKE]: { name:'Zugbrücke 🌉 (antippen = hoch und runter!)', tiles:[88,88,88], solid:true },
@@ -2241,6 +2246,14 @@ const PLANET = [null, null,
     gruss:'DEIN EIGENES KÖNIGREICH! 👑 Da vorne steht dein goldenes Schloss - und auf dem GANZEN Planeten stehen deine Wachtürme, Schatzhäuser, Goldminen, Statuen und Gärten. Und pass auf: hier springst du SUPERHOCH! Alles hier gehört DIR!' },
 ];
 const KO_Y = 48;                        // so hoch liegt die Ebene, auf der das Schloss steht
+// 🛸 Wo liegt der UFO-Parkplatz der Aliens? Auf jedem Planeten an derselben
+// Stelle, weit genug weg vom Raketen-Parkplatz (der ist bei 0,0) - und auf
+// Jonahs eigenem Planeten außerhalb der Schloss-Ebene.
+const UFO_PARK_R = 12;                  // so groß ist der Platz (Kantenlänge 25)
+const UFO_PLAETZE = [[-6,-6], [6,-6], [-6,6], [6,6]];   // die vier Landekreise
+function ufoPark(dim) {
+  return dim === 9 ? { x: 86, z: 0 } : { x: 48, z: 0 };
+}
 function planetHoehe(x, z, dim) {
   const P = PLANET[dim] || PLANET[2];
   const b = fbm(x*0.014 + dim*130, z*0.014 - dim*90);
@@ -3090,6 +3103,38 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
       const ring = Math.abs(vnoise(wx*0.02, wz*0.02, 6161) - 0.5);   // der große Ring am Himmel
       if (ring < 0.035) { const ry = h + 30 + Math.floor(vnoise(wx*0.01, wz*0.01, 6162)*10);
         setz(lx, ry, lz, (lx+lz)%2 ? GLASS : WOOL); }
+    }
+  }
+  // 🛸 DER UFO-PARKPLATZ DER ALIENS: ein großer Platz aus dunklen Metall-
+  // platten mit vier leuchtenden Landekreisen. Hier stellen die Aliens ihre
+  // Untertassen ab - und Jonah darf sich eine ausleihen!
+  if (dim>=2) {
+    const UP = ufoPark(dim);
+    if (Math.abs(x0-UP.x)<=48 && Math.abs(z0-UP.z)<=48) {
+      const uy = planetHoehe(UP.x, UP.z, dim);
+      for (let wx=UP.x-UFO_PARK_R; wx<=UP.x+UFO_PARK_R; wx++)
+        for (let wz=UP.z-UFO_PARK_R; wz<=UP.z+UFO_PARK_R; wz++) {
+          const lx2 = wx-x0, lz2 = wz-z0;
+          if (lx2<0 || lx2>15 || lz2<0 || lz2>15) continue;
+          const rx = wx-UP.x, rz = wz-UP.z;
+          const rand = Math.max(Math.abs(rx), Math.abs(rz));
+          // AUFSCHÜTTEN BIS ZUM ECHTEN BODEN. Der Platz ist überall gleich hoch,
+          // das Gelände aber nicht: über einem Krater hinge er sonst in der Luft
+          // und man könnte an der Kante ins Nichts fallen.
+          const gel = planetHoehe(wx, wz, dim);
+          for (let y=Math.min(gel, uy)-2; y<uy; y++) setz(lx2, y, lz2, P.tief);
+          let b = UFOPAD;
+          if (rand === UFO_PARK_R) b = UFOMARK;                     // Leuchtrand außen
+          else {                                                    // die vier Landekreise
+            for (const [kx,kz] of UFO_PLAETZE) {
+              const d = Math.hypot(rx-kx, rz-kz);
+              if (d > 2.4 && d < 3.6) { b = UFOMARK; break; }       // der leuchtende Ring
+            }
+          }
+          setz(lx2, uy, lz2, b);
+          // und oben abtragen, falls ein Felsen oder Kraterrand hereinragt
+          for (let y=uy+1; y<=Math.max(uy+14, gel+4); y++) setz(lx2, y, lz2, AIR);
+        }
     }
   }
   if (dim>=2 && dim<=8 && Math.abs(x0)<=32 && Math.abs(z0)<=32) {
@@ -5462,6 +5507,19 @@ atlas.width = atlas.height = T*ATLAS_N;
     return vary(120,225,225,16);
   });
   tile(154,(x,y)=> (x+y)%5===0 ? 'rgb(255,255,255)' : vary(150,250,245,22));   // 🛸 Licht
+  // 🛸 DER UFO-PARKPLATZ: dunkle Metallplatten (155) mit Nieten, dazwischen
+  // leuchtende türkise Streifen (156), die den Landekreis markieren.
+  tile(155,(x,y)=>{
+    if (x===0 || y===0) return vary(48,54,66,6);                    // Plattenfuge
+    if ((x===3||x===12) && (y===3||y===12)) return vary(130,140,158,8);  // Nieten
+    return vary(86,94,110,10);
+  });
+  tile(156,(x,y)=>{
+    if (x===0 || y===0) return vary(48,54,66,6);
+    const d = Math.min(x, y, 15-x, 15-y);
+    if (d >= 5) return 'rgb(245,255,254)';                          // heller Kern
+    return vary(120,238,226,18);                                    // türkises Leuchten
+  });
   // 👮 DIE FESTUNGS-POLIZEI: dunkelblaue Uniform (147) und ein freundliches,
   // wachsames Gesicht (148).
   tile(147,(x,y)=>{                                                 // Polizei-Uniform
@@ -6014,6 +6072,7 @@ function physics(dt) {
   }
   if (surfRiding) { surfPhysics(dt); return; }        // 🏄 auf Wasser und Lava surfen!
   if (raumRiding) { raumPhysics(dt); return; }        // 🚀 die Rakete SELBER fliegen!
+  if (ufoRiding)  { ufoPhysics(dt); return; }         // 🛸 und das UFO der Aliens!
   if (jetRiding) { jetPhysics(dt); return; }
   if (heliRiding) { heliPhysics(dt); return; }
   if (dragonRiding) { dragonPhysics(dt); return; }
@@ -6967,6 +7026,7 @@ function spawnTick() {
     if (weltDim === 9) hofstaatTick();
     alienSpawnTick();                   // 👽 auf den Planeten wohnen Aliens!
     ufoSpawnTick();                     // 🛸 und sie fliegen mit ihren Untertassen herum
+    ufoParkTick();                      // 🅿️ auf dem Parkplatz stehen welche zum Ausleihen
     return;
   }
   if (halleAn) return;                  // 🏟️ in der Halle stört niemand beim Üben
@@ -7678,6 +7738,7 @@ function updateAnimals(dt) {
         !a.beute &&                       // 💰 ein Räuber mit deiner Beute verschwindet NIE!
         !a.gefangen &&                    // 🚔 und wer im Gefängnis sitzt, bleibt sitzen!
         !a.diener &&                      // 👽 dein Alien-Diener geht nie verloren
+        a !== ufoRiding && !a.eigen &&    // 🛸 und das UFO, das du fliegst, erst recht nicht
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
     if (a.gefangen) {                   // 🚔 sitzt im Königs-Gefängnis und bleibt da
       a.kx = a.kz = 0; a.jagt = null;
@@ -7737,6 +7798,7 @@ function updateAnimals(dt) {
     if (a.type==='bird') { updateBird(a, dt); continue; }   // Vögel fliegen frei
     if (a.type==='fish') { updateFish(a, dt); continue; }   // Fische schwimmen frei
     if (a.type==='ufo') {               // 🛸 fliegt frei in der Luft, ganz ohne Boden
+      if (a === ufoRiding) continue;    // dieses hier steuert Jonah gerade selbst
       if (!ufoTick(a, dt)) animals.splice(i,1);
       continue;
     }
@@ -8709,9 +8771,13 @@ function drawAnimals() {
       pushBox(arr,a, 0,0.50,0, 3.40,0.20,3.40, 152);               // DER BREITE RAND
       pushBox(arr,a, 0,0.69,0, 2.40,0.22,2.40, 152);
       pushBox(arr,a, 0,0.88,0, 1.50,0.20,1.50, 152);
-      pushBox(arr,a, 0,1.12,0, 1.30,0.40,1.30, 153);               // DIE GLASKUPPEL
-      pushBox(arr,a, 0,1.44,0, 0.80,0.26,0.80, 153);               // (hoch genug, dass
-      pushBox(arr,a, 0,1.62,0, 0.34,0.14,0.34, 153);               //  man sie auch sieht)
+      // Sitzt JONAH drin, bleibt die Kuppel weg - sonst schaut er von innen
+      // gegen sein eigenes Glas und sieht gar nichts von der Welt. 🛸
+      if (a !== ufoRiding) {
+        pushBox(arr,a, 0,1.12,0, 1.30,0.40,1.30, 153);             // DIE GLASKUPPEL
+        pushBox(arr,a, 0,1.44,0, 0.80,0.26,0.80, 153);             // (hoch genug, dass
+        pushBox(arr,a, 0,1.62,0, 0.34,0.14,0.34, 153);             //  man sie auch sieht)
+      }
       pushBox(arr,a, 0,1.78,0, 0.10,0.22,0.10, 152);               // Antenne obendrauf
       pushBox(arr,a, 0,1.92,0, 0.19,0.19,0.19, 27);                // mit Blinklicht
       for (let li=0; li<8; li++) {                                 // acht bunte Lichter
@@ -12367,6 +12433,7 @@ function alienHeimatHolen() {
     ' hier auf dich gewartet! „Blipp blopp - du bist wieder da!"', 6000);
 }
 function weltWechsel(neu) {
+  if (ufoRiding) exitUfo();                  // 🛸 nicht im UFO in eine andere Welt
   alienHeimatMerken();                       // 👽 die Aliens bleiben zu Hause
   editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
   edits.clear();
@@ -15639,12 +15706,35 @@ const UFO_STRAHL = 3.2;          // so lang leuchtet der Strahl unter der Scheib
 let ufoNr = 0;                   // jedes UFO bekommt eine Nummer - so weiß jedes
                                  // Alien, aus welchem es ausgestiegen ist
 function ufoBoden(x, z) {        // wie hoch ist der Boden unter dem UFO?
-  return weltDim >= 2 ? planetHoehe(Math.floor(x), Math.floor(z), weltDim)
-                      : terrainHeight(Math.floor(x), Math.floor(z));
+  if (weltDim < 2) return terrainHeight(Math.floor(x), Math.floor(z));
+  // 🅿️ Auf dem Parkplatz liegt der Belag OBEN DRAUF und ist überall gleich
+  // hoch. planetHoehe kennt nur das rohe Gelände darunter - wer sich danach
+  // richtet, sinkt mitten in den Platz hinein.
+  const UP = ufoPark(weltDim);
+  if (Math.abs(Math.floor(x) - UP.x) <= UFO_PARK_R &&
+      Math.abs(Math.floor(z) - UP.z) <= UFO_PARK_R)
+    return planetHoehe(UP.x, UP.z, weltDim);
+  return planetHoehe(Math.floor(x), Math.floor(z), weltDim);
+}
+// 🅿️ Auf dem Alien-Parkplatz stehen immer zwei Untertassen zum Ausleihen.
+// Sie tauchen auf, sobald Jonah in die Nähe kommt, und bleiben einfach stehen.
+function ufoParkTick() {
+  if (weltDim < 2) return;
+  const UP = ufoPark(weltDim);
+  if (Math.hypot(player.x - UP.x, player.z - UP.z) > 44) return;
+  const uy = planetHoehe(UP.x, UP.z, weltDim);
+  for (const [kx, kz] of UFO_PLAETZE.slice(0, 2)) {   // nur zwei - zwei Plätze
+    const px = UP.x + kx + 0.5, pz = UP.z + kz + 0.5; // bleiben frei für Jonah
+    if (animals.some(a => a.type === 'ufo' && Math.hypot(a.x-px, a.z-pz) < 7)) continue;
+    animals.push({ type:'ufo', nr: ++ufoNr, park:true, phase:'geparkt',
+      x: px, z: pz, y: uy + 0.7, yaw: Math.random()*6, ph: Math.random()*10,
+      zx:px, zz:pz, zielT:0, landeT:9e9, strahl:0, t:0, hp:99 });
+  }
 }
 function ufoSpawnTick() {
   if (weltDim === 1) return;                  // in der Wolken-Wunderwelt nicht
-  const da = countType(a => a.type === 'ufo');
+  // geparkte zählen nicht mit: sonst käme über dem Parkplatz nie eines geflogen
+  const da = countType(a => a.type === 'ufo' && !a.park);
   if (weltDim >= 2) {
     if (da >= 2 || Math.random() > UFO_PLANET_CHANCE) return;
   } else {
@@ -15757,6 +15847,14 @@ function ufoTick(a, dt) {
   a.summT = (a.summT || 0) - dt;                          // das tiefe Brummen
   if (a.summT <= 0 && dp < 46) { a.summT = 0.55; blip(58 + Math.sin(a.ph)*14, 0.12); }
 
+  if (a.phase === 'jonah') a.phase = 'geparkt';   // Sicherung: Jonah sitzt nicht mehr drin
+  if (a.phase === 'geparkt') {
+    // 🅿️ Ein geparktes UFO steht einfach da und wartet auf Jonah. Es sinkt
+    // höchstens noch sanft auf den Boden, wenn er es in der Luft verlassen hat.
+    const bY = ufoBoden(a.x, a.z);
+    if (a.y > bY + 0.75) a.y = Math.max(bY + 0.7, a.y - 6*dt);
+    return true;
+  }
   if (a.phase === 'fliegen') {
     a.zielT -= dt;                                        // gemütlich im Kreis herum
     if (a.zielT <= 0 || Math.hypot(a.zx - a.x, a.zz - a.z) < 3) {
@@ -15802,6 +15900,107 @@ function ufoTick(a, dt) {
     }
   }
   return true;
+}
+// ============== 🛸🕹️ JONAH FLIEGT SELBER UFO ==============================
+// Tippt Jonah eine gelandete oder geparkte Untertasse an, setzt er sich hinein
+// und fliegt damit los. Ein UFO fliegt ganz anders als die Rakete: es schwebt
+// einfach an Ort und Stelle, kippt nicht um, hat keine Schwerkraft und ist
+// blitzschnell - genau so, wie man sich ein UFO vorstellt. 🛸
+let ufoRiding = null, ufoTipp = 0;
+function enterUfo(a) {
+  if (riding) dismount();
+  if (flying) toggleFly();
+  sitting = null;
+  ufoRiding = a;
+  a.eigen = true;                     // ab jetzt ist es DEINS und geht nie verloren
+  a.park = false;                     // und der Parkplatz darf ein neues hinstellen
+  a.phase = 'jonah';                  // ab jetzt steuert Jonah
+  a.strahl = 0;
+  document.getElementById('downBtn').style.display = 'flex';
+  const rb = document.getElementById('rideBtn');
+  rb.style.display = 'flex'; rb.textContent = '🅿️';
+  ufoTipp = 0;
+  toast('🛸 DU FLIEGST EIN UFO! Joystick = lenken, ⬆ = höher, ⬇ = tiefer. ' +
+        'Es schwebt ganz von allein - du kannst nicht abstürzen! 👽', 7000);
+  for (const f of [1500, 1100, 1700, 2100]) blip(f, 0.07);
+  shake = 0.3;
+}
+function exitUfo() {
+  const a = ufoRiding;
+  ufoRiding = null;
+  document.getElementById('downBtn').style.display = flying ? 'flex' : 'none';
+  const rb = document.getElementById('rideBtn');
+  rb.style.display = 'none'; rb.textContent = '🐴';
+  if (a) {
+    // Egal wie hoch Jonah aussteigt: das UFO setzt ihn sanft auf dem Boden ab
+    // und parkt dort. Abstürzen kann man mit einem UFO nicht. 🛸
+    a.phase = 'geparkt';
+    const h = ufoBoden(a.x, a.z);
+    if (a.y > h + 3)
+      toast('🛸 Dein UFO schwebt mit dir nach unten und parkt hier. 👽', 4200);
+    a.y = h + 0.7;
+    player.y = h + 1;
+    for (const [ox,oz] of [[2.8,0],[-2.8,0],[0,2.8],[0,-2.8],[3.8,0],[0,3.8]]) {
+      if (!collideBox(a.x+ox, player.y, a.z+oz, P_HALF, P_HEIGHT)) {
+        player.x = a.x+ox; player.z = a.z+oz; break;
+      }
+    }
+    player.vx = player.vy = player.vz = 0;
+  }
+  toast('🅿️ UFO geparkt. Tipp es wieder an, dann fliegst du weiter! 🛸', 3800);
+  blip(900,0.08); blip(600,0.1);
+  scheduleSave();
+}
+function ufoPhysics(dt) {
+  const a = ufoRiding, K = ANIMAL_KIND.ufo;
+  let mf = 0, ms = 0;
+  if (keys['KeyW']||keys['ArrowUp']) mf += 1;
+  if (keys['KeyS']||keys['ArrowDown']) mf -= 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ms -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ms += 1;
+  mf += joy.fwd; ms += joy.strafe;
+  const ml = Math.hypot(mf, ms);
+  if (ml > 1) { mf /= ml; ms /= ml; }
+  const hoch = jumpHeld || keys['Space'];
+  const tief = downHeld || keys['ShiftLeft'] || keys['ShiftRight'];
+  const speed = 20;                   // ein UFO ist flink!
+  const fx = Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = Math.sin(yaw);
+  const vx = (fx*mf + rx*ms) * speed, vz = (fz*mf + rz*ms) * speed;
+  let vv = 0;
+  if (hoch) vv += 14;
+  if (tief) vv -= 12;
+  // Steckt es doch mal in einem Felsen, darf es sich trotzdem herausbewegen.
+  const fest = collideBox(a.x, a.y+0.3, a.z, K.half, K.height);
+  const nx = a.x + vx*dt;
+  if (fest || !collideBox(nx, a.y+0.3, a.z, K.half, K.height)) a.x = nx;
+  const nz = a.z + vz*dt;
+  if (fest || !collideBox(a.x, a.y+0.3, nz, K.half, K.height)) a.z = nz;
+  const boden = ufoBoden(a.x, a.z);
+  let ny = Math.min(CH + 40, a.y + vv*dt);
+  if (ny < boden + 0.7) ny = boden + 0.7;          // nie im Boden versinken
+  if (fest || !collideBox(a.x, ny+0.3, a.z, K.half, K.height)) a.y = ny;
+  a.ph += dt * (ml > 0.05 || hoch || tief ? 3.2 : 1.1);
+  a.yaw += dt * 1.2;                  // die Scheibe dreht sich weiter
+  a.strahl = 0;
+  // Jonah sitzt OBEN IN DER GLASKUPPEL. Hoch genug, dass er über den Rand der
+  // Scheibe hinweg nach unten schauen kann - sonst verdeckt seine eigene
+  // Untertasse den halben Bildschirm, und Landen wäre ein Blindflug.
+  player.x = a.x; player.z = a.z; player.y = a.y + 2.0;
+  player.vx = player.vy = player.vz = 0;
+  if (ml > 0.05 || hoch) {            // ✨ Funken aus dem Antrieb
+    for (let s2 = 0; s2 < 2; s2++)
+      fireworks.push({ x:a.x+(Math.random()-0.5)*2.4, y:a.y-0.1, z:a.z+(Math.random()-0.5)*2.4,
+        vx:(Math.random()-0.5)*2, vy:-1.5-Math.random()*2, vz:(Math.random()-0.5)*2,
+        tile:[154,27,149][s2%3], t:0.5 });
+  }
+  ufoTipp -= dt;
+  if (ufoTipp <= 0 && Math.random() < 0.5) {
+    ufoTipp = 9;
+    const hoehe = Math.round(a.y - boden);
+    toast(hoehe > 60 ? '🛸 Wow, so hoch! Von hier siehst du den ganzen Planeten. 🪐'
+        : hoehe > 20 ? '🛸 ' + hoehe + ' Blöcke über dem Boden - wie ein echtes UFO! 👽'
+        : '🛸 Blipp blopp! Du fliegst wie ein Alien. 👽', 3000);
+  }
 }
 // 🕹️ Jonah steigt in seine eigene kleine Rakete und fliegt selbst los
 function selberFliegen() {
@@ -17113,6 +17312,7 @@ const MAP_BLOCK_COL = {
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [GTUER]:'#6a7080', [GTUER_AUF]:'#6a7080', [FAHRSTUHL]:'#a8b0be',
+  [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -17145,6 +17345,8 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   if (weltDim >= 2) {                   // 🚀 auf fremden Planeten gibt es nur DEINE Rakete
     const PP = raketenPark(weltDim);
     marks.push({x:PP.x, z:PP.z, e:'🚀'});          // 🅿️ der Raketen-Parkplatz
+    const UP = ufoPark(weltDim);
+    marks.push({x:UP.x, z:UP.z, e:'🅿️'});          // 🛸 der UFO-Parkplatz der Aliens
     if (weltDim === 9) {
       marks.push({x:0, z:14, e:'👑'});                   // 👑 dein Schloss
       const c0x = Math.floor(cx0/KCELL2), c0z = Math.floor(cz0/KCELL2);
@@ -17195,7 +17397,9 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   if (weltDim >= 2) {                   // 🚀 auf einem Planeten: DU in der Mitte
     mapCx = Math.round(player.x); mapCz = Math.round(player.z);
     const R = raketeOrt[weltDim];       // und die Rakete muss mit drauf passen!
-    mapR = Math.max(140, R ? Math.hypot(R.x-mapCx, R.z-mapCz)+70 : 0);
+    const UP2 = ufoPark(weltDim);       // und der UFO-Parkplatz auch!
+    mapR = Math.max(140, R ? Math.hypot(R.x-mapCx, R.z-mapCz)+70 : 0,
+                    Math.hypot(UP2.x-mapCx, UP2.z-mapCz)+40);
   } else {
     mapCx = 0; mapCz = 0;               // Mittelpunkt: dein Startpunkt
     const ft = fortressPos(), A = arcadePos(), MB = burgPos();
@@ -17213,7 +17417,8 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   }
   mapMarks = collectMarks(mapCx, mapCz, mapR);
   document.getElementById('mapLegend').innerHTML = weltDim >= 2
-    ? '🔺 Du &middot; 🚀 Deine Rakete &middot; ' + (weltDim===9 ? '👑 Dein Schloss &middot; ' : '') + PLANET[weltDim].name
+    ? '🔺 Du &middot; 🚀 Deine Rakete &middot; 🅿️ UFO-Parkplatz &middot; 🛸 UFO &middot; ' +
+      (weltDim===9 ? '👑 Dein Schloss &middot; ' : '') + PLANET[weltDim].name
     : '🔺 Du &middot; 👑 Festung &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚀 Rakete &middot; 📍 Ziel';
 }
 function fahrzeugMarks() {              // deine Fahrzeuge - immer live auf der Karte!
@@ -19517,22 +19722,22 @@ function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
 function hitEntity(a, dir) {
   if (a.type==='surfbrett') {           // 🏄 rauf aufs Brett!
     if (surfRiding || riding || jetRiding || carRiding || heliRiding ||
-        dragonRiding || baggerRiding || boatRiding) return;
+        dragonRiding || baggerRiding || boatRiding || ufoRiding) return;
     enterSurf(a);
     return;
   }
   if (a.type==='raumschiff') {          // 🚀 einsteigen und SELBER fliegen!
-    if (raumRiding || jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
+    if (ufoRiding || raumRiding || jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
     enterRaum(a);
     return;
   }
   if (a.type==='jet') {                 // Einsteigen in den Privatjet!
-    if (jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
+    if (ufoRiding || jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
     enterJet(a);
     return;
   }
   if (a.type==='car') {                 // Einsteigen ins Auto!
-    if (jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
+    if (ufoRiding || jetRiding || carRiding || heliRiding || dragonRiding || baggerRiding) return;
     enterCar(a);
     return;
   }
@@ -19608,12 +19813,16 @@ function hitEntity(a, dir) {
   }
   // 👑 ALLE MENSCHEN hören auf König Jonah! Der Bankier und der Hausmeister
   // haben in ihrem Menü zusätzlich noch ihre eigenen Knöpfe.
-  if (a.type==='ufo') {                // 🛸 das UFO antippen: die Lichter gehen los
+  if (a.type==='ufo') {                // 🛸 EINSTEIGEN und selber fliegen!
     a.ph += 3;
+    if (a.phase === 'gelandet' || a.phase === 'geparkt') {
+      if (ufoRiding || raumRiding || jetRiding || carRiding || heliRiding ||
+          dragonRiding || baggerRiding || busRiding || roboterRiding) return;
+      enterUfo(a);
+      return;
+    }
     blip(1400,0.06); blip(1700,0.06); blip(2100,0.08);
-    toast(a.phase==='gelandet'
-      ? '🛸 Das UFO brummt leise und alle Lichter blinken! Die Aliens sind gerade draußen.'
-      : '🛸 Es schwebt zu hoch! Warte, bis es landet – dann kannst du es anfassen.', 4200);
+    toast('🛸 Es schwebt noch zu hoch! Warte, bis es landet – dann kannst du einsteigen.', 4200);
     return;
   }
   if (a.type==='alien') {              // 👽 mit dem Alien reden
@@ -20935,7 +21144,7 @@ chatInput.addEventListener('keydown',e=>{
 });
 
 const rideBtn=document.getElementById('rideBtn');
-const rideOff = ()=>{ if (surfRiding) exitSurf(); else if (raumRiding) exitRaum(); else if (ubootRiding) exitUboot(); else if (busRiding) busAussteigen(); else if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
+const rideOff = ()=>{ if (surfRiding) exitSurf(); else if (ufoRiding) exitUfo(); else if (raumRiding) exitRaum(); else if (ubootRiding) exitUboot(); else if (busRiding) busAussteigen(); else if (roboterRiding) exitRoboter(); else if (jetRiding) exitJet(); else if (dragonRiding) exitDragon(); else if (heliRiding) exitHeli(); else if (boatRiding) exitBoat(); else if (baggerRiding) exitBagger(); else if (carRiding) exitCar(); else if (cartRiding) exitCart2(false); else if (riding) dismount(); else if (schulterMaus) mausAbsetzen(); };
 rideBtn.addEventListener('touchstart',e=>{e.preventDefault();rideOff();},{passive:false});
 rideBtn.addEventListener('mousedown',e=>{e.preventDefault();rideOff();});
 
@@ -21243,7 +21452,7 @@ function frame(now) {
     const willDown = flying || schwerelosAn();
     const istDa = db.style.display !== 'none';
     if (willDown !== istDa && !jetRiding && !heliRiding && !dragonRiding &&
-        !raumRiding && !baggerRiding && !roboterRiding)
+        !raumRiding && !ufoRiding && !baggerRiding && !roboterRiding)
       db.style.display = willDown ? 'flex' : 'none';
   }
   updateFuses(dt);
