@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DU FLIEGST SELBER UFO – UND DIE ALIENS HABEN PARKPLÄTZE (v233)! 🛸🅿️
+  DER ALIEN-PARKPLATZ: Auf JEDEM Planeten gibt es jetzt einen großen Platz aus
+  dunklen Metallplatten mit einem leuchtenden türkisen Rand und vier
+  leuchtenden Landekreisen. Auf zwei Kreisen stehen immer Untertassen bereit,
+  auf dem Kartenbildschirm findest du ihn als 🅿️ (der Raketen-Parkplatz ist
+  weiter das 🚀). Und drum herum laufen natürlich Aliens.
+  EINSTEIGEN: Tipp eine geparkte oder gelandete Untertasse an – und schon bist
+  DU der Pilot! Joystick = lenken, ⬆ = höher, ⬇ = tiefer, 🅿️ = aussteigen.
+  Ein UFO fliegt ganz anders als deine Rakete: es ist blitzschnell, es schwebt
+  von allein in der Luft stehen, und ABSTÜRZEN KANNST DU NICHT. Lässt du alles
+  los, bleibt es einfach stehen. In den Boden sinkt es auch nie.
+  AUSSTEIGEN: Wo du aussteigst, schwebt das UFO mit dir sanft nach unten und
+  parkt dort. Es bleibt DEINS und verschwindet nie – du kannst jederzeit wieder
+  einsteigen. Und die Aliens stellen auf dem Parkplatz einfach ein neues hin.
 - JEDES ALIEN BLEIBT AUF SEINEM PLANETEN (v232)! 👽🪐 Dein Wunsch: deine
   Alien-Freunde sollen nicht mit zur Erde kommen, sondern dort bleiben, wo du
   sie gefunden hast. Genau so ist es jetzt.
