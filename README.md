@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- JEDES ALIEN BLEIBT AUF SEINEM PLANETEN (v232)! 👽🪐 Dein Wunsch: deine
+  Alien-Freunde sollen nicht mit zur Erde kommen, sondern dort bleiben, wo du
+  sie gefunden hast. Genau so ist es jetzt.
+  SIE WOHNEN DA: Machst du auf dem Mond ein Alien zu deinem Diener, steht
+  gleich da: „Auf dem 🌕 Mond ist sein Zuhause." Solange du auf dem Mond bist,
+  folgt er dir überall hin. Fliegst du weg, winkt er dir nach: „Blipp bleibt
+  auf dem 🌕 Mond – da wohnt er ja!" 👋
+  UND ER WARTET AUF DICH: Kommst du zurück, funkelt er sofort neben dir herbei
+  und ruft „Blipp blopp – du bist wieder da!" 🎉 Mit seinem Befehl von letztem
+  Mal: hast du „warte hier" gesagt, wartet er immer noch.
+  AUF JEDEM PLANETEN EINER: Du kannst auf dem Mond einen Freund haben, auf dem
+  Mars einen zweiten und auf der Erde einen dritten – jeder bleibt bei sich zu
+  Hause, und alle werden gespeichert. Auch die Aliens, die mit einem UFO zu
+  dir auf die Erde kommen: die wohnen dann bei dir auf der Erde.
 - DIE ALIENS HABEN UFOS (v231)! 🛸👽 Natürlich laufen die Aliens nicht zu Fuß
   durchs Weltall! Über jedem Planeten schwirren jetzt echte fliegende
   Untertassen herum: eine silberne Scheibe mit einem breiten Rand, oben eine
