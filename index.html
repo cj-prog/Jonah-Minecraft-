@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 231 &middot; Die Aliens haben UFOs! Sie schwirren über den Planeten – und manchmal landet eins auf der Erde. 🛸👽</p>
+    Version 232 &middot; Deine Alien-Freunde bleiben jetzt auf ihrem Planeten und warten dort auf dich! 👽🪐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 231;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 232;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4671,8 +4671,21 @@ function setBlock(wx,wy,wz,v) {
 }
 
 // ------------------------------ Speichern ----------------------------------
-let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedKnast = [], savedAliens = [], savedRaum = null;
+let saveTimer = null, savedPets = [], savedFriends = {}, savedCompanions = [], savedEngFolgt = [], savedJet = null, savedHeli = null, savedDrache = null, savedBalls = [], savedStatuen = [], savedBagger = null, savedRoboter = null, savedLimo = null, savedDiebe = [], savedKnast = [], savedRaum = null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveGame, 800); }
+// 👽 Alle Alien-Diener für den Spielstand: die in anderen Welten warten schon
+// in alienHeim, die aus DIESER Welt laufen ja gerade neben Jonah her.
+function alienSpeicher() {
+  const out = {};
+  for (const d in alienHeim)
+    if (alienHeim[d] && alienHeim[d].length) out[d] = alienHeim[d].slice();
+  const hier = out[weltDim] || (out[weltDim] = []);
+  for (const a of animals)
+    if (a.type === 'alien' && a.diener && !hier.some(x => x[0] === a.name))
+      hier.push([a.name, a.befehl === 'warten' ? 'warten' : 'folgen']);
+  if (!hier.length) delete out[weltDim];
+  return out;
+}
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
   try {
@@ -4736,7 +4749,7 @@ function saveGame() {
       // 🚔 wer im Königs-Gefängnis sitzt, sitzt auch nach dem Neustart noch drin
       knast: animals.filter(a=>a.gefangen && typeof a.zelle==='number').map(a=>a.zelle),
       // 👽 deine Alien-Diener bleiben dir erhalten
-      aliens: animals.filter(a=>a.type==='alien' && a.diener).map(a=>[a.name, a.befehl||'folgen']),
+      aliens: alienSpeicher(),           // 👽 nach Welten sortiert: wer wohnt wo?
       zellen: zellenAnzahl,              // 🔨 so viele Zellen hat die Polizei gebaut
       ziele: customTargets,
       jet: jetSave,
@@ -4837,7 +4850,12 @@ function loadGame() {
     if (Array.isArray(s.balls)) savedBalls = s.balls;
     if (Array.isArray(s.statuen)) savedStatuen = s.statuen;
     if (Array.isArray(s.diebe)) savedDiebe = s.diebe;      // 💰 Räuber mit geklautem Geld
-    if (Array.isArray(s.aliens)) savedAliens = s.aliens;   // 👽 deine Alien-Diener
+    // 👽 Deine Alien-Diener. Neu: nach Welten sortiert. In alten Spielständen
+    // (v230/v231) war es eine einfache Liste - die sind alle in der Welt, in
+    // der Jonah zuletzt war, denn damals sind sie ja noch mitgereist.
+    if (s.aliens && !Array.isArray(s.aliens) && typeof s.aliens === 'object') alienHeim = s.aliens;
+    else if (Array.isArray(s.aliens) && s.aliens.length)
+      alienHeim = { [typeof s.dim === 'number' ? s.dim : 0]: s.aliens };
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
     if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
       zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
@@ -6943,6 +6961,7 @@ function hofstaatTick() {
   [[-9,-12],[9,-12],[-6,-20],[6,-20],[-9,10],[9,10]].forEach(([x,z],i) => setz('villager', VOLK[i], x, z));
 }
 function spawnTick() {
+  alienHeimatHolen();                   // 👽 wohnt hier ein Alien-Freund von dir?
   // 🚀 Auf den Planeten ist es still: dort gibt es keine Tiere, Dorfleute oder Monster
   if (weltDim >= 2) {
     if (weltDim === 9) hofstaatTick();
@@ -12289,7 +12308,66 @@ const raketeOrt  = new Array(10).fill(null);   // 🚀 wo in jeder Welt seine Ra
 let portalT = 0, portalKuehl = 0;
 // 🚀 DIESE GEFÄHRTE REISEN IMMER MIT - egal auf welchen Planeten es geht!
 const MITREISER = new Set(['jet','heli','dragon','bagger','roboter','limo','raumschiff']);   // Schiffe bleiben auf der Erde
+// ============== 👽🏠 JEDES ALIEN BLEIBT AUF SEINEM PLANETEN ================
+// Alien-Diener reisen NICHT mit: sie bleiben dort, wo Jonah sie gefunden hat,
+// und warten auf seinen nächsten Besuch. Hier merkt sich das Spiel für jede
+// Welt, wer dort auf ihn wartet: { Weltnummer: [[Name, Befehl], ...] }
+let alienHeim = {};
+function weltName(dim) {               // mit Artikel: „auf DEM Mond", „auf DER Erde"
+  return dim === 0 ? 'der Erde' : dim === 1 ? 'der Wolkenwelt'
+       : (PLANET[dim] ? 'dem ' + PLANET[dim].name : 'seinem Planeten');
+}
+// Beim VERLASSEN einer Welt: alle Alien-Diener bleiben dort zurück.
+function alienHeimatMerken() {
+  const bleiben = [];
+  for (let i = animals.length-1; i >= 0; i--) {
+    const a = animals[i];
+    if (a.type !== 'alien' || !a.diener) continue;
+    bleiben.push([a.name, a.befehl === 'warten' ? 'warten' : 'folgen']);
+    animals.splice(i, 1);
+  }
+  if (!bleiben.length) return;
+  const liste = alienHeim[weltDim] || (alienHeim[weltDim] = []);
+  for (const b of bleiben) if (!liste.some(x => x[0] === b[0])) liste.push(b);
+  const namen = bleiben.map(b => b[0]), mehr = namen.length > 1, wo = weltName(weltDim);
+  // Erst nach der Ankunft zeigen - sonst überdeckt die Lande-Meldung alles.
+  setTimeout(() => toast('👽👋 ' + namen.join(' und ') + (mehr ? ' bleiben' : ' bleibt') +
+    ' auf ' + wo + ' - da ' + (mehr ? 'wohnen sie' : 'wohnt er') + ' ja! ' +
+    (mehr ? 'Sie winken' : 'Er winkt') + ' dir nach und ' +
+    (mehr ? 'warten' : 'wartet') + ' auf deinen nächsten Besuch. 🛸', 6500), 3200);
+}
+// Beim ANKOMMEN: wer hier wohnt, kommt sofort angeschwebt und freut sich.
+function alienHeimatHolen() {
+  const liste = alienHeim[weltDim];
+  if (!liste || !liste.length) return;
+  if (flugT > 0) return;                // erst richtig gelandet sein
+  const namen = [];
+  for (const al of liste) {
+    if (animals.some(a => a.type === 'alien' && a.name === al[0])) continue;
+    let px = player.x + 1.6, py = player.y, pz = player.z;
+    for (let v = 0; v < 12; v++) {      // einen freien Fleck neben Jonah suchen
+      const w = Math.random()*Math.PI*2, d = 1.6 + Math.random()*2.2;
+      const ax = player.x + Math.cos(w)*d, az = player.z + Math.sin(w)*d;
+      if (!collideBox(ax, player.y, az, 0.28, 1.5)) { px = ax; pz = az; break; }
+    }
+    animals.push({ type:'alien', name: al[0], diener:true, freund:3, friend:3,
+      befehl: al[1] === 'warten' ? 'warten' : 'folgen', heimDim: weltDim,
+      x: px, y: py, z: pz,
+      yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:1, ph:0, onGround:false });
+    namen.push(al[0]);
+    for (let pf = 0; pf < 16; pf++)     // ✨ er funkelt herbei
+      fireworks.push({ x:px, y:py+Math.random()*2.2, z:pz, vx:(Math.random()-0.5)*2,
+        vy:1+Math.random()*2, vz:(Math.random()-0.5)*2, tile:[154,27,149][pf%3], t:0.9 });
+  }
+  alienHeim[weltDim] = [];
+  if (!namen.length) return;
+  for (const f of [900, 1300, 1700]) blip(f, 0.07);
+  const mehr = namen.length > 1;
+  toast('👽🎉 ' + namen.join(' und ') + (mehr ? ' haben' : ' hat') +
+    ' hier auf dich gewartet! „Blipp blopp - du bist wieder da!"', 6000);
+}
 function weltWechsel(neu) {
+  alienHeimatMerken();                       // 👽 die Aliens bleiben zu Hause
   editsLager[weltDim] = new Map(edits);      // aktuelle Welt einpacken
   edits.clear();
   for (const [k,v] of editsLager[neu]) edits.set(k, v);
@@ -12299,8 +12377,9 @@ function weltWechsel(neu) {
   fallende.length = 0; flowQ.length = 0; fallQ.length = 0;
   for (let i=animals.length-1; i>=0; i--) {  // Haustiere, Begleiter UND alle Fahrzeuge kommen mit!
     const a = animals[i];
-    // 👽 Alien-Diener kommen überallhin mit - auch zurück zur Erde!
-    if (!(a.tame || a.follow || a.diener || MITREISER.has(a.type))) animals.splice(i,1);
+    // 👽 Alien-Diener sind hier schon weg: alienHeimatMerken hat sie oben in
+    // ihre Heimatwelt eingetragen. Sie reisen nämlich NICHT mit.
+    if (!(a.tame || a.follow || MITREISER.has(a.type))) animals.splice(i,1);
   }
 }
 function portalBauen(x, y, z) {         // ein Portal mit Torbogen - vorne offen!
@@ -15343,7 +15422,9 @@ function landeAufErde() {
 // Auf jedem Planeten leben Aliens: kleine grüne Wesen mit riesigen Augen und
 // leuchtenden Fühlern. Sie sind neugierig und überhaupt nicht gefährlich -
 // sie kommen angeschwebt und quasseln in ihrer Sprache. Wer dreimal mit einem
-// redet, wird sein Freund - und dann wird er dein DIENER und kommt mit.
+// redet, wird sein Freund - und dann wird er sein DIENER.
+// Mitreisen tun sie aber NICHT: jedes Alien bleibt auf seinem Heimatplaneten
+// und wartet dort auf Jonahs nächsten Besuch (siehe alienHeim).
 const ALIEN_NAMEN = ['Blipp', 'Zork', 'Nova', 'Glib', 'Xeno', 'Plim', 'Wusel',
                      'Quark', 'Zippy', 'Moop', 'Fizzel', 'Tok'];
 // Was sie sagen - und was es heißt. Jonah soll ja verstehen, was los ist.
@@ -15514,8 +15595,9 @@ function alienReden(a) {
   if (a.diener) return;
   a.diener = true; a.befehl = 'folgen'; a.friend = 3;
   sagen(a, 'Blipp! Ich diene dir, König Jonah! 👽', 5);
-  toast('👽🤵 ' + a.name + ' ist jetzt DEIN ALIEN-DIENER! Er kommt überall mit – ' +
-    'auch zurück zur Erde. Tipp ihn an, dann sagst du ihm, was er tun soll!', 6500);
+  toast('👽🤵 ' + a.name + ' ist jetzt DEIN ALIEN-DIENER! Er folgt dir hier überall hin. ' +
+    'Auf ' + weltName(weltDim) + ' ist sein Zuhause – da bleibt er, wenn du wegfliegst, ' +
+    'und wartet auf dich. Tipp ihn an, dann sagst du ihm, was er tun soll!', 7000);
   for (const f of [523,659,784,1047,1319]) blip(f,0.09);
   for (let n = 0; n < 26; n++)
     fireworks.push({ x:a.x, y:a.y+1.4, z:a.z, vx:(Math.random()-0.5)*4,
@@ -21452,15 +21534,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
     animals.push({type:'raeuber', x:d[0], y:d[1], z:d[2], beute:d[3]||1,
       hx:d[0], hz:d[2], yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false});
   }
-  // 👽 Deine Alien-Diener stehen wieder neben dir
-  for (const al of savedAliens) {
-    if (animals.some(a => a.type === 'alien' && a.name === al[0])) continue;
-    animals.push({ type:'alien', name: al[0], diener:true, freund:3, friend:3,
-      befehl: al[1] === 'warten' ? 'warten' : 'folgen',
-      x: player.x + (Math.random()*3-1.5), y: player.y, z: player.z + (Math.random()*3-1.5),
-      yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:1, ph:0, onGround:false });
-  }
-  savedAliens = [];
+  // 👽 Deine Alien-Diener holt alienHeimatHolen() - jeder in SEINER Welt.
   // 🚔 Die Räuber, die die Polizei eingesperrt hat, sitzen weiter in ihrer Zelle
   // In einer Zelle können mehrere sitzen - die Liste darf dieselbe Zellennummer
   // also mehrfach enthalten. Jeder bekommt seinen eigenen Platz darin.
