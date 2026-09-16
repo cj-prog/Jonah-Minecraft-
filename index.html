@@ -579,9 +579,13 @@
   .foodChip { display:none; align-items:center; background:rgba(0,0,0,.4); color:#fff;
     padding:6px 10px; border-radius:12px; font-size:16px; font-weight:bold; }
   #missBox { left:calc(12px + env(safe-area-inset-left)); top:calc(52px + env(safe-area-inset-top));
-    display:none; align-items:center; background:rgba(24,20,60,.72); color:#fff;
+    display:none; flex-direction:column; align-items:flex-start; gap:5px;
+    background:rgba(24,20,60,.72); color:#fff;
     padding:7px 12px; border-radius:12px; font-size:15px; font-weight:bold;
     border:2px solid rgba(255,220,120,.75); max-width:min(70vw,340px); }
+  /* 🏗️ die große Aufgabe steht IMMER da - eine eigene Zeile darunter */
+  #basisText { display:none; font-size:14px; color:#bff3ec;
+    border-top:1px solid rgba(255,255,255,.28); padding-top:5px; width:100%; }
 
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
@@ -737,7 +741,7 @@
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
 <div class="hud" id="lavaFx"></div>
-<div class="hud" id="missBox"><span id="missText"></span></div>
+<div class="hud" id="missBox"><span id="missText"></span><span id="basisText"></span></div>
 <div class="hud" id="foodBar">
   <div class="foodChip" id="foodC"></div>
   <div class="foodChip" id="foodT"></div>
@@ -930,7 +934,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 234 &middot; Deine Lern-Pausen führen jetzt ein Tagebuch – Mama und Papa sehen im Elternbereich, wie gut du wirst. 📊</p>
+    Version 235 &middot; DEINE GROSSE AUFGABE: Bau dir auf dem Mond deine eigene Alien-Basis – Stufe für Stufe, sie wird nie fertig! 🏗️👽</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +980,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 234;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 235;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -2254,6 +2258,12 @@ const UFO_PLAETZE = [[-6,-6], [6,-6], [-6,6], [6,6]];   // die vier Landekreise
 function ufoPark(dim) {
   return dim === 9 ? { x: 86, z: 0 } : { x: 48, z: 0 };
 }
+// 🏗️ Und gleich nebenan der Bauplatz für Jonahs Alien-Basis. Das steht hier
+// oben, weil schon der Chunk-Generator weiter unten damit arbeitet.
+const BASIS_DIM = 2;                    // 🌕 sie steht auf dem Mond
+const BASIS_R = 13;                     // so groß ist der Bauplatz (27x27)
+function basisPos() { return { x: 48, z: 34 }; }   // gleich neben dem UFO-Parkplatz
+function basisY() { return planetHoehe(basisPos().x, basisPos().z, BASIS_DIM); }
 function planetHoehe(x, z, dim) {
   const P = PLANET[dim] || PLANET[2];
   const b = fbm(x*0.014 + dim*130, z*0.014 - dim*90);
@@ -3134,6 +3144,28 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
           setz(lx2, uy, lz2, b);
           // und oben abtragen, falls ein Felsen oder Kraterrand hereinragt
           for (let y=uy+1; y<=Math.max(uy+14, gel+4); y++) setz(lx2, y, lz2, AIR);
+        }
+    }
+  }
+  // 🏗️ DER BAUPLATZ FÜR JONAHS ALIEN-BASIS - nur auf dem Mond. Ein ebener,
+  // markierter Platz: da soll gebaut werden, nicht erst planiert.
+  if (dim === BASIS_DIM) {
+    const BB = basisPos();
+    if (Math.abs(x0-BB.x)<=32 && Math.abs(z0-BB.z)<=32) {
+      const bY = planetHoehe(BB.x, BB.z, dim);
+      for (let wx=BB.x-BASIS_R; wx<=BB.x+BASIS_R; wx++)
+        for (let wz=BB.z-BASIS_R; wz<=BB.z+BASIS_R; wz++) {
+          const lx2 = wx-x0, lz2 = wz-z0;
+          if (lx2<0 || lx2>15 || lz2<0 || lz2>15) continue;
+          const rand = Math.max(Math.abs(wx-BB.x), Math.abs(wz-BB.z));
+          const gel = planetHoehe(wx, wz, dim);
+          for (let y=Math.min(gel, bY)-2; y<bY; y++) setz(lx2, y, lz2, P.tief);
+          // Schachbrett aus Alien-Metall und Planetenboden, dazu ein Leuchtrand:
+          // so sieht man den Bauplatz schon von weitem. (Auf dem Mond sind
+          // P.boden und STONE beide grau - deshalb UFOPAD als zweite Farbe.)
+          setz(lx2, bY, lz2, rand === BASIS_R ? UFOMARK
+                           : ((wx+wz) % 2 === 0 ? UFOPAD : P.boden));
+          for (let y=bY+1; y<=Math.max(bY+24, gel+4); y++) setz(lx2, y, lz2, AIR);
         }
     }
   }
@@ -4831,6 +4863,7 @@ function saveGame() {
              stufen: VOKABEL_STUFEN.length, ziel: 12,
              woerter: vokVorrat().length },
       verlauf: lernVerlauf,              // 📊 das Lern-Tagebuch für den Elternbereich
+      basis: [basisStufe, basisZahl],    // 🏗️ wie weit ist die Alien-Basis?
 
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -4914,6 +4947,10 @@ function loadGame() {
     // 📊 das Lern-Tagebuch für den Elternbereich
     if (s.verlauf && typeof s.verlauf === 'object' && !Array.isArray(s.verlauf))
       lernVerlauf = s.verlauf;
+    if (Array.isArray(s.basis)) {        // 🏗️ der Stand der Alien-Basis
+      basisStufe = Math.max(0, s.basis[0]|0);
+      basisZahl  = Math.max(0, s.basis[1]|0);
+    }
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
     if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
       zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
@@ -15012,10 +15049,178 @@ function schlachtKnopf() {
   b.style.display = schlachtOffen() ? 'flex' : 'none';
   b.textContent = schlachtLaeuft ? '🛑' : '⚔️';
 }
+// ============== 🏗️ DIE ALIEN-BASIS: Jonahs große Aufgabe =================
+// Eine Sache, die NIE fertig wird. Auf dem Mond, gleich neben dem UFO-
+// Parkplatz, liegt ein Bauplatz. Dort baut Jonah Stufe für Stufe seine eigene
+// Alien-Basis auf - und jede Stufe muss er WIRKLICH im Spiel machen: Steine
+// abbauen, hochfliegen, hinstellen. Auf einen Knopf drücken hilft nicht.
+// Nach den sechs großen Stufen geht es endlos weiter: jedes Stockwerk macht
+// den Turm höher, und es wird immer ein bisschen mehr Material gebraucht.
+// Steht Jonah (oder irgendwas) auf dem Bauplatz?
+function aufBauplatz(x, z) {
+  const B = basisPos();
+  return weltDim === BASIS_DIM &&
+         Math.abs(Math.floor(x) - B.x) <= BASIS_R && Math.abs(Math.floor(z) - B.z) <= BASIS_R;
+}
+const BASIS_STUFEN = [
+  { t:'🧱 Fundament',  txt:'Setz 24 Stein-Blöcke auf den Bauplatz',  block:'STONE', ziel:24 },
+  { t:'🪟 Kuppel',     txt:'Setz 16 Glas-Blöcke auf den Bauplatz',   block:'GLASS', ziel:16 },
+  { t:'🔥 Licht',      txt:'Stell 8 Fackeln auf den Bauplatz',       block:'TORCH', ziel:8 },
+  { t:'🛸 Hangar',     txt:'Park ein UFO auf dem Bauplatz',          ort:()=>
+      animals.some(a => a.type === 'ufo' && a !== ufoRiding && aufBauplatz(a.x, a.z)) },
+  { t:'👽 Mannschaft', txt:'Bring 2 Alien-Diener zur Basis',         ort:()=>
+      countType(a => a.type === 'alien' && a.diener && aufBauplatz(a.x, a.z)) >= 2 },
+  { t:'📡 Antenne',    txt:'Setz 6 Gold-Blöcke auf den Bauplatz',    block:'GOLD',  ziel:6 },
+];
+function basisBlockNr(name) {
+  return { STONE: STONE, GLASS: GLASS, TORCH: TORCH, GOLD: GOLD, PLANK: PLANK }[name];
+}
+let basisStufe = 0, basisZahl = 0, basisT = 0;
+// Ab Stufe 6 geht es endlos weiter: Stockwerk für Stockwerk.
+function basisAufgabe() {
+  if (basisStufe < BASIS_STUFEN.length) return BASIS_STUFEN[basisStufe];
+  const n = basisStufe - BASIS_STUFEN.length + 1;
+  return { t:'🏗️ Stockwerk ' + n,
+           txt:'Setz ' + (12 + n*3) + ' Blöcke auf den Bauplatz (was du willst!)',
+           block:'*', ziel: 12 + n*3 };
+}
+// Beim Bauen mitzählen - aber NUR auf dem Bauplatz und nur der richtige Block.
+function basisGebaut(b) {
+  if (weltDim !== BASIS_DIM) return;
+  const a = basisAufgabe();
+  if (!a.ziel) return;
+  if (a.block !== '*' && basisBlockNr(a.block) !== b) return;
+  basisZahl++;
+  if (basisZahl >= a.ziel) basisFertig();
+  else { basisAnzeige(); scheduleSave(); }
+}
+function basisTick(dt) {                // für die Stufen, die man nicht baut
+  basisT -= dt;
+  if (basisT > 0) return;
+  basisT = 0.6;
+  if (weltDim !== BASIS_DIM) return;
+  const a = basisAufgabe();
+  if (a.ort) { try { if (a.ort()) basisFertig(); } catch(e){} }
+}
+function basisFertig() {
+  const a = basisAufgabe();
+  basisBauen(basisStufe);               // 🏗️ die Basis wächst!
+  basisStufe++; basisZahl = 0;
+  money += 15; updateFoodHUD();
+  for (const f of [523,659,784,1047,1319]) blip(f,0.1);
+  const B = basisPos(), by = basisY();
+  for (let n = 0; n < 40; n++)
+    fireworks.push({ x:B.x+0.5+(Math.random()-0.5)*14, y:by+2+Math.random()*8, z:B.z+0.5+(Math.random()-0.5)*14,
+      vx:(Math.random()-0.5)*4, vy:2+Math.random()*4, vz:(Math.random()-0.5)*4,
+      tile:[154,27,30,149][n%4], t:1.2 });
+  const naechste = basisAufgabe();
+  toast('🏗️🎉 ' + a.t + ' GESCHAFFT! Deine Alien-Basis ist gewachsen – schau sie dir an! ' +
+        '(+15 €)\n\nJetzt dran: ' + naechste.t + ' – ' + naechste.txt, 8000);
+  spielEreignis('Jonah built a new part of his alien base: ' + a.t + '!',
+                'Jonah hat ein neues Teil seiner Alien-Basis gebaut: ' + a.t + '!');
+  basisAnzeige();
+  scheduleSave();
+}
+// 🏗️ DIE BASIS WÄCHST. Alles steht INNERHALB des ebenen Bauplatzes - draußen
+// auf dem rohen Mondboden käme sonst ein Teil auf einem Felsen zu liegen und
+// ein anderes in der Luft. Und: gebaut wird nur in die LUFT. Was Jonah selbst
+// hingestellt hat, bleibt immer stehen.
+function basisBauen(stufe) {
+  const B = basisPos(), by = basisY();
+  const setz = (x, y, z, b) => {
+    if (y <= CH_MIN + 1 || y >= CH) return;
+    if (getBlock(x, y, z) !== AIR) return;
+    setBlock(x, y, z, b);
+  };
+  // Ihre EIGENEN Platten darf die Basis wieder überstreichen: UFOPAD und
+  // UFOMARK gibt es in Jonahs Werkzeugkasten gar nicht, die können also nur
+  // von ihr selbst sein. So lassen sich Landekreise auf den Boden malen.
+  const male = (x, y, z, b) => {
+    if (y <= CH_MIN + 1 || y >= CH) return;
+    const a2 = getBlock(x, y, z);
+    if (a2 === AIR || a2 === UFOPAD || a2 === UFOMARK) setBlock(x, y, z, b);
+  };
+  const ring = (y, r, b, cz) => {                    // ein Quadrat-Ring
+    const z0 = B.z + (cz || 0);
+    for (let d = -r; d <= r; d++) {
+      setz(B.x-r, y, z0+d, b); setz(B.x+r, y, z0+d, b);
+      setz(B.x+d, y, z0-r, b); setz(B.x+d, y, z0+r, b);
+    }
+  };
+  const kreis = (cz, r, y) => {                      // ein Landekreis auf den Boden
+    for (let dx = -r-1; dx <= r+1; dx++) for (let dz = -r-1; dz <= r+1; dz++) {
+      const d = Math.hypot(dx, dz);
+      if (d <= r + 0.6) male(B.x+dx, y, B.z+cz+dz, d > r - 0.9 ? UFOMARK : UFOPAD);
+    }
+  };
+  if (stufe === 0) {                                 // 🧱 Fundament: Sockel und Säulen
+    for (let dx = -7; dx <= 7; dx++) for (let dz = -7; dz <= 7; dz++)
+      setz(B.x+dx, by+1, B.z+dz, UFOPAD);
+    for (const [cx, cz] of [[-7,-7],[7,-7],[-7,7],[7,7]])
+      for (let y = by+2; y <= by+5; y++) setz(B.x+cx, y, B.z+cz, STONE);
+  } else if (stufe === 1) {                          // 🪟 Kuppel: Glasdach obendrauf
+    ring(by+6, 7, STONE);
+    for (let dx = -6; dx <= 6; dx++) for (let dz = -6; dz <= 6; dz++)
+      setz(B.x+dx, by+6, B.z+dz, GLASS);
+    ring(by+7, 3, GLASS);
+    setz(B.x, by+8, B.z, GLASS);
+  } else if (stufe === 2) {                          // 🔥 Licht: Fackeln und Leuchtstreifen
+    for (const [cx, cz] of [[-7,-7],[7,-7],[-7,7],[7,7]]) setz(B.x+cx, by+7, B.z+cz, TORCH);
+    for (let d = -7; d <= 7; d++) if (d % 2 === 0) {
+      male(B.x+d, by+1, B.z-7, UFOMARK); male(B.x+d, by+1, B.z+7, UFOMARK);
+      male(B.x-7, by+1, B.z+d, UFOMARK); male(B.x+7, by+1, B.z+d, UFOMARK);
+    }
+  } else if (stufe === 3) {                          // 🛸 Hangar: Landekreis mit Tor
+    kreis(10, 3, by+1);                              // vor der Kuppel, noch auf dem Platz
+    for (const cx of [-4, 4]) for (let y = by+1; y <= by+5; y++) setz(B.x+cx, y, B.z+10, STONE);
+    for (let dx = -4; dx <= 4; dx++) setz(B.x+dx, by+6, B.z+10, UFOPAD);
+    setz(B.x-4, by+7, B.z+10, TORCH); setz(B.x+4, by+7, B.z+10, TORCH);
+  } else if (stufe === 4) {                          // 👽 Mannschaft: das Wohnmodul
+    for (let dx = -4; dx <= 4; dx++) for (let dz = -4; dz <= 4; dz++) {
+      const rand = Math.max(Math.abs(dx), Math.abs(dz));
+      male(B.x+dx, by+1, B.z-10+dz, UFOPAD);         // sein eigener Boden
+      if (rand === 4) for (let y = by+2; y <= by+4; y++) {
+        if (dz === 4 && Math.abs(dx) <= 1 && y <= by+3) continue;   // die Tür
+        setz(B.x+dx, y, B.z-10+dz, y === by+3 ? GLASS : UFOPAD);
+      }
+      if (rand <= 4) setz(B.x+dx, by+5, B.z-10+dz, UFOPAD);         // Dach
+    }
+    setz(B.x, by+6, B.z-10, TORCH);
+  } else if (stufe === 5) {                          // 📡 Antenne: Mast mit Goldkugel
+    for (let y = by+9; y <= by+20; y++) setz(B.x, y, B.z, STONE);
+    for (const [dx, dz] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      setz(B.x+dx, by+18, B.z+dz, GOLD);
+      setz(B.x+dx*2, by+17, B.z+dz*2, GOLD);
+    }
+    setz(B.x, by+21, B.z, GOLD);
+    setz(B.x, by+22, B.z, TORCH);
+  } else {                                           // 🏗️ und dann endlos Stockwerke
+    const n = stufe - BASIS_STUFEN.length;           // 0, 1, 2, ...
+    const unten = by + 9 + n*4;                      // jedes Stockwerk ist 4 hoch
+    for (let dx = -5; dx <= 5; dx++) for (let dz = -5; dz <= 5; dz++) {
+      if (dx === 0 && dz === 0) continue;            // in der Mitte steht der Antennen-Mast
+      setz(B.x+dx, unten, B.z+dz, UFOPAD);
+    }
+    for (let y = unten+1; y <= unten+3; y++) ring(y, 5, y === unten+2 ? GLASS : UFOPAD);
+    for (const [cx, cz] of [[-5,-5],[5,-5],[-5,5],[5,5]]) setz(B.x+cx, unten+4, B.z+cz, TORCH);
+    ring(unten+4, 5, UFOMARK);
+  }
+}
+function basisAnzeige() {
+  const tx = document.getElementById('basisText');
+  if (!tx) return;
+  const a = basisAufgabe();
+  tx.style.display = 'block';
+  tx.textContent = '🏗️ ALIEN-BASIS · ' + a.t + ': ' + a.txt +
+    (a.ziel ? '  (' + Math.min(basisZahl, a.ziel) + '/' + a.ziel + ')' : '') +
+    (weltDim === BASIS_DIM ? '' : '  → auf dem 🌕 Mond, neben dem UFO-Parkplatz');
+}
 let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
   const el = document.getElementById('missBox'), tx = document.getElementById('missText');
   if (!el) return;
+  basisAnzeige();                       // 🏗️ die große Aufgabe steht immer mit da
+  el.style.display = 'flex';
   if (halleAn && !halleProgramm) {      // 🤍 die weiße Halle wartet auf den Knopf
     el.style.display = 'flex';
     tx.textContent = '🏟️ DIE WEISSE HALLE · Tipp den roten Knopf 🔴 an der Wand an - ' +
@@ -15727,6 +15932,14 @@ function ufoBoden(x, z) {        // wie hoch ist der Boden unter dem UFO?
   if (Math.abs(Math.floor(x) - UP.x) <= UFO_PARK_R &&
       Math.abs(Math.floor(z) - UP.z) <= UFO_PARK_R)
     return planetHoehe(UP.x, UP.z, weltDim);
+  // 🏗️ Genauso beim Bauplatz der Alien-Basis: auch der ist ein ebener Belag
+  // über dem Gelände. Ohne das würde ein UFO dort in den Platz hineinsinken
+  // wollen und die ganze Zeit dagegen stoßen.
+  if (weltDim === BASIS_DIM) {
+    const BB = basisPos();
+    if (Math.abs(Math.floor(x) - BB.x) <= BASIS_R && Math.abs(Math.floor(z) - BB.z) <= BASIS_R)
+      return planetHoehe(BB.x, BB.z, weltDim);
+  }
   return planetHoehe(Math.floor(x), Math.floor(z), weltDim);
 }
 // 🅿️ Auf dem Alien-Parkplatz stehen immer zwei Untertassen zum Ausleihen.
@@ -17360,6 +17573,10 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
     marks.push({x:PP.x, z:PP.z, e:'🚀'});          // 🅿️ der Raketen-Parkplatz
     const UP = ufoPark(weltDim);
     marks.push({x:UP.x, z:UP.z, e:'🅿️'});          // 🛸 der UFO-Parkplatz der Aliens
+    if (weltDim === BASIS_DIM) {
+      const BB = basisPos();
+      marks.push({x:BB.x, z:BB.z, e:'🏗️'});        // 🏗️ deine Alien-Basis
+    }
     if (weltDim === 9) {
       marks.push({x:0, z:14, e:'👑'});                   // 👑 dein Schloss
       const c0x = Math.floor(cx0/KCELL2), c0z = Math.floor(cz0/KCELL2);
@@ -17431,6 +17648,7 @@ function renderMapTerrain() {           // die GANZE Welt auf einmal! 🌍
   mapMarks = collectMarks(mapCx, mapCz, mapR);
   document.getElementById('mapLegend').innerHTML = weltDim >= 2
     ? '🔺 Du &middot; 🚀 Deine Rakete &middot; 🅿️ UFO-Parkplatz &middot; 🛸 UFO &middot; ' +
+      (weltDim === BASIS_DIM ? '🏗️ Deine Alien-Basis &middot; ' : '') +
       (weltDim===9 ? '👑 Dein Schloss &middot; ' : '') + PLANET[weltDim].name
     : '🔺 Du &middot; 👑 Festung &middot; 🏠 Dorf &middot; 🕹️ Spielhalle &middot; 🚀 Rakete &middot; 📍 Ziel';
 }
@@ -20664,6 +20882,7 @@ function doPlace(dir) {
   }
   setBlock(px,py,pz,b);
   missEvent('bau');                     // 📜 für die Baumeister-Mission
+  if (aufBauplatz(px, pz)) basisGebaut(b);   // 🏗️ und für die Alien-Basis
   blip(330,0.06);
   if (b===SCHUTZ) toast('🛡️ Schutz-Block! TNT und Explosionen können ihm NICHTS anhaben – nur du kannst ihn wegtippen.', 3200);
   if (b===WATER) {                      // frisches Wasser sucht sich seinen Weg!
@@ -21456,6 +21675,7 @@ function frame(now) {
   liftTick(dt);                         // 🛗 Fahrstuhl-Kabinen bauen und fahren
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
+  basisTick(dt);                        // 🏗️ ist die Alien-Basis gewachsen?
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
