@@ -930,7 +930,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 233 &middot; Du kannst jetzt SELBER UFO fliegen! Auf jedem Planeten gibt es einen Alien-Parkplatz. 🛸🅿️</p>
+    Version 234 &middot; Deine Lern-Pausen führen jetzt ein Tagebuch – Mama und Papa sehen im Elternbereich, wie gut du wirst. 📊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -976,7 +976,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 233;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 234;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4818,9 +4818,19 @@ function saveGame() {
                letzte: matheLetzte.slice(-10), fehler: matheFehler,
                gespielt: Math.round(matheGespielt),   // 🧮 wie lange am Stück?
                zuletzt: Date.now(),                   //    und wann war das?
-               dran: lernDran },                      //    Rechnen oder Englisch?
+               dran: lernDran,                        //    Rechnen oder Englisch?
+               // Name und Anzahl der Stufen kommen mit in den Spielstand: so
+               // kann der Elternbereich drüben sie anzeigen, ohne die ganzen
+               // Tabellen ein zweites Mal zu führen (die liefen sonst
+               // irgendwann auseinander).
+               name: MATHE_STUFEN[Math.min(matheStufe, MATHE_STUFEN.length-1)].name,
+               stufen: MATHE_STUFEN.length, ziel: 15 },
       vok: { stufe: vokStufe, gesamt: vokGesamt, inStufe: vokInStufe,   // 🇬🇧 der Wort-Stand
-             letzte: vokLetzte.slice(-10), fehler: vokFehler },
+             letzte: vokLetzte.slice(-10), fehler: vokFehler,
+             name: VOKABEL_STUFEN[Math.min(vokStufe, VOKABEL_STUFEN.length-1)].name,
+             stufen: VOKABEL_STUFEN.length, ziel: 12,
+             woerter: vokVorrat().length },
+      verlauf: lernVerlauf,              // 📊 das Lern-Tagebuch für den Elternbereich
 
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -4901,6 +4911,9 @@ function loadGame() {
     if (s.aliens && !Array.isArray(s.aliens) && typeof s.aliens === 'object') alienHeim = s.aliens;
     else if (Array.isArray(s.aliens) && s.aliens.length)
       alienHeim = { [typeof s.dim === 'number' ? s.dim : 0]: s.aliens };
+    // 📊 das Lern-Tagebuch für den Elternbereich
+    if (s.verlauf && typeof s.verlauf === 'object' && !Array.isArray(s.verlauf))
+      lernVerlauf = s.verlauf;
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
     if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
       zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
@@ -19023,6 +19036,7 @@ function mathePruefen() {
       matheLetzte.push(0);
     }
     matheGesamt++;
+    lernNotieren('m', matheVersuch === 0);   // 📊 fürs Lern-Tagebuch
     matheFertig();
     return;
   }
@@ -19086,6 +19100,27 @@ function matheStufeCheck() {
   return false;
 }
 let matheSpeicherT = 0;                 // damit die Spielzeit auch gespeichert wird
+// ============== 📊 DAS LERN-TAGEBUCH (für den Elternbereich) ===============
+// Für jeden Tag wird mitgeschrieben, wie viele Rechen- und Vokabel-Aufgaben
+// Jonah gelöst hat - getrennt danach, ob es auf Anhieb saß oder ob er einen
+// zweiten Anlauf gebraucht hat. Mehr steht da nicht drin: keine Uhrzeiten,
+// keine einzelnen Aufgaben. So sehen Mama und Papa drüben im Elternbereich,
+// wie es vorangeht. Alles bleibt auf dem Gerät.
+let lernVerlauf = {};                   // "2026-09-16" -> { m, mf, v, vf }
+const LERN_TAGE = 60;                   // so viele Tage werden aufgehoben
+function lernTag(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') +
+         '-' + String(d.getDate()).padStart(2,'0');
+}
+function lernNotieren(art, aufAnhieb) {
+  const t = lernTag();
+  const e = lernVerlauf[t] || (lernVerlauf[t] = { m:0, mf:0, v:0, vf:0 });
+  if (art === 'm') { if (aufAnhieb) e.m++; else e.mf++; }
+  else             { if (aufAnhieb) e.v++; else e.vf++; }
+  const tage = Object.keys(lernVerlauf).sort();
+  while (tage.length > LERN_TAGE) delete lernVerlauf[tage.shift()];
+}
 // ============== 🇬🇧 DER VOKABEL-TEST ========================================
 // Genau wie die Rechen-Pause, nur mit englischen Wörtern. Jonah kann noch kein
 // Englisch schreiben - deshalb wird NICHTS getippt: das englische Wort steht
@@ -19236,6 +19271,7 @@ function vokTippen(w, knopf) {
     } else vokLetzte.push(0);
     if (vokLetzte.length > 10) vokLetzte = vokLetzte.slice(-10);
     vokGesamt++;
+    lernNotieren('v', vokVersuch === 0);     // 📊 fürs Lern-Tagebuch
     setTimeout(vokFertig, 550);
     return;
   }
