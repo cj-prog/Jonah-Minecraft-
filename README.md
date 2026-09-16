@@ -221,6 +221,29 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEINE GROSSE AUFGABE: DIE ALIEN-BASIS (v235)! 🏗️👽 Du wolltest eine Sache,
+  die NIE fertig wird und der ganzen Welt einen Sinn gibt – hier ist sie.
+  DER BAUPLATZ: Auf dem 🌕 Mond, gleich neben dem UFO-Parkplatz, liegt ein
+  großer, kerzengerader Platz mit Schachbrett-Muster und leuchtendem Rand.
+  Auf der Karte findest du ihn als 🏗️.
+  DIE AUFGABE STEHT IMMER DA: Oben am Bildschirm, unter deiner Mission, siehst
+  du jederzeit, was gerade dran ist – und den Zähler dazu. Auch auf der Erde
+  (dann steht dabei, dass es auf dem Mond ist).
+  UND DU MUSST ES WIRKLICH MACHEN – kein Knopf, kein Antippen:
+  1. 🧱 **Fundament** – 24 Stein-Blöcke auf den Bauplatz setzen
+  2. 🪟 **Kuppel** – 16 Glas-Blöcke
+  3. 🔥 **Licht** – 8 Fackeln
+  4. 🛸 **Hangar** – ein UFO auf dem Bauplatz parken
+  5. 👽 **Mannschaft** – zwei Alien-Diener zur Basis bringen
+  6. 📡 **Antenne** – 6 Gold-Blöcke
+  Nach jeder Stufe WÄCHST die Basis von selbst weiter: erst der Sockel mit
+  vier Säulen, dann die Glaskuppel, Fackeln und Leuchtstreifen, der Hangar mit
+  Landekreis und Tor, das Wohnmodul mit Tür und Fenstern, und zum Schluss der
+  hohe Mast mit der goldenen Kugel. Jedes Mal gibt es Feuerwerk und 15 €.
+  UND DANN? Es hört NIE auf: danach kommt Stockwerk 1, Stockwerk 2, Stockwerk
+  3 … Jedes macht deinen Turm 4 Blöcke höher, und jedes braucht ein bisschen
+  mehr Material (15, 18, 21 …). Da zählt jeder Block, den du hinstellst.
+  Und keine Sorge: Was DU selbst gebaut hast, wird nie überbaut.
 - DEINE LERN-PAUSEN FÜHREN TAGEBUCH (v234)! 📊 Jede gelöste Rechenaufgabe und
   jedes Wort wird jetzt für den Tag mitgezählt – getrennt danach, ob es auf
   Anhieb saß oder ob du einen zweiten Anlauf gebraucht hast. Die letzten 60
