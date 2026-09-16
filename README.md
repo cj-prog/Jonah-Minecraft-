@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEINE LERN-PAUSEN FÜHREN TAGEBUCH (v234)! 📊 Jede gelöste Rechenaufgabe und
+  jedes Wort wird jetzt für den Tag mitgezählt – getrennt danach, ob es auf
+  Anhieb saß oder ob du einen zweiten Anlauf gebraucht hast. Die letzten 60
+  Tage werden aufgehoben.
+  FÜR MAMA UND PAPA: Drüben in der Englisch-App steht im **Elternbereich** (⚙️)
+  jetzt „📊 Lernfortschritt in JonahCraft": deine Stufe beim Einmaleins und bei
+  den englischen Wörtern, wie viele Aufgaben du insgesamt geschafft hast, wie
+  viel davon auf Anhieb, was gerade besonders geübt wird – und ein
+  Balkendiagramm der letzten 14 Tage.
+  Es werden nur Zahlen gezählt, keine Uhrzeiten und keine einzelnen Aufgaben,
+  und alles bleibt auf dem Gerät.
 - DU FLIEGST SELBER UFO – UND DIE ALIENS HABEN PARKPLÄTZE (v233)! 🛸🅿️
   DER ALIEN-PARKPLATZ: Auf JEDEM Planeten gibt es jetzt einen großen Platz aus
   dunklen Metallplatten mit einem leuchtenden türkisen Rand und vier
