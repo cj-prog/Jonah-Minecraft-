@@ -221,6 +221,25 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEINE WELT KANN NICHT MEHR VERSCHWINDEN (v237)! 🛟 Jonah hatte mehrere große
+  Bauwerke gebaut – und als er wiederkam, waren sie weg. Der wahrscheinlichste
+  Grund: JonahCraft war in ZWEI Fenstern offen. Handys und Tablets halten alte
+  Tabs im Hintergrund am Leben; wacht so ein altes Fenster auf, speichert es
+  nach spätestens 5 Sekunden SEINE alte Welt über die neue.
+  DER STEMPEL: Jeder Spielstand trägt jetzt einen Stempel. Vor dem Speichern
+  schaut das Spiel nach, ob noch sein eigener dasteht. Ein Fenster, in dem
+  gerade nicht gespielt wird, schreibt gar nichts mehr – und wenn Jonah auf
+  ein altes Fenster tippt, bekommt er eine Warnung statt eines Verlusts. Sein
+  Stand von dort wird trotzdem gesichert.
+  VIER SICHERUNGEN statt einer: reihum, höchstens alle 3 Stunden eine neue –
+  so reichen sie über mehrere Tage. Auch vor „Neue Welt erstellen" und vor dem
+  Laden einer Datei wird gesichert.
+  ZURÜCKHOLEN: Der Knopf 🛟 auf dem Startbildschirm zeigt alle Sicherungen mit
+  Datum und Anzahl der Blöcke („vor 2 Stunden · 1.200 Blöcke"). Antippen,
+  bestätigen – und die Welt ist wieder da.
+  UND WENN DER SPEICHER VOLL IST, verschwindet nichts mehr still und leise:
+  das Spiel wirft die älteste Sicherung weg und speichert doch – oder sagt
+  Bescheid, dass Jonah mit 📤 sichern soll.
 - DIE BAUPLAN-TAFEL VOR DEM BAUPLATZ (v236)! 🗺️ Du wolltest wissen, was du
   auf der Plattform genau machen musst – jetzt steht es direkt davor.
   DIE TAFEL: Vorne am Bauplatz, genau da, wo du vom UFO-Parkplatz herkommst,
