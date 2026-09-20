@@ -532,6 +532,18 @@
   #liftClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#8a4030; color:#fff; }
   #paintBox h3 { font-size:18px; }
+  /* 🛟 Das Fenster mit Jonahs gesicherten Welten */
+  #bkBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:8px; background:rgba(28,30,42,.97); padding:12px 14px; border-radius:14px;
+    color:#fff; z-index:60; text-align:center; max-height:92vh; overflow-y:auto;
+    border:3px solid #7ec8f0; max-width:min(94vw,380px); }
+  #bkBox h3 { font-size:17px; }
+  #bkInfo { font-size:13px; color:#c8d2e4; line-height:1.4; }
+  #bkListe { display:flex; flex-direction:column; gap:6px; width:100%; }
+  #bkListe button { font-size:13px; padding:8px 10px; border-radius:9px; border:none;
+    background:#33507a; color:#fff; text-align:left; line-height:1.35; }
+  #bkClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#5a4040; color:#fff; }
   /* 🗺️ Das Bauplan-Fenster */
   #bpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:6px; background:rgba(28,30,42,.97); padding:10px 12px; border-radius:14px;
@@ -941,6 +953,12 @@
   <div id="butlerList"></div>
   <button id="butlerClose">✔ Nichts, danke</button>
 </div>
+<div class="hud" id="bkBox">
+  <h3>🛟 Deine gesicherten Welten</h3>
+  <div id="bkInfo"></div>
+  <div id="bkListe"></div>
+  <button id="bkClose">✖ Abbrechen</button>
+</div>
 <div class="hud" id="bpBox">
   <h3>🗺️ Bauplan der Alien-Basis</h3>
   <div id="bpJetzt"></div>
@@ -963,7 +981,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 236 &middot; Vor dem Bauplatz steht jetzt eine Bauplan-Tafel: antippen, und sie zeigt dir genau, was und wo du bauen musst! 🗺️</p>
+    Version 237 &middot; Deine Welt ist jetzt geschützt: JonahCraft legt mehrere Sicherungen an, und du kannst sie dir mit 🛟 zurückholen. Nichts geht mehr verloren!</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1009,12 +1027,122 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 236;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 237;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
 let driftX = 0, driftZ = 0;            // 🌌 im All treibt man weiter, wie auf Eis
 let newVersionBackup = false;
+
+// ===================== 🛟 JONAHS WELT DARF NIE VERSCHWINDEN =================
+// Zwei Dinge haben Jonah Bauwerke gekostet - beide sind hier abgefangen:
+//
+// 1. DAS SPIEL IN ZWEI FENSTERN. Handys und Tablets halten alte Tabs im
+//    Hintergrund am Leben. Wacht so ein altes Fenster wieder auf, speichert
+//    es nach spätestens 5 Sekunden SEINE alte Welt über die neue - alles,
+//    was seitdem gebaut wurde, ist weg. Darum trägt jeder Spielstand jetzt
+//    einen STEMPEL. Vor dem Speichern schaut das Spiel nach: steht da noch
+//    mein eigener Stempel? Wenn nicht, hat ein anderes Fenster gespeichert -
+//    dann wird hier NICHT mehr gespeichert, sondern gewarnt.
+// 2. NUR EINE EINZIGE SICHERUNG. Jetzt sind es vier, die reihum benutzt
+//    werden - und Jonah kann sich auf dem Startbildschirm eine davon
+//    zurückholen.
+const STAMP_KEY = 'jonahcraft_stamp';
+const AKTIV_KEY = 'jonahcraft_aktiv';   // welches Fenster spielt GERADE?
+const LEASE_MS = 15000;                 // so lange gilt ein Fenster als aktiv
+const BK_KEYS = ['jonahcraft_bk1','jonahcraft_bk2','jonahcraft_bk3','jonahcraft_bk4'];
+const BK_RETTUNG = 'jonahcraft_bk_fenster';   // gerettet: der Stand aus dem anderen Fenster
+const BK_HIER = 'jonahcraft_bk_hier';         // gerettet: der Stand aus DIESEM Fenster
+const BK_ABSTAND = 3*60*60*1000;        // höchstens alle 3 Stunden eine neue Sicherung
+const meineFensterId = Math.random().toString(36).slice(2,8) + Date.now().toString(36);
+let meinStempel = null;                 // der Stempel, den DIESES Fenster kennt
+let stempelNr = 0;
+let speichernGesperrt = false;          // ein anderes Fenster hat übernommen
+let speicherVoll = false;               // localStorage ist voll (einmal warnen)
+try { meinStempel = localStorage.getItem(STAMP_KEY); } catch(e) {}
+
+function bkLesen(key) {                 // eine Sicherung anschauen, ohne sie zu laden
+  try {
+    const roh = localStorage.getItem(key);
+    if (!roh) return null;
+    const o = JSON.parse(roh);
+    if (!o || !o.save) return null;
+    return o;
+  } catch(e) { return null; }
+}
+function bkBloecke(save) {              // wie viele Blöcke stecken da drin?
+  try {
+    const s = JSON.parse(save);
+    let n = 0;
+    for (const k in (s.edits||{})) n += s.edits[k].length/2;
+    for (const d in (s.lager||{})) for (const k in s.lager[d]) n += s.lager[d][k].length/2;
+    return Math.round(n);
+  } catch(e) { return 0; }
+}
+// 🪟 WELCHES FENSTER SPIELT GERADE? Wer sichtbar ist und spielt, trägt sich
+// alle paar Sekunden hier ein. Ein Fenster im Hintergrund (ein altes, das
+// das Handy noch im Speicher hat) bekommt den Platz NICHT - und speichert
+// deshalb auch nicht mehr über Jonahs neue Welt.
+function fensterSichtbar() {
+  try { return document.visibilityState !== 'hidden'; } catch(e) { return true; }
+}
+function leaseLesen() {
+  try { return JSON.parse(localStorage.getItem(AKTIV_KEY) || 'null'); } catch(e) { return null; }
+}
+// Ist DIESES Fenster das, in dem Jonah gerade spielt? Nur so eins darf einen
+// fremden Spielstand anfassen: es muss sichtbar sein UND es muss vor kurzem
+// wirklich etwas passiert sein (Tippen, Laufen, Bauen).
+const AKTIV_MS = 25000;
+let letzteAktion = Date.now();
+function merkeAktion() { letzteAktion = Date.now(); }
+try {
+  for (const ev of ['pointerdown','touchstart','keydown'])
+    window.addEventListener(ev, merkeAktion, { passive: true, capture: true });
+} catch(e) {}
+function fensterAktiv() {
+  return fensterSichtbar() && Date.now() - letzteAktion < AKTIV_MS;
+}
+function leaseAlt() {                   // ist das andere Fenster längst still?
+  const l = leaseLesen();
+  return !l || l.id === meineFensterId || Date.now() - (l.t || 0) >= LEASE_MS;
+}
+// Den Stand, der GERADE gespeichert ist, in Sicherheit bringen, bevor dieses
+// Fenster ihn ersetzt.
+function fremdenStandSichern() {
+  try {
+    const da = localStorage.getItem(SAVE_KEY);
+    if (!da) return;
+    localStorage.setItem(BK_RETTUNG, JSON.stringify({
+      v: GAME_VERSION, t: Date.now(), when: new Date().toLocaleString('de-DE'),
+      grund: 'aus dem anderen Fenster gerettet', bloecke: bkBloecke(da), save: da }));
+  } catch(e) {}
+}
+function leaseGehoertMir() {
+  const l = leaseLesen();
+  return !!(l && l.id === meineFensterId);
+}
+function leaseSetzen() {                // „ich bin das Fenster, in dem gespielt wird"
+  try { localStorage.setItem(AKTIV_KEY, JSON.stringify({ id: meineFensterId, t: Date.now() })); } catch(e) {}
+}
+// Eine Sicherung anlegen: immer in den ÄLTESTEN Platz, damit die alten
+// Stände möglichst lange erhalten bleiben.
+function sicherungMachen(grund, sofort) {
+  try {
+    const cur = localStorage.getItem(SAVE_KEY);
+    if (!cur) return false;
+    const alle = BK_KEYS.map(k => ({ k, o: bkLesen(k) }));
+    const neuste = alle.map(a => a.o && a.o.t || 0).reduce((a,b)=>Math.max(a,b), 0);
+    if (!sofort && Date.now() - neuste < BK_ABSTAND) return false;
+    // gibt es einen leeren Platz? Sonst den ältesten nehmen.
+    let ziel = alle.find(a => !a.o);
+    if (!ziel) ziel = alle.reduce((a,b) => (a.o.t||0) <= (b.o.t||0) ? a : b);
+    localStorage.setItem(ziel.k, JSON.stringify({
+      v: GAME_VERSION, t: Date.now(), when: new Date().toLocaleString('de-DE'),
+      grund: grund || '', bloecke: bkBloecke(cur), save: cur }));
+    return true;
+  } catch(e) { return false; }
+}
+
 try {                                   // Neue Version? Dann den Spielstand automatisch sichern!
   const lastV = +(localStorage.getItem('jonahcraft_lastversion') || 0);
   if (lastV !== GAME_VERSION) {
@@ -1022,6 +1150,7 @@ try {                                   // Neue Version? Dann den Spielstand aut
     if (cur) {
       localStorage.setItem('jonahcraft_save_backup',
         JSON.stringify({ v: lastV, when: new Date().toLocaleString('de-DE'), save: cur }));
+      sicherungMachen('Version ' + lastV, true);
       newVersionBackup = true;
     }
     localStorage.setItem('jonahcraft_lastversion', GAME_VERSION);
@@ -4783,6 +4912,7 @@ function setBlock(wx,wy,wz,v) {
   if (!e) { e=new Map(); edits.set(ckey(cx,cz),e); }
   e.set(i,v);
   ch.dirty = true;
+  merkeAktion();                        // 🪟 hier wird wirklich gespielt
   const mark=(x,z)=>{ const c=getChunk(x,z); if(c) c.dirty=true; };
   if (lx===0) mark(cx-1,cz); if (lx===15) mark(cx+1,cz);
   if (lz===0) mark(cx,cz-1); if (lz===15) mark(cx,cz+1);
@@ -4808,9 +4938,77 @@ function alienSpeicher() {
   if (!hier.length) delete out[weltDim];
   return out;
 }
+// 🛟 Ein anderes Fenster hat den Spielstand weitergeschrieben. Dann darf
+// DIESES Fenster nicht mehr darüberspeichern - sonst wäre alles weg, was im
+// anderen Fenster gebaut wurde. Jonahs Stand hier geht aber auch nicht
+// verloren: er wandert in eine Sicherung.
+function speichernSperren() {
+  if (speichernGesperrt) return;
+  speichernGesperrt = true;
+  try {
+    const mein = baueSpielstand();
+    localStorage.setItem(BK_HIER, JSON.stringify({
+      v: GAME_VERSION, t: Date.now(), when: new Date().toLocaleString('de-DE'),
+      grund: 'aus diesem Fenster gerettet', bloecke: bkBloecke(mein), save: mein }));
+  } catch(e) {}
+  toast('🛟 ACHTUNG: JonahCraft ist noch in einem ANDEREN Fenster offen – und dort ' +
+        'wird gerade gespielt. Damit dir nichts kaputtgeht, speichere ich HIER ' +
+        'nicht mehr. Schließe die anderen Fenster und lade die Seite neu! 🔄 ' +
+        'Dieser Stand hier ist gesichert – du kannst ihn dir mit 🛟 zurückholen.', 20000);
+  blip(200,0.2); blip(160,0.3);
+}
 function saveGame() {
   if (typeof mpGuest!=='undefined' && mpGuest) return;  // Gast speichert die fremde Welt nicht
+  if (speichernGesperrt) return;                        // 🛟 ein anderes Fenster ist dran
+  // 🪟 Steht da noch MEIN Stempel? Wenn nicht, hat ein anderes Fenster
+  // gespeichert - und dann ist das hier vielleicht ein alter Stand.
+  let fremd = null;
   try {
+    const da = localStorage.getItem(STAMP_KEY);
+    if (da && meinStempel && da !== meinStempel) fremd = da;
+  } catch(e) {}
+  if (fremd) {
+    // Fenster im Hintergrund oder eins, in dem schon lange nichts passiert
+    // ist, speichern GAR NICHT mehr. Genau die haben Jonahs Sachen gefressen.
+    if (!fensterAktiv()) return;
+    // Spielt im anderen Fenster gerade wirklich jemand? Dann hier aufhören.
+    if (!leaseGehoertMir() && !leaseAlt()) { speichernSperren(); return; }
+    // Sonst: das andere Fenster ist längst weg. Hier wird weitergespielt -
+    // aber sein Stand wandert vorher in eine Sicherung, damit nichts
+    // verlorengeht.
+    fremdenStandSichern();
+  }
+  leaseSetzen();                        // „ich spiele gerade" - für die anderen Fenster
+  try {
+    localStorage.setItem(SAVE_KEY, baueSpielstand());
+    meinStempel = meineFensterId + ':' + (++stempelNr);
+    localStorage.setItem(STAMP_KEY, meinStempel);
+    speicherVoll = false;
+  } catch(e) {
+    // 💾 Voll! Früher ist das unbemerkt passiert - und alles Neue war beim
+    // nächsten Start weg. Jetzt sagt es Bescheid und räumt alte Sicherungen weg.
+    if (!speicherVoll) {
+      speicherVoll = true;
+      let platz = false;
+      try {                             // die ÄLTESTE Sicherung opfern, dann nochmal
+        const alle = BK_KEYS.map(k => ({ k, o: bkLesen(k) })).filter(a => a.o);
+        if (alle.length) {
+          const alt2 = alle.reduce((a,b) => (a.o.t||0) <= (b.o.t||0) ? a : b);
+          localStorage.removeItem(alt2.k);
+          localStorage.setItem(SAVE_KEY, baueSpielstand());
+          meinStempel = meineFensterId + ':' + (++stempelNr);
+          localStorage.setItem(STAMP_KEY, meinStempel);
+          platz = true; speicherVoll = false;
+        }
+      } catch(e2) {}
+      if (!platz)
+        toast('💾 Der Speicher deines Handys ist VOLL – ich kann gerade nicht speichern! ' +
+              'Sichere deinen Stand mit 📤 als Datei und mach Platz. ⚠️', 20000);
+    }
+  }
+}
+// Der ganze Spielstand als Text - genau wie er gespeichert wird.
+function baueSpielstand() {
     const ed = {};
     for (const [k,m] of edits) { const a=[]; for (const [i,v] of m){a.push(i,v);} ed[k]=a; }
     const pets = animals.filter(a=>a.tame).map(a=>
@@ -4834,7 +5032,7 @@ function saveGame() {
     const companions = animals.filter(a=>a.follow && a.friend>=3).map(a=>
       [a.type==='kid'?1:0, a.name, Math.round(a.x*10)/10, Math.round(a.y*10)/10, Math.round(a.z*10)/10,
        a.home||'welt', a.hx||0, a.hz||0]);
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
+    return JSON.stringify({
       seed, depth: -CH_MIN, edits:ed, dayTime, pets, friends:savedFriends, companions,
       // 🦊 welche englischen Freunde sollen mitkommen? Die stehen nach dem
       // Neuladen wieder neben Jonah - alle anderen laufen sowieso wieder herum.
@@ -4919,8 +5117,7 @@ function saveGame() {
       player: halleAn && halleHeim
         ? {x:halleHeim.x, y:halleHeim.y, z:halleHeim.z, yaw, pitch}
         : {x:player.x, y:player.y, z:player.z, yaw, pitch}
-    }));
-  } catch(e) {}
+    });
 }
 function loadGame() {
   try {
@@ -21615,7 +21812,14 @@ document.getElementById('fsBtn').addEventListener('click',()=>{
 });
 document.getElementById('resetBtn').addEventListener('click',()=>{
   if (confirm('Neue Welt erstellen? Deine gebaute Welt wird gelöscht!')) {
-    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    // 🛟 Vorher sichern! Wer aus Versehen draufdrückt, holt sich seine alte
+    // Welt mit dem 🛟-Knopf einfach zurück.
+    try {
+      sicherungMachen('vor „Neue Welt"', true);
+      speichernGesperrt = true;
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(STAMP_KEY);
+    } catch(e) {}
     location.reload();
   }
 });
@@ -22129,6 +22333,19 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   msgrKnopf();                          // 📱 haben dir Freunde geschrieben?
   document.getElementById('miniMap').style.display='block';
   if (bow) document.getElementById('bowBtn').style.display='flex';
+  // 🛟 Bevor es losgeht: den geladenen Stand sichern (höchstens alle 3 Stunden
+  // einen neuen - so reichen die vier Plätze über mehrere Tage).
+  sicherungMachen('beim Spielen');
+  // ... und nachschauen, ob plötzlich viel fehlt. Dann weiß Jonah sofort,
+  // dass er sich seine Welt zurückholen kann, statt zu glauben, sie sei weg.
+  try {
+    const jetzt = bkBloecke(localStorage.getItem(SAVE_KEY) || '{}');
+    const beste = alleSicherungen().reduce((m,b) => Math.max(m, b.o.bloecke||0), 0);
+    if (beste > 300 && jetzt < beste*0.6)
+      setTimeout(()=>toast('🛟 Hm! In deiner Welt stehen gerade ' + jetzt + ' Blöcke – in ' +
+        'der letzten Sicherung waren es ' + beste + '. Fehlt dir etwas? Dann tipp auf dem ' +
+        'Startbildschirm auf 🛟 Sicherung zurückholen!', 15000), 3000);
+  } catch(e) {}
   saveGame();                           // beim Start sofort speichern
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
@@ -22340,18 +22557,59 @@ document.getElementById('playBtn').addEventListener('click',()=>{
 // ---- Spielstand sichern und laden (als Datei) ----
 // Sicherung von der letzten Version zurückholen
 const restoreBtn = document.getElementById('restoreBtn');
-try {
-  const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
-  if (bk && bk.save) restoreBtn.style.display = 'inline-block';
-} catch(e) {}
+// 🛟 Alle Sicherungen einsammeln: die vier neuen Plätze und die alte einzelne.
+function alleSicherungen() {
+  const out = [];
+  for (const k of BK_KEYS) { const o = bkLesen(k); if (o) out.push({ key:k, o }); }
+  for (const k of [BK_RETTUNG, BK_HIER]) { const o = bkLesen(k); if (o) out.push({ key:k, o }); }
+  const alt = bkLesen('jonahcraft_save_backup');
+  if (alt) out.push({ key:'jonahcraft_save_backup', o: alt });
+  out.sort((a,b) => (b.o.t||0) - (a.o.t||0));   // die neuste zuerst
+  return out;
+}
+function wannText(t, when) {
+  if (!t) return when || 'früher';
+  const min = Math.round((Date.now()-t)/60000);
+  if (min < 2) return 'gerade eben';
+  if (min < 60) return 'vor ' + min + ' Minuten';
+  const std = Math.round(min/60);
+  if (std < 24) return 'vor ' + std + (std===1 ? ' Stunde' : ' Stunden');
+  const tage = Math.round(std/24);
+  return 'vor ' + tage + (tage===1 ? ' Tag' : ' Tagen');
+}
+if (alleSicherungen().length) restoreBtn.style.display = 'inline-block';
+const bkBox = document.getElementById('bkBox');
 restoreBtn.addEventListener('click', ()=>{
-  try {
-    const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
-    if (!bk || !bk.save) return;
-    if (!confirm('Gesicherten Spielstand (von Version '+(bk.v||'?')+', '+(bk.when||'')+') zurückholen?\nDein jetziger Stand wird dadurch ersetzt.')) return;
-    localStorage.setItem(SAVE_KEY, bk.save);
-    location.reload();
-  } catch(e) {}
+  const liste = alleSicherungen();
+  const el = document.getElementById('bkListe');
+  el.innerHTML = '';
+  document.getElementById('bkInfo').textContent = liste.length
+    ? 'Hier sind deine letzten Welten. Tipp die an, die du zurückhaben willst – ' +
+      'dein jetziger Stand wird vorher noch gesichert, du kannst also nichts kaputtmachen.'
+    : 'Es gibt noch keine Sicherung. Sobald du spielst, legt JonahCraft welche an.';
+  for (const { o } of liste) {
+    const b = document.createElement('button');
+    const bl = o.bloecke || bkBloecke(o.save);
+    b.textContent = '🕘 ' + wannText(o.t, o.when) + '  ·  ' + (o.when || '') +
+      '\n🧱 ' + bl.toLocaleString('de-DE') + ' Blöcke  ·  Version ' + (o.v || '?') +
+      (o.grund ? '  ·  ' + o.grund : '');
+    b.addEventListener('click', ()=>{
+      if (!confirm('Diese Welt zurückholen?\n' + (o.when||'') + ', ' + bl + ' Blöcke.\n\n' +
+                   'Dein jetziger Stand wird vorher gesichert.')) return;
+      try {
+        sicherungMachen('vor dem Zurückholen', true);
+        speichernGesperrt = true;               // ab jetzt nichts mehr drüberschreiben!
+        localStorage.setItem(SAVE_KEY, o.save);
+        localStorage.removeItem(STAMP_KEY);     // frischer Stempel nach dem Neustart
+      } catch(e) {}
+      location.reload();
+    });
+    el.appendChild(b);
+  }
+  bkBox.style.display = 'flex';
+});
+document.getElementById('bkClose').addEventListener('click', ()=>{
+  bkBox.style.display = 'none'; blip(400,0.06);
 });
 // Sicherheitsnetz: alle 30 Sekunden automatisch speichern
 setInterval(()=>{ if (started) saveGame(); }, 30000);
@@ -22376,6 +22634,8 @@ document.getElementById('impFile').addEventListener('change', e=>{
       const s = JSON.parse(r.result);
       if (typeof s.seed !== 'number') throw new Error('kein Spielstand');
       if (!confirm('Diesen Spielstand laden? Der aktuelle wird dabei ersetzt!')) return;
+      sicherungMachen('vor dem Laden einer Datei', true);
+      speichernGesperrt = true;                 // nichts darf jetzt noch drüberschreiben
       localStorage.setItem(SAVE_KEY, r.result);
       alert('✅ Spielstand geladen! Das Spiel startet jetzt neu.');
       location.reload();
