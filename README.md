@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE BAUPLAN-TAFEL VOR DEM BAUPLATZ (v236)! 🗺️ Du wolltest wissen, was du
+  auf der Plattform genau machen musst – jetzt steht es direkt davor.
+  DIE TAFEL: Vorne am Bauplatz, genau da, wo du vom UFO-Parkplatz herkommst,
+  hängt auf einem Holzpfosten eine Karte in einem Holzrahmen. Sie geht nie
+  kaputt – du kannst sie antippen, egal ob gerade ⛏️ Abbauen oder 🧱 Bauen
+  eingestellt ist.
+  WAS SIE ZEIGT: ganz oben, was JETZT dran ist und wie viel du schon hast
+  („Du hast schon 5 von 8"), darunter in einfachen Worten, WELCHEN Block du
+  brauchst und wo du ihn herbekommst. Ein grüner Balken zeigt, wie weit du
+  bist.
+  DIE KARTE: der ganze Bauplatz von oben, 27 × 27 Felder mit leuchtendem
+  Rand. Hell eingezeichnet ist, was schon steht; ein gestrichelter,
+  farbiger Kasten zeigt genau den Fleck, wo der nächste Block hin soll (beim
+  Hangar vorne, beim Wohnmodul hinten); ein roter Punkt bist DU. Darunter
+  steht, was die Farben bedeuten.
+  UND DIE GANZE LISTE: alle sechs Stufen untereinander – abgehakt ✅ was
+  fertig ist, hervorgehoben ▶ was dran ist, blass ○ was noch kommt, plus die
+  Stockwerke, die nie aufhören.
 - DEINE GROSSE AUFGABE: DIE ALIEN-BASIS (v235)! 🏗️👽 Du wolltest eine Sache,
   die NIE fertig wird und der ganzen Welt einen Sinn gibt – hier ist sie.
   DER BAUPLATZ: Auf dem 🌕 Mond, gleich neben dem UFO-Parkplatz, liegt ein

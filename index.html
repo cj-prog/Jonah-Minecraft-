@@ -532,6 +532,26 @@
   #liftClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#8a4030; color:#fff; }
   #paintBox h3 { font-size:18px; }
+  /* 🗺️ Das Bauplan-Fenster */
+  #bpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:6px; background:rgba(28,30,42,.97); padding:10px 12px; border-radius:14px;
+    color:#fff; z-index:40; text-align:center; max-height:94vh; overflow-y:auto;
+    border:3px solid #e8dcb8; max-width:min(94vw,360px); }
+  #bpBox h3 { font-size:17px; }
+  #bpJetzt { font-size:14px; line-height:1.3; }
+  #bpJetzt b { color:#ffe08a; }
+  #bpBalken { width:100%; height:13px; border-radius:7px; background:#3a3f52; overflow:hidden; }
+  #bpBalken i { display:block; height:100%; background:#6fbf5e; }
+  #bpKarte { border:3px solid #8a6a3c; border-radius:8px; background:#10121a; touch-action:none;
+    width:min(70vw,225px); height:auto; image-rendering:pixelated; }
+  #bpLegende { font-size:12px; color:#c8d2e4; line-height:1.5; }
+  #bpListe { display:flex; flex-direction:column; gap:2px; font-size:12px; width:100%; }
+  #bpListe div { text-align:left; padding:2px 6px; border-radius:6px; }
+  #bpListe div.fertig { color:#8fd97f; }
+  #bpListe div.jetzt { background:rgba(255,224,138,.18); color:#ffe08a; font-weight:bold; }
+  #bpListe div.spaeter { color:#8b93a7; }
+  #bpClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#3f6b46; color:#fff; }
   #paintCanvas { border:3px solid #8a6a3c; border-radius:6px; background:#fff; touch-action:none; }
   #paintPal { display:grid; grid-template-columns:repeat(6,34px); gap:5px; }
   .palBtn { width:34px; height:34px; border-radius:8px; border:2px solid rgba(255,255,255,.35); }
@@ -921,6 +941,15 @@
   <div id="butlerList"></div>
   <button id="butlerClose">✔ Nichts, danke</button>
 </div>
+<div class="hud" id="bpBox">
+  <h3>🗺️ Bauplan der Alien-Basis</h3>
+  <div id="bpJetzt"></div>
+  <div id="bpBalken"><i></i></div>
+  <canvas id="bpKarte" width="290" height="290"></canvas>
+  <div id="bpLegende"></div>
+  <div id="bpListe"></div>
+  <button id="bpClose">✔ Alles klar!</button>
+</div>
 <div class="hud" id="paintBox">
   <h3>🎨 Bild malen</h3>
   <canvas id="paintCanvas" width="240" height="240"></canvas>
@@ -934,7 +963,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 235 &middot; DEINE GROSSE AUFGABE: Bau dir auf dem Mond deine eigene Alien-Basis – Stufe für Stufe, sie wird nie fertig! 🏗️👽</p>
+    Version 236 &middot; Vor dem Bauplatz steht jetzt eine Bauplan-Tafel: antippen, und sie zeigt dir genau, was und wo du bauen musst! 🗺️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -980,7 +1009,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 235;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 236;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1022,7 +1051,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       HOLOKNOPF=100,                    // 🔴 der große rote Startknopf an der Hallenwand
       SEIL=101,                         // 🪢 ein Seil von der Decke: antippen = schwingen!
       GTUER=102, GTUER_AUF=103,         // 🚔 die Gittertür am Gefängnis: zu und offen
-      UFOPAD=104, UFOMARK=105;          // 🛸 der Belag und die Leuchtstreifen auf dem UFO-Parkplatz
+      UFOPAD=104, UFOMARK=105,          // 🛸 der Belag und die Leuchtstreifen auf dem UFO-Parkplatz
+      BAUPLAN=106;                      // 🗺️ die Bauplan-Tafel vor dem Bauplatz der Alien-Basis
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1187,6 +1217,14 @@ const BLOCKS = {
     [0.00,0.40,0.70, 0.16,0.60,0.86, 30]] },
   // 🛸 DER UFO-PARKPLATZ der Aliens: dunkle Metallplatten mit leuchtenden
   // türkisfarbenen Streifen - da stellen die Aliens ihre Untertassen ab.
+  // 🗺️ DIE BAUPLAN-TAFEL: steht vor dem Bauplatz. Antippen zeigt ganz genau,
+  // was als Nächstes gebaut werden muss - und WO.
+  [BAUPLAN]: { name:'Bauplan-Tafel 🗺️ (antippen!)', tiles:[157,157,157], solid:true, model:[
+    [0.02,0.06,0.40, 0.98,0.94,0.60, 157],        // die Karte selbst
+    [0.00,0.00,0.36, 1.00,0.10,0.64, 5],          // Holzrahmen unten
+    [0.00,0.90,0.36, 1.00,1.00,0.64, 5],          // Holzrahmen oben
+    [0.00,0.06,0.36, 0.06,0.94,0.64, 5],          // und an den Seiten
+    [0.94,0.06,0.36, 1.00,0.94,0.64, 5]] },
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -3167,6 +3205,13 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
                            : ((wx+wz) % 2 === 0 ? UFOPAD : P.boden));
           for (let y=bY+1; y<=Math.max(bY+24, gel+4); y++) setz(lx2, y, lz2, AIR);
         }
+      // 🗺️ Und vorne am Platz steht die BAUPLAN-TAFEL auf einem Holzpfosten -
+      // dort, wo Jonah vom Raketen- und UFO-Parkplatz herkommt.
+      const tlx = BB.x - x0, tlz = (BB.z - BASIS_R) - z0;
+      if (tlx >= 0 && tlx <= 15 && tlz >= 0 && tlz <= 15) {
+        setz(tlx, bY+1, tlz, WOOD);
+        setz(tlx, bY+2, tlz, BAUPLAN);
+      }
     }
   }
   if (dim>=2 && dim<=8 && Math.abs(x0)<=32 && Math.abs(z0)<=32) {
@@ -5569,6 +5614,18 @@ atlas.width = atlas.height = T*ATLAS_N;
     const d = Math.min(x, y, 15-x, 15-y);
     if (d >= 5) return 'rgb(245,255,254)';                          // heller Kern
     return vary(120,238,226,18);                                    // türkises Leuchten
+  });
+  // 🗺️ DIE BAUPLAN-TAFEL: ein Pergament mit blauem Raster, ein paar
+  // eingezeichneten Bauteilen und einem roten Kreuz - wie eine echte Karte.
+  tile(157,(x,y)=>{
+    if (x % 4 === 0 || y % 4 === 0) return vary(150,170,200,8);     // Raster-Linien
+    if (y >= 3 && y <= 9 && x >= 3 && x <= 11) {                    // der eingezeichnete Plan
+      if (y === 3 || y === 9 || x === 3 || x === 11) return vary(70,100,160,10);
+      if (y === 6 && x >= 5 && x <= 9) return vary(70,100,160,10);
+      return vary(226,214,178,8);
+    }
+    if ((x === 12 || x === 13) && (y === 12 || y === 13)) return vary(200,60,50,14);  // rotes Kreuz
+    return vary(232,220,184,10);                                    // Pergament
   });
   // 👮 DIE FESTUNGS-POLIZEI: dunkelblaue Uniform (147) und ein freundliches,
   // wachsames Gesicht (148).
@@ -9401,6 +9458,9 @@ document.getElementById('liftClose').addEventListener('click', ()=>{
 });
 document.getElementById('butlerClose').addEventListener('click', ()=>{
   document.getElementById('butlerBox').style.display='none'; blip(400,0.06);
+});
+document.getElementById('bpClose').addEventListener('click', ()=>{
+  document.getElementById('bpBox').style.display='none'; blip(400,0.06);
 });
 
 function makePaintTexture(key) {
@@ -15206,6 +15266,108 @@ function basisBauen(stufe) {
     ring(unten+4, 5, UFOMARK);
   }
 }
+// ============== 🗺️ DER BAUPLAN ============================================
+// Die Tafel vor dem Bauplatz. Sie zeigt ganz genau: was ist dran, wie viel
+// fehlt noch, WO es hinkommt (als Karte von oben) - und was schon fertig ist.
+// Für jede Stufe ist eingetragen, welcher Block gebraucht wird und in welche
+// Ecke des Platzes er am besten kommt.
+const BAUPLAN_HILFE = [
+  { wie:'Nimm 🧱 STEIN aus deinem Werkzeugkasten (oder hau welchen im Mond ab) ' +
+        'und stell ihn mitten auf den Platz.', zone:[0, 0, 7], farbe:'#9aa3b2' },
+  { wie:'Nimm 🪟 GLAS und stell es auf den Platz - daraus wird die Kuppel.',
+        zone:[0, 0, 7], farbe:'#9fe8ff' },
+  { wie:'Nimm 🔥 FACKELN und stell sie auf den Platz, am besten in die Ecken.',
+        zone:[0, 0, 7], farbe:'#ffc24a' },
+  { wie:'Flieg mit einem UFO her (vom 🅿️ UFO-Parkplatz nebenan) und parke es ' +
+        'auf dem Platz - am besten hier vorne.', zone:[0, 10, 4], farbe:'#7ef0e6' },
+  { wie:'Hol zwei 👽 Alien-Diener her. Tipp sie an und sag „Komm mit!" - ' +
+        'dann laufen sie dir bis hierher nach.', zone:[0, -10, 4], farbe:'#7ce07c' },
+  { wie:'Nimm 🟨 GOLD (das findest du tief im Mond) und stell 6 Blöcke auf ' +
+        'den Platz - daraus wird die große Antenne.', zone:[0, 0, 3], farbe:'#ffd84a' },
+];
+function bauplanHilfe() {
+  if (basisStufe < BAUPLAN_HILFE.length) return BAUPLAN_HILFE[basisStufe];
+  return { wie:'Jetzt zählt JEDER Block! Stell einfach hin, was du magst - ' +
+               'jedes Stockwerk macht deinen Turm vier Blöcke höher.',
+           zone:[0, 0, 5], farbe:'#c8a0ff' };
+}
+function openBauplan() {
+  const box = document.getElementById('bpBox');
+  const a = basisAufgabe(), h = bauplanHilfe();
+  const fertig = a.ziel ? Math.min(basisZahl, a.ziel) : 0;
+  document.getElementById('bpJetzt').innerHTML =
+    'Jetzt dran: <b>' + a.t + '</b><br>' + a.txt +
+    (a.ziel ? '<br>Du hast schon <b>' + fertig + ' von ' + a.ziel + '</b>.' : '') +
+    '<br><br>' + h.wie;
+  document.getElementById('bpBalken').firstElementChild.style.width =
+    (a.ziel ? Math.round(fertig / a.ziel * 100) : 0) + '%';
+  bauplanKarte(h);
+  // die Liste aller Stufen: was ist geschafft, was kommt noch?
+  const liste = document.getElementById('bpListe');
+  liste.innerHTML = '';
+  BASIS_STUFEN.forEach((st, i) => {
+    const d = document.createElement('div');
+    d.className = i < basisStufe ? 'fertig' : i === basisStufe ? 'jetzt' : 'spaeter';
+    d.textContent = (i < basisStufe ? '✅ ' : i === basisStufe ? '▶ ' : '○ ') + st.t;
+    liste.appendChild(d);
+  });
+  const d = document.createElement('div');
+  const stock = Math.max(0, basisStufe - BASIS_STUFEN.length);
+  d.className = basisStufe >= BASIS_STUFEN.length ? 'jetzt' : 'spaeter';
+  d.textContent = (basisStufe >= BASIS_STUFEN.length ? '▶ ' : '○ ') +
+    '🏗️ Stockwerke – die hören nie auf' + (stock ? ' (' + stock + ' geschafft)' : '');
+  liste.appendChild(d);
+  box.style.display = 'flex';
+  blip(700,0.06); blip(880,0.06);
+}
+// Die Karte von oben: der Bauplatz, was schon steht, und wo es hinkommt.
+function bauplanKarte(h) {
+  const c = document.getElementById('bpKarte');
+  const g = c.getContext('2d');
+  const B = basisPos(), by = basisY(), N = BASIS_R*2 + 1, pz = c.width / N;
+  g.clearRect(0, 0, c.width, c.height);
+  for (let dz = -BASIS_R; dz <= BASIS_R; dz++)
+    for (let dx = -BASIS_R; dx <= BASIS_R; dx++) {
+      const x = B.x+dx, z = B.z+dz;
+      const px = (dx+BASIS_R)*pz, py = (dz+BASIS_R)*pz;
+      const rand = Math.max(Math.abs(dx), Math.abs(dz)) === BASIS_R;
+      // steht hier schon etwas? (alles über dem Belag)
+      let hoch = 0;
+      for (let y = by+1; y <= by+30; y++) if (getBlock(x, y, z) !== AIR) hoch++;
+      g.fillStyle = rand ? '#7ef0e6'
+                  : hoch ? (hoch > 3 ? '#d8dee8' : '#97a2b4')
+                  : ((dx+dz) % 2 === 0 ? '#3d4657' : '#333b4a');
+      g.fillRect(px, py, pz+0.6, pz+0.6);
+    }
+  // 🎯 wo es hinkommt: der Bereich für die aktuelle Stufe
+  const [zx, zz, zr] = h.zone;
+  g.strokeStyle = h.farbe; g.lineWidth = 3;
+  g.setLineDash([6, 4]);
+  g.strokeRect((zx-zr+BASIS_R)*pz, (zz-zr+BASIS_R)*pz, (zr*2+1)*pz, (zr*2+1)*pz);
+  g.setLineDash([]);
+  g.fillStyle = h.farbe + '33';
+  g.fillRect((zx-zr+BASIS_R)*pz, (zz-zr+BASIS_R)*pz, (zr*2+1)*pz, (zr*2+1)*pz);
+  // 🔺 und wo Jonah gerade steht
+  if (weltDim === BASIS_DIM) {
+    const jx = Math.round(player.x - B.x), jz = Math.round(player.z - B.z);
+    if (Math.abs(jx) <= BASIS_R && Math.abs(jz) <= BASIS_R) {
+      g.fillStyle = '#ff4040';
+      g.beginPath();
+      g.arc((jx+BASIS_R+0.5)*pz, (jz+BASIS_R+0.5)*pz, pz*0.8, 0, Math.PI*2);
+      g.fill();
+      g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
+    }
+  }
+  // 🗺️ die Tafel selbst
+  g.fillStyle = '#e8dcb8';
+  g.fillRect((BASIS_R+0.1)*pz, 0.1*pz, pz*0.8, pz*0.8);
+  document.getElementById('bpLegende').innerHTML =
+    '<span style="color:' + h.farbe + '">▨ Hier hin bauen</span> &middot; ' +
+    '<span style="color:#d8dee8">▪ steht schon</span> &middot; ' +
+    '<span style="color:#7ef0e6">▪ Rand</span> &middot; ' +
+    '<span style="color:#ff4040">● du</span> &middot; ' +
+    '<span style="color:#e8dcb8">▪ die Tafel</span>';
+}
 function basisAnzeige() {
   const tx = document.getElementById('basisText');
   if (!tx) return;
@@ -17538,7 +17700,7 @@ const MAP_BLOCK_COL = {
   [SPRUNGTURM]:'#9aa0a8', [SIGN]:'#b08a58', [BURGPLAN]:'#c9a86b',
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [GTUER]:'#6a7080', [GTUER_AUF]:'#6a7080', [FAHRSTUHL]:'#a8b0be',
-  [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6',
+  [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6', [BAUPLAN]:'#e8dcb8',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -20299,6 +20461,10 @@ function doBreak(dir) {
   // Ist Wasser ausgewählt, wirkt die Spitzhacke wie ein Eimer und saugt Wasser auf
   const scoop = HOTBAR_ITEMS[selSlot]===WATER;
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH,scoop);
+  // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
+  // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
+  // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
+  if (hit && hit.block===BAUPLAN) { openBauplan(); return; }
   if (repMode) { if (hit) tryRepair(hit); return; }
   if (rotMode) {                        // 🔄 auch Statuen und Figuren drehen!
     const eRot=rayEntity(e, dir, hit ? hit.t+0.5 : REACH);
@@ -20642,6 +20808,10 @@ function doPlace(dir) {
   }
   if (hit.block===STEUER && HOTBAR_ITEMS[selSlot]!==STEUER) {
     openRakete();                       // 🎛️ Planeten-Auswahl - jetzt sitzt du wirklich drin!
+    return;
+  }
+  if (hit.block===BAUPLAN && HOTBAR_ITEMS[selSlot]!==BAUPLAN) {
+    openBauplan();                      // 🗺️ zeigt genau, was und wo gebaut wird
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
