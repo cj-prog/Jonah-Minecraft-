@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- FÜNF CHALLENGES, DIE NIEMALS FERTIG WERDEN (v238)! 🏆 Jonah wollte nicht nur
+  eine endlose Aufgabe, sondern mehrere – hier sind sie. Neben der großen
+  🏗️ ALIEN-BASIS laufen jetzt vier Challenges überall mit:
+  ⛏️ BERGMEISTER – Blöcke abbauen (Stufe 1: 40, dann immer 20 mehr)
+  🧱 BAUMEISTER – Blöcke setzen (Stufe 1: 50, dann immer 25 mehr)
+  🐾 TIERFREUND – Tiere zähmen (Stufe 1: 2, dann immer 2 mehr)
+  🥕 GÄRTNER – Früchte ernten (Stufe 1: 12, dann immer 8 mehr)
+  Jede Stufe, die du schaffst, gibt Feuerwerk 🎆 und Geld 💶 – und sofort
+  kommt die nächste, die ein bisschen mehr will. Nach Stufe 50 ist genauso
+  wenig Schluss wie nach Stufe 5.
+  OBEN LINKS steht immer die Challenge, bei der du gerade am weitesten bist,
+  mit Zähler. Tipp die Aufgaben-Box an – dann geht das 🏆-Fenster auf und
+  zeigt ALLE fünf mit Stufe, Fortschrittsbalken und einem Tipp, wie es geht.
 - DEINE WELT KANN NICHT MEHR VERSCHWINDEN (v237)! 🛟 Jonah hatte mehrere große
   Bauwerke gebaut – und als er wiederkam, waren sie weg. Der wahrscheinlichste
   Grund: JonahCraft war in ZWEI Fenstern offen. Handys und Tablets halten alte

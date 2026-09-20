@@ -532,6 +532,25 @@
   #liftClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#8a4030; color:#fff; }
   #paintBox h3 { font-size:18px; }
+  /* 🏆 Das Fenster mit allen Challenges */
+  #chBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:5px; background:rgba(28,30,42,.97); padding:10px 12px; border-radius:14px;
+    color:#fff; z-index:60; text-align:center; max-height:92vh; overflow-y:auto;
+    border:3px solid #ffd76a; max-width:min(94vw,360px); }
+  #chBox h3 { font-size:16px; }
+  #chInfo { font-size:11px; color:#c8d2e4; line-height:1.35; }
+  #chListe { display:flex; flex-direction:column; gap:5px; width:100%; }
+  .chKarte { background:rgba(255,255,255,.07); border-radius:10px; padding:5px 8px; text-align:left; }
+  .chKarte.gross { background:rgba(126,240,230,.13); border:1px solid rgba(126,240,230,.45); }
+  .chKopf { font-size:14px; font-weight:bold; display:flex; justify-content:space-between; gap:6px; }
+  .chStufe { color:#ffd76a; }
+  .chWas { font-size:12px; color:#e8eefc; margin-top:1px; }
+  .chTipp { font-size:10px; color:#9fb0cc; margin-top:2px; line-height:1.3; }
+  .chBalken { margin-top:4px; width:100%; height:9px; border-radius:5px; background:#3a3f52; overflow:hidden; }
+  .chBalken i { display:block; height:100%; background:#6fbf5e; }
+  /* der Knopf klebt unten fest - sonst muss Jonah erst scrollen, um ihn zu finden */
+  #chClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#3f6b46; color:#fff; position:sticky; bottom:0; box-shadow:0 0 12px 12px rgba(28,30,42,.97); }
   /* 🛟 Das Fenster mit Jonahs gesicherten Welten */
   #bkBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:8px; background:rgba(28,30,42,.97); padding:12px 14px; border-radius:14px;
@@ -618,6 +637,10 @@
   /* 🏗️ die große Aufgabe steht IMMER da - eine eigene Zeile darunter */
   #basisText { display:none; font-size:14px; color:#bff3ec;
     border-top:1px solid rgba(255,255,255,.28); padding-top:5px; width:100%; }
+  /* 🏆 und darunter die Challenge, bei der Jonah am weitesten ist */
+  #challText { display:none; font-size:13px; color:#ffe08a;
+    border-top:1px solid rgba(255,255,255,.28); padding-top:5px; width:100%; }
+  #missBox { cursor:pointer; }
 
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
@@ -773,7 +796,7 @@
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
 <div class="hud" id="lavaFx"></div>
-<div class="hud" id="missBox"><span id="missText"></span><span id="basisText"></span></div>
+<div class="hud" id="missBox"><span id="missText"></span><span id="basisText"></span><span id="challText"></span></div>
 <div class="hud" id="foodBar">
   <div class="foodChip" id="foodC"></div>
   <div class="foodChip" id="foodT"></div>
@@ -953,6 +976,12 @@
   <div id="butlerList"></div>
   <button id="butlerClose">✔ Nichts, danke</button>
 </div>
+<div class="hud" id="chBox">
+  <h3>🏆 Deine Challenges</h3>
+  <div id="chInfo"></div>
+  <div id="chListe"></div>
+  <button id="chClose">✔ Los geht's!</button>
+</div>
 <div class="hud" id="bkBox">
   <h3>🛟 Deine gesicherten Welten</h3>
   <div id="bkInfo"></div>
@@ -981,7 +1010,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 237 &middot; Deine Welt ist jetzt geschützt: JonahCraft legt mehrere Sicherungen an, und du kannst sie dir mit 🛟 zurückholen. Nichts geht mehr verloren!</p>
+    Version 238 &middot; Jetzt gibt es FÜNF Challenges, die niemals fertig werden: Bergmeister, Baumeister, Tierfreund, Gärtner – und die Alien-Basis. Tipp oben links auf deine Aufgabe! 🏆</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1027,7 +1056,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 237;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 238;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5107,6 +5136,7 @@ function baueSpielstand() {
              woerter: vokVorrat().length },
       verlauf: lernVerlauf,              // 📊 das Lern-Tagebuch für den Elternbereich
       basis: [basisStufe, basisZahl],    // 🏗️ wie weit ist die Alien-Basis?
+      chall: challStand,                 // 🏆 und wie weit sind die Challenges?
 
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -5193,6 +5223,11 @@ function loadGame() {
       basisStufe = Math.max(0, s.basis[0]|0);
       basisZahl  = Math.max(0, s.basis[1]|0);
     }
+    if (s.chall && typeof s.chall === 'object')    // 🏆 der Stand aller Challenges
+      for (const c of CHALLENGES) {
+        const st = s.chall[c.id];
+        if (Array.isArray(st)) challStand[c.id] = [Math.max(0, st[0]|0), Math.max(0, st[1]|0)];
+      }
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
     if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
       zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
@@ -15574,11 +15609,118 @@ function basisAnzeige() {
     (a.ziel ? '  (' + Math.min(basisZahl, a.ziel) + '/' + a.ziel + ')' : '') +
     (weltDim === BASIS_DIM ? '' : '  → auf dem 🌕 Mond, neben dem UFO-Parkplatz');
 }
+// ================= 🏆 JONAHS CHALLENGES - SIE HÖREN NIE AUF ================
+// Neben der großen Alien-Basis laufen jetzt mehrere kleine Challenges mit.
+// Jede hat Stufen, und die Stufen gehen IMMER weiter: Stufe 1, Stufe 2,
+// Stufe 3 ... Jede will ein bisschen mehr als die vorige. Damit hat Jonah
+// nicht nur ein Ziel, sondern fünf - und keines wird jemals fertig.
+const CHALLENGES = [
+  { id:'berg',  t:'⛏️ Bergmeister', start:40, plus:20, geld:5,
+    was:n => 'Bau ' + n + ' Blöcke ab',
+    tipp:'Stein, Erde, Holz – jeder Block, den du abbaust, zählt mit.' },
+  { id:'bau',   t:'🧱 Baumeister',  start:50, plus:25, geld:5,
+    was:n => 'Setz ' + n + ' Blöcke hin',
+    tipp:'Schalt auf 🧱 und bau, was du willst: ein Haus, einen Turm, eine Brücke.' },
+  { id:'tier',  t:'🐾 Tierfreund',  start:2,  plus:2,  geld:8,
+    was:n => 'Zähme ' + n + (n===1 ? ' Tier' : ' Tiere'),
+    tipp:'Tippe einen Hund 🐶, eine Katze 🐱 oder ein Pferd 🐴 an – dann gehört es zu dir.' },
+  { id:'ernte', t:'🥕 Gärtner',     start:12, plus:8,  geld:5,
+    was:n => 'Ernte ' + n + ' Früchte',
+    tipp:'Reife Karotten 🥕, Tomaten 🍅, Weizen 🌾 und Äpfel 🍎 antippen – die wachsen nach.' },
+];
+const challStand = {};                  // id -> [Stufe, wie viel schon]
+for (const c of CHALLENGES) challStand[c.id] = [0, 0];
+function challZiel(c, stufe) { return c.start + c.plus * stufe; }
+// Mitzählen. Wird von überall aufgerufen, wo Jonah etwas tut.
+function challEvent(id, n) {
+  const c = CHALLENGES.find(x => x.id === id);
+  if (!c) return;
+  const st = challStand[id];
+  st[1] += (n || 1);
+  if (st[1] >= challZiel(c, st[0])) challGeschafft(c);
+  else { challAnzeige(); scheduleSave(); }
+}
+function challGeschafft(c) {
+  const st = challStand[c.id];
+  const stufe = st[0] + 1;
+  st[0] = stufe; st[1] = 0;
+  money += c.geld; updateFoodHUD();
+  for (const f of [523,659,784,1047]) blip(f,0.09);
+  for (let i = 0; i < 26; i++)
+    fireworks.push({ x:player.x+(Math.random()-0.5)*3, y:player.y+1.5+Math.random()*2.5,
+      z:player.z+(Math.random()-0.5)*3, vx:(Math.random()-0.5)*4, vy:2+Math.random()*3,
+      vz:(Math.random()-0.5)*4, tile:[154,27,30,149][i%4], t:1 });
+  toast('🏆🎉 ' + c.t + ' – STUFE ' + stufe + ' GESCHAFFT! (+' + c.geld + ' €)\n\n' +
+        'Jetzt kommt Stufe ' + (stufe+1) + ': ' + c.was(challZiel(c, stufe)) + '. ' +
+        'Das hört nie auf – wie weit schaffst du es?', 7000);
+  spielEreignis('Jonah reached level ' + stufe + ' in his ' + c.id + ' challenge!',
+                'Jonah hat Stufe ' + stufe + ' bei seiner Challenge ' + c.t + ' geschafft!');
+  challAnzeige();
+  scheduleSave();
+}
+// Welche Challenge ist gerade am nächsten dran? Die steht oben im Bild.
+function challVorne() {
+  let best = null, bestP = -1;
+  for (const c of CHALLENGES) {
+    const st = challStand[c.id];
+    const p = st[1] / challZiel(c, st[0]);
+    if (p > bestP) { bestP = p; best = c; }
+  }
+  return best;
+}
+function challAnzeige() {
+  const tx = document.getElementById('challText');
+  if (!tx) return;
+  const c = challVorne();
+  const st = challStand[c.id];
+  tx.style.display = 'block';
+  tx.textContent = '🏆 ' + c.t + ' Stufe ' + (st[0]+1) + ': ' + c.was(challZiel(c, st[0])) +
+    '  (' + st[1] + '/' + challZiel(c, st[0]) + ')  ·  hier tippen für alle';
+}
+// Das große Fenster mit ALLEN Challenges - auch der Alien-Basis.
+function openChallenges() {
+  const el = document.getElementById('chListe');
+  el.innerHTML = '';
+  document.getElementById('chInfo').textContent =
+    'Fünf Aufgaben, die niemals fertig werden. Nach jeder Stufe kommt die nächste – ' +
+    'ein bisschen schwerer und mit mehr Geld. 💶';
+  // 1. die große: die Alien-Basis
+  const a = basisAufgabe();
+  const k = document.createElement('div');
+  k.className = 'chKarte gross';
+  const stufeTxt = basisStufe < BASIS_STUFEN.length
+    ? 'Teil ' + (basisStufe+1) + ' von ' + BASIS_STUFEN.length
+    : 'Stockwerk ' + (basisStufe - BASIS_STUFEN.length + 1);
+  k.innerHTML = '<div class="chKopf"><span>🏗️ Alien-Basis</span>' +
+    '<span class="chStufe">' + stufeTxt + '</span></div>' +
+    '<div class="chWas">' + a.t + ': ' + a.txt + (a.ziel ? '  (' + Math.min(basisZahl,a.ziel) + '/' + a.ziel + ')' : '') + '</div>' +
+    '<div class="chBalken"><i style="width:' +
+      (a.ziel ? Math.round(Math.min(1, basisZahl/a.ziel)*100) : 0) + '%"></i></div>' +
+    '<div class="chTipp">Auf dem 🌕 Mond, neben dem UFO-Parkplatz. Die 🗺️ Bauplan-Tafel ' +
+    'davor zeigt dir ganz genau, wo was hin muss.</div>';
+  el.appendChild(k);
+  // 2. ... und die vier, die überall mitlaufen
+  for (const c of CHALLENGES) {
+    const st = challStand[c.id], ziel = challZiel(c, st[0]);
+    const d = document.createElement('div');
+    d.className = 'chKarte';
+    d.innerHTML = '<div class="chKopf"><span>' + c.t + '</span>' +
+      '<span class="chStufe">Stufe ' + (st[0]+1) + '</span></div>' +
+      '<div class="chWas">' + c.was(ziel) + '  (' + st[1] + '/' + ziel + ')</div>' +
+      '<div class="chBalken"><i style="width:' + Math.round(Math.min(1, st[1]/ziel)*100) + '%"></i></div>' +
+      '<div class="chTipp">' + c.tipp + '</div>';
+    el.appendChild(d);
+  }
+  document.getElementById('chBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700,0.06); blip(880,0.07);
+}
 let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
   const el = document.getElementById('missBox'), tx = document.getElementById('missText');
   if (!el) return;
   basisAnzeige();                       // 🏗️ die große Aufgabe steht immer mit da
+  challAnzeige();                       // 🏆 und die Challenge, bei der Jonah am weitesten ist
   el.style.display = 'flex';
   if (halleAn && !halleProgramm) {      // 🤍 die weiße Halle wartet auf den Knopf
     el.style.display = 'flex';
@@ -20412,7 +20554,7 @@ function hitEntity(a, dir) {
     sitting = null;
     if (flying) toggleFly();
     riding = a; a.walking = false;
-    if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); scheduleSave(); }
+    if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); challEvent('tier'); scheduleSave(); }
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
@@ -20517,7 +20659,7 @@ function hitEntity(a, dir) {
   }
   if (isPet(a)) {                       // Tiere zähmen!
     if (!a.tame) {
-      a.tame = true; a.sit = false; missEvent('zaehm');
+      a.tame = true; a.sit = false; missEvent('zaehm'); challEvent('tier');
       if (a.type!=='bird') { a.vy = 4.5; a.onGround = false; }
       toast(TAME_MSG[a.type]);
       const s = TAME_SOUND[a.type];
@@ -20724,6 +20866,7 @@ function doBreak(dir) {
     else if (hit.block===TOMATO2) { tomatoes += n; toast('🍅 '+n+' Tomaten geerntet! Das Beet wächst nach. 🌱', 3000); }
     else { wheat += n; toast('🌾 '+n+' Weizen geerntet! (3 🌾 antippen = Brot backen)', 3000); }
     updateFoodHUD(); scheduleSave();
+    challEvent('ernte', n);             // 🏆 für die Gärtner-Challenge
     // Das Beet bleibt und wächst von vorne nach!
     setBlock(hit.x,hit.y,hit.z, hit.block===CARROT2 ? CARROT0 : hit.block===TOMATO2 ? TOMATO0 : WHEAT0);
     cropSet.add(hit.x+','+hit.y+','+hit.z);
@@ -20776,6 +20919,7 @@ function doBreak(dir) {
   if (hit.block===APPLE_LEAF) {         // Äpfel vom Baum pflücken!
     const n = 1 + Math.floor(Math.random()*2);
     apples += n; updateFoodHUD(); scheduleSave();
+    challEvent('ernte', n);             // 🏆 für die Gärtner-Challenge
     setBlock(hit.x,hit.y,hit.z,LEAF);
     appleRegrow.push([hit.x, hit.y, hit.z, 25 + Math.random()*35]);   // wächst nach!
     toast('🍎 '+n+(n===1?' Apfel':' Äpfel')+' gepflückt! Da wachsen neue.', 2500);
@@ -20794,6 +20938,7 @@ function doBreak(dir) {
   if (hit.block>=PIC && hit.block<=PIC_W) removePainting(hit.x,hit.y,hit.z);
   if (hit.block===WOOL) { wool++; updateFoodHUD(); scheduleSave(); }  // Wolle zurück!
   if (hit.block===WOOD) missEvent('holz');   // 📜 für die Holzfäller-Mission
+  challEvent('berg');                       // 🏆 für die Bergmeister-Challenge
   setBlock(hit.x,hit.y,hit.z,AIR);
   weckeFluessigkeit(hit.x,hit.y,hit.z);   // Damm kaputt? Wasser/Lava strömt los!
   pruefeNachbarn(hit.x,hit.y,hit.z);      // und wer den Halt verliert, fällt!
@@ -21249,6 +21394,7 @@ function doPlace(dir) {
   }
   setBlock(px,py,pz,b);
   missEvent('bau');                     // 📜 für die Baumeister-Mission
+  challEvent('bau');                    // 🏆 und für die Baumeister-Challenge
   if (aufBauplatz(px, pz)) basisGebaut(b);   // 🏗️ und für die Alien-Basis
   blip(330,0.06);
   if (b===SCHUTZ) toast('🛡️ Schutz-Block! TNT und Explosionen können ihm NICHTS anhaben – nur du kannst ihn wegtippen.', 3200);
@@ -22607,6 +22753,12 @@ restoreBtn.addEventListener('click', ()=>{
     el.appendChild(b);
   }
   bkBox.style.display = 'flex';
+});
+// 🏆 Die Aufgaben-Box oben links antippen: dann kommen ALLE Challenges
+document.getElementById('missBox').addEventListener('click', (e)=>{ e.preventDefault(); openChallenges(); });
+document.getElementById('missBox').addEventListener('touchstart', (e)=>{ e.preventDefault(); openChallenges(); }, {passive:false});
+document.getElementById('chClose').addEventListener('click', ()=>{
+  document.getElementById('chBox').style.display = 'none'; blip(400,0.06);
 });
 document.getElementById('bkClose').addEventListener('click', ()=>{
   bkBox.style.display = 'none'; blip(400,0.06);
