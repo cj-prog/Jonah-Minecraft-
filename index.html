@@ -532,6 +532,30 @@
   #liftClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#8a4030; color:#fff; }
   #paintBox h3 { font-size:18px; }
+  /* 🤖 Die Roboter-Werkstatt und das Programmier-Fenster */
+  #rwBox, #rpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(26,30,40,.97); padding:11px 13px; border-radius:14px;
+    color:#fff; z-index:60; text-align:center; max-height:92vh; overflow-y:auto;
+    border:3px solid #7ec8f0; max-width:min(94vw,360px); }
+  #rwBox h3, #rpBox h3 { font-size:17px; }
+  #rwText, #rpInfo { font-size:13px; color:#d8e2f4; line-height:1.4; }
+  #rwListe { display:flex; flex-direction:column; gap:4px; width:100%; }
+  .rwTeil { font-size:14px; text-align:left; padding:4px 8px; border-radius:8px; }
+  .rwTeil.da { background:rgba(110,200,110,.18); color:#a8e9a0; }
+  .rwTeil.fehlt { background:rgba(255,255,255,.07); color:#9fb0cc; }
+  #rwBau { font-size:16px; font-weight:bold; padding:9px 18px; border-radius:10px; border:none;
+    background:#2f7a48; color:#fff; }
+  #rwClose, #rpClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#3f5b6b; color:#fff; position:sticky; bottom:0; box-shadow:0 0 12px 12px rgba(26,30,40,.97); }
+  #rpListe { display:flex; flex-direction:column; gap:4px; width:100%; }
+  .rpKann { font-size:13px; text-align:left; padding:7px 9px; border-radius:9px; border:none;
+    background:#33507a; color:#fff; line-height:1.3; }
+  .rpLeer { font-size:12px; color:#9fb0cc; line-height:1.4; padding:4px 2px; }
+  #rpEingabe { display:flex; gap:5px; width:100%; }
+  #rpInput { flex:1; min-width:0; font-size:16px; padding:8px 9px; border-radius:8px; border:none; }
+  #rpLern { font-size:14px; font-weight:bold; padding:8px 11px; border-radius:8px; border:none;
+    background:#c58a20; color:#fff; white-space:nowrap; }
+  #rpTipp { font-size:11px; color:#9fb0cc; line-height:1.35; }
   /* 🏆 Das Fenster mit allen Challenges */
   #chBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:5px; background:rgba(28,30,42,.97); padding:10px 12px; border-radius:14px;
@@ -976,6 +1000,26 @@
   <div id="butlerList"></div>
   <button id="butlerClose">✔ Nichts, danke</button>
 </div>
+<div class="hud" id="rwBox">
+  <h3>🔧 Roboter-Werkstatt</h3>
+  <div id="rwText"></div>
+  <div id="rwListe"></div>
+  <button id="rwBau">🔩 Roboter zusammenbauen!</button>
+  <button id="rwClose">✔ Okay</button>
+</div>
+<div class="hud" id="rpBox">
+  <h3 id="rpTitel">🤖 Roboter programmieren</h3>
+  <div id="rpInfo"></div>
+  <div id="rpListe"></div>
+  <div id="rpEingabe">
+    <input id="rpInput" type="text" maxlength="60" placeholder="Was soll er können?" autocomplete="off">
+    <button id="rpLern">🧠 Beibringen</button>
+  </div>
+  <div id="rpTipp">Tipp: „folge mir", „tanze", „mach Licht", „hol Holz", „bau einen Turm",
+    „pass auf mich auf", „erzähl einen Witz", „flieg", „du heißt Blitz" … oder schreib
+    dir etwas ganz Eigenes aus!</div>
+  <button id="rpClose">✔ Fertig</button>
+</div>
 <div class="hud" id="chBox">
   <h3>🏆 Deine Challenges</h3>
   <div id="chInfo"></div>
@@ -1010,7 +1054,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 238 &middot; Jetzt gibt es FÜNF Challenges, die niemals fertig werden: Bergmeister, Baumeister, Tierfreund, Gärtner – und die Alien-Basis. Tipp oben links auf deine Aufgabe! 🏆</p>
+    Version 239 &middot; NEU: In deiner Burg liegen die Teile für einen kleinen Roboter! Sammle sie ein, bau ihn an der Werkbank zusammen – und dann programmiere ihn: Schreib auf, was er können soll, und er kann es. 🤖🧠</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1056,7 +1100,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 238;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 239;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1210,7 +1254,10 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SEIL=101,                         // 🪢 ein Seil von der Decke: antippen = schwingen!
       GTUER=102, GTUER_AUF=103,         // 🚔 die Gittertür am Gefängnis: zu und offen
       UFOPAD=104, UFOMARK=105,          // 🛸 der Belag und die Leuchtstreifen auf dem UFO-Parkplatz
-      BAUPLAN=106;                      // 🗺️ die Bauplan-Tafel vor dem Bauplatz der Alien-Basis
+      BAUPLAN=106,                      // 🗺️ die Bauplan-Tafel vor dem Bauplatz der Alien-Basis
+      // 🤖 DIE BAUTEILE FÜR JONAHS KLEINEN ROBOTER - sie liegen in der Burg
+      RT_KOPF=107, RT_BAUCH=108, RT_ARME=109, RT_BEINE=110, RT_FUESSE=111, RT_AKKU=112,
+      RWERK=113;                        // 🔧 die Werkbank, an der er zusammengebaut wird
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1383,6 +1430,43 @@ const BLOCKS = {
     [0.00,0.90,0.36, 1.00,1.00,0.64, 5],          // Holzrahmen oben
     [0.00,0.06,0.36, 0.06,0.94,0.64, 5],          // und an den Seiten
     [0.94,0.06,0.36, 1.00,0.94,0.64, 5]] },
+  // 🤖 JONAHS ROBOTER-BAUTEILE: jedes sieht schon aus wie das, was es später
+  // am Roboter ist. Antippen = einsammeln (in beiden Modi, sie gehen nie kaputt).
+  [RT_KOPF]:  { name:'Roboter-Kopf 🤖 (antippen = einsammeln!)', tiles:[158,158,158], solid:false, model:[
+    [0.18,0.00,0.18, 0.82,0.62,0.82, 158],        // der Kopfwürfel
+    // Das Gesicht auf BEIDEN Seiten: egal, von wo Jonah in den Raum kommt,
+    // er sieht sofort, dass da ein Roboterkopf liegt.
+    [0.20,0.16,0.14, 0.80,0.46,0.20, 159],
+    [0.20,0.16,0.80, 0.80,0.46,0.86, 159],        // das Gesicht (Bildschirm)
+    [0.46,0.62,0.46, 0.54,0.86,0.54, 158],        // die Antenne
+    [0.40,0.84,0.40, 0.60,0.96,0.60, 27]] },      // mit leuchtender Kugel
+  [RT_BAUCH]: { name:'Roboter-Bauch 🤖 (antippen = einsammeln!)', tiles:[158,158,158], solid:false, model:[
+    [0.14,0.00,0.24, 0.86,0.70,0.76, 158],        // der Rumpf
+    [0.38,0.26,0.20, 0.62,0.50,0.26, 27]] },      // der leuchtende Brustkern
+  [RT_ARME]:  { name:'Roboter-Arme 🦾 (antippen = einsammeln!)', tiles:[158,158,158], solid:false, model:[
+    [0.10,0.00,0.28, 0.90,0.18,0.40, 158],        // zwei Arme, nebeneinander gelegt
+    [0.10,0.00,0.58, 0.90,0.18,0.70, 158],
+    [0.04,0.00,0.24, 0.16,0.22,0.44, 158],        // und die Hände
+    [0.04,0.00,0.54, 0.16,0.22,0.74, 158]] },
+  [RT_BEINE]: { name:'Roboter-Beine 🦿 (antippen = einsammeln!)', tiles:[158,158,158], solid:false, model:[
+    [0.14,0.00,0.26, 0.40,0.60,0.46, 158],        // zwei Beine, aufgestellt
+    [0.60,0.00,0.26, 0.86,0.60,0.46, 158],
+    [0.10,0.56,0.22, 0.90,0.70,0.50, 158]] },     // die Hüftplatte quer darüber
+  [RT_FUESSE]:{ name:'Roboter-Füße 🦶 (antippen = einsammeln!)', tiles:[158,158,158], solid:false, model:[
+    [0.08,0.00,0.20, 0.46,0.24,0.80, 158],
+    [0.54,0.00,0.20, 0.92,0.24,0.80, 158]] },
+  [RT_AKKU]:  { name:'Roboter-Akku 🔋 (antippen = einsammeln!)', tiles:[160,160,160], solid:false, model:[
+    [0.26,0.00,0.26, 0.74,0.66,0.74, 160],        // die Batterie
+    [0.38,0.66,0.38, 0.62,0.76,0.62, 158]] },     // der Pluspol oben
+  // 🔧 DIE WERKBANK: hier wird aus allen Teilen der Roboter zusammengebaut.
+  [RWERK]: { name:'Roboter-Werkbank 🔧 (antippen!)', tiles:[161,158,161], solid:true, model:[
+    [0.00,0.72,0.00, 1.00,0.86,1.00, 161],        // die Arbeitsplatte
+    [0.02,0.00,0.02, 0.18,0.72,0.18, 158],        // vier Metallbeine
+    [0.82,0.00,0.02, 0.98,0.72,0.18, 158],
+    [0.02,0.00,0.82, 0.18,0.72,0.98, 158],
+    [0.82,0.00,0.82, 0.98,0.72,0.98, 158],
+    [0.10,0.86,0.10, 0.44,0.96,0.52, 159],        // der Bauplan-Bildschirm darauf
+    [0.56,0.86,0.20, 0.72,0.98,0.36, 27]] },      // und eine leuchtende Lampe
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -2684,6 +2768,13 @@ function naechsteStation(px, pz) {
 }
 // --------------------- Jonahs RIESEN-FESTUNG 👑 -----------------------------
 let _burg = null, _burgSeed = null;
+// 🤖 WO LIEGEN DIE ROBOTER-BAUTEILE? Alle sechs im Werkstatt-Raum im
+// Erdgeschoss der Riesen-Festung, jedes auf einem eigenen Tisch.
+// (dx, dz von der Burgmitte aus, und welches Teil)
+const ROBO_TEIL_ORTE = [
+  [10, 12, RT_KOPF], [18, 12, RT_BAUCH], [10, 18, RT_ARME],
+  [18, 18, RT_BEINE], [22, 15, RT_FUESSE], [ 6, 15, RT_AKKU],
+];
 function burgPos() {                    // eine riesige Festung pro Welt
   if (_burg && _burgSeed===seed) return _burg;
   // WICHTIG: Die Festung steht IMMER in Jonahs normaler Welt. Ohne diese Zeile
@@ -4506,6 +4597,17 @@ function genChunkData(cx, cz, ohneEdits) {
       P(-5,by+1,7,S_);  P(-5,by+2,7,BURGPLAN);
       P(-21,by+6,2,S_); P(-21,by+7,2,BURGPLAN);
       P(-21,by+11,2,S_); P(-21,by+12,2,BURGPLAN);
+      // 9b2) 🤖 DIE ROBOTER-WERKSTATT im Erdgeschoss: die Werkbank und die sechs
+      // Bauteile liegen verteilt in der Ecke - Jonah muss sie erst einsammeln.
+      // Jedes Teil steht auf einem eigenen Tisch, damit man es gleich sieht.
+      P(14,by+1,14,RWERK);
+      P(13,by+1,13,SIGN);
+      const rsig=(B.bx+13)+','+(by+1)+','+(B.bz+13);
+      if (!signTexts.has(rsig)) signTexts.set(rsig,
+        '🤖 Roboter-Werkstatt: Sammle die 6 Bauteile hier im Raum ein (antippen!) ' +
+        'und tippe dann die Werkbank an. Danach kannst du deinen Roboter programmieren!');
+      for (const [tdx,tdz,teil] of ROBO_TEIL_ORTE) { P(tdx,by+1,tdz,TABLE); P(tdx,by+2,tdz,teil); }
+      P(11,by+3,17,TORCH); P(21,by+3,11,TORCH);
       // 9c) die GEHEIMTÜR 🤫: hinter dem Busch an der Nordwand!
       P(22,by+1,-22,DOOR); P(22,by+2,-22,DOOR_TOP);
       for (let y=by+1; y<=by+3; y++) { P(21,y,-23,LEAF); P(23,y,-23,LEAF); }
@@ -5137,6 +5239,14 @@ function baueSpielstand() {
       verlauf: lernVerlauf,              // 📊 das Lern-Tagebuch für den Elternbereich
       basis: [basisStufe, basisZahl],    // 🏗️ wie weit ist die Alien-Basis?
       chall: challStand,                 // 🏆 und wie weit sind die Challenges?
+      robo: (()=>{                       // 🤖 Jonahs kleiner Roboter
+        const r = animals.find(a => a.type === 'mini');
+        return { teile: roboTeile.slice(), gebaut: roboGebaut ? 1 : 0, name: roboName,
+                 stufe: roboStufe, zahl: roboZahl,
+                 kann: roboKann.map(k => [k.txt, k.art, k.e || '✨']),
+                 ort: r ? [Math.round(r.x*10)/10, Math.round(r.y*10)/10, Math.round(r.z*10)/10]
+                        : (roboOrt || null) };
+      })(),
 
       krone: hatKrone?1:0, zepter: hatZepter?1:0, auf: traegtKrone?1:0, steuer: Math.round(steuerZeit),
       look: [outfit.shirt, outfit.hose, outfit.haar, outfit.haut],
@@ -5222,6 +5332,18 @@ function loadGame() {
     if (Array.isArray(s.basis)) {        // 🏗️ der Stand der Alien-Basis
       basisStufe = Math.max(0, s.basis[0]|0);
       basisZahl  = Math.max(0, s.basis[1]|0);
+    }
+    if (s.robo && typeof s.robo === 'object') {    // 🤖 der kleine Roboter
+      const r = s.robo;
+      if (Array.isArray(r.teile)) roboTeile = r.teile.filter(n => n >= RT_KOPF && n <= RT_AKKU);
+      roboGebaut = !!r.gebaut;
+      if (typeof r.name === 'string' && r.name) roboName = r.name.slice(0, 16);
+      roboStufe = Math.max(0, r.stufe|0);
+      roboZahl  = Math.max(0, r.zahl|0);
+      if (Array.isArray(r.kann))
+        roboKann = r.kann.filter(k => Array.isArray(k) && k[0])
+                         .map(k => ({ txt:String(k[0]).slice(0,80), art:k[1] || 'trick', e:k[2] || '✨' }));
+      if (Array.isArray(r.ort)) roboOrt = r.ort;
     }
     if (s.chall && typeof s.chall === 'object')    // 🏆 der Stand aller Challenges
       for (const c of CHALLENGES) {
@@ -5858,6 +5980,34 @@ atlas.width = atlas.height = T*ATLAS_N;
     }
     if ((x === 12 || x === 13) && (y === 12 || y === 13)) return vary(200,60,50,14);  // rotes Kreuz
     return vary(232,220,184,10);                                    // Pergament
+  });
+  // 🤖 JONAHS KLEINER ROBOTER: helles Metall mit Nieten (158), sein Gesicht -
+  // ein Bildschirm mit zwei leuchtenden Augen und einem Lächeln (159), der
+  // Akku (160) und die Holzplatte der Werkbank (161).
+  tile(158,(x,y)=>{                                                 // Roboter-Metall
+    if ((x===2||x===13) && (y===2||y===13)) return vary(90,100,115,6);   // Nieten in den Ecken
+    if (y===7 || y===8) return vary(150,162,178,8);                 // eine Fuge quer
+    if ((x+y) % 7 === 0) return vary(198,208,220,10);               // ein paar helle Kratzer
+    return vary(178,188,202,12);                                    // gebürstetes Blech
+  });
+  tile(159,(x,y)=>{                                                 // Roboter-Gesicht
+    if (x<=1 || x>=14 || y<=1 || y>=14) return vary(120,130,146,8);        // Rahmen
+    if (y>=4 && y<=7 && (x>=3&&x<=5 || x>=10&&x<=12)) return vary(120,238,226,18);  // Augen
+    if (y>=10 && y<=11 && x>=4 && x<=11) return vary(120,238,226,18);      // Lächeln
+    if (y===9 && (x===4||x===11)) return vary(120,238,226,18);
+    return vary(30,38,52,10);                                              // dunkler Bildschirm
+  });
+  tile(160,(x,y)=>{                                                 // der Akku
+    if (y<=1) return vary(150,162,178,8);                           // Metalldeckel
+    if (x<=1 || x>=14) return vary(150,162,178,8);
+    if (y>=11) return vary(60,180,80,12);                           // unten der grüne Ladebalken
+    if (x>=6 && x<=9 && y>=4 && y<=8) return vary(60,52,20,8);      // das Blitz-Zeichen
+    return vary(246,210,60,14);                                     // gelbes Gehäuse
+  });
+  tile(161,(x,y)=>{                                                 // Werkbank-Platte
+    if (y % 5 === 0) return vary(96,68,38,8);                       // Bretter-Fugen
+    if ((x*3+y) % 11 === 0) return vary(150,110,64,10);             // Maserung
+    return vary(126,92,52,12);
   });
   // 👮 DIE FESTUNGS-POLIZEI: dunkelblaue Uniform (147) und ein freundliches,
   // wachsames Gesicht (148).
@@ -6720,6 +6870,8 @@ const ANIMAL_KIND = {
   // 👽 die Aliens: klein, neugierig und immer ein bisschen am Schweben
   alien:    { speed:1.4, half:0.28, height:1.5,  tile:151, face:150 },
   ufo:      { speed:0,   half:1.6,  height:1.6,  tile:152, face:153 },   // 🛸 ihre Untertasse
+  // 🤖 Jonahs kleiner, selbstgebauter Roboter - gut einen Block hoch
+  mini:     { speed:3.2, half:0.3,  height:1.1,  tile:158, face:159 },
 };
 // 🦊 Die englischen Freunde als Figuren in der Welt: welches Fell, welches
 // Gesicht und welches Erkennungszeichen auf dem Kopf?
@@ -8028,6 +8180,10 @@ function updateAnimals(dt) {
       else { a.vy = 0; a.onGround = true; }
       continue;
     }
+    if (a.type==='mini') {              // 🤖 der kleine Roboter macht, was Jonah ihm beibrachte
+      miniTick(a, dt);
+      continue;
+    }
     if (a.type==='bagger') {            // der Riesen-Bagger parkt brav und sinkt sanft
       if (a!==baggerRiding) {
         a.walking=false;
@@ -9074,6 +9230,31 @@ function drawAnimals() {
         pushBox(arr,a, 0,2.0,0, 0.15,0.15,0.15, 27);
       }
       if (a.befehl === 'folgen') drawHeart(arr, a, 2.25);          // ❤️ er kommt mit!
+    } else if (a.type==='mini') {                                       // 🤖 DER KLEINE ROBOTER
+        const kM = ANIMAL_KIND.mini;
+        const sw4 = a.walking ? Math.sin(a.ph)*0.16 : 0;
+        const wink = a.winkT > 0 ? 0.55 : 0;
+        // Großer Kopf, kleiner Körper - so sieht er freundlich aus statt wie
+        // ein grauer Klotz. Und hinten trägt er seinen gelben Akku, damit man
+        // ihn auch von hinten sofort erkennt.
+        pushBox(arr,a, -0.13,0.04,sw4*0.6, 0.22,0.08,0.30, kM.tile);      // Füße
+        pushBox(arr,a,  0.13,0.04,-sw4*0.6, 0.22,0.08,0.30, kM.tile);
+        pushBox(arr,a, -0.12,0.24,sw4, 0.13,0.26,0.13, kM.tile);          // Beine
+        pushBox(arr,a,  0.12,0.24,-sw4, 0.13,0.26,0.13, kM.tile);
+        pushBox(arr,a, 0,0.55,0, 0.40,0.34,0.26, kM.tile);                // Bauch
+        pushBox(arr,a, 0,0.57,-0.14, 0.15,0.15,0.03, a.farbe||27);        // Brustkern (leuchtet)
+        pushBox(arr,a, 0,0.56,0.16, 0.22,0.24,0.08, 160);                 // 🔋 Akku-Rucksack
+        pushBox(arr,a, -0.26,0.55+wink*0.22,0, 0.10,wink?0.26:0.28,0.10, kM.tile);   // Arme
+        pushBox(arr,a,  0.26,0.55,0, 0.10,0.28,0.10, kM.tile);
+        pushBox(arr,a, -0.26,0.40+wink*0.36,0, 0.12,0.10,0.12, kM.tile);  // Hände
+        pushBox(arr,a,  0.26,0.40,0, 0.12,0.10,0.12, kM.tile);
+        pushBox(arr,a, 0,0.76,0, 0.16,0.08,0.16, kM.tile);                // Hals
+        pushBox(arr,a, 0,0.95,0, 0.40,0.32,0.34, kM.tile, kM.face);       // DER KOPF
+        pushBox(arr,a, -0.22,0.95,0, 0.06,0.14,0.14, a.farbe||27);        // leuchtende Ohren
+        pushBox(arr,a,  0.22,0.95,0, 0.06,0.14,0.14, a.farbe||27);
+        pushBox(arr,a, 0,1.15,0, 0.03,0.10,0.03, kM.tile);                // Antenne
+        pushBox(arr,a, 0,1.24,0, 0.09,0.09,0.09, a.farbe||27);
+        if (a.leucht) pushBox(arr,a, 0,0.62,0, 0.70,0.70,0.70, 27);       // 💡 er leuchtet!
     } else if (a.type==='alien') {                                 // 👽 ein Alien!
       // Sie schweben immer ein kleines bisschen über dem Boden.
       const schweb = Math.sin(performance.now()*0.003 + a.x) * 0.05;
@@ -15671,6 +15852,16 @@ function challVorne() {
 function challAnzeige() {
   const tx = document.getElementById('challText');
   if (!tx) return;
+  // 🤖 Solange der Roboter noch nicht steht, ist ER die wichtigste Zeile -
+  // sonst findet Jonah die Teile in der Burg nie.
+  if (roboStufe < 2) {
+    const ra = roboAufgabe();
+    tx.style.display = 'block';
+    tx.textContent = '🤖 ' + ra.t + ': ' + ra.txt +
+      (ra.ziel ? '  (' + Math.min(ra.zahl, ra.ziel) + '/' + ra.ziel + ')' : '') +
+      '  ·  hier tippen für alle';
+    return;
+  }
   const c = challVorne();
   const st = challStand[c.id];
   tx.style.display = 'block';
@@ -15682,7 +15873,7 @@ function openChallenges() {
   const el = document.getElementById('chListe');
   el.innerHTML = '';
   document.getElementById('chInfo').textContent =
-    'Fünf Aufgaben, die niemals fertig werden. Nach jeder Stufe kommt die nächste – ' +
+    'Sechs Aufgaben, die niemals fertig werden. Nach jeder Stufe kommt die nächste – ' +
     'ein bisschen schwerer und mit mehr Geld. 💶';
   // 1. die große: die Alien-Basis
   const a = basisAufgabe();
@@ -15699,6 +15890,23 @@ function openChallenges() {
     '<div class="chTipp">Auf dem 🌕 Mond, neben dem UFO-Parkplatz. Die 🗺️ Bauplan-Tafel ' +
     'davor zeigt dir ganz genau, wo was hin muss.</div>';
   el.appendChild(k);
+  // 1b. die zweite große: der kleine Roboter
+  const ra = roboAufgabe();
+  const rk = document.createElement('div');
+  rk.className = 'chKarte gross';
+  rk.innerHTML = '<div class="chKopf"><span>🤖 ' + roboName + ', dein Roboter</span>' +
+    '<span class="chStufe">' + (roboStufe === 0 ? 'Teile suchen' : roboStufe === 1 ? 'Zusammenbauen'
+      : 'Stufe ' + (roboStufe - 1)) + '</span></div>' +
+    '<div class="chWas">' + ra.t + ': ' + ra.txt +
+      (ra.ziel ? '  (' + Math.min(ra.zahl, ra.ziel) + '/' + ra.ziel + ')' : '') + '</div>' +
+    '<div class="chBalken"><i style="width:' +
+      (ra.ziel ? Math.round(Math.min(1, ra.zahl/ra.ziel)*100) : 0) + '%"></i></div>' +
+    '<div class="chTipp">' + (roboGebaut
+      ? 'Er kann schon ' + roboKann.length + (roboKann.length === 1 ? ' Sache' : ' Sachen') +
+        '. Tipp ihn an und schreib ihm auf, was er noch lernen soll – das hört nie auf!'
+      : 'In deiner Burg im Erdgeschoss liegen die Teile auf Tischen. Antippen, ' +
+        'dann an der 🔧 Werkbank zusammenbauen!') + '</div>';
+  el.appendChild(rk);
   // 2. ... und die vier, die überall mitlaufen
   for (const c of CHALLENGES) {
     const st = challStand[c.id], ziel = challZiel(c, st[0]);
@@ -15714,6 +15922,421 @@ function openChallenges() {
   document.getElementById('chBox').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
   blip(700,0.06); blip(880,0.07);
+}
+// ============== 🤖 JONAHS KLEINER ROBOTER: BAUEN UND PROGRAMMIEREN ========
+// Die zweite große Aufgabe, die nie fertig wird:
+//   1. die sechs Bauteile in der Burg einsammeln (antippen),
+//   2. sie an der Werkbank zusammenbauen,
+//   3. und dann dem Roboter beibringen, was er alles können soll - immer
+//      weiter, ohne Ende. Was er einmal gelernt hat, kann er für immer.
+const ROBO_TEILE = [
+  [RT_KOPF,  '🤖 Kopf'],   [RT_BAUCH, '🫁 Bauch'], [RT_ARME,  '🦾 Arme'],
+  [RT_BEINE, '🦿 Beine'],  [RT_FUESSE,'🦶 Füße'],  [RT_AKKU,  '🔋 Akku'],
+];
+let roboTeile = [];                     // welche Teile liegen schon im Rucksack?
+let roboGebaut = false;
+let roboName = 'Robi';
+let roboKann = [];                      // [{txt, art}] - alles, was Jonah ihm beigebracht hat
+let roboStufe = 0, roboZahl = 0;        // die endlose Aufgabe
+let roboOrt = null;                     // wo er zuletzt stand (für den Spielstand)
+let roboT = 0;
+
+// Was ist gerade dran? Ab Stufe 2 geht es endlos weiter.
+function roboAufgabe() {
+  if (roboStufe === 0) return { t:'🔧 Bauteile suchen',
+    txt:'Sammle die 6 Roboter-Teile in deiner Burg ein (antippen!)',
+    ziel:ROBO_TEILE.length, zahl:roboTeile.length };
+  if (roboStufe === 1) return { t:'🔩 Zusammenbauen',
+    txt:'Tipp die Werkbank in deiner Burg an – dann steht er da!', ziel:0, zahl:0 };
+  const n = 3 + (roboStufe - 2) * 2;    // 3, 5, 7, 9 ... immer mehr
+  return { t:'🧠 Programmieren – Stufe ' + (roboStufe - 1),
+    txt:'Bring ' + roboName + ' ' + n + ' neue Sachen bei (antippen und schreiben!)',
+    ziel:n, zahl:roboZahl };
+}
+function roboStufeFertig(nachricht) {
+  roboStufe++; roboZahl = 0;
+  money += 12; updateFoodHUD();
+  for (const f of [523,659,784,1047,1319]) blip(f,0.1);
+  for (let i = 0; i < 34; i++)
+    fireworks.push({ x:player.x+(Math.random()-0.5)*3.5, y:player.y+1.5+Math.random()*3,
+      z:player.z+(Math.random()-0.5)*3.5, vx:(Math.random()-0.5)*4, vy:2+Math.random()*3.5,
+      vz:(Math.random()-0.5)*4, tile:[27,25,154,149][i%4], t:1.1 });
+  const a2 = roboAufgabe();
+  toast(nachricht + ' (+12 €)\n\nJetzt dran: ' + a2.t + ' – ' + a2.txt, 9000);
+  challAnzeige(); scheduleSave();
+}
+// ---- 1. Die Teile einsammeln ----------------------------------------------
+function roboSammeln(block, x, y, z) {
+  if (roboTeile.includes(block)) return;
+  roboTeile.push(block);
+  setBlock(x, y, z, AIR);
+  const name = (ROBO_TEILE.find(t => t[0] === block) || [0,'Teil'])[1];
+  blip(700,0.07); blip(950,0.09);
+  if (roboTeile.length >= ROBO_TEILE.length && roboStufe === 0) {
+    roboStufeFertig('🔧🎉 ALLE 6 TEILE ZUSAMMEN!');
+  } else {
+    toast('🔧 ' + name + ' eingesammelt! (' + roboTeile.length + '/' + ROBO_TEILE.length +
+          ')\nEs fehlt noch: ' + ROBO_TEILE.filter(t => !roboTeile.includes(t[0]))
+            .map(t => t[1]).join(', '), 4500);
+    challAnzeige(); scheduleSave();
+  }
+}
+// ---- 2. Zusammenbauen ------------------------------------------------------
+function roboFigur() { return animals.find(a => a.type === 'mini'); }
+function roboBauen(x, y, z) {
+  if (roboFigur()) return roboFigur();
+  const a = { type:'mini', x:x+0.5, y:y, z:z+0.5, yaw:Math.PI, vy:0, kx:0, kz:0, hp:5,
+              walking:false, t:0, ph:0, onGround:false, auftrag:'warten', auftragT:0,
+              winkT:0, leucht:false, farbe:27, ziel:null, follow:false, eigen:true };
+  animals.push(a);
+  roboGebaut = true;
+  return a;
+}
+// Das Werkstatt-Fenster: was fehlt noch - oder los, zusammenbauen!
+function openWerkstatt(wx, wy, wz) {
+  const el = document.getElementById('rwListe');
+  el.innerHTML = '';
+  const fertig = roboTeile.length >= ROBO_TEILE.length;
+  for (const [nr, name] of ROBO_TEILE) {
+    const d = document.createElement('div');
+    const da = roboTeile.includes(nr);
+    d.className = da ? 'rwTeil da' : 'rwTeil fehlt';
+    d.textContent = (da ? '✅ ' : '○ ') + name + (da ? '' : ' – liegt noch in der Burg');
+    el.appendChild(d);
+  }
+  const knopf = document.getElementById('rwBau');
+  if (roboGebaut) {
+    document.getElementById('rwText').textContent =
+      roboName + ' ist fertig gebaut! Tipp ihn an, dann kannst du ihn programmieren. 🧠';
+    knopf.style.display = 'none';
+  } else if (fertig) {
+    document.getElementById('rwText').textContent =
+      'Du hast ALLE Teile! Drück auf den Knopf – dann bauen wir ihn zusammen. 🔩';
+    knopf.style.display = 'block';
+    knopf.onclick = () => {
+      document.getElementById('rwBox').style.display = 'none';
+      const a = roboBauen(wx, wy + 1, wz + 1);
+      for (const f of [300,420,560,700,900,1200]) blip(f,0.08);
+      for (let i = 0; i < 40; i++)
+        fireworks.push({ x:a.x, y:a.y+0.5+Math.random()*1.5, z:a.z, vx:(Math.random()-0.5)*4,
+          vy:1.5+Math.random()*3, vz:(Math.random()-0.5)*4, tile:[27,158,25,149][i%4], t:1.1 });
+      sagen(a, 'Hallo Jonah! Ich bin ' + roboName + '. Was soll ich lernen?', 6);
+      if (roboStufe === 1) roboStufeFertig('🤖🎉 DEIN ROBOTER IST FERTIG!');
+      else { challAnzeige(); scheduleSave(); }
+      setTimeout(() => openRoboProg(), 900);
+    };
+  } else {
+    document.getElementById('rwText').textContent =
+      'Such die fehlenden Teile im Werkstatt-Raum und tipp sie an! (' +
+      roboTeile.length + ' von ' + ROBO_TEILE.length + ')';
+    knopf.style.display = 'none';
+  }
+  document.getElementById('rwBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(600,0.06); blip(760,0.07);
+}
+// ---- 3. Programmieren ------------------------------------------------------
+// Jonah schreibt in seinen eigenen Worten, was der Roboter können soll. Diese
+// Liste sagt, welche Wörter zu welchem Können gehören. Steht nichts davon
+// drin, lernt er es trotzdem - als eigenen Trick mit Jonahs eigenem Satz.
+const ROBO_KANN = [
+  { art:'folgen',   e:'🐾', w:['folg','komm mit','hinterher','bei mir','begleit','mitkommen'],
+    sagt:'Ich bleibe bei dir!' },
+  { art:'warten',   e:'✋', w:['warte','bleib','steh','halt','stopp','stop','pause'],
+    sagt:'Ich warte hier.' },
+  { art:'tanzen',   e:'💃', w:['tanz','disco','party','wackel'], sagt:'Tanzen kann ich am besten!' },
+  { art:'springen', e:'⬆️', w:['spring','hüpf','hupf','hoch'], sagt:'Hui, ich springe!' },
+  { art:'winken',   e:'👋', w:['wink','hallo sag','grüß','gruess','begrüß'], sagt:'Hallo Jonah!' },
+  { art:'singen',   e:'🎵', w:['sing','lied','musik','trällern'], sagt:'La-la-la! Piep-piep!' },
+  { art:'leuchten', e:'💡', w:['leucht','licht','lampe','dunkel','taschenlampe'], sagt:'Ich mache Licht!' },
+  { art:'holz',     e:'🪓', w:['holz','baum','fäll','faell','sägen'], sagt:'Ich hole Holz!' },
+  { art:'graben',   e:'⛏️', w:['grab','loch','tunnel','buddel','bagger'], sagt:'Ich grabe los!' },
+  { art:'bauen',    e:'🧱', w:['bau','turm','mauer','haus','stapel'], sagt:'Ich baue einen Turm!' },
+  // 'pass' einzeln, denn Jonah schreibt auch „pass GUT auf MICH auf" - da
+  // stehen zwischen den beiden Wörtern noch welche.
+  { art:'wache',    e:'🛡️', w:['wach','pass','beschütz','beschuetz','aufpass','verteidig','bewach'],
+    sagt:'Niemand tut dir etwas!' },
+  { art:'witz',     e:'😂', w:['witz','lach','spaß','spass','lustig'], sagt:'Ich kenne einen guten!' },
+  { art:'zaehlen',  e:'🔢', w:['zähl','zaehl','rechn','mathe','plus','mal '], sagt:'1, 2, 3 …' },
+  { art:'feuerwerk',e:'🎆', w:['feuerwerk','rakete','knall','böller','boeller','funken'],
+    sagt:'Achtung, es kracht!' },
+  { art:'fliegen',  e:'🚀', w:['flieg','schweb','abheb','düse','duese'], sagt:'Ich hebe ab!' },
+  { art:'schlafen', e:'😴', w:['schlaf','müde','muede','ausruh','gute nacht'], sagt:'Gähn … gute Nacht.' },
+  { art:'drehen',   e:'🌀', w:['dreh','kreisel','pirouette','rundum'], sagt:'Ich drehe mich!' },
+];
+const ROBO_WITZE = [
+  'Warum können Roboter nicht schwimmen? Weil sie rosten! 😂',
+  'Was sagt ein Roboter beim Essen? Piep, mahlzeit! 🤖🍽️',
+  'Warum war der Akku traurig? Er war leer und niemand hat ihn aufgeladen! 🔋',
+  'Wie nennt man einen Roboter, der immer rennt? Turbo-Blech! 🏃🤖',
+  'Was macht ein Roboter im Regen? Er bekommt Pieps-Schluckauf! 🌧️',
+];
+// Jonahs Satz verstehen. Findet er nichts, wird daraus ein eigener Trick -
+// so kann Jonah WIRKLICH alles schreiben, was er will.
+function roboVerstehen(text) {
+  const t = ' ' + text.toLowerCase().replace(/[.!?,]/g, ' ') + ' ';
+  // heißt du jetzt anders?
+  // „du heißt jetzt Blitz", „nenn dich mal Turbo" - die kleinen Füllwörter
+  // dazwischen gehören NICHT zum Namen.
+  const nm = t.match(/(?:heißt|heisst|heiß|heiss|nenn dich|nennst du dich|name ist|dein name)\s+((?:jetzt|ab jetzt|ab heute|mal|nun|immer|sofort|endlich|doch|bitte|einfach|eigentlich)\s+)*([a-zäöüß0-9-]{2,14})/i);
+  if (nm && nm[2]) {
+    const rn = nm[2].charAt(0).toUpperCase() + nm[2].slice(1);
+    return { art:'name', e:'🏷️', txt:text.trim(), neuerName:rn, sagt:'Ich heiße jetzt ' + rn + '!' };
+  }
+  for (const k of ROBO_KANN)
+    for (const w of k.w)
+      if (t.includes(w)) return { art:k.art, e:k.e, txt:text.trim(), sagt:k.sagt };
+  return { art:'trick', e:'✨', txt:text.trim(),
+           sagt:'Schau her: ' + text.trim() + ' – das kann ich jetzt!' };
+}
+function roboLernen(text) {
+  const a = roboFigur();
+  if (!a) return;
+  const roh = (text || '').trim();
+  if (roh.length < 2) { toast('🤖 Schreib mir auf, was ich können soll! 🧠', 3000); return; }
+  const k = roboVerstehen(roh);
+  if (k.art !== 'trick' && roboKann.some(x => x.art === k.art)) {
+    sagen(a, 'Das kann ich doch schon! Bring mir etwas Neues bei. 😊', 4);
+    toast('🤖 ' + roboName + ' kann das schon (' + k.e + '). Denk dir etwas Neues aus!', 4000);
+    blip(300,0.1);
+    roboTu(roboKann.find(x => x.art === k.art));
+    openRoboProg();
+    return;
+  }
+  if (k.neuerName) {
+    roboName = k.neuerName;
+    const alt4 = roboKann.find(x => x.art === 'name');   // nur EIN Namens-Eintrag
+    if (alt4) {
+      alt4.txt = k.txt;
+      blip(600,0.07); blip(900,0.1);
+      sagen(a, k.sagt, 5);
+      openRoboProg(); scheduleSave();
+      return;
+    }
+  }
+  roboKann.push({ txt:k.txt, art:k.art, e:k.e });
+  blip(600,0.07); blip(800,0.07); blip(1100,0.1);
+  sagen(a, k.sagt, 5);
+  roboTu(roboKann[roboKann.length-1]);
+  if (roboStufe >= 2) {
+    roboZahl++;
+    const auf = roboAufgabe();
+    if (roboZahl >= auf.ziel)
+      roboStufeFertig('🧠🎉 ' + roboName + ' hat ' + auf.ziel + ' neue Sachen gelernt!');
+    else { challAnzeige(); scheduleSave(); }
+  } else scheduleSave();
+  openRoboProg();
+}
+// Das Programmier-Fenster
+function openRoboProg() {
+  const a = roboFigur();
+  if (!a) return;
+  document.getElementById('rpTitel').textContent = '🤖 ' + roboName + ' programmieren';
+  const auf = roboAufgabe();
+  document.getElementById('rpInfo').textContent = roboStufe >= 2
+    ? auf.txt + '  (' + roboZahl + '/' + auf.ziel + ')'
+    : 'Schreib auf, was ' + roboName + ' können soll – er lernt ALLES, was du ihm schreibst!';
+  const el = document.getElementById('rpListe');
+  el.innerHTML = '';
+  if (!roboKann.length) {
+    const d = document.createElement('div');
+    d.className = 'rpLeer';
+    d.textContent = 'Noch kann er gar nichts. Schreib unten etwas hinein, zum Beispiel ' +
+      '„folge mir", „tanze", „mach Licht", „hol Holz" oder „bau einen Turm".';
+    el.appendChild(d);
+  }
+  roboKann.forEach((k, i) => {
+    const b = document.createElement('button');
+    b.className = 'rpKann';
+    b.textContent = (k.e || '✨') + ' ' + k.txt;
+    b.addEventListener('click', () => { roboTu(k); document.getElementById('rpBox').style.display='none'; });
+    el.appendChild(b);
+  });
+  document.getElementById('rpBox').style.display = 'flex';
+  const inp = document.getElementById('rpInput');
+  inp.value = '';
+  if (document.exitPointerLock) document.exitPointerLock();
+  setTimeout(() => { try { inp.focus(); } catch(e) {} }, 80);
+}
+// ---- 4. ... und er macht es dann auch wirklich -----------------------------
+function roboTu(k) {
+  const a = roboFigur();
+  if (!a || !k) return;
+  a.auftrag = k.art;
+  a.auftragT = 8;                       // so lange macht er es am Stück
+  a.follow = (k.art === 'folgen');
+  a.ziel = null; a.leucht = false; a.zaehl = 0;
+  if (k.art === 'witz') { sagen(a, ROBO_WITZE[Math.floor(Math.random()*ROBO_WITZE.length)], 7); a.auftragT = 3; }
+  if (k.art === 'feuerwerk') {
+    for (let i = 0; i < 40; i++)
+      fireworks.push({ x:a.x, y:a.y+1+Math.random()*4, z:a.z, vx:(Math.random()-0.5)*5,
+        vy:2+Math.random()*4, vz:(Math.random()-0.5)*5, tile:[25,27,149,154][i%4], t:1.2 });
+    for (const f of [400,700,1100]) blip(f,0.12);
+  }
+  if (k.art === 'leuchten') { a.leucht = true; a.auftragT = 45; }
+  if (k.art === 'warten') a.auftragT = 9999;
+  if (k.art === 'folgen') a.auftragT = 9999;
+  if (k.art === 'wache') a.auftragT = 60;
+  if (k.art === 'trick') sagen(a, k.txt + ' – zack, gemacht! ✨', 5);
+}
+// Der Roboter lebt: Schwerkraft, Laufen und alles, was Jonah ihm beigebracht hat.
+function miniTick(a, dt) {
+  a.ph += dt * (a.walking ? 8 : 2);
+  if (a.winkT > 0) a.winkT -= dt;
+  if (a.auftragT > 0 && a.auftrag !== 'warten') {
+    a.auftragT -= dt;
+    if (a.auftragT <= 0) { a.auftrag = 'warten'; a.leucht = a.leucht && false; }
+  }
+  a.walking = false;
+  const zuJonah = Math.hypot(player.x - a.x, player.z - a.z);
+  const geheZu = (tx, tz, tempo) => {       // Schritt für Schritt hinlaufen
+    const d = Math.hypot(tx - a.x, tz - a.z);
+    if (d < 0.6) return true;
+    const dir = Math.atan2(tx - a.x, -(tz - a.z));
+    a.yaw = dir;
+    const v = (tempo || 3.2) * dt;
+    const nx = a.x + Math.sin(dir)*v, nz = a.z + -Math.cos(dir)*v;
+    if (!collideBox(nx, a.y, nz, 0.3, 1.1)) { a.x = nx; a.z = nz; }
+    else if (a.onGround && !collideBox(a.x, a.y+1.05, a.z, 0.3, 1.1)) { a.y += 1.05; a.vy = 0; }
+    a.walking = true;
+    return false;
+  };
+  switch (a.auftrag) {
+    case 'folgen':
+      if (zuJonah > 2.4) geheZu(player.x, player.z, 4.2);
+      else a.yaw = Math.atan2(player.x - a.x, -(player.z - a.z));
+      break;
+    case 'tanzen':
+      a.yaw += dt * 7; a.walking = true;
+      if (a.onGround) { a.vy = 5.5; a.onGround = false; blip(500 + Math.random()*500, 0.05); }
+      break;
+    case 'drehen': a.yaw += dt * 5; break;
+    case 'springen':
+      if (a.onGround) { a.vy = 7; a.onGround = false; blip(800,0.06); }
+      break;
+    case 'winken':
+      a.winkT = 0.6; a.yaw = Math.atan2(player.x - a.x, -(player.z - a.z));
+      break;
+    case 'singen':
+      if (Math.random() < dt*6) {
+        blip([523,587,659,784,880][Math.floor(Math.random()*5)], 0.12);
+        fireworks.push({ x:a.x, y:a.y+1.4, z:a.z, vx:(Math.random()-0.5), vy:1.4, vz:(Math.random()-0.5),
+                         tile:149, t:0.9 });
+      }
+      break;
+    case 'schlafen':
+      a.walking = false;
+      if (Math.random() < dt*1.5) fireworks.push({ x:a.x, y:a.y+1.3, z:a.z, vx:0.2, vy:0.8, vz:0, tile:27, t:1.2 });
+      break;
+    case 'fliegen':
+      a.vy = Math.max(a.vy, 2.2); a.onGround = false;
+      if (Math.random() < dt*8)
+        fireworks.push({ x:a.x, y:a.y, z:a.z, vx:(Math.random()-0.5), vy:-1.5, vz:(Math.random()-0.5), tile:27, t:0.5 });
+      break;
+    case 'holz': {                        // den nächsten Baum suchen und Holz holen
+      if (!a.ziel) a.ziel = roboSuche(a, b => b === WOOD, 22);
+      if (!a.ziel) { sagen(a, 'Hier steht kein Baum. 🌳❓', 3); a.auftrag = 'warten'; break; }
+      const [tx,ty,tz] = a.ziel;
+      if (geheZu(tx + 0.5, tz + 0.5, 3.6) || Math.hypot(tx+0.5-a.x, tz+0.5-a.z) < 1.8) {
+        if (getBlock(tx,ty,tz) === WOOD) {
+          setBlock(tx,ty,tz,AIR); blip(200,0.08);
+          sagen(a, 'Holz! 🪓', 2.5);
+        }
+        a.ziel = null;
+      }
+      break;
+    }
+    case 'graben': {                      // ein Loch buddeln, direkt vor sich
+      if (Math.random() < dt*4) {
+        const gx = Math.floor(a.x + Math.sin(a.yaw)), gz = Math.floor(a.z - Math.cos(a.yaw));
+        for (let gy = Math.floor(a.y); gy > Math.floor(a.y)-2; gy--) {
+          const b = getBlock(gx, gy, gz);
+          if (b !== AIR && b !== WATER && b !== SCHUTZ) { setBlock(gx,gy,gz,AIR); blip(180,0.07); break; }
+        }
+      }
+      break;
+    }
+    case 'bauen': {                       // einen kleinen Turm stapeln
+      // Er baut am liebsten direkt vor sich. Steht da eine Wand (in der Burg
+      // ist das schnell so), sucht er sich rundherum einen freien Platz -
+      // sonst würde er dastehen und gar nichts tun.
+      if (Math.random() < dt*3) {
+        const platz = roboBauPlatz(a);
+        if (platz) { setBlock(platz[0], platz[1], platz[2], PLANK); blip(420,0.06); }
+        else { sagen(a, 'Hier ist kein Platz zum Bauen! 🧱❓', 3); a.auftrag = 'warten'; }
+      }
+      break;
+    }
+    case 'wache': {                       // im Kreis um Jonah patrouillieren
+      const feind = animals.find(m => (m.type==='zombie'||m.type==='slime'||m.type==='raeuber') &&
+                                      Math.hypot(m.x-player.x, m.z-player.z) < 14);
+      if (feind) {
+        if (!geheZu(feind.x, feind.z, 5)) { /* unterwegs */ }
+        else { slimeDamage(feind, 3, [feind.x-a.x, 0, feind.z-a.z]); sagen(a, 'Weg da! 🛡️', 2); }
+      } else {
+        const w = performance.now()*0.0012;
+        geheZu(player.x + Math.cos(w)*3.2, player.z + Math.sin(w)*3.2, 3.4);
+      }
+      break;
+    }
+    case 'zaehlen':
+      a.zaehl = (a.zaehl || 0) + dt*1.6;
+      if (Math.floor(a.zaehl) !== a.zaehlAlt) {
+        a.zaehlAlt = Math.floor(a.zaehl);
+        const n = Math.min(10, a.zaehlAlt + 1);
+        sagen(a, n + (n >= 10 ? ' – geschafft! 🔢' : ' …'), 1.4);
+        blip(400 + n*60, 0.08);
+      }
+      break;
+    default:                              // warten: er bleibt brav stehen
+      if (zuJonah < 14 && Math.random() < dt*0.25)
+        a.yaw = Math.atan2(player.x - a.x, -(player.z - a.z));
+      break;
+  }
+  // Schwerkraft - außer beim Fliegen
+  a.vy = Math.max(a.vy - 25*dt, -30);
+  const ny = a.y + Math.max(a.vy*dt, -0.9);
+  if (!collideBox(a.x, ny, a.z, 0.3, 1.1)) { a.y = ny; if (a.vy < 0) a.onGround = false; }
+  else { if (a.vy < 0) a.onGround = true; a.vy = 0; }
+  // ... und ab und zu macht er von selbst etwas, das Jonah ihm beigebracht hat
+  roboT -= dt;
+  if (roboT <= 0) {
+    roboT = 18 + Math.random()*14;
+    if (roboKann.length && a.auftrag === 'warten' && Math.hypot(player.x-a.x, player.z-a.z) < 20)
+      roboTu(roboKann[Math.floor(Math.random()*roboKann.length)]);
+  }
+}
+// Wo kann der Roboter einen Block hinsetzen? Erst direkt vor sich, dann
+// rundherum. Ein Turm darf höchstens 5 Blöcke hoch werden.
+function roboBauPlatz(a) {
+  const ax = Math.floor(a.x), ay = Math.floor(a.y), az = Math.floor(a.z);
+  const vorn = [Math.round(Math.sin(a.yaw)), -Math.round(Math.cos(a.yaw))];
+  const rund = [vorn, [1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1],[2,0],[0,2],[-2,0],[0,-2]];
+  for (const [dx,dz] of rund) {
+    if (dx === 0 && dz === 0) continue;
+    const bx = ax + dx, bz = az + dz;
+    let by = ay;
+    while (by < ay + 5 && getBlock(bx, by, bz) !== AIR) by++;
+    if (by >= ay + 5) continue;                       // Turm schon hoch genug
+    if (getBlock(bx, by, bz) !== AIR) continue;
+    if (by > ay && getBlock(bx, by-1, bz) === AIR) continue;   // nichts in die Luft bauen
+    return [bx, by, bz];
+  }
+  return null;
+}
+// Sucht den nächsten passenden Block um den Roboter herum
+function roboSuche(a, passt, r) {
+  const ax = Math.floor(a.x), ay = Math.floor(a.y), az = Math.floor(a.z);
+  let best = null, bestD = 1e9;
+  for (let dx = -r; dx <= r; dx += 1)
+    for (let dz = -r; dz <= r; dz += 1)
+      for (let dy = -4; dy <= 6; dy++) {
+        const b = getBlock(ax+dx, ay+dy, az+dz);
+        if (!passt(b)) continue;
+        const d = dx*dx + dz*dz + dy*dy;
+        if (d < bestD) { bestD = d; best = [ax+dx, ay+dy, az+dz]; }
+      }
+  return best;
 }
 let missIdx = 0, missZahl = 0, missT = 0;
 function missAnzeige() {
@@ -18040,6 +18663,8 @@ const MAP_BLOCK_COL = {
   [RUTSCHE_N]:'#e04858', [RUTSCHE_E]:'#e04858', [RUTSCHE_S]:'#e04858', [RUTSCHE_W]:'#e04858',
   [GITTER]:'#5a6070', [GTUER]:'#6a7080', [GTUER_AUF]:'#6a7080', [FAHRSTUHL]:'#a8b0be',
   [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6', [BAUPLAN]:'#e8dcb8',
+  [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
+  [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -20529,6 +21154,10 @@ function hitEntity(a, dir) {
           'Sag ihm mit dem Joystick, wo es langgeht! (🅿️ = aussteigen)', 4500);
     return;
   }
+  if (a.type==='mini') {                // 🤖 der kleine Roboter: programmieren!
+    openRoboProg();
+    return;
+  }
   if (a.type==='roboter') {             // 🤖 hinein in die Kopf-Kabine!
     if (jetRiding || carRiding || heliRiding || boatRiding || dragonRiding || baggerRiding || roboterRiding) return;
     enterRoboter(a);
@@ -20800,6 +21429,13 @@ function doBreak(dir) {
   // Ist Wasser ausgewählt, wirkt die Spitzhacke wie ein Eimer und saugt Wasser auf
   const scoop = HOTBAR_ITEMS[selSlot]===WATER;
   const hit=raycast(e[0],e[1],e[2],dir[0],dir[1],dir[2],REACH,scoop);
+  // 🤖 DIE ROBOTER-TEILE werden nie „abgebaut", sondern EINGESAMMELT - und die
+  // Werkbank geht nie kaputt. Beides muss auch im ⛏️-Modus gehen, denn der ist
+  // von Anfang an eingestellt.
+  if (hit && hit.block >= RT_KOPF && hit.block <= RT_AKKU) {
+    roboSammeln(hit.block, hit.x, hit.y, hit.z); return;
+  }
+  if (hit && hit.block === RWERK) { openWerkstatt(hit.x, hit.y, hit.z); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -21154,6 +21790,14 @@ function doPlace(dir) {
   }
   if (hit.block===BAUPLAN && HOTBAR_ITEMS[selSlot]!==BAUPLAN) {
     openBauplan();                      // 🗺️ zeigt genau, was und wo gebaut wird
+    return;
+  }
+  if (hit.block >= RT_KOPF && hit.block <= RT_AKKU) {   // 🤖 ein Bauteil einsammeln
+    roboSammeln(hit.block, hit.x, hit.y, hit.z);
+    return;
+  }
+  if (hit.block === RWERK) {            // 🔧 die Werkbank: zusammenbauen
+    openWerkstatt(hit.x, hit.y, hit.z);
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -22624,6 +23268,12 @@ document.getElementById('playBtn').addEventListener('click',()=>{
       yaw:0, vy:0, kx:0, kz:0, hp:99, walking:false, t:9, ph:0, onGround:false});
     setTimeout(()=>toast('🐉 Ein lieber Drache ist bei dir gelandet! Tippe ihn an und flieg mit ihm!', 5000), 3500);
   }
+  // 🤖 DEIN KLEINER, SELBSTGEBAUTER ROBOTER: er wartet da, wo du ihn
+  // gelassen hast - mit allem, was er von dir gelernt hat.
+  if (roboGebaut && roboOrt && !animals.some(a => a.type === 'mini')) {
+    const a = roboBauen(Math.floor(roboOrt[0]), roboOrt[1], Math.floor(roboOrt[2]));
+    a.x = roboOrt[0]; a.z = roboOrt[2];
+  }
   // 🤖 DEIN RIESEN-ROBOTER!
   if (savedRoboter) {
     let ry2 = savedRoboter[1];
@@ -22757,6 +23407,19 @@ restoreBtn.addEventListener('click', ()=>{
 // 🏆 Die Aufgaben-Box oben links antippen: dann kommen ALLE Challenges
 document.getElementById('missBox').addEventListener('click', (e)=>{ e.preventDefault(); openChallenges(); });
 document.getElementById('missBox').addEventListener('touchstart', (e)=>{ e.preventDefault(); openChallenges(); }, {passive:false});
+// 🤖 die Roboter-Fenster
+document.getElementById('rwClose').addEventListener('click', ()=>{
+  document.getElementById('rwBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('rpClose').addEventListener('click', ()=>{
+  document.getElementById('rpBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('rpLern').addEventListener('click', ()=>{
+  roboLernen(document.getElementById('rpInput').value);
+});
+document.getElementById('rpInput').addEventListener('keydown', (e)=>{
+  if (e.key === 'Enter') { e.preventDefault(); roboLernen(document.getElementById('rpInput').value); }
+});
 document.getElementById('chClose').addEventListener('click', ()=>{
   document.getElementById('chBox').style.display = 'none'; blip(400,0.06);
 });
