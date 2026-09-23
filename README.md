@@ -221,6 +221,27 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- BAU DIR EINEN ROBOTER – UND PROGRAMMIER IHN (v239)! 🤖🧠 Die zweite große
+  Aufgabe, die nie fertig wird.
+  1. DIE BAUTEILE: In deiner Riesen-Festung gibt es jetzt eine ROBOTER-
+     WERKSTATT. Dort liegen auf sechs Tischen der 🤖 Kopf, der 🫁 Bauch, die
+     🦾 Arme, die 🦿 Beine, die 🦶 Füße und der 🔋 Akku. Jedes Teil antippen =
+     einsammeln (im ⛏️- wie im 🧱-Modus, kaputt geht dabei nichts).
+  2. ZUSAMMENBAUEN: Hast du alle sechs, tippst du die 🔧 Werkbank an. Sie
+     zeigt dir, was noch fehlt – und wenn alles da ist, gibt es den Knopf
+     „Roboter zusammenbauen!". Zack: dein eigener kleiner Roboter steht da,
+     winzig im Vergleich zum Riesen-Roboter, mit leuchtenden Augen.
+  3. PROGRAMMIEREN: Tipp ihn an, und du kannst IN EIGENEN WORTEN aufschreiben,
+     was er können soll. „folge mir", „tanze", „mach Licht", „hol Holz",
+     „bau einen Turm", „pass auf mich auf", „erzähl einen Witz", „flieg",
+     „grab ein Loch", „sing", „zähl bis zehn", „du heißt Blitz" … Er versteht
+     es und macht es dann WIRKLICH: läuft dir hinterher, fällt einen Baum,
+     stapelt Bretter, leuchtet, verjagt Monster.
+     Und wenn du etwas schreibst, das es noch nicht gibt, lernt er es als
+     eigenen Trick – du kannst also wirklich ALLES aufschreiben.
+  Was er einmal gelernt hat, kann er für immer: alles steht als Knopf in
+  seinem Fenster, und ab und zu macht er von selbst etwas davon. Jede Stufe
+  will ein paar Sachen mehr (3, dann 5, dann 7 …) – das hört nie auf.
 - FÜNF CHALLENGES, DIE NIEMALS FERTIG WERDEN (v238)! 🏆 Jonah wollte nicht nur
   eine endlose Aufgabe, sondern mehrere – hier sind sie. Neben der großen
   🏗️ ALIEN-BASIS laufen jetzt vier Challenges überall mit:
