@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN ROBOTER GEHT NIE MEHR VERLOREN (v241)! 🤖🔔 Jonah hat gemeldet: „Ich
+  finde meinen Roboter irgendwie nicht mehr wieder." Kein Wunder – es war ein
+  echter Fehler: Bei jedem Weltwechsel (Erde → Mond → Wunderwelt) wurde er
+  einfach aus der Welt gelöscht.
+  🏠 JETZT WARTET ER IN SEINER WELT: Das Spiel merkt sich, wo und in welcher
+  Welt er steht. Kommst du zurück, steht er wieder genau an seinem Platz.
+  Soll er mitreisen, bring ihm „folge mir" bei – dann kommt er mit.
+  🗺️ AUF DER KARTE ist er jetzt als 🤖 eingezeichnet, live.
+  🔔 UND DER RUFKNOPF: Tipp oben links auf deine Aufgabe → im 🏆-Fenster hat
+  deine Roboter-Karte zwei neue Knöpfe: „🔔 komm her!" holt ihn sofort zu dir
+  (sogar aus einer anderen Welt), „🧠 Programmieren" macht gleich sein Fenster
+  auf. Dort steht auch, wo er gerade wartet.
 - DEIN ROBOTER MACHT NUR NOCH, WAS DU SAGST (v240)! 🤖✋ Jonah hat gemeldet:
   „Er hat einfach einen Turm gebaut, obwohl ich das noch nicht wollte" – und
   „ich kann nur drei Sachen programmieren". Beides ist repariert:
