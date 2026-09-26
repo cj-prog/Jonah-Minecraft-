@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN ROBOTER MACHT NUR NOCH, WAS DU SAGST (v240)! 🤖✋ Jonah hat gemeldet:
+  „Er hat einfach einen Turm gebaut, obwohl ich das noch nicht wollte" – und
+  „ich kann nur drei Sachen programmieren". Beides ist repariert:
+  🧱 BAUEN, GRABEN UND HOLZ HOLEN macht er jetzt NUR, wenn du wirklich auf
+  seinen Knopf drückst. Nicht mehr sofort beim Beibringen, und auch nie von
+  allein. Harmlose Sachen (tanzen, winken, singen, leuchten …) zeigt er
+  weiterhin gleich einmal vor.
+  🧠 SO VIEL BEIBRINGEN, WIE DU WILLST: Früher hieß es „das kann ich schon",
+  sobald ein Satz in dieselbe Richtung ging – nach ein paar Sätzen ging gar
+  nichts mehr. Jetzt wird jeder Satz sein eigener Knopf: „bau ein Haus",
+  „bau einen Turm" und „bau eine Mauer" sind drei verschiedene Sachen. Nur
+  wortwörtlich dasselbe zweimal gibt es nicht doppelt.
+  ✋ NEU: der Knopf „Sofort aufhören!" – damit hält er augenblicklich an.
+  🗑️ NEU: neben jedem Können steht ein Papierkorb. Falsch geschrieben oder
+  doch nicht gewollt? Antippen, bestätigen, weg damit.
 - BAU DIR EINEN ROBOTER – UND PROGRAMMIER IHN (v239)! 🤖🧠 Die zweite große
   Aufgabe, die nie fertig wird.
   1. DIE BAUTEILE: In deiner Riesen-Festung gibt es jetzt eine ROBOTER-
