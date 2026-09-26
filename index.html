@@ -532,6 +532,30 @@
   #liftClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#8a4030; color:#fff; }
   #paintBox h3 { font-size:18px; }
+  /* 💾 Das Chip-Fenster */
+  #chipBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(18,34,24,.97); padding:11px 13px; border-radius:14px;
+    color:#fff; z-index:61; text-align:center; max-height:92vh; overflow-y:auto;
+    border:3px solid #4ec87a; max-width:min(94vw,370px); }
+  #chipBox h3 { font-size:17px; }
+  #chipInfo { font-size:12px; color:#cfe8d8; line-height:1.4; }
+  #chipInfo b { color:#9ff0b4; }
+  /* die Liste bekommt einen eigenen Rollbereich - sonst schiebt sie bei vielen
+     Zeilen das Schreibfeld aus dem Bild */
+  #chipListe { display:flex; flex-direction:column; gap:4px; width:100%;
+    max-height:34vh; overflow-y:auto; }
+  .chipZeile { flex:1; min-width:0; font-size:12px; text-align:left; padding:6px 8px;
+    border-radius:8px; background:rgba(255,255,255,.07); color:#e6f4ea; line-height:1.3; }
+  .chipZeile.drin { background:rgba(110,200,110,.16); color:#a8e9a0; }
+  #chipInput { width:100%; box-sizing:border-box; font-size:15px; padding:8px 9px; border-radius:9px;
+    border:none; resize:vertical; font-family:inherit; line-height:1.35; }
+  #chipSchreib { font-size:15px; font-weight:bold; padding:8px 16px; border-radius:9px; border:none;
+    background:#c58a20; color:#fff; }
+  #chipRein { font-size:15px; font-weight:bold; padding:9px 16px; border-radius:9px; border:none;
+    background:#2f7a48; color:#fff; }
+  #chipTipp { font-size:11px; color:#9fc4ab; line-height:1.35; }
+  #chipClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#3f5b6b; color:#fff; position:sticky; bottom:0; box-shadow:0 0 12px 12px rgba(18,34,24,.97); }
   /* 🤖 Die Roboter-Werkstatt und das Programmier-Fenster */
   #rwBox, #rpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(26,30,40,.97); padding:11px 13px; border-radius:14px;
@@ -555,6 +579,8 @@
     background:#5a3a3a; color:#fff; }
   #rpStopp { font-size:14px; font-weight:bold; padding:7px 14px; border-radius:9px; border:none;
     background:#8a4030; color:#fff; }
+  #rpChip { font-size:14px; font-weight:bold; padding:8px 14px; border-radius:9px; border:none;
+    background:#2f7a48; color:#fff; }
   .rpLeer { font-size:12px; color:#9fb0cc; line-height:1.4; padding:4px 2px; }
   #rpEingabe { display:flex; gap:5px; width:100%; }
   #rpInput { flex:1; min-width:0; font-size:16px; padding:8px 9px; border-radius:8px; border:none; }
@@ -1015,6 +1041,18 @@
   <button id="rwBau">🔩 Roboter zusammenbauen!</button>
   <button id="rwClose">✔ Okay</button>
 </div>
+<div class="hud" id="chipBox">
+  <h3>💾 Roboter-Chip</h3>
+  <div id="chipInfo"></div>
+  <div id="chipListe"></div>
+  <textarea id="chipInput" rows="4" maxlength="600"
+    placeholder="Schreib auf, was er können soll – eine Sache pro Zeile:&#10;er soll mir folgen&#10;er soll tanzen&#10;er soll immer Licht machen"></textarea>
+  <button id="chipSchreib">✍️ Auf den Chip schreiben</button>
+  <button id="chipRein">🤖 Chip einsetzen</button>
+  <div id="chipTipp">So geht's: erst alles aufschreiben ✍️, dann den Chip einsetzen 🤖 –
+    er fährt kurz hoch und kann danach alles vom Chip. Mit 🗑️ löschst du eine Zeile.</div>
+  <button id="chipClose">✔ Fertig</button>
+</div>
 <div class="hud" id="rpBox">
   <h3 id="rpTitel">🤖 Roboter programmieren</h3>
   <div id="rpInfo"></div>
@@ -1023,6 +1061,7 @@
     <input id="rpInput" type="text" maxlength="60" placeholder="Was soll er können?" autocomplete="off">
     <button id="rpLern">🧠 Beibringen</button>
   </div>
+  <button id="rpChip">💾 Chip programmieren</button>
   <button id="rpStopp">✋ Sofort aufhören!</button>
   <div id="rpTipp">Tipp: „folge mir", „tanze", „mach Licht", „hol Holz", „bau einen Turm",
     „pass auf mich auf", „erzähl einen Witz", „flieg", „du heißt Blitz" … oder schreib
@@ -1067,7 +1106,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 241 &middot; Dein Roboter geht nie mehr verloren: Er steht als 🤖 auf der Karte, wartet in seiner Welt auf dich – und mit „🔔 komm her!" ist er sofort bei dir. Tipp dafür oben links auf deine Aufgabe! 🤖🔔</p>
+    Version 242 &middot; NEU: der 💾 ROBOTER-CHIP! Schreib in Ruhe alles auf, was dein Roboter können soll – Zeile für Zeile, so viel du willst. Dann steckst du den Chip in ihn hinein, er fährt kurz hoch, und danach kann er alles davon! 💾🤖</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1113,7 +1152,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 241;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 242;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1271,7 +1310,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       BAUPLAN=106,                      // 🗺️ die Bauplan-Tafel vor dem Bauplatz der Alien-Basis
       // 🤖 DIE BAUTEILE FÜR JONAHS KLEINEN ROBOTER - sie liegen in der Burg
       RT_KOPF=107, RT_BAUCH=108, RT_ARME=109, RT_BEINE=110, RT_FUESSE=111, RT_AKKU=112,
-      RWERK=113;                        // 🔧 die Werkbank, an der er zusammengebaut wird
+      RWERK=113,                        // 🔧 die Werkbank, an der er zusammengebaut wird
+      RCHIP=114;                        // 💾 der Chip: hier programmiert Jonah seinen Roboter
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1481,6 +1521,13 @@ const BLOCKS = {
     [0.82,0.00,0.82, 0.98,0.72,0.98, 158],
     [0.10,0.86,0.10, 0.44,0.96,0.52, 159],        // der Bauplan-Bildschirm darauf
     [0.56,0.86,0.20, 0.72,0.98,0.36, 27]] },      // und eine leuchtende Lampe
+  // 💾 DER ROBOTER-CHIP: flach wie eine Platine, mit goldenen Kontakten.
+  // Antippen öffnet das Programmier-Fenster.
+  [RCHIP]: { name:'Roboter-Chip 💾 (antippen und programmieren!)', tiles:[162,162,162], solid:false, model:[
+    [0.18,0.00,0.18, 0.82,0.10,0.82, 162],        // die Platine
+    [0.36,0.10,0.36, 0.64,0.18,0.64, 158],        // der Prozessor obendrauf
+    [0.22,0.10,0.24, 0.30,0.14,0.76, 120],        // goldene Kontaktreihen
+    [0.70,0.10,0.24, 0.78,0.14,0.76, 120]] },
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -4615,11 +4662,12 @@ function genChunkData(cx, cz, ohneEdits) {
       // Bauteile liegen verteilt in der Ecke - Jonah muss sie erst einsammeln.
       // Jedes Teil steht auf einem eigenen Tisch, damit man es gleich sieht.
       P(14,by+1,14,RWERK);
+      P(15,by+1,15,TABLE); P(15,by+2,15,RCHIP);   // 💾 der Chip liegt gleich daneben
       P(13,by+1,13,SIGN);
       const rsig=(B.bx+13)+','+(by+1)+','+(B.bz+13);
       if (!signTexts.has(rsig)) signTexts.set(rsig,
         '🤖 Roboter-Werkstatt: Sammle die 6 Bauteile hier im Raum ein (antippen!) ' +
-        'und tippe dann die Werkbank an. Danach kannst du deinen Roboter programmieren!');
+        'und tippe dann die Werkbank an. Danach programmierst du ihn mit dem 💾 Chip!');
       for (const [tdx,tdz,teil] of ROBO_TEIL_ORTE) { P(tdx,by+1,tdz,TABLE); P(tdx,by+2,tdz,teil); }
       P(11,by+3,17,TORCH); P(21,by+3,11,TORCH);
       // 9c) die GEHEIMTÜR 🤫: hinter dem Busch an der Nordwand!
@@ -5267,6 +5315,7 @@ function baueSpielstand() {
         return { teile: roboTeile.slice(), gebaut: roboGebaut ? 1 : 0, name: roboName,
                  stufe: roboStufe, zahl: roboZahl, dim: roboDim,
                  kann: roboKann.map(k => [k.txt, k.art, k.e || '✨']),
+                 chip: chipProgramm.map(c => [c.txt, c.art, c.e || '✨']),
                  ort: r ? [Math.round(r.x*10)/10, Math.round(r.y*10)/10, Math.round(r.z*10)/10]
                         : (roboOrt || null) };
       })(),
@@ -5366,6 +5415,9 @@ function loadGame() {
       if (Array.isArray(r.kann))
         roboKann = r.kann.filter(k => Array.isArray(k) && k[0])
                          .map(k => ({ txt:String(k[0]).slice(0,80), art:k[1] || 'trick', e:k[2] || '✨' }));
+      if (Array.isArray(r.chip))
+        chipProgramm = r.chip.filter(c => Array.isArray(c) && c[0])
+                             .map(c => ({ txt:String(c[0]).slice(0,80), art:c[1] || 'trick', e:c[2] || '✨' }));
       if (Array.isArray(r.ort)) roboOrt = r.ort;
       roboDim = typeof r.dim === 'number' ? r.dim : 0;
     }
@@ -6027,6 +6079,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (y>=11) return vary(60,180,80,12);                           // unten der grüne Ladebalken
     if (x>=6 && x<=9 && y>=4 && y<=8) return vary(60,52,20,8);      // das Blitz-Zeichen
     return vary(246,210,60,14);                                     // gelbes Gehäuse
+  });
+  tile(162,(x,y)=>{                                                 // 💾 die Chip-Platine
+    if (x<=1 || x>=14 || y<=1 || y>=14) return vary(26,110,60,8);   // dunkelgrüner Rand
+    if (y===4 || y===8 || y===12) return vary(210,178,60,12);       // goldene Leiterbahnen
+    if (x===4 || x===11) return vary(210,178,60,12);
+    if (x>=6 && x<=9 && y>=6 && y<=9) return vary(40,46,60,8);      // der Chip in der Mitte
+    return vary(36,140,76,12);                                      // grüne Platine
   });
   tile(161,(x,y)=>{                                                 // Werkbank-Platte
     if (y % 5 === 0) return vary(96,68,38,8);                       // Bretter-Fugen
@@ -15945,13 +16004,19 @@ function openChallenges() {
       roboRufen();
     });
     const prog = document.createElement('button');
-    prog.textContent = '🧠 Programmieren';
+    prog.textContent = '💾 Chip';
     prog.addEventListener('click', () => {
+      document.getElementById('chBox').style.display = 'none';
+      openChip();
+    });
+    const kann = document.createElement('button');
+    kann.textContent = '🧠 Was er kann';
+    kann.addEventListener('click', () => {
       document.getElementById('chBox').style.display = 'none';
       if (!roboFigur()) roboRufen();
       setTimeout(() => openRoboProg(), 150);
     });
-    knoepfe.appendChild(ruf); knoepfe.appendChild(prog);
+    knoepfe.appendChild(ruf); knoepfe.appendChild(prog); knoepfe.appendChild(kann);
     rk.appendChild(knoepfe);
   }
   // 2. ... und die vier, die überall mitlaufen
@@ -16001,8 +16066,11 @@ function roboAufgabe() {
     txt:'Bring ' + roboName + ' ' + n + ' neue Sachen bei (antippen und schreiben!)',
     ziel:n, zahl:roboZahl };
 }
-function roboStufeFertig(nachricht) {
-  roboStufe++; roboZahl = 0;
+function roboStufeFertig(nachricht, rest) {
+  // rest = was über das Ziel hinaus schon geschafft ist. Schreibt Jonah fünf
+  // Sachen auf den Chip und drei reichen für die Stufe, zählen die anderen
+  // zwei gleich für die nächste - sonst wäre seine Arbeit weg.
+  roboStufe++; roboZahl = Math.max(0, rest || 0);
   money += 12; updateFoodHUD();
   for (const f of [523,659,784,1047,1319]) blip(f,0.1);
   for (let i = 0; i < 34; i++)
@@ -16192,6 +16260,133 @@ function roboLernen(text) {
   } else scheduleSave();
   openRoboProg();
 }
+// ===================== 💾 DER ROBOTER-CHIP ================================
+// Jonahs Idee: erst in Ruhe ALLES auf einen Chip schreiben - Zeile für Zeile,
+// so viel er will - und den Chip dann in den Roboter stecken. Der fährt kurz
+// hoch, und danach kann er alles, was auf dem Chip steht.
+let chipProgramm = [];                  // was Jonah auf den Chip geschrieben hat
+function chipNeu() {                    // was steht auf dem Chip, das der Roboter noch NICHT kann?
+  return chipProgramm.filter(c => !roboKann.some(k => k.txt.toLowerCase() === c.txt.toLowerCase()));
+}
+// Jonah schreibt - eine Sache pro Zeile. Alles wird verstanden, auch
+// ausgedachte Sachen: die werden zu eigenen Tricks.
+function chipSchreiben(text) {
+  const zeilen = String(text || '').split('\n').map(z => z.trim()).filter(z => z.length >= 2);
+  if (!zeilen.length) {
+    toast('💾 Schreib auf den Chip, was dein Roboter können soll – eine Sache pro Zeile! 🧠', 4000);
+    return 0;
+  }
+  let neu2 = 0, schon = 0;
+  for (const z of zeilen) {
+    if (chipProgramm.some(c => c.txt.toLowerCase() === z.toLowerCase())) { schon++; continue; }
+    const k = roboVerstehen(z);
+    chipProgramm.push({ txt: k.txt, art: k.art, e: k.e, neuerName: k.neuerName || null });
+    neu2++;
+  }
+  blip(700,0.05); blip(900,0.05); blip(1200,0.08);
+  toast('💾 ' + neu2 + (neu2 === 1 ? ' Zeile' : ' Zeilen') + ' auf den Chip geschrieben!' +
+        (schon ? ' (' + schon + ' stand schon drauf)' : '') +
+        '\n\nWenn du fertig bist: Chip in ' + roboName + ' stecken – dann fährt er hoch. 🤖', 6000);
+  openChip();
+  scheduleSave();
+  return neu2;
+}
+// 🤖 Chip einsetzen: der Roboter fährt hoch und kann danach alles vom Chip.
+function chipEinsetzen() {
+  let a = roboFigur();
+  if (!roboGebaut) {
+    toast('🔧 Du hast noch gar keinen Roboter! Bau ihn erst in deiner Burg zusammen. 🤖', 5000);
+    return false;
+  }
+  if (!a) { roboRufen(); a = roboFigur(); }      // er ist woanders? Dann kommt er eben her
+  if (!a) return false;
+  const neu2 = chipNeu();
+  if (!neu2.length) {
+    toast('💾 Auf dem Chip steht nichts Neues. Schreib erst etwas dazu! 🧠', 4000);
+    return false;
+  }
+  document.getElementById('chipBox').style.display = 'none';
+  // Das Hochfahren: ein paar Sekunden Piepen, dann kann er alles.
+  a.auftrag = 'booten'; a.auftragT = 4.2; a.bootT = 0;
+  a.ziel = null; a.leucht = false;
+  sagen(a, '💾 Chip erkannt … fahre hoch …', 4);
+  for (const [i, f] of [[0,240],[350,320],[700,420],[1050,520]])
+    setTimeout(() => blip(f, 0.09), i);
+  setTimeout(() => {
+    for (const c of neu2) {
+      if (c.neuerName) roboName = c.neuerName;
+      roboKann.push({ txt:c.txt, art:c.art, e:c.e });
+      if (roboStufe >= 2) roboZahl++;
+    }
+    const r = roboFigur();
+    if (r) {
+      r.auftrag = 'warten'; r.auftragT = 0;
+      sagen(r, '✅ Fertig hochgefahren! Ich kann jetzt ' + roboKann.length +
+               (roboKann.length === 1 ? ' Sache' : ' Sachen') + '. 🤖', 6);
+      for (let i = 0; i < 26; i++)
+        fireworks.push({ x:r.x, y:r.y+0.8+Math.random()*1.5, z:r.z, vx:(Math.random()-0.5)*3,
+          vy:1.5+Math.random()*2.5, vz:(Math.random()-0.5)*3, tile:[27,162,149][i%3], t:1 });
+    }
+    for (const f of [660, 880, 1320]) blip(f, 0.1);
+    toast('🤖✅ ' + roboName + ' ist hochgefahren! Er kann jetzt ' + neu2.length +
+          (neu2.length === 1 ? ' neue Sache' : ' neue Sachen') +
+          ' vom Chip. Tipp ihn an und probier es aus! 🧠', 7000);
+    // Stufen prüfen - bei vielen Zeilen auf einmal können sogar mehrere
+    // Stufen auf einen Schlag voll werden.
+    while (roboStufe >= 2 && roboZahl >= roboAufgabe().ziel) {
+      const ziel = roboAufgabe().ziel;
+      roboStufeFertig('🧠🎉 ' + roboName + ' hat ' + ziel + ' neue Sachen gelernt!', roboZahl - ziel);
+    }
+    challAnzeige();
+    scheduleSave();
+  }, 4000);
+  return true;
+}
+// Das Chip-Fenster: oben steht, was schon drauf ist, unten wird geschrieben.
+function openChip() {
+  const el = document.getElementById('chipListe');
+  el.innerHTML = '';
+  if (!chipProgramm.length) {
+    const d = document.createElement('div');
+    d.className = 'rpLeer';
+    d.textContent = 'Der Chip ist noch leer. Schreib unten hinein, was dein Roboter ' +
+      'können soll – für jede Sache eine Zeile. Du kannst so viel schreiben, wie du willst!';
+    el.appendChild(d);
+  }
+  chipProgramm.forEach((c, i) => {
+    const zeile = document.createElement('div');
+    zeile.className = 'rpZeile';
+    const b = document.createElement('div');
+    const drin = roboKann.some(k => k.txt.toLowerCase() === c.txt.toLowerCase());
+    b.className = 'chipZeile' + (drin ? ' drin' : '');
+    b.textContent = (i+1) + '. ' + (c.e || '✨') + ' ' + c.txt + (drin ? '  ✅' : '  🆕');
+    const weg = document.createElement('button');
+    weg.className = 'rpWeg';
+    weg.textContent = '🗑️';
+    weg.addEventListener('click', () => {
+      if (!confirm('Diese Zeile vom Chip löschen?\n\n„' + c.txt + '"')) return;
+      chipProgramm.splice(i, 1);
+      blip(240,0.1);
+      openChip(); scheduleSave();
+    });
+    zeile.appendChild(b); zeile.appendChild(weg);
+    el.appendChild(zeile);
+  });
+  const neu2 = chipNeu().length;
+  document.getElementById('chipInfo').innerHTML = roboGebaut
+    ? 'Auf dem Chip: <b>' + chipProgramm.length + '</b> · davon neu für ' + roboName +
+      ': <b>' + neu2 + '</b> 🆕<br>' + roboName + ' kann gerade <b>' + roboKann.length + '</b> Sachen.'
+    : 'Du hast noch keinen Roboter – bau ihn erst an der 🔧 Werkbank zusammen. ' +
+      'Den Chip kannst du trotzdem schon beschreiben!';
+  const knopf = document.getElementById('chipRein');
+  knopf.textContent = neu2 ? '🤖 Chip in ' + roboName + ' stecken! (' + neu2 + ' neu)'
+                           : '🤖 Chip in ' + roboName + ' stecken';
+  knopf.disabled = !neu2 || !roboGebaut;
+  knopf.style.opacity = knopf.disabled ? 0.5 : 1;
+  document.getElementById('chipBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(520,0.05); blip(780,0.06);
+}
 // Das Programmier-Fenster
 function openRoboProg() {
   const a = roboFigur();
@@ -16242,6 +16437,11 @@ function openRoboProg() {
 function roboTu(k) {
   const a = roboFigur();
   if (!a || !k) return;
+  if (a.auftrag === 'booten' && k.art !== 'warten') {
+    sagen(a, '⏳ Moment, ich fahre gerade hoch …', 3);
+    return;                               // während des Hochfahrens hört er nicht zu
+  }
+  a.farbe = 27; a.bootSagt2 = false; a.bootSagt3 = false;
   a.auftrag = k.art;
   a.auftragT = 8;                       // so lange macht er es am Stück
   a.follow = (k.art === 'folgen');
@@ -16282,6 +16482,17 @@ function miniTick(a, dt) {
     return false;
   };
   switch (a.auftrag) {
+    case 'booten': {                      // 💾 der Chip ist drin: er fährt hoch
+      a.bootT = (a.bootT || 0) + dt;
+      a.walking = false;
+      a.farbe = Math.floor(a.bootT * 6) % 2 ? 25 : 27;   // die Lichter blinken
+      if (Math.random() < dt * 5)
+        fireworks.push({ x:a.x, y:a.y+1.3, z:a.z, vx:(Math.random()-0.5)*0.6,
+                         vy:0.9, vz:(Math.random()-0.5)*0.6, tile:162, t:0.7 });
+      if (a.bootT > 1.2 && !a.bootSagt2) { a.bootSagt2 = true; sagen(a, '⚙️ Lade Programm …', 1.6); }
+      if (a.bootT > 2.6 && !a.bootSagt3) { a.bootSagt3 = true; sagen(a, '🔋 Systeme starten …', 1.6); }
+      break;
+    }
     case 'folgen':
       if (zuJonah > 2.4) geheZu(player.x, player.z, 4.2);
       else a.yaw = Math.atan2(player.x - a.x, -(player.z - a.z));
@@ -18791,7 +19002,7 @@ const MAP_BLOCK_COL = {
   [GITTER]:'#5a6070', [GTUER]:'#6a7080', [GTUER_AUF]:'#6a7080', [FAHRSTUHL]:'#a8b0be',
   [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6', [BAUPLAN]:'#e8dcb8',
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
-  [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c',
+  [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -21565,6 +21776,7 @@ function doBreak(dir) {
     roboSammeln(hit.block, hit.x, hit.y, hit.z); return;
   }
   if (hit && hit.block === RWERK) { openWerkstatt(hit.x, hit.y, hit.z); return; }
+  if (hit && hit.block === RCHIP) { openChip(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -21927,6 +22139,10 @@ function doPlace(dir) {
   }
   if (hit.block === RWERK) {            // 🔧 die Werkbank: zusammenbauen
     openWerkstatt(hit.x, hit.y, hit.z);
+    return;
+  }
+  if (hit.block === RCHIP) {            // 💾 der Chip: programmieren
+    openChip();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -23533,12 +23749,25 @@ restoreBtn.addEventListener('click', ()=>{
 // 🏆 Die Aufgaben-Box oben links antippen: dann kommen ALLE Challenges
 document.getElementById('missBox').addEventListener('click', (e)=>{ e.preventDefault(); openChallenges(); });
 document.getElementById('missBox').addEventListener('touchstart', (e)=>{ e.preventDefault(); openChallenges(); }, {passive:false});
+// 💾 das Chip-Fenster
+document.getElementById('chipClose').addEventListener('click', ()=>{
+  document.getElementById('chipBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('chipSchreib').addEventListener('click', ()=>{
+  const el = document.getElementById('chipInput');
+  if (chipSchreiben(el.value)) el.value = '';
+});
+document.getElementById('chipRein').addEventListener('click', ()=>{ chipEinsetzen(); });
 // 🤖 die Roboter-Fenster
 document.getElementById('rwClose').addEventListener('click', ()=>{
   document.getElementById('rwBox').style.display = 'none'; blip(400,0.06);
 });
 document.getElementById('rpClose').addEventListener('click', ()=>{
   document.getElementById('rpBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('rpChip').addEventListener('click', ()=>{
+  document.getElementById('rpBox').style.display = 'none';
+  openChip();
 });
 document.getElementById('rpStopp').addEventListener('click', ()=>{
   // ✋ Egal was er gerade macht: sofort aufhören und brav stehen bleiben.

@@ -221,6 +221,26 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DER ROBOTER-CHIP (v242)! 💾 Jonahs Idee: nicht einzeln beibringen, sondern
+  erst in Ruhe ALLES aufschreiben – und dann den Chip in den Roboter stecken.
+  💾 DER CHIP liegt in der Roboter-Werkstatt in deiner Burg, gleich neben der
+  Werkbank: eine kleine grüne Platine mit goldenen Kontakten. Antippen öffnet
+  das Programmier-Fenster (er geht dabei nie kaputt). Vom Roboter aus und aus
+  dem 🏆-Fenster kommst du auch hin.
+  ✍️ SCHREIBEN: In ein großes Feld tippst du, was er können soll – EINE SACHE
+  PRO ZEILE, so viele, wie du willst: „er soll mir folgen", „er soll tanzen",
+  „er soll immer Licht machen", „er soll piepen wie ein Ufo" … Alles wird
+  verstanden, Ausgedachtes wird zu einem eigenen Trick. Jede Zeile steht
+  nummeriert auf dem Chip, mit 🆕 (kann er noch nicht) oder ✅ (kann er schon),
+  und mit 🗑️ löschst du eine wieder.
+  🤖 EINSETZEN: Der Knopf sagt dir, wie viel Neues drauf ist. Ein Druck – und
+  der Roboter fährt hoch: seine Lichter blinken, er sagt „⚙️ Lade Programm …",
+  „🔋 Systeme starten …", und nach ein paar Sekunden: „✅ Fertig hochgefahren!"
+  Danach kann er alles vom Chip. Währenddessen hört er auf nichts – er fährt
+  ja gerade hoch. 😄
+  Der Chip behält alles: nachschreiben, wieder einsetzen, immer weiter. Und
+  jede neue Zeile zählt für seine große Aufgabe – ein Überschuss wird für die
+  nächste Stufe gutgeschrieben.
 - DEIN ROBOTER GEHT NIE MEHR VERLOREN (v241)! 🤖🔔 Jonah hat gemeldet: „Ich
   finde meinen Roboter irgendwie nicht mehr wieder." Kein Wunder – es war ein
   echter Fehler: Bei jedem Weltwechsel (Erde → Mond → Wunderwelt) wurde er
