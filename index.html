@@ -581,6 +581,12 @@
     background:#8a4030; color:#fff; }
   #rpChip { font-size:14px; font-weight:bold; padding:8px 14px; border-radius:9px; border:none;
     background:#2f7a48; color:#fff; }
+  #rpAkku { font-size:13px; color:#d8e2f4; width:100%; }
+  #rpAkku b { color:#ffe08a; }
+  .rpBalken { margin-top:3px; width:100%; height:10px; border-radius:5px; background:#3a3f52; overflow:hidden; }
+  .rpBalken i { display:block; height:100%; }
+  #rpLaden { font-size:13px; font-weight:bold; padding:7px 12px; border-radius:9px; border:none;
+    background:#33507a; color:#fff; }
   .rpLeer { font-size:12px; color:#9fb0cc; line-height:1.4; padding:4px 2px; }
   #rpEingabe { display:flex; gap:5px; width:100%; }
   #rpInput { flex:1; min-width:0; font-size:16px; padding:8px 9px; border-radius:8px; border:none; }
@@ -1056,6 +1062,8 @@
 <div class="hud" id="rpBox">
   <h3 id="rpTitel">🤖 Roboter programmieren</h3>
   <div id="rpInfo"></div>
+  <div id="rpAkku"></div>
+  <button id="rpLaden">🔌 Zum Aufladen schicken</button>
   <div id="rpListe"></div>
   <div id="rpEingabe">
     <input id="rpInput" type="text" maxlength="60" placeholder="Was soll er können?" autocomplete="off">
@@ -1106,7 +1114,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 242 &middot; NEU: der 💾 ROBOTER-CHIP! Schreib in Ruhe alles auf, was dein Roboter können soll – Zeile für Zeile, so viel du willst. Dann steckst du den Chip in ihn hinein, er fährt kurz hoch, und danach kann er alles davon! 💾🤖</p>
+    Version 243 &middot; NEU: Dein Roboter hat jetzt einen 🔋 AKKU! Nach einer Weile wird er leer – dann fährt er von selbst zur neuen 🔌 LADE-STATION in deiner Burg und lädt sich auf. Du siehst immer, wie voll er ist. 🔋🤖</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1152,7 +1160,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 242;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 243;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1311,7 +1319,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       // 🤖 DIE BAUTEILE FÜR JONAHS KLEINEN ROBOTER - sie liegen in der Burg
       RT_KOPF=107, RT_BAUCH=108, RT_ARME=109, RT_BEINE=110, RT_FUESSE=111, RT_AKKU=112,
       RWERK=113,                        // 🔧 die Werkbank, an der er zusammengebaut wird
-      RCHIP=114;                        // 💾 der Chip: hier programmiert Jonah seinen Roboter
+      RCHIP=114,                        // 💾 der Chip: hier programmiert Jonah seinen Roboter
+      RLADE=115;                        // 🔌 die Ladestation für den Roboter-Akku
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1528,6 +1537,16 @@ const BLOCKS = {
     [0.36,0.10,0.36, 0.64,0.18,0.64, 158],        // der Prozessor obendrauf
     [0.22,0.10,0.24, 0.30,0.14,0.76, 120],        // goldene Kontaktreihen
     [0.70,0.10,0.24, 0.78,0.14,0.76, 120]] },
+  // 🔌 DIE LADESTATION: eine Platte mit leuchtendem Ring und einer Säule mit
+  // Akku-Anzeige. Hier lädt der Roboter auf, wenn sein Akku leer ist.
+  [RLADE]: { name:'Lade-Station 🔌 (hier lädt dein Roboter)', tiles:[163,158,163], solid:true, model:[
+    [0.00,0.00,0.00, 1.00,0.14,1.00, 163],        // die Bodenplatte
+    [0.06,0.14,0.06, 0.94,0.19,0.18, 27],         // der leuchtende Ring
+    [0.06,0.14,0.82, 0.94,0.19,0.94, 27],
+    [0.06,0.14,0.18, 0.18,0.19,0.82, 27],
+    [0.82,0.14,0.18, 0.94,0.19,0.82, 27],
+    [0.38,0.14,0.80, 0.62,0.90,0.96, 158],        // die Säule hinten
+    [0.42,0.52,0.74, 0.58,0.80,0.82, 160]] },     // mit Akku-Anzeige
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -4663,11 +4682,14 @@ function genChunkData(cx, cz, ohneEdits) {
       // Jedes Teil steht auf einem eigenen Tisch, damit man es gleich sieht.
       P(14,by+1,14,RWERK);
       P(15,by+1,15,TABLE); P(15,by+2,15,RCHIP);   // 💾 der Chip liegt gleich daneben
+      P(12,by+1,17,RLADE);                        // 🔌 und daneben die Ladestation
+      P(11,by+2,17,TORCH);
       P(13,by+1,13,SIGN);
       const rsig=(B.bx+13)+','+(by+1)+','+(B.bz+13);
       if (!signTexts.has(rsig)) signTexts.set(rsig,
         '🤖 Roboter-Werkstatt: Sammle die 6 Bauteile hier im Raum ein (antippen!) ' +
-        'und tippe dann die Werkbank an. Danach programmierst du ihn mit dem 💾 Chip!');
+        'und tippe dann die Werkbank an. Danach programmierst du ihn mit dem 💾 Chip! ' +
+        'Daneben steht die 🔌 Lade-Station – dort lädt er seinen Akku auf.');
       for (const [tdx,tdz,teil] of ROBO_TEIL_ORTE) { P(tdx,by+1,tdz,TABLE); P(tdx,by+2,tdz,teil); }
       P(11,by+3,17,TORCH); P(21,by+3,11,TORCH);
       // 9c) die GEHEIMTÜR 🤫: hinter dem Busch an der Nordwand!
@@ -5316,6 +5338,7 @@ function baueSpielstand() {
                  stufe: roboStufe, zahl: roboZahl, dim: roboDim,
                  kann: roboKann.map(k => [k.txt, k.art, k.e || '✨']),
                  chip: chipProgramm.map(c => [c.txt, c.art, c.e || '✨']),
+                 akku: Math.round(roboAkku), laedt: roboLaedt ? 1 : 0,
                  ort: r ? [Math.round(r.x*10)/10, Math.round(r.y*10)/10, Math.round(r.z*10)/10]
                         : (roboOrt || null) };
       })(),
@@ -5420,6 +5443,8 @@ function loadGame() {
                              .map(c => ({ txt:String(c[0]).slice(0,80), art:c[1] || 'trick', e:c[2] || '✨' }));
       if (Array.isArray(r.ort)) roboOrt = r.ort;
       roboDim = typeof r.dim === 'number' ? r.dim : 0;
+      if (typeof r.akku === 'number') roboAkku = Math.max(0, Math.min(100, r.akku));
+      roboLaedt = !!r.laedt;
     }
     if (s.chall && typeof s.chall === 'object')    // 🏆 der Stand aller Challenges
       for (const c of CHALLENGES) {
@@ -6086,6 +6111,14 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x===4 || x===11) return vary(210,178,60,12);
     if (x>=6 && x<=9 && y>=6 && y<=9) return vary(40,46,60,8);      // der Chip in der Mitte
     return vary(36,140,76,12);                                      // grüne Platine
+  });
+  tile(163,(x,y)=>{                                                 // 🔌 Lade-Platte
+    const r = Math.max(Math.abs(x-7.5), Math.abs(y-7.5));
+    if (r > 6.5) return vary(120,238,226,16);                       // leuchtender Rand
+    if (r > 5.5) return vary(40,48,62,8);
+    if (x>=6 && x<=9 && y>=3 && y<=12) return vary(246,210,60,14);  // das Blitz-Zeichen
+    if (y>=6 && y<=9 && x>=3 && x<=12) return vary(246,210,60,14);
+    return vary(58,66,84,10);                                       // dunkles Metall
   });
   tile(161,(x,y)=>{                                                 // Werkbank-Platte
     if (y % 5 === 0) return vary(96,68,38,8);                       // Bretter-Fugen
@@ -15988,7 +16021,7 @@ function openChallenges() {
       (ra.ziel ? Math.round(Math.min(1, ra.zahl/ra.ziel)*100) : 0) + '%"></i></div>' +
     '<div class="chTipp">' + (roboGebaut
       ? 'Er kann schon ' + roboKann.length + (roboKann.length === 1 ? ' Sache' : ' Sachen') +
-        '. Er wartet gerade ' + (roboDim === weltDim
+        '. 🔋 Akku: ' + Math.round(roboAkku) + '%. Er wartet gerade ' + (roboDim === weltDim
           ? 'hier in deiner Welt (🤖 auf der Karte)' : 'in ' + planetName(roboDim)) + '.'
       : 'In deiner Burg im Erdgeschoss liegen die Teile auf Tischen. Antippen, ' +
         'dann an der 🔧 Werkbank zusammenbauen!') + '</div>';
@@ -16052,7 +16085,21 @@ let roboKann = [];                      // [{txt, art}] - alles, was Jonah ihm b
 let roboStufe = 0, roboZahl = 0;        // die endlose Aufgabe
 let roboOrt = null;                     // wo er zuletzt stand (für den Spielstand)
 let roboDim = 0;                        // ... und in WELCHER Welt (Erde, Mond, ...)
-let roboT = 0;
+let roboT = 45;                         // erst nach einer Weile macht er von selbst etwas
+// 🔋 DER AKKU: Er hält eine ganze Weile (gut zehn Minuten Spielzeit), geht
+// aber beim Arbeiten schneller leer als beim Herumstehen. Ist er leer, läuft
+// der Roboter von selbst zur Ladestation in Jonahs Burg.
+let roboAkku = 100;                     // 0 bis 100 Prozent
+const AKKU_PRO_SEK = 100 / 660;         // so leer wird er pro Sekunde (≈11 Minuten)
+const AKKU_WARNUNG = 20;                // ab hier sagt er Bescheid
+const LADE_SEK = 18;                    // so lange dauert das Volltanken
+let akkuGewarnt = false;
+let roboLaedt = false;                  // 🔌 er steht an der Station und tankt
+// Wo steht die Ladestation? Immer in der Roboter-Werkstatt der Riesen-Festung.
+function ladePos() {
+  const B = burgPos();
+  return { x: B.bx + 12, y: B.base + 2, z: B.bz + 17, dim: 0 };
+}
 
 // Was ist gerade dran? Ab Stufe 2 geht es endlos weiter.
 function roboAufgabe() {
@@ -16106,6 +16153,7 @@ function roboBauen(x, y, z) {
               winkT:0, leucht:false, farbe:27, ziel:null, follow:false, eigen:true };
   animals.push(a);
   roboGebaut = true;
+  roboT = 45 + Math.random()*30;          // frisch aufgestellt wartet er erst einmal ab
   return a;
 }
 // Das Werkstatt-Fenster: was fehlt noch - oder los, zusammenbauen!
@@ -16342,6 +16390,26 @@ function chipEinsetzen() {
   }, 4000);
   return true;
 }
+// 🔌 Die Ladestation antippen: sie sagt, wie voll der Akku ist - und holt den
+// Roboter zum Aufladen her, wenn Jonah das möchte.
+function ladeStationTipp() {
+  const a = roboFigur();
+  if (!roboGebaut) {
+    toast('🔌 Das ist die Lade-Station für deinen Roboter. Bau ihn erst ' +
+          'an der 🔧 Werkbank zusammen! 🤖', 5000);
+    return;
+  }
+  const voll = Math.round(roboAkku);
+  if (a && (a.auftrag === 'aufladen')) {
+    toast('🔌 ' + roboName + ' lädt gerade: 🔋 ' + voll + '%. Gleich ist er fertig!', 4000);
+    return;
+  }
+  if (voll >= 100) {
+    toast('🔋 ' + roboName + 's Akku ist voll (100%) – er muss noch nicht laden. 😊', 4000);
+    return;
+  }
+  roboZurStation(a, true);
+}
 // Das Chip-Fenster: oben steht, was schon drauf ist, unten wird geschrieben.
 function openChip() {
   const el = document.getElementById('chipListe');
@@ -16393,6 +16461,19 @@ function openRoboProg() {
   if (!a) return;
   document.getElementById('rpTitel').textContent = '🤖 ' + roboName + ' programmieren';
   const auf = roboAufgabe();
+  // 🔋 Der Akku-Balken: man sieht sofort, wie voll er noch ist.
+  const pro = Math.round(roboAkku);
+  const laedt = a.auftrag === 'aufladen';
+  document.getElementById('rpAkku').innerHTML =
+    '🔋 Akku: <b>' + pro + '%</b>' + (laedt ? ' – lädt gerade auf 🔌' :
+      pro <= 0 ? ' – LEER! Er fährt zur Lade-Station 🪫' :
+      pro <= AKKU_WARNUNG ? ' – wird knapp!' : '') +
+    '<div class="rpBalken"><i style="width:' + pro + '%; background:' +
+      (pro > 50 ? '#6fbf5e' : pro > AKKU_WARNUNG ? '#e0c04a' : '#e05050') + '"></i></div>';
+  document.getElementById('rpLaden').textContent = laedt ? '🔌 lädt gerade …'
+    : pro >= 100 ? '🔋 Akku ist voll' : '🔌 Zum Aufladen schicken';
+  document.getElementById('rpLaden').disabled = laedt || pro >= 100;
+  document.getElementById('rpLaden').style.opacity = (laedt || pro >= 100) ? 0.5 : 1;
   document.getElementById('rpInfo').textContent = roboStufe >= 2
     ? auf.txt + '  (' + roboZahl + '/' + auf.ziel + ')'
     : 'Schreib auf, was ' + roboName + ' können soll – er lernt ALLES, was du ihm schreibst!';
@@ -16434,12 +16515,68 @@ function openRoboProg() {
   setTimeout(() => { try { inp.focus(); } catch(e) {} }, 80);
 }
 // ---- 4. ... und er macht es dann auch wirklich -----------------------------
+// 🔌 Ab zur Ladestation! (von selbst bei leerem Akku - oder weil Jonah es sagt)
+function roboZurStation(a, vonJonah) {
+  a = a || roboFigur();
+  if (!a) return false;
+  a.auftrag = 'laden'; a.auftragT = 0; a.ladeWeg = 0; a.ziel = null; a.follow = false;
+  a.leucht = false;
+  if (vonJonah) {
+    sagen(a, '🔌 Alles klar, ich fahre zur Lade-Station!', 5);
+    toast('🔌 ' + roboName + ' geht zur Lade-Station in deiner Burg. 🔋', 4500);
+  } else {
+    sagen(a, '🪫 Akku leer! Ich muss aufladen …', 6);
+    toast('🪫 ' + roboName + 's Akku ist LEER! Er fährt jetzt von selbst zur ' +
+          'Lade-Station in deiner Burg und lädt sich auf. 🔌', 7000);
+    blip(200,0.15); blip(160,0.2);
+  }
+  scheduleSave();
+  return true;
+}
+// 🏠 Der Roboter fährt nach Hause an die Lade-Station - auch wenn Jonah
+// gerade ganz woanders ist. Er verschwindet dann aus dieser Welt und lädt
+// dort weiter; kommt Jonah zur Erde, steht er fertig geladen an der Station.
+function roboNachHause(a) {
+  const L = ladePos();
+  roboOrt = [L.x + 0.5, L.y, L.z + 0.5];
+  roboDim = 0;
+  roboLaedt = true;
+  const i = animals.indexOf(a);
+  if (i >= 0) animals.splice(i, 1);
+  for (let n = 0; n < 16; n++)
+    fireworks.push({ x:a.x, y:a.y+0.5+Math.random(), z:a.z, vx:(Math.random()-0.5)*2,
+      vy:1+Math.random()*2, vz:(Math.random()-0.5)*2, tile:27, t:0.8 });
+  for (const f of [520, 380, 260]) blip(f, 0.08);
+  toast('🪫🏠 ' + roboName + ' ist mit leerem Akku nach Hause zur Lade-Station ' +
+        'in deiner Burg gefahren. Dort lädt er jetzt auf! 🔌', 7000);
+  scheduleSave();
+}
+// ... und das Laden läuft auch dann weiter, wenn niemand zuschaut.
+function roboLadeTick(dt) {
+  if (!roboLaedt || roboFigur()) return;
+  roboAkku = Math.min(100, roboAkku + (100 / LADE_SEK) * dt);
+  if (roboAkku >= 100) {
+    roboAkku = 100; roboLaedt = false; akkuGewarnt = false;
+    toast('🔋✅ ' + roboName + ' ist in deiner Burg fertig aufgeladen und wartet auf dich! 🔌', 6000);
+    scheduleSave();
+  }
+}
 function roboTu(k) {
   const a = roboFigur();
   if (!a || !k) return;
   if (a.auftrag === 'booten' && k.art !== 'warten') {
     sagen(a, '⏳ Moment, ich fahre gerade hoch …', 3);
     return;                               // während des Hochfahrens hört er nicht zu
+  }
+  // 🪫 Mit leerem Akku geht gar nichts - er muss erst laden.
+  if (roboAkku <= 0 && k.art !== 'warten') {
+    sagen(a, '🪫 Mein Akku ist leer! Ich muss zur Lade-Station.', 5);
+    if (a.auftrag !== 'laden' && a.auftrag !== 'aufladen') roboZurStation(a);
+    return;
+  }
+  if (a.auftrag === 'aufladen' && k.art !== 'warten') {
+    sagen(a, '🔌 Ich lade gerade … noch ' + Math.round(100 - roboAkku) + '%!', 4);
+    return;
   }
   a.farbe = 27; a.bootSagt2 = false; a.bootSagt3 = false;
   a.auftrag = k.art;
@@ -16481,7 +16618,71 @@ function miniTick(a, dt) {
     a.walking = true;
     return false;
   };
+  // 🔋 Der Akku geht langsam leer - beim Arbeiten schneller als beim Warten.
+  if (a.auftrag !== 'aufladen' && a.auftrag !== 'booten') {
+    const arbeitet = a.auftrag !== 'warten';
+    roboAkku = Math.max(0, roboAkku - AKKU_PRO_SEK * dt * (arbeitet ? 2 : 1));
+    if (roboAkku <= AKKU_WARNUNG && roboAkku > 0 && !akkuGewarnt) {
+      akkuGewarnt = true;
+      sagen(a, '🔋 Mein Akku wird leer … (' + Math.round(roboAkku) + '%)', 6);
+      toast('🔋 ' + roboName + 's Akku ist fast leer (' + Math.round(roboAkku) + '%)! ' +
+            'Er fährt gleich von selbst zur Lade-Station in deiner Burg. 🔌', 6000);
+      blip(300,0.1); blip(240,0.12);
+    }
+    if (roboAkku <= 0 && a.auftrag !== 'laden') roboZurStation(a);
+  }
+  // 🔋 Die Farbe seiner Lichter zeigt, wie voll er ist
+  if (a.auftrag !== 'booten')
+    a.farbe = roboAkku > 50 ? 27 : roboAkku > AKKU_WARNUNG ? 73 : 25;
   switch (a.auftrag) {
+    case 'laden': {                       // 🔌 auf dem Weg zur Ladestation
+      const L = ladePos();
+      a.ladeWeg = (a.ladeWeg || 0) + dt;
+      const d = Math.hypot(L.x + 0.5 - a.x, L.z + 0.5 - a.z);
+      if (d < 1.6 && Math.abs(a.y - L.y) < 2.5) {
+        a.x = L.x + 0.5; a.z = L.z + 0.5; a.y = L.y;
+        a.auftrag = 'aufladen'; a.auftragT = 0; a.ladeWeg = 0;
+        sagen(a, '🔌 Ich lade auf …', 5);
+        for (const f of [300, 420, 560]) blip(f, 0.07);
+        break;
+      }
+      // Ist Jonah gerade in einer ANDEREN Welt, kann der Roboter nicht hinlaufen -
+      // die Station steht ja auf der Erde. Dann fährt er ganz nach Hause: er
+      // verschwindet hier und wartet an der Station, bis Jonah wiederkommt.
+      if (weltDim !== 0) { roboNachHause(a); break; }
+      // Und wenn er nicht durchkommt (Mauern), hilft nach 12 Sekunden sein
+      // Not-Teleport - sonst bliebe er für immer stecken.
+      if (a.ladeWeg > 12) {
+        a.x = L.x + 0.5; a.y = L.y; a.z = L.z + 0.5;
+        a.ladeWeg = 0;
+        for (let i = 0; i < 18; i++)
+          fireworks.push({ x:a.x, y:a.y+0.5+Math.random(), z:a.z, vx:(Math.random()-0.5)*2,
+            vy:1+Math.random()*2, vz:(Math.random()-0.5)*2, tile:27, t:0.8 });
+        sagen(a, '⚡ Not-Teleport zur Lade-Station!', 4);
+        break;
+      }
+      geheZu(L.x + 0.5, L.z + 0.5, 3.4);
+      break;
+    }
+    case 'aufladen': {                    // 🔌 er steht in der Station und tankt
+      a.walking = false;
+      roboAkku = Math.min(100, roboAkku + (100 / LADE_SEK) * dt);
+      a.farbe = Math.floor(performance.now() / 200) % 2 ? 27 : 73;
+      if (Math.random() < dt * 4)
+        fireworks.push({ x:a.x+(Math.random()-0.5)*0.6, y:a.y+0.2, z:a.z+(Math.random()-0.5)*0.6,
+          vx:0, vy:1.2, vz:0, tile:27, t:0.6 });
+      if (Math.random() < dt * 2) blip(900 + roboAkku * 6, 0.04);
+      roboLaedt = true;
+      if (roboAkku >= 100) {
+        roboAkku = 100; akkuGewarnt = false; roboLaedt = false;
+        a.auftrag = 'warten'; a.farbe = 27;
+        sagen(a, '🔋✅ Voll aufgeladen! Was soll ich tun?', 6);
+        toast('🔋✅ ' + roboName + ' ist wieder voll aufgeladen und einsatzbereit! 🤖', 5000);
+        for (const f of [660, 880, 1320]) blip(f, 0.09);
+        scheduleSave();
+      }
+      break;
+    }
     case 'booten': {                      // 💾 der Chip ist drin: er fährt hoch
       a.bootT = (a.bootT || 0) + dt;
       a.walking = false;
@@ -16620,6 +16821,7 @@ function roboHeimHolen() {
   if (!roboGebaut || roboDim !== weltDim || roboFigur() || !roboOrt) return;
   const a = roboBauen(Math.floor(roboOrt[0]), roboOrt[1], Math.floor(roboOrt[2]));
   a.x = roboOrt[0]; a.z = roboOrt[2];
+  if (roboLaedt) { a.auftrag = 'aufladen'; a.auftragT = 0; }   // 🔌 er lädt noch
 }
 // 🔔 „Wo bist du?" - der Roboter kommt sofort zu Jonah, egal wo er war.
 function roboRufen() {
@@ -19003,6 +19205,7 @@ const MAP_BLOCK_COL = {
   [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6', [BAUPLAN]:'#e8dcb8',
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
+  [RLADE]:'#7ef0e6',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -21777,6 +21980,7 @@ function doBreak(dir) {
   }
   if (hit && hit.block === RWERK) { openWerkstatt(hit.x, hit.y, hit.z); return; }
   if (hit && hit.block === RCHIP) { openChip(); return; }
+  if (hit && hit.block === RLADE) { ladeStationTipp(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -22143,6 +22347,10 @@ function doPlace(dir) {
   }
   if (hit.block === RCHIP) {            // 💾 der Chip: programmieren
     openChip();
+    return;
+  }
+  if (hit.block === RLADE) {            // 🔌 die Ladestation
+    ladeStationTipp();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -23185,6 +23393,7 @@ function frame(now) {
   portalTick(dt);                       // ✨ ab in die andere Welt?
   missionTick(dt);                      // 📜 Mission geschafft?
   basisTick(dt);                        // 🏗️ ist die Alien-Basis gewachsen?
+  roboLadeTick(dt);                     // 🔌 lädt der Roboter zu Hause auf?
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
@@ -23764,6 +23973,10 @@ document.getElementById('rwClose').addEventListener('click', ()=>{
 });
 document.getElementById('rpClose').addEventListener('click', ()=>{
   document.getElementById('rpBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('rpLaden').addEventListener('click', ()=>{
+  document.getElementById('rpBox').style.display = 'none';
+  roboZurStation(null, true);
 });
 document.getElementById('rpChip').addEventListener('click', ()=>{
   document.getElementById('rpBox').style.display = 'none';

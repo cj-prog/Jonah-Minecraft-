@@ -221,6 +221,26 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DER AKKU UND DIE LADE-STATION (v243)! 🔋🔌 Dein Roboter hat jetzt einen
+  Akku – und der wird nach einer Weile leer.
+  🔋 DER AKKU hält gut zehn Minuten Spielzeit; beim Arbeiten (bauen, laufen,
+  tanzen) geht er doppelt so schnell leer wie beim Herumstehen. Seine
+  Lichter zeigen den Stand: grün 🟢 voll, gelb 🟡 wird knapp, rot 🔴 fast
+  leer. Bei 20 % sagt er Bescheid.
+  🔌 DIE LADE-STATION steht in deiner Roboter-Werkstatt in der Burg, gleich
+  neben Werkbank und Chip: eine Platte mit leuchtendem Ring und einer Säule.
+  🪫 IST DER AKKU LEER, geht er GANZ VON SELBST hin – er läuft los, lädt
+  18 Sekunden lang (dabei blinkt er und piept), und danach sagt er
+  „🔋✅ Voll aufgeladen!" und wartet wieder auf dich. Währenddessen macht er
+  nichts anderes, so wie beim Hochfahren.
+  🏠 UND WENN DU GERADE AUF DEM MOND BIST? Dann fährt er nach Hause: Er
+  verschwindet dort und lädt in deiner Burg weiter – auch wenn niemand
+  zuschaut. Kommst du zur Erde zurück, steht er fertig geladen an der
+  Station.
+  Du kannst ihn auch selbst zum Laden schicken: der Knopf „🔌 Zum Aufladen
+  schicken" in seinem Fenster, oder einfach die Station antippen. Den
+  Akku-Stand siehst du als Balken in seinem Fenster und auf seiner Karte
+  im 🏆-Fenster.
 - DER ROBOTER-CHIP (v242)! 💾 Jonahs Idee: nicht einzeln beibringen, sondern
   erst in Ruhe ALLES aufschreiben – und dann den Chip in den Roboter stecken.
   💾 DER CHIP liegt in der Roboter-Werkstatt in deiner Burg, gleich neben der
