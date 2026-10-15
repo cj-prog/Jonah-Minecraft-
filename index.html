@@ -532,6 +532,20 @@
   #liftClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#8a4030; color:#fff; }
   #paintBox h3 { font-size:18px; }
+  /* 📖 Was der Roboter alles kann */
+  #kannBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(24,28,40,.97); padding:11px 13px; border-radius:14px;
+    color:#fff; z-index:62; text-align:center; max-height:92vh; overflow-y:auto;
+    border:3px solid #ffd76a; max-width:min(94vw,380px); }
+  #kannBox h3 { font-size:17px; }
+  #kannInfo { font-size:12px; color:#cfd8ea; line-height:1.4; }
+  #kannListe { display:flex; flex-direction:column; gap:4px; width:100%; }
+  .kannZeile { text-align:left; font-size:12px; line-height:1.35; padding:5px 8px; border-radius:8px;
+    background:rgba(255,255,255,.07); }
+  .kannZeile b { color:#ffe08a; }
+  .kannZeile i { color:#9fb0cc; font-style:normal; }
+  #kannClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
+    background:#3f6b46; color:#fff; position:sticky; bottom:0; box-shadow:0 0 12px 12px rgba(24,28,40,.97); }
   /* 💾 Das Chip-Fenster */
   #chipBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(18,34,24,.97); padding:11px 13px; border-radius:14px;
@@ -581,6 +595,8 @@
     background:#8a4030; color:#fff; }
   #rpChip { font-size:14px; font-weight:bold; padding:8px 14px; border-radius:9px; border:none;
     background:#2f7a48; color:#fff; }
+  #rpKann, #chipKann { font-size:13px; font-weight:bold; padding:7px 12px; border-radius:9px;
+    border:none; background:#6b5a2f; color:#fff; }
   #rpAkku { font-size:13px; color:#d8e2f4; width:100%; }
   #rpAkku b { color:#ffe08a; }
   .rpBalken { margin-top:3px; width:100%; height:10px; border-radius:5px; background:#3a3f52; overflow:hidden; }
@@ -1047,6 +1063,14 @@
   <button id="rwBau">🔩 Roboter zusammenbauen!</button>
   <button id="rwClose">✔ Okay</button>
 </div>
+<div class="hud" id="kannBox">
+  <h3>📖 Das kann ich alles</h3>
+  <div id="kannInfo">Schreib einen Satz, in dem eins dieser Wörter vorkommt –
+    dann macht er genau das. Du kannst Zahlen und Material dazuschreiben,
+    z.&nbsp;B. „bau einen Turm aus Glas, 12 hoch".</div>
+  <div id="kannListe"></div>
+  <button id="kannClose">✔ Alles klar!</button>
+</div>
 <div class="hud" id="chipBox">
   <h3>💾 Roboter-Chip</h3>
   <div id="chipInfo"></div>
@@ -1054,6 +1078,7 @@
   <textarea id="chipInput" rows="4" maxlength="600"
     placeholder="Schreib auf, was er können soll – eine Sache pro Zeile:&#10;er soll mir folgen&#10;er soll tanzen&#10;er soll immer Licht machen"></textarea>
   <button id="chipSchreib">✍️ Auf den Chip schreiben</button>
+  <button id="chipKann">📖 Was kann er alles?</button>
   <button id="chipRein">🤖 Chip einsetzen</button>
   <div id="chipTipp">So geht's: erst alles aufschreiben ✍️, dann den Chip einsetzen 🤖 –
     er fährt kurz hoch und kann danach alles vom Chip. Mit 🗑️ löschst du eine Zeile.</div>
@@ -1070,6 +1095,7 @@
     <button id="rpLern">🧠 Beibringen</button>
   </div>
   <button id="rpChip">💾 Chip programmieren</button>
+  <button id="rpKann">📖 Das kann ich alles</button>
   <button id="rpStopp">✋ Sofort aufhören!</button>
   <div id="rpTipp">Tipp: „folge mir", „tanze", „mach Licht", „hol Holz", „bau einen Turm",
     „pass auf mich auf", „erzähl einen Witz", „flieg", „du heißt Blitz" … oder schreib
@@ -1077,7 +1103,8 @@
     🧱 Bauen, graben und Holz holen macht er <b>erst, wenn du auf den Knopf drückst</b> –
     nie von allein. Mit 🗑️ vergisst er etwas wieder.<br>
     🔎 Ihn verloren? Er steht als 🤖 auf deiner Karte – oder tipp oben links auf deine
-    Aufgabe und drück auf „🔔 komm her!".</div>
+    Aufgabe und drück auf „🔔 komm her!".<br>
+    📖 Du willst wissen, was WIRKLICH geht? Drück auf „Das kann ich alles"!</div>
   <button id="rpClose">✔ Fertig</button>
 </div>
 <div class="hud" id="chBox">
@@ -1114,7 +1141,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 243 &middot; NEU: Dein Roboter hat jetzt einen 🔋 AKKU! Nach einer Weile wird er leer – dann fährt er von selbst zur neuen 🔌 LADE-STATION in deiner Burg und lädt sich auf. Du siehst immer, wie voll er ist. 🔋🤖</p>
+    Version 244 &middot; Dein Roboter versteht dich jetzt VIEL besser: 32 echte Fähigkeiten (Haus bauen, Brücke, Tunnel, Sachen holen, schnell werden, groß/klein …), er versteht Zahlen und Material („bau einen Turm aus Glas, 12 hoch") – und unter 📖 „Das kann ich alles" steht, was wirklich geht! 🤖🧠</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1160,7 +1187,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 243;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 244;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5336,7 +5363,7 @@ function baueSpielstand() {
         const r = animals.find(a => a.type === 'mini');
         return { teile: roboTeile.slice(), gebaut: roboGebaut ? 1 : 0, name: roboName,
                  stufe: roboStufe, zahl: roboZahl, dim: roboDim,
-                 kann: roboKann.map(k => [k.txt, k.art, k.e || '✨']),
+                 kann: roboKann.map(k => [k.txt, k.art, k.e || '✨', k.zahl || 0, k.stoff || '']),
                  chip: chipProgramm.map(c => [c.txt, c.art, c.e || '✨']),
                  akku: Math.round(roboAkku), laedt: roboLaedt ? 1 : 0,
                  ort: r ? [Math.round(r.x*10)/10, Math.round(r.y*10)/10, Math.round(r.z*10)/10]
@@ -5437,7 +5464,8 @@ function loadGame() {
       roboZahl  = Math.max(0, r.zahl|0);
       if (Array.isArray(r.kann))
         roboKann = r.kann.filter(k => Array.isArray(k) && k[0])
-                         .map(k => ({ txt:String(k[0]).slice(0,80), art:k[1] || 'trick', e:k[2] || '✨' }));
+                         .map(k => ({ txt:String(k[0]).slice(0,80), art:k[1] || 'trick', e:k[2] || '✨',
+                                      zahl:k[3] || 0, stoff:k[4] || null }));
       if (Array.isArray(r.chip))
         chipProgramm = r.chip.filter(c => Array.isArray(c) && c[0])
                              .map(c => ({ txt:String(c[0]).slice(0,80), art:c[1] || 'trick', e:c[2] || '✨' }));
@@ -9350,27 +9378,32 @@ function drawAnimals() {
         const kM = ANIMAL_KIND.mini;
         const sw4 = a.walking ? Math.sin(a.ph)*0.16 : 0;
         const wink = a.winkT > 0 ? 0.55 : 0;
+        // 📏 Jonah kann ihn größer und kleiner machen - alles wächst mit.
+        const G = a.gr || 1;
+        const pushBox0 = pushBox;
+        const pushBoxG = (arr2, a2, ox,oy,oz, sx,sy,sz, t2, t3) =>
+          pushBox0(arr2, a2, ox*G, oy*G, oz*G, sx*G, sy*G, sz*G, t2, t3);
         // Großer Kopf, kleiner Körper - so sieht er freundlich aus statt wie
         // ein grauer Klotz. Und hinten trägt er seinen gelben Akku, damit man
         // ihn auch von hinten sofort erkennt.
-        pushBox(arr,a, -0.13,0.04,sw4*0.6, 0.22,0.08,0.30, kM.tile);      // Füße
-        pushBox(arr,a,  0.13,0.04,-sw4*0.6, 0.22,0.08,0.30, kM.tile);
-        pushBox(arr,a, -0.12,0.24,sw4, 0.13,0.26,0.13, kM.tile);          // Beine
-        pushBox(arr,a,  0.12,0.24,-sw4, 0.13,0.26,0.13, kM.tile);
-        pushBox(arr,a, 0,0.55,0, 0.40,0.34,0.26, kM.tile);                // Bauch
-        pushBox(arr,a, 0,0.57,-0.14, 0.15,0.15,0.03, a.farbe||27);        // Brustkern (leuchtet)
-        pushBox(arr,a, 0,0.56,0.16, 0.22,0.24,0.08, 160);                 // 🔋 Akku-Rucksack
-        pushBox(arr,a, -0.26,0.55+wink*0.22,0, 0.10,wink?0.26:0.28,0.10, kM.tile);   // Arme
-        pushBox(arr,a,  0.26,0.55,0, 0.10,0.28,0.10, kM.tile);
-        pushBox(arr,a, -0.26,0.40+wink*0.36,0, 0.12,0.10,0.12, kM.tile);  // Hände
-        pushBox(arr,a,  0.26,0.40,0, 0.12,0.10,0.12, kM.tile);
-        pushBox(arr,a, 0,0.76,0, 0.16,0.08,0.16, kM.tile);                // Hals
-        pushBox(arr,a, 0,0.95,0, 0.40,0.32,0.34, kM.tile, kM.face);       // DER KOPF
-        pushBox(arr,a, -0.22,0.95,0, 0.06,0.14,0.14, a.farbe||27);        // leuchtende Ohren
-        pushBox(arr,a,  0.22,0.95,0, 0.06,0.14,0.14, a.farbe||27);
-        pushBox(arr,a, 0,1.15,0, 0.03,0.10,0.03, kM.tile);                // Antenne
-        pushBox(arr,a, 0,1.24,0, 0.09,0.09,0.09, a.farbe||27);
-        if (a.leucht) pushBox(arr,a, 0,0.62,0, 0.70,0.70,0.70, 27);       // 💡 er leuchtet!
+        pushBoxG(arr,a, -0.13,0.04,sw4*0.6, 0.22,0.08,0.30, kM.tile);      // Füße
+        pushBoxG(arr,a,  0.13,0.04,-sw4*0.6, 0.22,0.08,0.30, kM.tile);
+        pushBoxG(arr,a, -0.12,0.24,sw4, 0.13,0.26,0.13, kM.tile);          // Beine
+        pushBoxG(arr,a,  0.12,0.24,-sw4, 0.13,0.26,0.13, kM.tile);
+        pushBoxG(arr,a, 0,0.55,0, 0.40,0.34,0.26, kM.tile);                // Bauch
+        pushBoxG(arr,a, 0,0.57,-0.14, 0.15,0.15,0.03, a.farbe||27);        // Brustkern (leuchtet)
+        pushBoxG(arr,a, 0,0.56,0.16, 0.22,0.24,0.08, 160);                 // 🔋 Akku-Rucksack
+        pushBoxG(arr,a, -0.26,0.55+wink*0.22,0, 0.10,wink?0.26:0.28,0.10, kM.tile);   // Arme
+        pushBoxG(arr,a,  0.26,0.55,0, 0.10,0.28,0.10, kM.tile);
+        pushBoxG(arr,a, -0.26,0.40+wink*0.36,0, 0.12,0.10,0.12, kM.tile);  // Hände
+        pushBoxG(arr,a,  0.26,0.40,0, 0.12,0.10,0.12, kM.tile);
+        pushBoxG(arr,a, 0,0.76,0, 0.16,0.08,0.16, kM.tile);                // Hals
+        pushBoxG(arr,a, 0,0.95,0, 0.40,0.32,0.34, kM.tile, kM.face);       // DER KOPF
+        pushBoxG(arr,a, -0.22,0.95,0, 0.06,0.14,0.14, a.farbe||27);        // leuchtende Ohren
+        pushBoxG(arr,a,  0.22,0.95,0, 0.06,0.14,0.14, a.farbe||27);
+        pushBoxG(arr,a, 0,1.15,0, 0.03,0.10,0.03, kM.tile);                // Antenne
+        pushBoxG(arr,a, 0,1.24,0, 0.09,0.09,0.09, a.farbe||27);
+        if (a.leucht) pushBoxG(arr,a, 0,0.62,0, 0.70,0.70,0.70, 27);       // 💡 er leuchtet!
     } else if (a.type==='alien') {                                 // 👽 ein Alien!
       // Sie schweben immer ein kleines bisschen über dem Boden.
       const schweb = Math.sin(performance.now()*0.003 + a.x) * 0.05;
@@ -16203,31 +16236,101 @@ function openWerkstatt(wx, wy, wz) {
 // Jonah schreibt in seinen eigenen Worten, was der Roboter können soll. Diese
 // Liste sagt, welche Wörter zu welchem Können gehören. Steht nichts davon
 // drin, lernt er es trotzdem - als eigenen Trick mit Jonahs eigenem Satz.
+// Was der Roboter WIRKLICH kann. Jede Zeile: die Stichwörter, an denen Jonahs
+// Satz erkannt wird, ein Beispielsatz und was dabei passiert. Je mehr echte
+// Fähigkeiten, desto öfter macht er genau das, was Jonah sich vorstellt.
 const ROBO_KANN = [
-  { art:'folgen',   e:'🐾', w:['folg','komm mit','hinterher','bei mir','begleit','mitkommen'],
-    sagt:'Ich bleibe bei dir!' },
-  { art:'warten',   e:'✋', w:['warte','bleib','steh','halt','stopp','stop','pause'],
-    sagt:'Ich warte hier.' },
-  { art:'tanzen',   e:'💃', w:['tanz','disco','party','wackel'], sagt:'Tanzen kann ich am besten!' },
-  { art:'springen', e:'⬆️', w:['spring','hüpf','hupf','hoch'], sagt:'Hui, ich springe!' },
-  { art:'winken',   e:'👋', w:['wink','hallo sag','grüß','gruess','begrüß'], sagt:'Hallo Jonah!' },
-  { art:'singen',   e:'🎵', w:['sing','lied','musik','trällern'], sagt:'La-la-la! Piep-piep!' },
-  { art:'leuchten', e:'💡', w:['leucht','licht','lampe','dunkel','taschenlampe'], sagt:'Ich mache Licht!' },
-  { art:'holz',     e:'🪓', w:['holz','baum','fäll','faell','sägen'], sagt:'Ich hole Holz!' },
-  { art:'graben',   e:'⛏️', w:['grab','loch','tunnel','buddel','bagger'], sagt:'Ich grabe los!' },
-  { art:'bauen',    e:'🧱', w:['bau','turm','mauer','haus','stapel'], sagt:'Ich baue einen Turm!' },
-  // 'pass' einzeln, denn Jonah schreibt auch „pass GUT auf MICH auf" - da
-  // stehen zwischen den beiden Wörtern noch welche.
-  { art:'wache',    e:'🛡️', w:['wach','pass','beschütz','beschuetz','aufpass','verteidig','bewach'],
-    sagt:'Niemand tut dir etwas!' },
-  { art:'witz',     e:'😂', w:['witz','lach','spaß','spass','lustig'], sagt:'Ich kenne einen guten!' },
-  { art:'zaehlen',  e:'🔢', w:['zähl','zaehl','rechn','mathe','plus','mal '], sagt:'1, 2, 3 …' },
+  { art:'folgen',   e:'🐾', w:['folg','komm mit','hinterher','bei mir','begleit','mitkommen','dabei sein'],
+    sagt:'Ich bleibe bei dir!', bsp:'folge mir', was:'läuft dir überall hinterher' },
+  { art:'warten',   e:'✋', w:['warte','bleib','steh','halt','stopp','stop','pause','ruhig'],
+    sagt:'Ich warte hier.', bsp:'warte hier', was:'bleibt stehen und wartet' },
+  { art:'bringen',  e:'🎁', w:['bring','hol mir','besorg','sammle','sammel','such mir'],
+    sagt:'Ich hole es dir!', bsp:'bring mir 10 Holz', was:'holt dir Holz, Stein, Erde, Sand, Glas oder Gold' },
+  { art:'holz',     e:'🪓', w:['holz','baum fäll','baum fael','fäll','faell','säg','holzfäll'],
+    sagt:'Ich hole Holz!', bsp:'hol Holz', was:'fällt Bäume in der Nähe' },
+  { art:'steine',   e:'⛏️', w:['stein','fels','erz','bergbau','mine','abbauen'],
+    sagt:'Ich hole Steine!', bsp:'bau Steine ab', was:'baut Steine in der Nähe ab' },
+  { art:'blumen',   e:'🌸', w:['blume','pflück','pfluck','strauß','strauss'],
+    sagt:'Ich pflücke dir Blumen! 🌸', bsp:'pflück Blumen', was:'sammelt Blumen für dich' },
+  { art:'ernten',   e:'🥕', w:['ernte','karotte','weizen','tomate','gemüse','gemuese','beet'],
+    sagt:'Ich ernte für dich!', bsp:'ernte die Karotten', was:'erntet reife Beete' },
+  // 'bau' steht hier als Auffang für alles Allgemeine („bau mir was!").
+  // Genauere Wörter wie 'haus', 'turm' oder 'brücke' sind länger und
+  // gewinnen deshalb - das Spiel nimmt immer das längste passende Wort.
+  { art:'bauen',    e:'🧱', w:['bau','turm','stapel','hochbau','säule','saeule'],
+    sagt:'Ich baue einen Turm!', bsp:'bau einen Turm aus Stein', was:'stapelt einen Turm (Material sagst du dazu)' },
+  { art:'haus',     e:'🏠', w:['haus','hütte','huette','zimmer','bude','villa'],
+    sagt:'Ich baue ein Haus!', bsp:'bau mir ein Haus', was:'baut ein kleines Haus mit Tür und Dach' },
+  { art:'mauer',    e:'🧱', w:['mauer','wand','zaun','umzäun','umzaeun','schutzwall'],
+    sagt:'Ich baue eine Mauer!', bsp:'bau eine Mauer', was:'baut eine Mauer vor sich' },
+  { art:'bruecke',  e:'🌉', w:['brücke','bruecke','steg','übergang','uebergang'],
+    sagt:'Ich baue eine Brücke!', bsp:'bau eine Brücke', was:'legt einen Weg über Wasser und Löcher' },
+  { art:'treppe',   e:'🪜', w:['treppe','stufen','leiter','hochkommen'],
+    sagt:'Ich baue eine Treppe!', bsp:'bau eine Treppe', was:'baut eine Treppe nach oben' },
+  { art:'graben',   e:'⛏️', w:['grab','loch','buddel','bagger','ausheb'],
+    sagt:'Ich grabe los!', bsp:'grab ein Loch', was:'gräbt ein Loch nach unten' },
+  { art:'tunnel',   e:'🕳️', w:['tunnel','gang','höhle','hoehle','durchbruch'],
+    sagt:'Ich grabe einen Tunnel!', bsp:'grab einen Tunnel', was:'gräbt einen Gang geradeaus' },
+  { art:'fackeln',  e:'🔥', w:['fackel','feuer mach','beleucht','hell mach'],
+    sagt:'Ich stelle Fackeln auf!', bsp:'stell Fackeln auf', was:'stellt Fackeln rundherum auf' },
+  { art:'leuchten', e:'💡', w:['leucht','licht','lampe','dunkel','taschenlampe'],
+    sagt:'Ich mache Licht!', bsp:'mach Licht', was:'leuchtet selbst wie eine Lampe' },
+  { art:'wache',    e:'🛡️', w:['wach','pass','beschütz','beschuetz','aufpass','verteidig','bewach','monster','kämpf','kaempf','angreif','greif an'],
+    sagt:'Niemand tut dir etwas!', bsp:'pass auf mich auf', was:'verjagt Monster, die dir zu nah kommen' },
+  { art:'schnell',  e:'💨', w:['schnell','renn','sprint','turbo','flitz','beeil'],
+    sagt:'Jetzt wird es schnell! 💨', bsp:'lauf ganz schnell', was:'wird eine Weile doppelt so schnell' },
+  // Hier reichen Stichwörter nicht: Jonah schreibt „werd GANZ groß" oder
+  // „werde mal rot" - zwischen den Wörtern stehen andere. Darum Muster.
+  { art:'gross',    e:'📏', w:['wachs','riesig','größer','groesser'],
+    re:[/werd\w*(\s+\w+){0,2}\s+(gro(ß|ss)\w*|riesig)/],
+    sagt:'Schau, wie groß ich werde!', bsp:'werd ganz groß', was:'wird größer' },
+  { art:'klein',    e:'🐜', w:['schrumpf','winzig','kleiner'],
+    re:[/werd\w*(\s+\w+){0,2}\s+klein/],
+    sagt:'Jetzt bin ich winzig!', bsp:'werd ganz klein', was:'wird kleiner' },
+  { art:'farbe',    e:'🎨', w:['farbe','bunt','färb','faerb'],
+    re:[/werd\w*(\s+\w+){0,2}\s+(rot|blau|gr[üu]n\w*|gelb|gold\w*|lila|pink|orange)/,
+        /leucht\w*(\s+\w+){0,2}\s+(rot|blau|gr[üu]n\w*|gelb|gold\w*|lila|pink)/],
+    sagt:'Neue Farbe für mich!', bsp:'werd rot', was:'ändert die Farbe seiner Lichter' },
+  { art:'tanzen',   e:'💃', w:['tanz','disco','party','wackel'],
+    sagt:'Tanzen kann ich am besten!', bsp:'tanze', was:'tanzt und hüpft' },
+  { art:'springen', e:'⬆️', w:['spring','hüpf','hupf'],
+    sagt:'Hui, ich springe!', bsp:'spring hoch', was:'springt in die Luft' },
+  { art:'drehen',   e:'🌀', w:['dreh','kreisel','pirouette','rundum'],
+    sagt:'Ich drehe mich!', bsp:'dreh dich', was:'dreht sich im Kreis' },
+  { art:'winken',   e:'👋', w:['wink','hallo sag','grüß','gruess','begrüß'],
+    sagt:'Hallo Jonah!', bsp:'wink mir zu', was:'winkt dir' },
+  { art:'singen',   e:'🎵', w:['sing','lied','musik','trällern','pfeif'],
+    sagt:'La-la-la! Piep-piep!', bsp:'sing ein Lied', was:'singt und macht Musik-Noten' },
+  { art:'witz',     e:'😂', w:['witz','lach','spaß','spass','lustig'],
+    sagt:'Ich kenne einen guten!', bsp:'erzähl einen Witz', was:'erzählt dir einen Witz' },
+  { art:'zaehlen',  e:'🔢', w:['zähl','zaehl','rechn','mathe','plus','mal '],
+    sagt:'1, 2, 3 …', bsp:'zähl bis zehn', was:'zählt laut bis zehn' },
   { art:'feuerwerk',e:'🎆', w:['feuerwerk','rakete','knall','böller','boeller','funken'],
-    sagt:'Achtung, es kracht!' },
-  { art:'fliegen',  e:'🚀', w:['flieg','schweb','abheb','düse','duese'], sagt:'Ich hebe ab!' },
-  { art:'schlafen', e:'😴', w:['schlaf','müde','muede','ausruh','gute nacht'], sagt:'Gähn … gute Nacht.' },
-  { art:'drehen',   e:'🌀', w:['dreh','kreisel','pirouette','rundum'], sagt:'Ich drehe mich!' },
+    sagt:'Achtung, es kracht!', bsp:'mach Feuerwerk', was:'schießt buntes Feuerwerk' },
+  { art:'fliegen',  e:'🚀', w:['flieg','schweb','abheb','düse','duese'],
+    sagt:'Ich hebe ab!', bsp:'flieg hoch', was:'schwebt in die Luft' },
+  { art:'schlafen', e:'😴', w:['schlaf','müde','muede','ausruh','gute nacht'],
+    sagt:'Gähn … gute Nacht.', bsp:'schlaf ein bisschen', was:'macht ein Nickerchen' },
+  { art:'laden',    e:'🔌', w:['lad dich','aufladen','akku','strom','tank'],
+    sagt:'Ich fahre zur Lade-Station!', bsp:'lad dich auf', was:'geht zur Lade-Station' },
 ];
+// Welches Material meint Jonah? („bau einen Turm aus GLAS")
+const ROBO_STOFF = [
+  ['stein', 'STONE'], ['holz', 'PLANK'], ['brett', 'PLANK'], ['ziegel', 'BRICK'],
+  ['glas', 'GLASS'], ['gold', 'GOLD'], ['wolle', 'WOOL'], ['erde', 'DIRT'],
+  ['sand', 'SAND'], ['gras', 'GRASS'],
+];
+function roboStoffBlock(name) {
+  return { STONE:STONE, PLANK:PLANK, BRICK:BRICK, GLASS:GLASS, GOLD:GOLD,
+           WOOL:WOOL, DIRT:DIRT, SAND:SAND, GRASS:GRASS }[name];
+}
+// Beim HOLEN zählt etwas anderes als beim Bauen: „bring mir Holz" meint
+// Baumstämme UND Bretter, „bring mir Stein" auch Erde-freie Felsen.
+function roboStoffSuche(name) {
+  return { STONE:[STONE], PLANK:[WOOD, PLANK], BRICK:[BRICK], GLASS:[GLASS],
+           GOLD:[GOLD], WOOL:[WOOL], DIRT:[DIRT], SAND:[SAND], GRASS:[GRASS] }[name] || null;
+}
+
 // 🧱 Diese drei verändern die WELT (sie setzen oder nehmen Blöcke weg).
 // Die macht der Roboter NUR, wenn Jonah wirklich auf den Knopf drückt -
 // nicht schon beim Beibringen und auch nie von selbst. Sonst steht plötzlich
@@ -16252,11 +16355,55 @@ function roboVerstehen(text) {
     const rn = nm[2].charAt(0).toUpperCase() + nm[2].slice(1);
     return { art:'name', e:'🏷️', txt:text.trim(), neuerName:rn, sagt:'Ich heiße jetzt ' + rn + '!' };
   }
-  for (const k of ROBO_KANN)
+  // Welche Fähigkeit passt am BESTEN? Früher gewann einfach die erste, die
+  // irgendwie passte - deshalb machte er oft etwas anderes, als Jonah wollte.
+  // Jetzt zählt, wie gut ein Stichwort trifft (längere Wörter zählen mehr).
+  let best = null, bestP = 0;
+  for (const k of ROBO_KANN) {
     for (const w of k.w)
-      if (t.includes(w)) return { art:k.art, e:k.e, txt:text.trim(), sagt:k.sagt };
-  return { art:'trick', e:'✨', txt:text.trim(),
-           sagt:'Schau her: ' + text.trim() + ' – das kann ich jetzt!' };
+      if (t.includes(w) && w.length > bestP) { bestP = w.length; best = k; }
+    for (const r of (k.re || [])) {
+      const m = t.match(r);
+      if (m && m[0].length > bestP) { bestP = m[0].length; best = k; }
+    }
+  }
+  // Eine Zahl im Satz? („bau 12 Blöcke hoch", „hol mir 5 Holz")
+  const zm = t.match(/\b(\d{1,3})\b/);
+  const zahl = zm ? Math.max(1, Math.min(60, parseInt(zm[1], 10))) : 0;
+  // Ein Material? („aus Glas", „aus Gold")
+  let stoff = null;
+  for (const [wort, blk] of ROBO_STOFF) if (t.includes(wort)) { stoff = blk; break; }
+  if (best) {
+    let sagt = best.sagt;
+    if (zahl && (best.art === 'bringen' || best.art === 'bauen' || best.art === 'graben' ||
+                 best.art === 'tunnel' || best.art === 'mauer' || best.art === 'fackeln'))
+      sagt = 'Alles klar: ' + zahl + '! ' + best.sagt;
+    return { art:best.art, e:best.e, txt:text.trim(), sagt, zahl, stoff };
+  }
+  // Nichts verstanden: ehrlich sein! Er lernt es als Spaß-Trick, sagt aber
+  // dazu, was er WIRKLICH kann - sonst wartet Jonah vergeblich darauf.
+  return { art:'trick', e:'✨', txt:text.trim(), unklar:true,
+           sagt:'Das kann ich nur als Spaß nachmachen: ' + text.trim() };
+}
+// Drei Vorschläge, die Jonahs Satz am ähnlichsten sind
+function roboVorschlaege(text) {
+  const t = ' ' + String(text || '').toLowerCase() + ' ';
+  const woerter = t.split(/[^a-zäöüß]+/).filter(w => w.length > 3);
+  const punkte = ROBO_KANN.map(k => {
+    let p = 0;
+    for (const w of woerter) {
+      if (k.bsp.toLowerCase().includes(w) || k.was.toLowerCase().includes(w)) p += 2;
+      for (const kw of k.w) if (kw.startsWith(w.slice(0,4))) p += 1;
+    }
+    return { k, p };
+  }).sort((a,b) => b.p - a.p);
+  const gut = punkte.filter(x => x.p > 0).slice(0, 3).map(x => x.k);
+  while (gut.length < 3) {                 // sonst einfach ein paar beliebte
+    const k = ROBO_KANN[[0,2,7,16][gut.length]];
+    if (k && !gut.includes(k)) gut.push(k);
+    else break;
+  }
+  return gut;
 }
 function roboLernen(text) {
   const a = roboFigur();
@@ -16286,12 +16433,20 @@ function roboLernen(text) {
       return;
     }
   }
-  roboKann.push({ txt:k.txt, art:k.art, e:k.e });
+  roboKann.push({ txt:k.txt, art:k.art, e:k.e, zahl:k.zahl || 0, stoff:k.stoff || null });
   blip(600,0.07); blip(800,0.07); blip(1100,0.1);
   // Zum Zeigen macht er es gleich einmal vor - ABER nichts, was die Welt
   // verändert. Bauen, graben und Holz holen macht er erst, wenn Jonah
   // wirklich auf den Knopf drückt.
-  if (ROBO_WELT.has(k.art)) {
+  if (k.unklar) {
+    // Ehrlich bleiben: er sagt, dass er es nur nachspielt - und was er
+    // stattdessen WIRKLICH kann.
+    const v = roboVorschlaege(k.txt);
+    sagen(a, 'Hmm, das kann ich nicht richtig … 🤔', 5);
+    toast('🤖 „' + k.txt + '" kann ich nur als Spaß nachmachen. ✨\n\nRichtig kann ich zum ' +
+          'Beispiel: ' + v.map(x => x.e + ' „' + x.bsp + '"').join(' · ') +
+          '\n\n📖 Alles, was geht, steht in „Das kann ich".', 9000);
+  } else if (ROBO_WELT.has(k.art)) {
     sagen(a, 'Alles klar, das kann ich jetzt! Sag mir, wann ich soll. 👍', 5);
     toast('🤖 ' + roboName + ' hat es gelernt! Er fängt NICHT von allein an – ' +
           'tipp ihn an und drück auf „' + (k.e || '✨') + ' ' + k.txt + '", dann macht er es.', 6000);
@@ -16409,6 +16564,25 @@ function ladeStationTipp() {
     return;
   }
   roboZurStation(a, true);
+}
+// 📖 Alles, was der Roboter wirklich kann - mit Beispielsatz. So sieht Jonah
+// auf einen Blick, was er schreiben muss, damit genau das passiert.
+function openKann() {
+  const el = document.getElementById('kannListe');
+  el.innerHTML = '';
+  for (const k of ROBO_KANN) {
+    const d = document.createElement('div');
+    d.className = 'kannZeile';
+    d.innerHTML = k.e + ' <b>„' + k.bsp + '"</b><br><i>' + k.was + '</i>';
+    el.appendChild(d);
+  }
+  const d2 = document.createElement('div');
+  d2.className = 'kannZeile';
+  d2.innerHTML = '🏷️ <b>„du heißt jetzt Blitz"</b><br><i>gibt ihm einen neuen Namen</i>';
+  el.appendChild(d2);
+  document.getElementById('kannBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700,0.05); blip(880,0.06);
 }
 // Das Chip-Fenster: oben steht, was schon drauf ist, unten wird geschrieben.
 function openChip() {
@@ -16583,6 +16757,24 @@ function roboTu(k) {
   a.auftragT = 8;                       // so lange macht er es am Stück
   a.follow = (k.art === 'folgen');
   a.ziel = null; a.leucht = false; a.zaehl = 0;
+  a.menge = k.zahl || 0;                // „bring mir 10 Holz" / „bau 12 hoch"
+  a.getan = 0;                          // wie viel davon ist schon geschafft?
+  a.stoff = k.stoff ? roboStoffBlock(k.stoff) : null;
+  a.suche = k.stoff ? roboStoffSuche(k.stoff) : null;   // beim Holen: was zählt dazu?
+  if (k.art === 'bringen' || k.art === 'steine' || k.art === 'holz' ||
+      k.art === 'blumen' || k.art === 'ernten') a.auftragT = 40;
+  if (k.art === 'haus' || k.art === 'bruecke' || k.art === 'treppe' ||
+      k.art === 'mauer' || k.art === 'tunnel' || k.art === 'fackeln') a.auftragT = 25;
+  if (k.art === 'schnell') { a.turbo = 14; a.auftrag = 'folgen'; a.follow = true; a.auftragT = 14; }
+  if (k.art === 'gross')  { a.gr = Math.min(2.4, (a.gr || 1) * 1.6); a.auftragT = 2; }
+  if (k.art === 'klein')  { a.gr = Math.max(0.45, (a.gr || 1) / 1.6); a.auftragT = 2; }
+  if (k.art === 'farbe') {              // welche Farbe steht in Jonahs Satz?
+    const t2 = (k.txt || '').toLowerCase();
+    a.wunschFarbe = /rot/.test(t2) ? 25 : /blau/.test(t2) ? 40 : /grün|gruen/.test(t2) ? 53
+                  : /gold|gelb/.test(t2) ? 73 : /lila|pink/.test(t2) ? 149 : 27;
+    a.farbe = a.wunschFarbe; a.auftragT = 2;
+  }
+  if (k.art === 'laden') { roboZurStation(a, true); return; }
   if (k.art === 'witz') { sagen(a, ROBO_WITZE[Math.floor(Math.random()*ROBO_WITZE.length)], 7); a.auftragT = 3; }
   if (k.art === 'feuerwerk') {
     for (let i = 0; i < 40; i++)
@@ -16695,7 +16887,8 @@ function miniTick(a, dt) {
       break;
     }
     case 'folgen':
-      if (zuJonah > 2.4) geheZu(player.x, player.z, 4.2);
+      if (a.turbo > 0) a.turbo -= dt;     // 💨 eine Weile doppelt so schnell
+      if (zuJonah > 2.4) geheZu(player.x, player.z, a.turbo > 0 ? 8.4 : 4.2);
       else a.yaw = Math.atan2(player.x - a.x, -(player.z - a.z));
       break;
     case 'tanzen':
@@ -16748,13 +16941,151 @@ function miniTick(a, dt) {
       }
       break;
     }
+    case 'bringen': case 'steine': case 'blumen': case 'ernten': {
+      // 🎁 Er sucht den passenden Block, läuft hin, holt ihn und bringt ihn
+      // Jonah. „bring mir 10 Holz" holt zehn Stück.
+      const was = a.auftrag === 'steine' ? [STONE]
+                : a.auftrag === 'blumen' ? [BLUME]
+                : a.auftrag === 'ernten' ? [CARROT2, TOMATO2, WHEAT2, APPLE_LEAF]
+                : (a.suche || [WOOD, STONE, DIRT]);
+      const ziel = a.menge || 5;
+      if (!a.ziel) a.ziel = roboSuche(a, b => was.includes(b), 20);
+      if (!a.ziel) {
+        sagen(a, 'Hier finde ich nichts davon … 🤔', 3);
+        a.auftrag = 'warten'; break;
+      }
+      const [tx,ty,tz] = a.ziel;
+      if (geheZu(tx + 0.5, tz + 0.5, 3.8) || Math.hypot(tx+0.5-a.x, tz+0.5-a.z) < 1.8) {
+        if (was.includes(getBlock(tx,ty,tz))) {
+          const b = getBlock(tx,ty,tz);
+          setBlock(tx,ty,tz, b === APPLE_LEAF ? LEAF : AIR);
+          if (b === CARROT2) { carrots += 2; }
+          else if (b === TOMATO2) { tomatoes += 2; }
+          else if (b === WHEAT2) { wheat += 2; }
+          else if (b === APPLE_LEAF) { apples += 1; }
+          updateFoodHUD();
+          a.getan++;
+          blip(500 + a.getan * 20, 0.05);
+        }
+        a.ziel = null;
+        if (a.getan >= ziel) {
+          sagen(a, '🎁 Fertig! Ich habe ' + a.getan + ' für dich geholt.', 5);
+          toast('🎁 ' + roboName + ' hat ' + a.getan + ' Stück für dich geholt! 🤖', 4000);
+          a.auftrag = 'warten';
+        }
+      }
+      break;
+    }
+    case 'haus': {                        // 🏠 ein kleines Haus bauen
+      if (!a.hausPlan) {
+        const bx = Math.floor(a.x + Math.sin(a.yaw) * 4), bz = Math.floor(a.z - Math.cos(a.yaw) * 4);
+        const by = Math.floor(a.y);
+        const mat = a.stoff || PLANK;
+        a.hausPlan = [];
+        for (let dx = -2; dx <= 2; dx++) for (let dz = -2; dz <= 2; dz++) {
+          const rand = Math.abs(dx) === 2 || Math.abs(dz) === 2;
+          for (let dy = 0; dy < 3; dy++)
+            if (rand && !(dx === 0 && dz === -2 && dy < 2))     // vorne bleibt die Tür frei
+              a.hausPlan.push([bx+dx, by+dy, bz+dz, mat]);
+          a.hausPlan.push([bx+dx, by+3, bz+dz, mat]);           // das Dach
+        }
+        a.hausPlan.push([bx, by+1, bz, TORCH]);                 // Licht hinein
+      }
+      if (Math.random() < dt * 14 && a.hausPlan.length) {
+        const [bx,by,bz,mat] = a.hausPlan.shift();
+        if (getBlock(bx,by,bz) === AIR) { setBlock(bx,by,bz,mat); blip(420,0.04); }
+        if (!a.hausPlan.length) {
+          sagen(a, '🏠 Dein Haus ist fertig!', 6);
+          toast('🏠 ' + roboName + ' hat dir ein Haus gebaut! 🤖', 4500);
+          a.auftrag = 'warten'; a.hausPlan = null;
+        }
+      }
+      break;
+    }
+    case 'mauer': {                       // 🧱 eine Mauer vor sich
+      if (Math.random() < dt * 12) {
+        const lang = a.menge || 7, mat = a.stoff || STONE;
+        const seit = a.yaw + Math.PI/2;
+        const i2 = a.getan;
+        if (i2 >= lang * 2) {
+          sagen(a, '🧱 Die Mauer steht!', 5); a.auftrag = 'warten'; break;
+        }
+        const schritt = Math.floor(i2 / 2) - Math.floor(lang/2), hoch = i2 % 2;
+        const bx = Math.floor(a.x + Math.sin(a.yaw)*2 + Math.sin(seit)*schritt);
+        const bz = Math.floor(a.z - Math.cos(a.yaw)*2 - Math.cos(seit)*schritt);
+        const by = Math.floor(a.y) + hoch;
+        if (getBlock(bx,by,bz) === AIR) { setBlock(bx,by,bz,mat); blip(400,0.04); }
+        a.getan++;
+      }
+      break;
+    }
+    case 'bruecke': {                     // 🌉 einen Weg geradeaus bauen
+      if (Math.random() < dt * 10) {
+        const lang = a.menge || 10, mat = a.stoff || PLANK;
+        if (a.getan >= lang) { sagen(a, '🌉 Die Brücke ist fertig!', 5); a.auftrag = 'warten'; break; }
+        const bx = Math.floor(a.x + Math.sin(a.yaw) * (a.getan + 1));
+        const bz = Math.floor(a.z - Math.cos(a.yaw) * (a.getan + 1));
+        const by = Math.floor(a.y) - 1;
+        if (getBlock(bx,by,bz) === AIR || getBlock(bx,by,bz) === WATER) {
+          setBlock(bx,by,bz,mat); blip(380,0.04);
+        }
+        a.getan++;
+        geheZu(bx + 0.5, bz + 0.5, 2.4);
+      }
+      break;
+    }
+    case 'treppe': {                      // 🪜 eine Treppe nach oben
+      if (Math.random() < dt * 8) {
+        const hoch = a.menge || 6, mat = a.stoff || STONE;
+        if (a.getan >= hoch) { sagen(a, '🪜 Die Treppe ist fertig!', 5); a.auftrag = 'warten'; break; }
+        const bx = Math.floor(a.x + Math.sin(a.yaw) * (a.getan + 1));
+        const bz = Math.floor(a.z - Math.cos(a.yaw) * (a.getan + 1));
+        for (let h = 0; h <= a.getan; h++) {
+          const by = Math.floor(a.y) + h;
+          if (getBlock(bx,by,bz) === AIR) setBlock(bx,by,bz,mat);
+        }
+        blip(420 + a.getan*30, 0.05);
+        a.getan++;
+      }
+      break;
+    }
+    case 'tunnel': {                      // 🕳️ einen Gang geradeaus graben
+      if (Math.random() < dt * 10) {
+        const lang = a.menge || 10;
+        if (a.getan >= lang * 2) { sagen(a, '🕳️ Der Tunnel ist fertig!', 5); a.auftrag = 'warten'; break; }
+        const weit = Math.floor(a.getan / 2) + 1, hoch = a.getan % 2;
+        const bx = Math.floor(a.x + Math.sin(a.yaw) * weit);
+        const bz = Math.floor(a.z - Math.cos(a.yaw) * weit);
+        const by = Math.floor(a.y) + hoch;
+        const b = getBlock(bx,by,bz);
+        if (b !== AIR && b !== WATER && b !== SCHUTZ) { setBlock(bx,by,bz,AIR); blip(200,0.05); }
+        a.getan++;
+        if (hoch) geheZu(bx + 0.5, bz + 0.5, 2.2);
+      }
+      break;
+    }
+    case 'fackeln': {                     // 🔥 Fackeln rundherum aufstellen
+      if (Math.random() < dt * 6) {
+        const wie = a.menge || 6;
+        if (a.getan >= wie) { sagen(a, '🔥 Jetzt ist es hell!', 5); a.auftrag = 'warten'; break; }
+        const w = a.getan / wie * Math.PI * 2;
+        const bx = Math.floor(a.x + Math.cos(w) * 3), bz = Math.floor(a.z + Math.sin(w) * 3);
+        let by = Math.floor(a.y);
+        while (by > Math.floor(a.y) - 3 && getBlock(bx, by-1, bz) === AIR) by--;
+        if (getBlock(bx,by,bz) === AIR && getBlock(bx,by-1,bz) !== AIR) {
+          setBlock(bx,by,bz,TORCH); blip(600,0.05);
+        }
+        a.getan++;
+      }
+      break;
+    }
     case 'bauen': {                       // einen kleinen Turm stapeln
       // Er baut am liebsten direkt vor sich. Steht da eine Wand (in der Burg
       // ist das schnell so), sucht er sich rundherum einen freien Platz -
       // sonst würde er dastehen und gar nichts tun.
       if (Math.random() < dt*3) {
-        const platz = roboBauPlatz(a);
-        if (platz) { setBlock(platz[0], platz[1], platz[2], PLANK); blip(420,0.06); }
+        const platz = roboBauPlatz(a, a.menge || 5);
+        if (platz) { setBlock(platz[0], platz[1], platz[2], a.stoff || PLANK); blip(420,0.06); }
         else { sagen(a, 'Hier ist kein Platz zum Bauen! 🧱❓', 3); a.auftrag = 'warten'; }
       }
       break;
@@ -16848,7 +17179,8 @@ function roboRufen() {
 }
 // Wo kann der Roboter einen Block hinsetzen? Erst direkt vor sich, dann
 // rundherum. Ein Turm darf höchstens 5 Blöcke hoch werden.
-function roboBauPlatz(a) {
+function roboBauPlatz(a, hoch) {
+  const H = Math.max(2, Math.min(20, hoch || 5));
   const ax = Math.floor(a.x), ay = Math.floor(a.y), az = Math.floor(a.z);
   const vorn = [Math.round(Math.sin(a.yaw)), -Math.round(Math.cos(a.yaw))];
   const rund = [vorn, [1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1],[2,0],[0,2],[-2,0],[0,-2]];
@@ -16856,8 +17188,8 @@ function roboBauPlatz(a) {
     if (dx === 0 && dz === 0) continue;
     const bx = ax + dx, bz = az + dz;
     let by = ay;
-    while (by < ay + 5 && getBlock(bx, by, bz) !== AIR) by++;
-    if (by >= ay + 5) continue;                       // Turm schon hoch genug
+    while (by < ay + H && getBlock(bx, by, bz) !== AIR) by++;
+    if (by >= ay + H) continue;                       // Turm schon hoch genug
     if (getBlock(bx, by, bz) !== AIR) continue;
     if (by > ay && getBlock(bx, by-1, bz) === AIR) continue;   // nichts in die Luft bauen
     return [bx, by, bz];
@@ -23962,6 +24294,11 @@ document.getElementById('missBox').addEventListener('touchstart', (e)=>{ e.preve
 document.getElementById('chipClose').addEventListener('click', ()=>{
   document.getElementById('chipBox').style.display = 'none'; blip(400,0.06);
 });
+document.getElementById('kannClose').addEventListener('click', ()=>{
+  document.getElementById('kannBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('rpKann').addEventListener('click', ()=>{ openKann(); });
+document.getElementById('chipKann').addEventListener('click', ()=>{ openKann(); });
 document.getElementById('chipSchreib').addEventListener('click', ()=>{
   const el = document.getElementById('chipInput');
   if (chipSchreiben(el.value)) el.value = '';

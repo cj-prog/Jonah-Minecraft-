@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN ROBOTER VERSTEHT DICH JETZT VIEL GENAUER (v244)! 🤖🧠 Jonah hat
+  gesagt: „Er macht nicht genau das, was ich will." Stimmt – er konnte nur
+  17 Sachen, und alles andere wurde ein Spaß-Trick.
+  🆕 JETZT KANN ER 32 SACHEN, darunter ganz neue: 🏠 ein Haus bauen,
+  🌉 eine Brücke, 🪜 eine Treppe, 🧱 eine Mauer, 🕳️ einen Tunnel graben,
+  🎁 dir Sachen holen, ⛏️ Steine abbauen, 🌸 Blumen pflücken, 🥕 ernten,
+  🔥 Fackeln aufstellen, 💨 im Turbo laufen, 📏 größer und 🐜 kleiner werden,
+  🎨 die Farbe wechseln und 🔌 sich selbst aufladen.
+  🔢 ER VERSTEHT ZAHLEN UND MATERIAL: „bau einen Turm aus Glas, 12 hoch",
+  „bring mir 10 Holz", „stell 5 Fackeln auf" – und macht genau das.
+  🎯 ER WÄHLT BESSER AUS: Früher gewann das erste Wort, das irgendwie passte.
+  Jetzt gewinnt das genaueste – „bau mir ein HAUS" baut ein Haus und nicht
+  irgendeinen Turm.
+  🤔 UND WENN ER ETWAS NICHT KANN, sagt er es ehrlich („das kann ich nur als
+  Spaß nachmachen") und schlägt dir drei Sachen vor, die er wirklich kann.
+  📖 NEU: der Knopf „Das kann ich alles" – beim Roboter und beim Chip. Dort
+  steht jede Fähigkeit mit einem Beispielsatz zum Abschreiben.
 - DER AKKU UND DIE LADE-STATION (v243)! 🔋🔌 Dein Roboter hat jetzt einen
   Akku – und der wird nach einer Weile leer.
   🔋 DER AKKU hält gut zehn Minuten Spielzeit; beim Arbeiten (bauen, laufen,
