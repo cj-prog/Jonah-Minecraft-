@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DREH DEINE EIGENEN FILME FÜRS KINO (v246)! 🎥🎬 Jonah hat gefragt, ob man
+  für das Kino auch eigene Filme drehen kann, die dann da laufen. Kann man!
+  🎥 DER KAMERA-KNOPF ist neu oben im Bild. Tippe ihn an, dann auf
+  „🔴 Film drehen!" – und spiel einfach weiter. Die Kamera filmt alles mit,
+  was du gerade erlebst: deine Burg, den Drachen, die Rakete, alles.
+  🔴 WÄHREND DER AUFNAHME blinkt oben ein rotes Lämpchen und zählt mit, wie
+  viele Bilder schon im Kasten sind. Nach 14 Sekunden hört die Kamera von
+  allein auf – oder du tippst auf „⏹ Fertig".
+  🎬 DANN GIBST DU DEINEM FILM EINEN NAMEN (z. B. „Jonah und der Drache").
+  Du siehst dabei schon ein Bild aus deinem Film.
+  🍿 UND JETZT LÄUFT ER IM KINO: Geh ins Kino (🛸 Teleport → „🎬 Das Kino"),
+  tippe die Leinwand an – deine eigenen Filme stehen GANZ OBEN in der
+  Filmauswahl, mit 🎥 davor. Dein Titel steht als Untertitel darunter, und
+  es wird genauso auf- und abgeblendet wie bei den anderen Filmen.
+  🗑️ Im 🎥-Fenster kannst du dir deine Filme ansehen (wenn du im Kino bist)
+  oder sie wegwerfen. Drei eigene Filme passen ins Kino – wenn du einen
+  vierten drehst, macht der älteste Platz. Die Filme wohnen in einem eigenen
+  Fach im Speicher, damit dein Spielstand niemals davon kaputtgehen kann.
 - TIPP IHN AN – UND ER ARBEITET SEIN PROGRAMM AB (v245)! ▶️🤖 Jonah wollte,
   dass beim Antippen auch wirklich etwas passiert.
   ▶️ ANTIPPEN STARTET SEIN PROGRAMM: Er geht alles durch, was du ihm
