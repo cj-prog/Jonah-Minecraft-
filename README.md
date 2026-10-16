@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- TIPP IHN AN – UND ER ARBEITET SEIN PROGRAMM AB (v245)! ▶️🤖 Jonah wollte,
+  dass beim Antippen auch wirklich etwas passiert.
+  ▶️ ANTIPPEN STARTET SEIN PROGRAMM: Er geht alles durch, was du ihm
+  aufgeschrieben hast – eine Sache nach der anderen. Über ihm steht dabei,
+  wo er gerade ist („▶️ 2/5: 🏠 bau mir ein Haus"). Am Ende sagt er
+  „✅ Programm fertig!".
+  ⏹️ NOCHMAL ANTIPPEN hält ihn sofort an.
+  👆 LANGES DRÜCKEN öffnet sein Fenster (da stehen seine Sachen und der
+  Start-Knopf). Beim Hochfahren oder Laden lässt er sich nicht stören.
+  🔁 NEU: der Schalter „immer wieder von vorne" – dann hört sein Programm
+  nie auf, bis du ihn antippst.
+  💾 UND NEU IM BILD: der Chip-Knopf oben! Damit programmierst du den Chip
+  von überall – du musst nicht mehr in die Burg laufen.
 - DEIN ROBOTER VERSTEHT DICH JETZT VIEL GENAUER (v244)! 🤖🧠 Jonah hat
   gesagt: „Er macht nicht genau das, was ich will." Stimmt – er konnte nur
   17 Sachen, und alles andere wurde ein Spaß-Trick.
