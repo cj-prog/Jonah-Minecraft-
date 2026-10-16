@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- FILME SO LANG, WIE DU WILLST (v247)! 🎥⏱️ Jonah wollte länger drehen können –
+  die 14 Sekunden waren ihm zu kurz. Jetzt gibt es gar keine kurze Grenze mehr!
+  ⏱️ SO LANGE DU WILLST: dreh deine ganze Burg-Tour, dein ganzes Abenteuer, den
+  kompletten Flug zum Mond. Erst nach einer halben Stunde sagt die Kamera von
+  allein „jetzt reicht's" – und dein Film ist dann trotzdem gespeichert.
+  ⏸ PAUSE-KNOPF: Mitten im Drehen auf ⏸ tippen – die Kamera wartet auf dich.
+  Mit ▶️ geht es weiter, und die Pause ist im Film gar nicht zu sehen. So kannst
+  du in Ruhe hinlaufen und dann weiterfilmen.
+  ⏱️ Oben siehst du jetzt die Zeit als Uhr: „1:26 Min. · 214 Bilder".
+  📦 WO DIE FILME WOHNEN: nicht mehr im kleinen Spielstand-Speicher, sondern in
+  der großen Bilder-Kiste des Browsers (IndexedDB). Dort ist fast unbegrenzt
+  Platz – und dein Spielstand kann davon niemals voll werden. Deine Filme aus
+  Version 246 ziehen beim ersten Start automatisch dorthin um.
+  🎬 SECHS eigene Filme passen jetzt ins Kino (vorher drei). Beim Abspielen holt
+  sich das Spiel immer nur die paar Bilder, die gerade dran sind – darum laufen
+  auch ganz lange Filme ruckelfrei.
 - DREH DEINE EIGENEN FILME FÜRS KINO (v246)! 🎥🎬 Jonah hat gefragt, ob man
   für das Kino auch eigene Filme drehen kann, die dann da laufen. Kann man!
   🎥 DER KAMERA-KNOPF ist neu oben im Bild. Tippe ihn an, dann auf

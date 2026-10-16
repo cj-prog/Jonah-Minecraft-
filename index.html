@@ -347,6 +347,8 @@
   #filmRecText { font-size:13px; font-weight:bold; }
   #filmRecStopp { font-size:13px; font-weight:bold; padding:6px 12px; border-radius:9px;
     border:none; background:#c03050; color:#fff; }
+  #filmRecPause { font-size:13px; font-weight:bold; padding:6px 12px; border-radius:9px;
+    border:none; background:#46607a; color:#fff; }
   #filmPunkt { width:13px; height:13px; border-radius:50%; background:#ff3040; flex:none;
     animation:filmBlink 1s infinite; }
   @keyframes filmBlink { 0%,100% { opacity:1 } 50% { opacity:.2 } }
@@ -859,6 +861,7 @@
 <div class="hud btn" id="filmBtn" title="Eigenen Film drehen">🎥</div>
 <div class="hud" id="filmRec">
   <i id="filmPunkt"></i><span id="filmRecText">Aufnahme läuft …</span>
+  <button id="filmRecPause">⏸ Pause</button>
   <button id="filmRecStopp">⏹ Fertig</button>
 </div>
 <div class="hud" id="filmBox">
@@ -867,7 +870,8 @@
   <div id="filmListe"></div>
   <button id="filmDreh">🔴 Film drehen!</button>
   <div id="filmTipp">So geht's: 🔴 antippen, dann spielst du einfach weiter – die Kamera
-    filmt alles mit. Mit ⏹ bist du fertig, dann gibst du deinem Film einen Namen.
+    filmt alles mit, <b>so lange du willst</b>. Mit ⏸ machst du zwischendurch Pause und
+    mit ▶️ geht es weiter. Mit ⏹ bist du fertig, dann gibst du deinem Film einen Namen.
     Im Kino 🎬 läuft er auf der großen Leinwand!</div>
   <button id="filmClose">✔ Fertig</button>
 </div>
@@ -1220,7 +1224,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 246 &middot; 🎥 DU KANNST JETZT EIGENE FILME DREHEN! Tippe oben auf 🎥, dann auf 🔴 – die Kamera filmt alles mit, was du machst. Gib deinem Film einen Namen und schau ihn dir im Kino 🎬 auf der großen Leinwand an! 🍿</p>
+    Version 247 &middot; 🎥 JETZT KANNST DU SO LANGE DREHEN, WIE DU WILLST! Kein 14-Sekunden-Ende mehr – film deine ganze Burg-Tour oder dein ganzes Abenteuer. Mit ⏸ machst du zwischendurch Pause und mit ▶️ geht es weiter. Dein Film läuft dann im Kino 🎬 auf der großen Leinwand! 🍿</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1266,7 +1270,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 246;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 247;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -15258,7 +15262,8 @@ function kinoUntertitelZeigen(text) {
   el.style.display = text ? "block" : "none";
 }
 function kinoStart(film) {
-  if (film.eigen) filmBilderLaden(film);   // 🎥 die Bilder müssen erst fertig geladen sein
+  if (film.eigen) filmBilderFrei(film);    // 🎥 frisch von vorne: Bilder werden beim
+                                         //    Abspielen nach und nach bereitgelegt
   kinoFilm = film; kinoZeit = 0; kinoSzene = -1; kinoPause = false;
   document.getElementById("kinoWahl").style.display = "none";
   document.getElementById("kinoBar").style.display = "flex";
@@ -15266,6 +15271,8 @@ function kinoStart(film) {
   blip(392,0.1); blip(523,0.1); blip(659,0.14);
 }
 function kinoStopp() {
+  // 🎥 bei einem eigenen Film die bereitgelegten Bilder wieder wegräumen
+  if (kinoFilm && kinoFilm.eigen) try { filmBilderFrei(kinoFilm); } catch(e) {}
   kinoFilm = null; kinoSzene = -1; kinoZeit = 0;
   kinoUntertitelZeigen("");
   document.getElementById("kinoBar").style.display = "none";
@@ -15299,7 +15306,7 @@ function kinoWahlZeigen() {
                   '<span class="kinoKurz"></span></span>';
     const pl2 = b.querySelector(".kinoPlakat");
     pl2.textContent = "🎥"; pl2.style.background = f.farbe;
-    b.querySelector(".kinoTitel").textContent = f.titel + "  (" + Math.round(f.dauer) + " Sek.)  🎥";
+    b.querySelector(".kinoTitel").textContent = f.titel + "  (" + filmZeitText(f.dauer) + ")";
     b.querySelector(".kinoKurz").textContent = f.kurz;
     b.addEventListener("click", () => kinoStart(f));
     liste.appendChild(b);
@@ -15334,88 +15341,210 @@ function kinoWahlZeigen() {
 
 // ============== 🎥 JONAH DREHT SEINE EIGENEN FILME ==========================
 // Die Kamera nimmt genau das auf, was Jonah gerade sieht: alle 0,4 Sekunden
-// wird das fertige Bild aus dem Spiel abgefotografiert und ganz klein als
-// JPEG weggelegt. Danach laufen diese Bilder im Kino hintereinander ab - wie
-// bei einem echten Film, der auch nur aus einzelnen Bildern besteht.
-// Klein muss es sein, weil der Speicher im Handy nicht riesig ist: 224x126
-// Punkte sind etwa 5 Kilobyte pro Bild.
+// wird das fertige Bild aus dem Spiel abgefotografiert und klein als JPEG
+// weggelegt. Danach laufen diese Bilder im Kino hintereinander ab - wie bei
+// einem echten Film, der auch nur aus einzelnen Bildern besteht.
+//
+// 🎞️ SO LANG, WIE JONAH WILL: die Bilder wohnen in der großen Bilder-Kiste
+// des Browsers (IndexedDB). Da ist fast unbegrenzt Platz - anders als im
+// kleinen localStorage, in das nur etwa 14 Sekunden Film gepasst haben.
+// Außerdem liegen die Bilder dort als "Blob" (das rohe JPEG) und nicht als
+// Text - das spart nochmal ein Drittel. Erst nach einer halben Stunde macht
+// die Kamera von allein Schluss, damit nichts aus dem Ruder läuft.
 const FILM_B = 224, FILM_H = 126;        // so groß wird jedes Bild aufgenommen
 const FILM_PRO_BILD = 0.4;               // alle 0,4 Sekunden ein Bild (2,5 pro Sekunde)
-const FILM_MAX_BILDER = 36;              // 36 Bilder = gut 14 Sekunden Film
-const FILM_MAX = 3;                      // so viele eigene Filme passen ins Kino
-const FILM_KEY = 'jonahcraft_filme_v1';  // eigener Platz im Speicher - so kann ein
-                                         // voller Speicher nie den Spielstand kaputtmachen
+const FILM_MAX_MIN = 30;                 // nach einer halben Stunde ist Schluss
+const FILM_MAX_BILDER = Math.round(FILM_MAX_MIN * 60 / FILM_PRO_BILD);
+const FILM_MAX = 6;                      // so viele eigene Filme passen ins Kino
+const FILM_KEY = 'jonahcraft_filme_v1';  // der alte, kleine Platz von v246
+const FILM_DB = 'jonahcraft_kino', FILM_STORE = 'filme';
+const FILM_FENSTER = 12;                 // so viele Bilder werden im Voraus bereitgelegt
 const filmCanvas = document.createElement('canvas');
 filmCanvas.width = FILM_B; filmCanvas.height = FILM_H;
 const fg = filmCanvas.getContext('2d');
 let eigeneFilme = [];                    // alle Filme, die Jonah gedreht hat
 let filmDreht = false;                   // läuft die Kamera gerade?
-let filmBilder = [], filmT = 0, filmDauer = 0, filmLetzt = 0;
+let filmPause = false;                   // ⏸ gerade angehalten?
+let filmBilder = [], filmT = 0, filmDauer = 0, filmLetzt = 0, filmOffen = 0;
+let filmSpeicherOk = true;               // klappt die große Bilder-Kiste?
 
+// Aus Sekunden wird „14 Sek." oder „2:07 Min."
+function filmZeitText(sek) {
+  sek = Math.max(0, Math.round(sek));
+  if (sek < 60) return sek + ' Sek.';
+  const m = Math.floor(sek / 60), r = sek % 60;
+  return m + ':' + (r < 10 ? '0' : '') + r + ' Min.';
+}
 // Dauer und die kleine Beschreibung ausrechnen
 function filmFertigRechnen(f) {
   f.eigen = true; f.emoji = '🎥'; f.farbe = '#c03050';
   f.proBild = f.proBild || FILM_PRO_BILD;
   f.dauer = f.bilder.length * f.proBild;
-  const sek = Math.round(f.dauer);
-  f.kurz = 'Dein eigener Film – ' + sek + (sek === 1 ? ' Sekunde' : ' Sekunden') + ' lang' +
+  f.kurz = 'Dein eigener Film – ' + filmZeitText(f.dauer) + ' lang' +
            (f.gedreht ? ', gedreht am ' + f.gedreht : '') + '. 🎥';
 }
-// Die gespeicherten Bilder in echte Bilder verwandeln (nur einmal pro Film)
-function filmBilderLaden(f) {
-  if (f._img && f._img.length === f.bilder.length) return;
-  f._img = f.bilder.map(d => { const im = new Image(); im.src = d; return im; });
-}
-function filmLaden() {
-  eigeneFilme = [];
-  try {
-    const da = localStorage.getItem(FILM_KEY);
-    if (!da) return;
-    const arr = JSON.parse(da);
-    if (!Array.isArray(arr)) return;
-    for (const f of arr) {
-      if (!f || !Array.isArray(f.bilder) || !f.bilder.length) continue;
-      const neu = { id: f.id || ('e' + Math.random()), titel: f.titel || 'Mein Film',
-                    bilder: f.bilder, proBild: f.proBild, gedreht: f.gedreht || '' };
-      filmFertigRechnen(neu);
-      eigeneFilme.push(neu);
-    }
-  } catch(e) { eigeneFilme = []; }
-}
-function filmSpeichern() {
-  for (let versuch = 0; versuch < 5; versuch++) {
+
+// ---- Die große Bilder-Kiste (IndexedDB) ---------------------------------
+let filmDbP = null;
+function filmDb() {
+  if (filmDbP) return filmDbP;
+  filmDbP = new Promise((ja, nein) => {
     try {
-      localStorage.setItem(FILM_KEY, JSON.stringify(eigeneFilme.map(f =>
-        ({ id: f.id, titel: f.titel, bilder: f.bilder, proBild: f.proBild, gedreht: f.gedreht }))));
-      return true;
-    } catch(e) {
-      // 💾 Voll. Dann macht der ÄLTESTE Film Platz - der Spielstand bleibt sicher,
-      // denn die Filme wohnen in ihrem eigenen Fach.
-      if (eigeneFilme.length <= 1) {
-        eigeneFilme = [];
-        try { localStorage.removeItem(FILM_KEY); } catch(e2) {}
-        toast('💾 Der Speicher deines Handys ist voll – dein Film passt leider nicht hinein. ⚠️', 8000);
+      if (!window.indexedDB) { nein(new Error('keine Bilder-Kiste')); return; }
+      const q = indexedDB.open(FILM_DB, 1);
+      q.onupgradeneeded = () => {
+        const db = q.result;
+        if (!db.objectStoreNames.contains(FILM_STORE))
+          db.createObjectStore(FILM_STORE, { keyPath: 'id' });
+      };
+      q.onsuccess = () => ja(q.result);
+      q.onerror = () => nein(q.error || new Error('Fehler'));
+      q.onblocked = () => nein(new Error('blockiert'));
+    } catch(e) { nein(e); }
+  });
+  filmDbP.catch(() => {});               // keine lauten Browser-Meldungen
+  return filmDbP;
+}
+function filmDbTun(modus, arbeit) {
+  return filmDb().then(db => new Promise((ja, nein) => {
+    let anfrage;
+    const tx = db.transaction(FILM_STORE, modus);
+    try { anfrage = arbeit(tx.objectStore(FILM_STORE)); }
+    catch(e) { nein(e); return; }
+    tx.oncomplete = () => ja(anfrage ? anfrage.result : undefined);
+    tx.onerror = () => nein(tx.error || new Error('Fehler'));
+    tx.onabort = () => nein(tx.error || new Error('abgebrochen'));
+  }));
+}
+// aus „data:image/jpeg;base64,…" wird das rohe Bild
+function filmTextZuBlob(d) {
+  try {
+    const komma = String(d).indexOf(',');
+    if (komma < 0) return null;
+    const roh = atob(d.slice(komma + 1));
+    const u = new Uint8Array(roh.length);
+    for (let i = 0; i < roh.length; i++) u[i] = roh.charCodeAt(i);
+    return new Blob([u], { type: 'image/jpeg' });
+  } catch(e) { return null; }
+}
+function filmAlsDaten(f) {
+  return { id: f.id, titel: f.titel, bilder: f.bilder, proBild: f.proBild, gedreht: f.gedreht };
+}
+// Einen Film ablegen. Ist die Kiste voll, macht der älteste Film Platz.
+async function filmAblegen(f) {
+  if (!filmSpeicherOk) return filmInsKleineFach();
+  for (let versuch = 0; versuch < 4; versuch++) {
+    try { await filmDbTun('readwrite', st => st.put(filmAlsDaten(f))); return true; }
+    catch(e) {
+      const andere = eigeneFilme.filter(a => a !== f);
+      if (!andere.length) {
+        toast('💾 Der Speicher deines Handys ist voll – dieser Film passt nicht mehr hinein. ⚠️', 8000);
+        const i = eigeneFilme.indexOf(f); if (i >= 0) eigeneFilme.splice(i, 1);
         return false;
       }
-      const weg = eigeneFilme.shift();
+      const weg = andere[0];
+      eigeneFilme.splice(eigeneFilme.indexOf(weg), 1);
+      try { await filmDbTun('readwrite', st => st.delete(weg.id)); } catch(e2) {}
       toast('💾 Der Speicher war voll: dein ältester Film „' + weg.titel + '" musste Platz machen.', 7000);
     }
   }
   return false;
 }
-// ---- Aufnahme ----
+// Notfall: klappt die große Kiste nicht, kommt wenigstens ein kurzer Film
+// ins kleine Fach - so wie früher in v246.
+function filmInsKleineFach() {
+  try {
+    const klein = eigeneFilme.filter(f => f.bilder.every(b => typeof b === 'string'));
+    localStorage.setItem(FILM_KEY, JSON.stringify(klein.map(filmAlsDaten)));
+    return true;
+  } catch(e) {
+    toast('💾 Dieser Film passt leider nicht in den Speicher – er läuft aber jetzt gleich im Kino! ⚠️', 7000);
+    return false;
+  }
+}
+// Alles laden: erst aus der großen Kiste, dann die alten Filme umziehen
+async function filmLaden() {
+  eigeneFilme = [];
+  try {
+    const alle = await filmDbTun('readonly', st => st.getAll());
+    for (const r of (alle || [])) {
+      if (!r || !Array.isArray(r.bilder) || !r.bilder.length) continue;
+      const f = { id: r.id, titel: r.titel || 'Mein Film', bilder: r.bilder,
+                  proBild: r.proBild, gedreht: r.gedreht || '' };
+      filmFertigRechnen(f); eigeneFilme.push(f);
+    }
+    eigeneFilme.sort((a, b) => String(a.id) < String(b.id) ? -1 : 1);
+    await filmUmzug();
+  } catch(e) {
+    filmSpeicherOk = false;              // dann eben das kleine Fach
+    filmAusKleinemFach();
+  }
+  if (document.getElementById('filmBox').style.display === 'flex') openFilm();
+}
+function filmAusKleinemFach() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(FILM_KEY) || '[]');
+    if (!Array.isArray(arr)) return;
+    for (const r of arr) {
+      if (!r || !Array.isArray(r.bilder) || !r.bilder.length) continue;
+      const f = { id: r.id || ('e' + Math.random()), titel: r.titel || 'Mein Film',
+                  bilder: r.bilder, proBild: r.proBild, gedreht: r.gedreht || '' };
+      filmFertigRechnen(f); eigeneFilme.push(f);
+    }
+  } catch(e) {}
+}
+// Die Filme aus v246 wohnen noch im kleinen Fach - die holen wir herüber.
+async function filmUmzug() {
+  let arr = null;
+  try { arr = JSON.parse(localStorage.getItem(FILM_KEY) || 'null'); } catch(e) {}
+  if (!Array.isArray(arr) || !arr.length) return;
+  for (const r of arr) {
+    if (!r || !Array.isArray(r.bilder) || !r.bilder.length) continue;
+    const bilder = r.bilder.map(filmTextZuBlob).filter(b => b);
+    if (!bilder.length) continue;
+    const f = { id: r.id || ('e' + Date.now() + Math.floor(Math.random()*1000)),
+                titel: r.titel || 'Mein Film', bilder,
+                proBild: r.proBild, gedreht: r.gedreht || '' };
+    filmFertigRechnen(f); eigeneFilme.push(f);
+    try { await filmDbTun('readwrite', st => st.put(filmAlsDaten(f))); } catch(e) {}
+  }
+  try { localStorage.removeItem(FILM_KEY); } catch(e) {}
+}
+
+// ---- Aufnahme ------------------------------------------------------------
+function filmRecTextSetzen() {
+  const el = document.getElementById('filmRecText');
+  if (!el) return;
+  el.textContent = filmPause
+    ? '⏸ Pause · ' + filmZeitText(filmDauer)
+    : filmZeitText(filmDauer) + ' · ' + filmBilder.length + ' Bilder';
+  const p = document.getElementById('filmRecPause');
+  if (p) p.textContent = filmPause ? '▶️ Weiter' : '⏸ Pause';
+  const punkt = document.getElementById('filmPunkt');
+  if (punkt) punkt.style.animationPlayState = filmPause ? 'paused' : 'running';
+}
 function filmDrehStart() {
   if (filmDreht) return;
-  filmDreht = true; filmBilder = []; filmT = FILM_PRO_BILD; filmDauer = 0;
+  filmDreht = true; filmPause = false;
+  filmBilder = []; filmT = FILM_PRO_BILD; filmDauer = 0; filmOffen = 0;
   filmLetzt = performance.now();
   document.getElementById('filmBox').style.display = 'none';
   document.getElementById('filmNameBox').style.display = 'none';
   document.getElementById('filmRec').style.display = 'flex';
   document.getElementById('filmBtn').classList.add('on');
-  toast('🔴 Die Kamera läuft! Alles, was du jetzt machst, kommt in deinen Film. ' +
-        'Mit ⏹ bist du fertig – nach ' + Math.round(FILM_MAX_BILDER * FILM_PRO_BILD) +
-        ' Sekunden hört sie von allein auf.', 6000);
+  filmRecTextSetzen();
+  toast('🔴 Die Kamera läuft! Alles, was du jetzt machst, kommt in deinen Film – ' +
+        'so lange du willst. ⏸ macht eine Pause, ⏹ beendet den Film.', 7000);
   blip(880,0.08); blip(660,0.1);
+}
+function filmPauseUm() {
+  if (!filmDreht) return;
+  filmPause = !filmPause;
+  filmLetzt = performance.now();
+  filmRecTextSetzen();
+  toast(filmPause ? '⏸ Pause! Die Kamera wartet auf dich – mit ▶️ geht es weiter.'
+                  : '🔴 Weiter geht\'s – die Kamera filmt wieder mit!', 3500);
+  blip(filmPause ? 300 : 700, 0.08);
 }
 // Das wird am ENDE jedes Bildes aufgerufen - genau dann steht das fertige
 // Spielbild noch da und kann abfotografiert werden.
@@ -15428,39 +15557,54 @@ function filmDrehTick(dt) {
   const jetzt = performance.now();
   const vergangen = Math.min(0.25, Math.max(0, (jetzt - filmLetzt) / 1000));
   filmLetzt = jetzt;
-  if (typeof mathePause !== 'undefined' && mathePause) return;   // 🧮 Rechen-Pause: Kamera wartet
+  if (filmPause) return;                                         // ⏸ die Kamera wartet
+  if (typeof mathePause !== 'undefined' && mathePause) return;   // 🧮 Rechen-Pause
   filmDauer += vergangen; filmT += vergangen;
   if (filmT >= FILM_PRO_BILD) {
     filmT = 0;
     try {
       fg.drawImage(canvas, 0, 0, FILM_B, FILM_H);
-      filmBilder.push(filmCanvas.toDataURL('image/jpeg', 0.45));
+      // toBlob braucht einen Moment - darum wird der Platz schon reserviert,
+      // damit die Bilder garantiert in der richtigen Reihenfolge bleiben.
+      const platz = filmBilder.length;
+      filmBilder.push(null); filmOffen++;
+      filmCanvas.toBlob(b => { filmOffen--; if (b) filmBilder[platz] = b; }, 'image/jpeg', 0.45);
     } catch(e) {}
   }
-  const el = document.getElementById('filmRecText');
-  if (el) el.textContent = filmBilder.length + '/' + FILM_MAX_BILDER + ' Bilder · ' +
-                           Math.round(filmDauer) + ' Sek.';
-  if (filmBilder.length >= FILM_MAX_BILDER) filmDrehStopp();
+  filmRecTextSetzen();
+  if (filmBilder.length >= FILM_MAX_BILDER) {
+    toast('🎥 Puh, eine halbe Stunde Film! Jetzt macht die Kamera Schluss. 🎬', 7000);
+    filmDrehStopp();
+  }
 }
-function filmDrehStopp() {
+async function filmDrehStopp() {
   if (!filmDreht) return;
-  filmDreht = false;
+  filmDreht = false; filmPause = false;
   document.getElementById('filmRec').style.display = 'none';
   document.getElementById('filmBtn').classList.remove('on');
+  // die allerletzten Bilder sind vielleicht noch nicht ganz fertig gepackt
+  for (let i = 0; i < 60 && filmOffen > 0; i++) await new Promise(r => setTimeout(r, 25));
+  filmBilder = filmBilder.filter(b => b);
   if (filmBilder.length < 3) {
     filmBilder = [];
     toast('🎥 Das war zu kurz für einen Film – lass die Kamera ein paar Sekunden länger laufen!', 5500);
     blip(250,0.15); return;
   }
   const bild = document.getElementById('filmBild');
-  if (bild) bild.src = filmBilder[Math.floor(filmBilder.length / 2)];
+  if (bild) {
+    if (bild.dataset.url) { try { URL.revokeObjectURL(bild.dataset.url); } catch(e) {} }
+    const mitte = filmBilder[Math.floor(filmBilder.length / 2)];
+    const q = typeof mitte === 'string' ? mitte : URL.createObjectURL(mitte);
+    bild.dataset.url = typeof mitte === 'string' ? '' : q;
+    bild.src = q;
+  }
   const inp = document.getElementById('filmNameInput');
   inp.value = '';
   document.getElementById('filmNameBox').style.display = 'flex';
   blip(660,0.08); blip(880,0.1);
   setTimeout(() => { try { inp.focus(); } catch(e) {} }, 60);
 }
-function filmSichern() {
+async function filmSichern() {
   if (!filmBilder.length) { document.getElementById('filmNameBox').style.display = 'none'; return; }
   const inp = document.getElementById('filmNameInput');
   let titel = (inp.value || '').trim().slice(0, 40);
@@ -15470,26 +15614,29 @@ function filmSichern() {
   filmFertigRechnen(f);
   eigeneFilme.push(f);
   filmBilder = [];
+  document.getElementById('filmNameBox').style.display = 'none';
   while (eigeneFilme.length > FILM_MAX) {           // es passen nur FILM_MAX hinein
     const weg = eigeneFilme.shift();
+    try { await filmDbTun('readwrite', st => st.delete(weg.id)); } catch(e) {}
     toast('🎥 Ins Kino passen ' + FILM_MAX + ' eigene Filme – „' + weg.titel +
           '" ist dafür weggegangen.', 6500);
   }
-  document.getElementById('filmNameBox').style.display = 'none';
-  const ok = filmSpeichern();
+  const ok = await filmAblegen(f);
   if (ok && eigeneFilme.indexOf(f) >= 0) {
-    toast('🎬 Dein Film „' + titel + '" ist fertig! Geh ins Kino 🎬, tippe die Leinwand an – ' +
-          'dann läuft er dort oben. 🍿', 8000);
+    toast('🎬 Dein Film „' + titel + '" ist fertig – ' + filmZeitText(f.dauer) +
+          ' lang! Geh ins Kino 🎬, tippe die Leinwand an – dann läuft er dort oben. 🍿', 9000);
     for (const t of [523,659,784,1047]) blip(t,0.12);
   }
   if (document.getElementById('filmBox').style.display === 'flex') openFilm();
 }
-function filmWegwerfen(f) {
+async function filmWegwerfen(f) {
   const i = eigeneFilme.indexOf(f);
   if (i < 0) return;
   if (kinoFilm === f) kinoStopp();
+  filmBilderFrei(f);
   eigeneFilme.splice(i, 1);
-  filmSpeichern();
+  try { await filmDbTun('readwrite', st => st.delete(f.id)); } catch(e) {}
+  if (!filmSpeicherOk) filmInsKleineFach();
   toast('🗑️ „' + f.titel + '" ist weg.', 2500);
   blip(300,0.08);
   openFilm();
@@ -15501,7 +15648,7 @@ function filmListeZeigen() {
   for (const f of eigeneFilme.slice().reverse()) {
     const z = document.createElement('div'); z.className = 'filmZeile';
     const b = document.createElement('button'); b.className = 'filmName';
-    b.textContent = '🎥 ' + f.titel + '  (' + Math.round(f.dauer) + ' Sek.)';
+    b.textContent = '🎥 ' + f.titel + '  (' + filmZeitText(f.dauer) + ')';
     b.addEventListener('click', () => {
       if (imKino()) {
         document.getElementById('filmBox').style.display = 'none';
@@ -15525,26 +15672,57 @@ function openFilm() {
     ? 'Du hast <b>' + eigeneFilme.length + '</b> eigene Filme gedreht! Tippe einen an, ' +
       'um ihn im Kino zu starten – oder dreh gleich noch einen. 🎬'
     : 'Noch kein eigener Film! Tippe auf <b>🔴 Film drehen!</b> – dann filmt die Kamera ' +
-      'alles mit, was du machst. Danach läuft dein Film im Kino 🎬 auf der großen Leinwand.';
+      'alles mit, was du machst, <b>so lange du willst</b>. Danach läuft dein Film im ' +
+      'Kino 🎬 auf der großen Leinwand.';
   filmListeZeigen();
   document.getElementById('filmBox').style.display = 'flex';
   blip(700,0.05); blip(900,0.05);
 }
-// ---- Einen eigenen Film auf die Leinwand malen ----
+// ---- Einen eigenen Film auf die Leinwand malen ----------------------------
+// Ein langer Film hat tausende Bilder - die passen nicht alle gleichzeitig in
+// den Arbeitsspeicher. Darum werden immer nur die paar Bilder rund um die
+// aktuelle Stelle bereitgelegt und die alten wieder weggeräumt.
+function filmBildBereit(f, i) {
+  if (!f._img) { f._img = []; f._url = []; }
+  const n = f.bilder.length;
+  const von = Math.max(0, i - 3), bis = Math.min(n - 1, i + FILM_FENSTER);
+  for (let k = von; k <= bis; k++) {
+    if (f._img[k]) continue;
+    const roh = f.bilder[k];
+    const q = typeof roh === 'string' ? roh : URL.createObjectURL(roh);
+    if (typeof roh !== 'string') f._url[k] = q;
+    const im = new Image(); im.src = q; f._img[k] = im;
+  }
+  for (let k = 0; k < n; k++) {                    // weit entfernte wieder wegräumen
+    if (!f._img[k] || (k >= von - 8 && k <= bis + 8)) continue;
+    if (f._url[k]) { try { URL.revokeObjectURL(f._url[k]); } catch(e) {} f._url[k] = null; }
+    if (f._letztes === f._img[k]) f._letztes = null;
+    f._img[k] = null;
+  }
+}
+function filmBilderFrei(f) {
+  if (!f || !f._url) { if (f) { f._img = null; f._letztes = null; } return; }
+  for (const u of f._url) if (u) { try { URL.revokeObjectURL(u); } catch(e) {} }
+  f._img = null; f._url = null; f._letztes = null;
+}
 function eigenBildMalen() {
   const f = kinoFilm;
-  filmBilderLaden(f);
-  const n = f._img.length;
-  kg.fillStyle = '#000'; kg.fillRect(0, 0, KINO_B, KINO_HOCH);
+  const n = f.bilder.length;
   let i = Math.floor(kinoZeit / f.proBild);
-  if (i < 0) i = 0;
+  if (!(i >= 0)) i = 0;
   if (i >= n) i = n - 1;
+  filmBildBereit(f, i);
+  kg.fillStyle = '#000'; kg.fillRect(0, 0, KINO_B, KINO_HOCH);
   if (i !== kinoSzene) {                 // neues Bild: beim ersten den Titel einblenden
     kinoSzene = i;
     if (i === 0) { kinoUntertitelZeigen('🎥 ' + f.titel); blip(523,0.1); blip(659,0.1); }
     else if (i === 2) kinoUntertitelZeigen('');
   }
-  const im = f._img[i];
+  let im = f._img[i];
+  // Ist das Bild noch nicht fertig geladen, bleibt lieber das letzte stehen,
+  // als dass die Leinwand kurz schwarz blinkt.
+  if (im && im.complete && im.naturalWidth) f._letztes = im;
+  else im = f._letztes;
   if (im && im.complete && im.naturalWidth) {
     kg.drawImage(im, 0, 0, KINO_B, KINO_HOCH);
   } else {
@@ -24725,11 +24903,14 @@ filmBtnEl.addEventListener('touchstart', e=>{ e.preventDefault(); openFilm(); },
 filmBtnEl.addEventListener('mousedown', e=>{ e.preventDefault(); openFilm(); });
 document.getElementById('filmDreh').addEventListener('click', filmDrehStart);
 document.getElementById('filmRecStopp').addEventListener('click', filmDrehStopp);
+document.getElementById('filmRecPause').addEventListener('click', filmPauseUm);
 document.getElementById('filmNameOk').addEventListener('click', filmSichern);
 document.getElementById('filmNameInput').addEventListener('keydown', e=>{
   if (e.key === 'Enter') { e.preventDefault(); filmSichern(); } });
 document.getElementById('filmNameWeg').addEventListener('click', ()=>{
   filmBilder = [];
+  const vb = document.getElementById('filmBild');
+  if (vb.dataset.url) { try { URL.revokeObjectURL(vb.dataset.url); } catch(e) {} vb.dataset.url = ''; }
   document.getElementById('filmNameBox').style.display = 'none';
   toast('🗑️ Der Film ist weggeworfen. Du kannst jederzeit einen neuen drehen! 🎥', 3500);
   blip(300,0.08); });
