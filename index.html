@@ -597,6 +597,10 @@
     background:#2f7a48; color:#fff; }
   #rpKann, #chipKann { font-size:13px; font-weight:bold; padding:7px 12px; border-radius:9px;
     border:none; background:#6b5a2f; color:#fff; }
+  #rpStart { font-size:16px; font-weight:bold; padding:10px 18px; border-radius:10px; border:none;
+    background:#2f7a48; color:#fff; }
+  #rpWdh { font-size:12px; color:#c8d2e4; display:flex; align-items:center; gap:6px; }
+  #rpWdhBox { width:18px; height:18px; }
   #rpAkku { font-size:13px; color:#d8e2f4; width:100%; }
   #rpAkku b { color:#ffe08a; }
   .rpBalken { margin-top:3px; width:100%; height:10px; border-radius:5px; background:#3a3f52; overflow:hidden; }
@@ -753,6 +757,7 @@
 <div class="hud btn" id="rufBtn" style="display:none" title="Rakete rufen">🆘</div>
 <div class="hud btn" id="faustBtn" style="display:none" title="Roboter-Faust">🦾</div>
 <div class="hud btn" id="groesseBtn" style="display:none" title="Roboter größer und kleiner machen">📏</div>
+<div class="hud btn" id="chipBtn" style="display:none" title="Roboter-Chip programmieren">💾</div>
 <div class="hud btn" id="superBtn" title="Superkräfte!">🦸</div>
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
@@ -1094,10 +1099,14 @@
     <input id="rpInput" type="text" maxlength="60" placeholder="Was soll er können?" autocomplete="off">
     <button id="rpLern">🧠 Beibringen</button>
   </div>
+  <button id="rpStart">▶️ Programm starten</button>
+  <label id="rpWdh"><input type="checkbox" id="rpWdhBox"> 🔁 immer wieder von vorne</label>
   <button id="rpChip">💾 Chip programmieren</button>
   <button id="rpKann">📖 Das kann ich alles</button>
   <button id="rpStopp">✋ Sofort aufhören!</button>
-  <div id="rpTipp">Tipp: „folge mir", „tanze", „mach Licht", „hol Holz", „bau einen Turm",
+  <div id="rpTipp">🤖 <b>Tipp ihn im Spiel an</b> – dann arbeitet er sein ganzes Programm ab
+    (nochmal antippen hält ihn an). <b>Lange draufdrücken</b> macht dieses Fenster auf.<br>
+    Tipp: „folge mir", „tanze", „mach Licht", „hol Holz", „bau einen Turm",
     „pass auf mich auf", „erzähl einen Witz", „flieg", „du heißt Blitz" … oder schreib
     dir etwas ganz Eigenes aus!<br>
     🧱 Bauen, graben und Holz holen macht er <b>erst, wenn du auf den Knopf drückst</b> –
@@ -1141,7 +1150,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 244 &middot; Dein Roboter versteht dich jetzt VIEL besser: 32 echte Fähigkeiten (Haus bauen, Brücke, Tunnel, Sachen holen, schnell werden, groß/klein …), er versteht Zahlen und Material („bau einen Turm aus Glas, 12 hoch") – und unter 📖 „Das kann ich alles" steht, was wirklich geht! 🤖🧠</p>
+    Version 245 &middot; TIPP DEINEN ROBOTER AN – dann arbeitet er sein ganzes Programm ab, eine Sache nach der anderen! Nochmal antippen hält ihn an, langes Drücken öffnet sein Fenster. Und oben gibt es jetzt den 💾-Knopf: Chip programmieren von überall! ▶️🤖</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1187,7 +1196,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 244;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 245;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5366,6 +5375,7 @@ function baueSpielstand() {
                  kann: roboKann.map(k => [k.txt, k.art, k.e || '✨', k.zahl || 0, k.stoff || '']),
                  chip: chipProgramm.map(c => [c.txt, c.art, c.e || '✨']),
                  akku: Math.round(roboAkku), laedt: roboLaedt ? 1 : 0,
+                 wdh: roboWiederhol ? 1 : 0,
                  ort: r ? [Math.round(r.x*10)/10, Math.round(r.y*10)/10, Math.round(r.z*10)/10]
                         : (roboOrt || null) };
       })(),
@@ -5473,6 +5483,7 @@ function loadGame() {
       roboDim = typeof r.dim === 'number' ? r.dim : 0;
       if (typeof r.akku === 'number') roboAkku = Math.max(0, Math.min(100, r.akku));
       roboLaedt = !!r.laedt;
+      roboWiederhol = !!r.wdh;
     }
     if (s.chall && typeof s.chall === 'object')    // 🏆 der Stand aller Challenges
       for (const c of CHALLENGES) {
@@ -16128,6 +16139,10 @@ const AKKU_WARNUNG = 20;                // ab hier sagt er Bescheid
 const LADE_SEK = 18;                    // so lange dauert das Volltanken
 let akkuGewarnt = false;
 let roboLaedt = false;                  // 🔌 er steht an der Station und tankt
+// ▶️ DAS PROGRAMM: Tippt Jonah den Roboter an, arbeitet der alles ab, was
+// auf seinem Chip steht - eine Sache nach der anderen, wie ein richtiges
+// Programm. Nochmal antippen hält ihn an.
+let roboLauf = false, roboIdx = 0, roboWiederhol = false, roboSchrittT = 0;
 // Wo steht die Ladestation? Immer in der Roboter-Werkstatt der Riesen-Festung.
 function ladePos() {
   const B = burgPos();
@@ -16651,6 +16666,13 @@ function openRoboProg() {
   document.getElementById('rpInfo').textContent = roboStufe >= 2
     ? auf.txt + '  (' + roboZahl + '/' + auf.ziel + ')'
     : 'Schreib auf, was ' + roboName + ' können soll – er lernt ALLES, was du ihm schreibst!';
+  // ▶️ Der Start-Knopf sagt, was gerade passiert
+  const stB = document.getElementById('rpStart');
+  stB.textContent = roboLauf ? '⏹️ Programm anhalten'
+    : '▶️ Programm starten (' + roboKann.length + ')';
+  stB.disabled = !roboKann.length && !roboLauf;
+  stB.style.opacity = stB.disabled ? 0.5 : 1;
+  document.getElementById('rpWdhBox').checked = roboWiederhol;
   const el = document.getElementById('rpListe');
   el.innerHTML = '';
   if (!roboKann.length) {
@@ -16734,6 +16756,58 @@ function roboLadeTick(dt) {
     toast('🔋✅ ' + roboName + ' ist in deiner Burg fertig aufgeladen und wartet auf dich! 🔌', 6000);
     scheduleSave();
   }
+}
+// ▶️ Programm starten: er macht alles der Reihe nach.
+function roboProgStart(a) {
+  a = a || roboFigur();
+  if (!a) return false;
+  if (!roboKann.length) return false;
+  roboLauf = true; roboIdx = 0; roboSchrittT = 0;
+  sagen(a, '▶️ Ich starte mein Programm! (' + roboKann.length +
+           (roboKann.length === 1 ? ' Sache)' : ' Sachen)'), 5);
+  toast('▶️ ' + roboName + ' arbeitet jetzt sein Programm ab (' + roboKann.length +
+        ' Sachen). Nochmal antippen = anhalten. ⏹️', 5000);
+  for (const f of [600, 800, 1000]) blip(f, 0.06);
+  roboProgSchritt(a);
+  return true;
+}
+function roboProgStopp(a, still) {
+  a = a || roboFigur();
+  roboLauf = false;
+  if (!a) return;
+  a.auftrag = 'warten'; a.auftragT = 0; a.follow = false;
+  if (!still) {
+    sagen(a, '⏹️ Programm angehalten.', 4);
+    blip(300, 0.1);
+  }
+}
+// Den nächsten Punkt vom Programm anfangen
+function roboProgSchritt(a) {
+  if (!roboLauf || !roboKann.length) return;
+  if (roboIdx >= roboKann.length) {
+    if (roboWiederhol) { roboIdx = 0; }     // 🔁 von vorne
+    else {
+      roboLauf = false;
+      sagen(a, '✅ Programm fertig! Alles erledigt. 🤖', 6);
+      toast('✅ ' + roboName + ' hat sein ganzes Programm abgearbeitet! 🤖', 5000);
+      for (const f of [660, 880, 1320]) blip(f, 0.09);
+      return;
+    }
+  }
+  const k = roboKann[roboIdx];
+  roboIdx++;
+  roboSchrittT = 0;
+  sagen(a, '▶️ ' + roboIdx + '/' + roboKann.length + ': ' + (k.e || '✨') + ' ' + k.txt, 4);
+  roboTu(k);
+  if (k.art === 'warten') a.auftragT = 3;   // „warte hier" = kurze Pause im Programm
+}
+// Läuft gerade ein Programm? Dann immer weiter zum nächsten Punkt.
+function roboProgTick(a, dt) {
+  if (!roboLauf) return;
+  roboSchrittT += dt;
+  // Fertig mit dem Punkt (oder er hängt zu lange)? Dann der nächste.
+  if ((a.auftrag === 'warten' && roboSchrittT > 0.4) || roboSchrittT > 26)
+    roboProgSchritt(a);
 }
 function roboTu(k) {
   const a = roboFigur();
@@ -17116,6 +17190,7 @@ function miniTick(a, dt) {
         a.yaw = Math.atan2(player.x - a.x, -(player.z - a.z));
       break;
   }
+  roboProgTick(a, dt);                  // ▶️ läuft ein Programm? Dann weiter!
   // Schwerkraft - außer beim Fliegen
   a.vy = Math.max(a.vy - 25*dt, -30);
   const ny = a.y + Math.max(a.vy*dt, -0.9);
@@ -21885,6 +21960,9 @@ function tryRelease(dir) {              // langes Drücken: freilassen / Freunds
   releaseEntity(eHit.a);
 }
 function releaseEntity(a) {
+  // 🤖 Beim kleinen Roboter heißt langes Drücken: sein Fenster aufmachen.
+  // (Antippen lässt ihn ja sein Programm abarbeiten.)
+  if (a.type === 'mini') { openRoboProg(); return; }
   if (a===riding) { toast('Steig erst vom Pferd ab! 🐴', 2000); return; }
   if ((isPet(a)||a.type==='horse') && a.tame) {
     const name = a.type==='dog'?'den Hund':a.type==='cat'?'die Katze':a.type==='pig'?'das Schwein'
@@ -22029,8 +22107,20 @@ function hitEntity(a, dir) {
           'Sag ihm mit dem Joystick, wo es langgeht! (🅿️ = aussteigen)', 4500);
     return;
   }
-  if (a.type==='mini') {                // 🤖 der kleine Roboter: programmieren!
-    openRoboProg();
+  if (a.type==='mini') {                // 🤖 ANTIPPEN = sein Programm läuft los!
+    if (a.auftrag === 'booten') { sagen(a, '⏳ Ich fahre noch hoch …', 3); return; }
+    if (a.auftrag === 'aufladen') {
+      sagen(a, '🔌 Ich lade gerade … noch ' + Math.round(100 - roboAkku) + '%!', 4);
+      return;
+    }
+    if (roboLauf) { roboProgStopp(a); return; }        // läuft schon: anhalten
+    if (!roboKann.length) {                            // er kann noch nichts
+      toast('🤖 ' + roboName + ' kann noch nichts! Schreib ihm erst etwas auf ' +
+            'seinen 💾 Chip. 🧠', 5000);
+      openRoboProg();
+      return;
+    }
+    roboProgStart(a);
     return;
   }
   if (a.type==='roboter') {             // 🤖 hinein in die Kopf-Kabine!
@@ -23726,6 +23816,7 @@ function frame(now) {
   missionTick(dt);                      // 📜 Mission geschafft?
   basisTick(dt);                        // 🏗️ ist die Alien-Basis gewachsen?
   roboLadeTick(dt);                     // 🔌 lädt der Roboter zu Hause auf?
+  chipBtnEl.style.display = roboGebaut ? 'flex' : 'none';   // 💾 Chip-Knopf
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
@@ -24294,8 +24385,23 @@ document.getElementById('missBox').addEventListener('touchstart', (e)=>{ e.preve
 document.getElementById('chipClose').addEventListener('click', ()=>{
   document.getElementById('chipBox').style.display = 'none'; blip(400,0.06);
 });
+// 💾 Der Chip-Knopf im Bild: von überall aus programmieren
+const chipBtnEl = document.getElementById('chipBtn');
+chipBtnEl.addEventListener('touchstart', e=>{ e.preventDefault(); openChip(); }, {passive:false});
+chipBtnEl.addEventListener('mousedown', e=>{ e.preventDefault(); openChip(); });
 document.getElementById('kannClose').addEventListener('click', ()=>{
   document.getElementById('kannBox').style.display = 'none'; blip(400,0.06);
+});
+document.getElementById('rpStart').addEventListener('click', ()=>{
+  document.getElementById('rpBox').style.display = 'none';
+  if (roboLauf) roboProgStopp();
+  else if (!roboProgStart()) toast('🤖 Er kann noch nichts! Schreib ihm etwas auf den 💾 Chip. 🧠', 4500);
+});
+document.getElementById('rpWdhBox').addEventListener('change', (e)=>{
+  roboWiederhol = e.target.checked;
+  toast(roboWiederhol ? '🔁 Er wiederholt sein Programm jetzt immer wieder!'
+                      : '▶️ Er macht sein Programm jetzt nur einmal.', 3500);
+  scheduleSave();
 });
 document.getElementById('rpKann').addEventListener('click', ()=>{ openKann(); });
 document.getElementById('chipKann').addEventListener('click', ()=>{ openKann(); });
