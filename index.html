@@ -1224,7 +1224,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 253 &middot; 🏛️🤵 DEIN GELDSPEICHER HAT JETZT RÄUME UND EINEN BUTLER! Hinter der Tür: ein Flur mit vier Zimmern (Büro, Butler-Zimmer, Küche, Trophäen-Raum) – und JOHANN, dein Butler, der alles für dich macht. Draußen führt ein beleuchteter Weg zur Tür, und rundherum stehen Warnschilder wie bei Dagobert! ⚠️💰</p>
+    Version 254 &middot; 🔐 EINE RIESIGE TRESORTÜR schützt jetzt deinen Geldraum! Eine runde Panzertür aus 21 Blöcken mit goldenem Handrad – antippen und sie schwingt auf, mit dem Rad daneben machst du sie wieder zu. Dann kommt NIEMAND mehr an dein Geld! 💰🔒</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1270,7 +1270,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 253;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 254;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1431,7 +1431,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RWERK=113,                        // 🔧 die Werkbank, an der er zusammengebaut wird
       RCHIP=114,                        // 💾 der Chip: hier programmiert Jonah seinen Roboter
       RLADE=115,                        // 🔌 die Ladestation für den Roboter-Akku
-      GSPEICHER=116;                    // 💰 der Tresor im Geldspeicher tief unter der Erde
+      GSPEICHER=116,                    // 💰 der alte Tresor aus Version 248 (wird nicht mehr gebaut)
+      TRESORTUER=117, TRESORRAD=118;    // 🔐 die große runde Tresortür und ihr Handrad
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1668,6 +1669,11 @@ const BLOCKS = {
     [0.40,0.40,0.99, 0.60,0.60,1.04, 27],         // das Handrad in der Mitte
     [0.46,0.30,0.99, 0.54,0.70,1.03, 27],
     [0.30,0.46,0.99, 0.70,0.54,1.03, 27]] },
+  // 🔐 DIE GROSSE TRESORTÜR vor dem Geldraum: dicker Panzerstahl mit Nieten.
+  // Antippen = auf und zu. Kaputt geht sie nie.
+  [TRESORTUER]: { name:'Tresortür 🔐 (antippen = auf und zu!)', tiles:[165,165,165], solid:true },
+  [TRESORRAD]:  { name:'Tresor-Handrad 🔐 (antippen = Tresortür auf und zu!)',
+    tiles:[166,166,166], solid:true },
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -5435,6 +5441,7 @@ function baueSpielstand() {
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
       ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
+      tresorAuf: tresorOffen,           // 🔐 steht die große Tresortür offen?
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
@@ -5617,6 +5624,7 @@ function loadGame() {
     // 💰 Bis Version 251 lag die Halle unter der Erde. Jeder Spielstand, der
     // davor gespeichert wurde, muss dort unten einmal aufgeräumt werden.
     altesGoldWeg = s.ueberErde === true;
+    tresorOffen = s.tresorAuf === true;              // 🔐 die große Tresortür
     if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
@@ -6268,6 +6276,25 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (Math.abs(dy) < 0.9 && x >= 3 && x <= 11) return vary(92,62,12,8);   // die zwei Striche
     if (Math.abs(dy-2.4) < 0.9 && x >= 3 && x <= 10) return vary(92,62,12,8);
     return vary(242,200,72,16);                                     // blankes Gold
+  });
+  tile(165,(x,y)=>{                                                 // 🔐 Tresortür-Panzerstahl
+    const dx = x-7.5, dy = y-7.5, r = Math.sqrt(dx*dx+dy*dy);
+    // die Nieten rundherum
+    const nr = Math.sqrt((Math.abs(dx)-5.5)**2 + (Math.abs(dy)-5.5)**2);
+    if (Math.abs(dx) > 3 && Math.abs(dy) > 3 && nr < 1.6) return vary(206,210,220,10);
+    if (r > 7.2) return vary(58,62,72,8);                           // dunkle Fuge
+    const h = 172 + (dy < 0 ? 24 : -26) - r*2.2;                    // Rundung wie poliert
+    return vary(h, h+4, h+14, 10);
+  });
+  tile(166,(x,y)=>{                                                 // 🔐 das goldene Handrad
+    const dx = x-7.5, dy = y-7.5, r = Math.sqrt(dx*dx+dy*dy);
+    if (r > 7.2) return vary(58,62,72,8);
+    if (r < 1.7) return vary(246,206,70,14);                        // die Nabe
+    if (r > 5.2 && r < 6.8) return vary(246,206,70,14);             // der Kranz
+    // vier Speichen
+    if (r < 6.8 && (Math.abs(dx) < 1.0 || Math.abs(dy) < 1.0)) return vary(246,206,70,14);
+    const h = 168 - r*3;
+    return vary(h, h+4, h+14, 10);
   });
   tile(161,(x,y)=>{                                                 // Werkbank-Platte
     if (y % 5 === 0) return vary(96,68,38,8);                       // Bretter-Fugen
@@ -11908,7 +11935,7 @@ function liftHalte(x, z, y0) {          // alle Etagen des Schachts, von unten n
 }
 function liftName(y) {                  // hübsche Namen statt nackter Zahlen
   if (inSpeicherGebiet(player.x, player.z))            // 💰 im Geldspeicher
-    return y <= SP_HY + 4 ? '💰 Unten in der Geld-Halle' : '🏊 Oben am Sprungbrett';
+    return y <= SP_HY + 4 ? '💰 Unten im Tresorraum' : '🏊 Oben am Sprungbrett';
   const B = burgPos();
   if (Math.hypot(player.x-B.bx, player.z-B.bz) < 80) {
     if (player.x < B.bx-38) {           // im Königs-Turm 🗼
@@ -15981,12 +16008,27 @@ function speicherMoebel(dx, dz, y, hy) {
   }
   return null;
 }
+// 🔐 Die Tresortür ist RUND: ein Achteck aus 21 Blöcken (die vier Ecken des
+// 5x5-Feldes bleiben Wand). 0 = Wand, 1 = Türblatt, 2 = das Handrad in der Mitte.
+function tresorRund(dx, dy) {
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) return 0;
+  if (Math.abs(dx) === 2 && Math.abs(dy) === 2) return 0;    // die Ecken abrunden
+  return (dx === 0 && dy === 0) ? 2 : 1;
+}
 function speicherRaeume(dx, dz, y, hy) {
   if (dz < 12 || dz > 20) return null;
   if (y === hy + 7) return SCHUTZ;                      // die Decke = der Balkon
   if (y > hy + 7 || y <= hy) return null;               // darüber die Halle, darunter der Boden
-  // die Wand zur Geld-Halle - mit einem großen Durchgang in der Mitte
-  if (dz === 12) return (Math.abs(dx) <= 1 && y <= hy + 3) ? AIR : SCHUTZ;
+  // 🔐 DIE GROSSE TRESORTÜR in der Wand zum Geldraum: eine runde Panzertür
+  // mit goldenem Handrad in der Mitte. Daneben sitzt ein zweites Handrad fest
+  // in der Wand - damit kann man sie auch von innen wieder zumachen.
+  if (dz === 12) {
+    if (dx === 4 && y === hy + 2) return TRESORRAD;     // das Rad in der Wand
+    const r = tresorRund(dx, y - (hy + 3));
+    if (r === 2) return TRESORRAD;                      // das Rad mitten in der Tür
+    if (r === 1) return TRESORTUER;
+    return SCHUTZ;
+  }
   // die Flur-Wände, jede mit zwei Türen
   if (Math.abs(dx) === 3) return ((dz === 18 || dz === 14) && y <= hy + 2) ? AIR : SCHUTZ;
   if (Math.abs(dx) < 3) return AIR;                     // der Flur selbst
@@ -16164,8 +16206,10 @@ function speicherStempeln(data, cx, cz) {
     const k = (SP_X+SP_MITTE+dx) + ',' + (SP_HY+dy) + ',' + (SP_Z+SP_MITTE+dz);
     if (!signTexts.has(k)) signTexts.set(k, txt);
   };
-  schild(2, 1, 10, '💰 DER GELDSPEICHER VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
+  schild(2, 1, 10, '💰 DER TRESORRAUM VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
                    'Nimm 💵 Geldscheine oder 🪙 Münzen aus deiner Blockleiste und bau damit.');
+  schild(-2, 1, 13, '🔐 DIE GROSSE TRESORTÜR - tipp sie an, dann schwingt sie auf. Mit dem ' +
+                   'goldenen Handrad daneben machst du sie wieder zu. Dann kommt niemand rein!');
   schild(2, 1, SPT_SCHACHT + 3, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, ' +
                    'nach oben! Dann über das Brett laufen und mitten ins Geld springen. 💰');
   schild(-10, 1, 20, '🧾 JONAHS BÜRO - hier zählt der Chef sein Geld!');
@@ -16174,7 +16218,42 @@ function speicherStempeln(data, cx, cz) {
   schild( 10, 1, 13, '🏆 DER TROPHÄEN-RAUM - hier stehen deine Pokale!');
   for (const sch of SP_SCHILDER) schild(sch[0], 3, sch[1], sch[2]);
 }
-// --- 💰 Wie viel Geld liegt in der Halle? ---------------------------------
+// --- 🔐 DIE GROSSE TRESORTÜR: zu ist zu - da kommt niemand durch! ---------
+let tresorOffen = false;                // steht die Tresortür gerade offen?
+function tresorTuerSetzen() {
+  speicherHoehe();
+  const wz = SP_Z + SP_MITTE + 12;
+  let n = 0;
+  for (let dx = -2; dx <= 2; dx++)
+    for (let dy = -2; dy <= 2; dy++) {
+      const art = tresorRund(dx, dy);
+      if (!art) continue;
+      const wx = SP_X + SP_MITTE + dx, wy = SP_HY + 3 + dy;
+      const will = tresorOffen ? AIR : (art === 2 ? TRESORRAD : TRESORTUER);
+      if (getBlock(wx, wy, wz) !== will) { setBlock(wx, wy, wz, will); n++; }
+    }
+  return n;
+}
+function tresorToggle() {
+  speicherHoehe();
+  tresorOffen = !tresorOffen;
+  tresorTuerSetzen();
+  if (tresorOffen) {
+    toast('🔐 KNARZ … die riesige Tresortür schwingt auf! Jetzt kommst du in deinen ' +
+          'Tresorraum. 💰 (Zum Zumachen das goldene Handrad daneben antippen!)', 7000);
+    blip(90,0.2); blip(140,0.16); blip(220,0.14); blip(330,0.18);
+  } else {
+    toast('🔐 WUMM! Die Tresortür ist zu – jetzt kommt niemand mehr an dein Geld! 🔒', 5500);
+    blip(330,0.12); blip(180,0.16); blip(90,0.26);
+  }
+  for (let i = 0; i < 12; i++)                 // ein paar Funken am Stahl
+    fireworks.push({ x: SP_X+SP_MITTE+0.5+(Math.random()-0.5)*4,
+      y: SP_HY+3+(Math.random()-0.5)*4, z: SP_Z+SP_MITTE+12.5,
+      vx:(Math.random()-0.5)*2.2, vy:(Math.random()-0.5)*2.2, vz:(Math.random()-0.5)*1.2,
+      tile:166, t:0.55 });
+  scheduleSave();
+}
+// --- 💰 Wie viel Geld liegt im Tresorraum? --------------------------------
 // Jeder Geld-Block ist 1 € wert. Die Liste geldOrte weiß sowieso schon, wo
 // überall Geld herumliegt.
 function speicherGeldZaehlen() {
@@ -16242,6 +16321,7 @@ function speicherTick(dt) {
             'jetzt wieder in deiner Tasche – bau es hier oben neu auf! 💵🪙', 9000);
     scheduleSave();
   }
+  tresorTuerSetzen();                   // 🔐 die Tresortür so stellen, wie sie sein soll
   // 🤵 DER BUTLER wohnt im Geldspeicher und ist immer da, wenn Jonah kommt
   if (!animals.some(x => x.type === 'butler')) {
     animals.push({ type:'butler', name:'Johann', friend:3,
@@ -16260,11 +16340,11 @@ function speicherTick(dt) {
   spDrin = true;                        // nur EINMAL pro Besuch Bescheid sagen
   const n = speicherGeldZaehlen();
   toast(n > 0
-    ? '💰 Willkommen in deinem Geldspeicher! Hier liegen ' + n + ' € – und kein Räuber ' +
-      'kommt hier jemals hinein. 🔒 Fahr mit dem 🛗 nach oben und spring ins Geld!'
-    : '💰 Dein Geldspeicher! Leg hier dein Geld ab: nimm 💵 Geldscheine oder 🪙 Münzen aus ' +
-      'deiner Blockleiste und bau damit. Dann fahr mit dem 🛗 hoch aufs Sprungbrett ' +
-      'und spring hinein!', 9000);
+    ? '💰 Willkommen in deinem Geldspeicher! Im Tresorraum liegen ' + n + ' € – und kein ' +
+      'Räuber kommt hier jemals hinein. 🔒 Fahr mit dem 🛗 nach oben und spring ins Geld!'
+    : '💰 Dein Geldspeicher! Hinter der großen 🔐 TRESORTÜR ist dein Tresorraum – tipp die ' +
+      'Tür an, dann geht sie auf. Leg dort dein Geld ab (💵 Geldscheine oder 🪙 Münzen aus ' +
+      'deiner Blockleiste) und spring vom 🏊 Sprungbrett hinein!', 10000);
 }
 
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
@@ -20603,7 +20683,7 @@ const MAP_BLOCK_COL = {
   [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6', [BAUPLAN]:'#e8dcb8',
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
-  [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850',
+  [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -23394,6 +23474,8 @@ function doBreak(dir) {
   if (hit && hit.block === RWERK) { openWerkstatt(hit.x, hit.y, hit.z); return; }
   if (hit && hit.block === RCHIP) { openChip(); return; }
   if (hit && hit.block === RLADE) { ladeStationTipp(); return; }
+  // 🔐 Die Tresortür geht nie kaputt - antippen macht sie nur auf und zu
+  if (hit && (hit.block === TRESORTUER || hit.block === TRESORRAD)) { tresorToggle(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -23764,6 +23846,10 @@ function doPlace(dir) {
   }
   if (hit.block === RLADE) {            // 🔌 die Ladestation
     ladeStationTipp();
+    return;
+  }
+  if (hit.block === TRESORTUER || hit.block === TRESORRAD) {   // 🔐 die Tresortür
+    tresorToggle();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
