@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- SCHILDER VOR DEN ZIMMERN UND EINE TREPPE AUFS DACH (v258)! 🪧🪜 Jonah wollte
+  vor jedem Zimmer ein Schild haben – und eine Treppe, mit der er aufs Dach kommt.
+  🪧 IM FLUR steht jetzt vor jeder der vier Zimmertüren ein Schild: Büro, Küche,
+  Butler-Zimmer und Trophäen-Raum. Antippen und lesen!
+  🪜 DIE TREPPE läuft an der linken Wand im Tresorraum los und führt in einem
+  langen Zug 31 Stufen hoch bis unters Dach. Es sind halbe Stufen – du läufst
+  einfach hoch, ganz ohne zu springen. Fackeln machen unterwegs Licht. 🔥
+  🕳️ GANZ OBEN kommst du durch eine Dachluke heraus und stehst auf dem Dach
+  deines Geldspeichers – mit Blick über die ganze Welt!
+  🚧 EIN GELÄNDER läuft rund um das Dach und rund um die Luke, damit du nicht
+  herunterfällst.
 - UND JETZT AUCH ZEICHEN IM CODE (v257)! ✨🔐 Jonah wollte noch ein paar
   Zeichen für seinen Tresor-Code haben.
   ✨ NEUN NEUE TASTEN: ! ? + - * # & ★ ♥ – in Lila, gleich unter den

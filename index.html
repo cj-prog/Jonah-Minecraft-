@@ -1276,7 +1276,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 257 &middot; ✨ JETZT GIBT ES AUCH ZEICHEN FÜR DEINEN TRESOR-CODE! Neun neue Tasten: ! ? + - * # &amp; ★ ♥ – misch sie mit Zahlen und Buchstaben, zum Beispiel J7★! ✨🔐</p>
+    Version 258 &middot; 🪜🏰 EINE TREPPE AUFS DACH DEINES GELDSPEICHERS! Links im Tresorraum läufst du einfach hoch – ohne Springen – und kommst oben durch eine Luke heraus. Und vor jeder Zimmertür hängt jetzt ein Schild! 🪧</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1322,7 +1322,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 257;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 258;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -16100,6 +16100,37 @@ function speicherMoebel(dx, dz, y, hy) {
   }
   return null;
 }
+// 🪜 DIE TREPPE AUFS DACH: direkt an der linken Innenwand läuft sie vom
+// Tresorraum ganz nach oben und kommt durch eine Luke auf dem Dach heraus.
+// Die Stufen sind halbe Stufen (TREP) - einfach hochlaufen, ohne zu springen!
+const SPT_TR_X  = -SP_R;              // die Spalte direkt an der linken Wand
+const SPT_TR_Z0 = 11;                 // hier liegt die unterste Stufe
+const SPT_TR_N  = SP_HALLE_H;         // so viele Stufen - die oberste IST das Dach
+// Über diesen Stufen ist das Dach offen. Die Luke muss DREI Felder lang sein:
+// beim Hochsteigen steht Jonah mit dem Kopf schon im Dach, bevor sein Fuß die
+// nächste Stufe erreicht - bei nur zwei Feldern bleibt er kurz vorm Dach stecken.
+const SPT_TR_LUKE = [-16, -17, -18];
+function treppeStufe(dz) {            // die wievielte Stufe liegt bei diesem dz?
+  const i = SPT_TR_Z0 - dz;
+  return (i >= 0 && i <= SPT_TR_N) ? i : -1;
+}
+function treppeBlock(dx, dz, y, hy) {
+  const dach = hy + SP_HALLE_H + 1;
+  if (dx === SPT_TR_X) {
+    const i = treppeStufe(dz);
+    if (i >= 0) {
+      if (y === hy + 1 + i) return TREP_N;              // die Stufe selbst
+      if (i >= 1 && y === hy + i) return SCHUTZ;        // der Unterbau darunter
+      if (i % 8 === 4 && y === hy + 3 + i && y < dach) return TORCH;   // 🔥 Treppenlicht
+    }
+    if (y === dach && SPT_TR_LUKE.includes(dz)) return AIR;      // die Dachluke
+    if (y === dach + 1 && dz === SPT_TR_LUKE[0] + 1) return FENCE;   // Geländer am Loch
+  }
+  // 🚧 ein Geländer rund um die Luke, damit niemand hinunterfällt
+  if ((dx === SPT_TR_X - 1 || dx === SPT_TR_X + 1) &&
+      SPT_TR_LUKE.includes(dz) && y === hy + SP_HALLE_H + 2) return FENCE;
+  return null;
+}
 // 🔐 Die Tresortür ist RUND: ein Achteck aus 21 Blöcken (die vier Ecken des
 // 5x5-Feldes bleiben Wand). 0 = Wand, 1 = Türblatt, 2 = das Handrad in der Mitte.
 function tresorRund(dx, dy) {
@@ -16123,6 +16154,8 @@ function speicherRaeume(dx, dz, y, hy) {
   }
   // die Flur-Wände, jede mit zwei Türen
   if (Math.abs(dx) === 3) return ((dz === 18 || dz === 14) && y <= hy + 2) ? AIR : SCHUTZ;
+  // 🪧 VOR JEDER ZIMMERTÜR steht im Flur ein Schild mit dem Namen des Zimmers
+  if (Math.abs(dx) === 2 && (dz === 19 || dz === 15) && y === hy + 1) return SIGN;
   if (Math.abs(dx) < 3) return AIR;                     // der Flur selbst
   if (dz === 16) return SCHUTZ;                         // Trennwand vorne/hinten
   const m = speicherMoebel(dx, dz, y, hy);
@@ -16211,6 +16244,10 @@ function speicherBlock(lx, lz, y) {
   if (dx === 0 && dz === SPT_BRETT - 4 && y > hy && y <= hy + SPT_HOCH)
     return SPRUNGTURM;                                      // die Stütze: antippen = rauf!
 
+  // 2b) DIE TREPPE AUFS DACH samt Dachluke und Geländer
+  const tr = treppeBlock(dx, dz, y, hy);
+  if (tr !== null) return tr;
+
   // 3) DAS BAUWERK: ein riesiger Würfel aus Schutz-Stein
   if (adx <= SP_R + 1 && adz <= SP_R + 1) {
     const ecke = adx === SP_R + 1 && adz === SP_R + 1;
@@ -16225,6 +16262,7 @@ function speicherBlock(lx, lz, y) {
         if (y > dach + 3) return AIR;
         return y > dach ? GOLD : SCHUTZ;
       }
+      if (y === dach + 1) return FENCE;                     // 🚧 Geländer rund ums Dach
       if (y > dach) return AIR;
       if (y === dach) return GOLD;                          // goldener Rand ganz oben
       if (y >= hy + SP_HALLE_H - 1) return GOLD;            // die goldene Krone
@@ -16251,6 +16289,7 @@ function speicherBlock(lx, lz, y) {
     // 📋 die beiden Schilder in der Geld-Halle
     if (dx === 2 && dz === 10 && y === hy + 1) return SIGN;
     if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
+    if (dx === SPT_TR_X + 2 && dz === SPT_TR_Z0 && y === hy + 1) return SIGN;  // an der Treppe
     return AIR;
   }
   // 4) DER VORPLATZ: eine ebene Wiese rundherum, mit Weg zur Tür
@@ -16304,6 +16343,13 @@ function speicherStempeln(data, cx, cz) {
                    'goldenen Handrad daneben machst du sie wieder zu. Dann kommt niemand rein!');
   schild(2, 1, SPT_SCHACHT + 3, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, ' +
                    'nach oben! Dann über das Brett laufen und mitten ins Geld springen. 💰');
+  schild(-2, 1, 19, '🧾 HIER GEHT ES IN JONAHS BÜRO - durch die Tür neben dem Schild!');
+  schild( 2, 1, 19, '🍽️ HIER GEHT ES IN DIE KÜCHE - da kocht Johann für dich!');
+  schild(-2, 1, 15, '🛏️ HIER GEHT ES INS BUTLER-ZIMMER - hier schläft Johann.');
+  schild( 2, 1, 15, '🏆 HIER GEHT ES IN DEN TROPHÄEN-RAUM - mit deinen Pokalen!');
+  schild(SPT_TR_X + 2, 1, SPT_TR_Z0, '🪜 DIE TREPPE AUFS DACH - einfach hochlaufen, ' +
+                   'ganz ohne Springen! Oben kommst du durch die Luke heraus und kannst ' +
+                   'über dein ganzes Dach spazieren. 🏰');
   schild(-10, 1, 20, '🧾 JONAHS BÜRO - hier zählt der Chef sein Geld!');
   schild(-10, 1, 13, '🛏️ DAS ZIMMER VOM BUTLER - hier wohnt Johann.');
   schild( 10, 1, 20, '🍽️ DIE KÜCHE - hier kocht der Butler für dich!');
