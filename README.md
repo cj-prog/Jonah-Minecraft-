@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE GROSSE TRESORTÜR (v254)! 🔐💰 Jonah wollte, dass vor dem Geldraum eine
+  richtige Tresortür ist – „dass man da nicht durchkommt" und das Ganze ein
+  echter Tresorraum wird.
+  🔐 DIE TÜR ist riesig und rund: 21 Blöcke dicker Panzerstahl mit Nieten, in
+  der Mitte ein goldenes Handrad. Sie steht am Ende des Flurs, zwischen den
+  Zimmern und dem Geldraum.
+  🔒 ZU IST ZU: solange sie geschlossen ist, kommt NIEMAND durch – auch du
+  nicht, bis du sie aufmachst.
+  👆 ANTIPPEN und sie schwingt mit einem tiefen KNARZ auf, und Funken stieben.
+  Zum Zumachen tippst du das zweite goldene Handrad an, das fest in der Wand
+  daneben sitzt – das geht von beiden Seiten.
+  🛡️ Kaputt machen kann man sie nicht, und ob sie auf oder zu ist, merkt sich
+  dein Spielstand.
 - RÄUME, EIN BUTLER UND WARNSCHILDER (v253)! 🏛️🤵 Jonah wollte, dass im
   Geldspeicher – wie bei Dagobert – noch mehr Räume sind, dass ein Butler darin
   wohnt, dass vorne ein Weg hinführt und rundherum Schilder stehen.
