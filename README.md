@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- KEIN RÄUBER KOMMT MEHR AN DEIN GELD (v260)! 🔒🚫 Jonah hat gemerkt: ein Räuber
+  stand plötzlich in seinem Tresorraum und hat geklaut – obwohl die Tresortür ZU
+  war. Das war ein Fehler im Spiel, und er ist jetzt weg.
+  🕵️ WARUM GING DAS? Räuber suchen sich das nächste Geld, das irgendwo herumliegt.
+  Und wenn sie nach 12 Sekunden nicht hinkommen (weil eine Mauer im Weg ist),
+  kannten sie einen „Schleichweg“ und standen auf einmal direkt daneben – mitten
+  im Tresorraum.
+  🛡️ JETZT IST DEIN GRUNDSTÜCK TABU: Geld im Geldspeicher steht in einer eigenen
+  Liste, die Räuber gar nicht erst durchsuchen. Der Schleichweg führt nie mehr
+  hinein, und auf dem Grundstück taucht auch kein Räuber mehr auf.
+  🤵🚫 UND FALLS DOCH MAL EINER DRIN STEHT: Johann packt ihn und setzt ihn vor die
+  Tür – „Hier wird nicht geklaut, mein Herr!“
+  😈 DRAUSSEN IN DER WELT klauen die Räuber natürlich weiter – lass dort also
+  nichts herumliegen!
 - DIE GELD-SCHÜTTE (v259)! 🪣💰 Jonah hat so viel Geld, dass es ewig
   gedauert hat, es Block für Block in den Geldspeicher zu legen. Jetzt geht es
   auf einen Schlag!
