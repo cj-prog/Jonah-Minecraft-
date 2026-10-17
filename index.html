@@ -527,6 +527,24 @@
     background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
   #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
     border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  /* 💰 DER GELDSPEICHER: der Tresor tief unter der Erde */
+  /* kompakt gehalten, damit alle Knöpfe auch im Querformat aufs Handy passen */
+  #gsBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:3px; background:rgba(44,32,8,.97); padding:7px 14px; border-radius:14px;
+    color:#fff; z-index:41; text-align:center; max-height:97vh; overflow-y:auto;
+    border:3px solid #f0c850; }
+  #gsBox h3 { font-size:16px; margin:0; }
+  #gsBox p { font-size:10.5px; opacity:.88; max-width:250px; line-height:1.35; }
+  #gsBox .senderRow { font-size:13.5px; padding:4px 12px; min-width:208px; }
+  #gsStand { font-size:14px; font-weight:bold; background:rgba(255,255,255,.12);
+    padding:4px 12px; border-radius:9px; }
+  #gsBerg { font-size:12px; font-weight:bold; color:#ffe066; }
+  #gsEigen { display:flex; flex-direction:column; align-items:center; gap:4px;
+    background:rgba(255,255,255,.09); border-radius:11px; padding:5px 8px; }
+  #gsInput { font-size:16px; font-weight:bold; text-align:center; width:120px; padding:5px 8px;
+    border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  #gsClose { font-size:14px; font-weight:bold; padding:5px 20px; border-radius:8px; border:none;
+    background:#4caf50; color:#fff; }
   #radioBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,24,52,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
@@ -1051,6 +1069,24 @@
   <button id="bankClose">Fertig</button>
 </div>
 
+<div class="hud" id="gsBox">
+  <h3>💰 Dein Geldspeicher</h3>
+  <div id="gsStand">Im Speicher: 0 €</div>
+  <div id="gsBerg"></div>
+  <div id="gsEigen">
+    <input id="gsInput" type="number" min="1" step="1" inputmode="numeric" placeholder="z. B. 50">
+    <div class="senderRow" data-gs="einEigen">⬇️ so viel hineintun</div>
+    <div class="senderRow" data-gs="ausEigen">⬆️ so viel herausholen</div>
+  </div>
+  <div class="senderRow" data-gs="einAlles">⬇️ ALLES hineintun</div>
+  <div class="senderRow" data-gs="einKonto">🏦 Auch alles von der Bank holen</div>
+  <div class="senderRow" data-gs="aus10">⬆️ 10 € herausholen</div>
+  <div class="senderRow" data-gs="ausAlles">⬆️ ALLES herausholen</div>
+  <p>Hier unten ist dein Geld sicher &ndash; kein Räuber kommt hier herunter! 🔒
+    Für je 2 € wächst ein Goldblock. 🪙</p>
+  <button id="gsClose">Fertig</button>
+</div>
+
 <div class="hud" id="radioBox">
   <h3>📻 Dein Radio</h3>
   <p>Welchen Sender möchtest du hören? Die Musik läuft, solange du in der Nähe bist.</p>
@@ -1224,7 +1260,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 247 &middot; 🎥 JETZT KANNST DU SO LANGE DREHEN, WIE DU WILLST! Kein 14-Sekunden-Ende mehr – film deine ganze Burg-Tour oder dein ganzes Abenteuer. Mit ⏸ machst du zwischendurch Pause und mit ▶️ geht es weiter. Dein Film läuft dann im Kino 🎬 auf der großen Leinwand! 🍿</p>
+    Version 248 &middot; 💰 DEIN GELDSPEICHER IST DA! Nimm den 🛸-Teleport zu „💰 Dein Geldspeicher": oben ein kleines Häuschen, drinnen ein Fahrstuhl – und ganz tief unten eine RIESIGE Halle aus unzerstörbaren Blöcken. Tipp den goldenen Tresor an und tu dein Geld hinein: für je 2 € wächst ein echter Goldberg aus dem Boden! 🪙🛗</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1270,7 +1306,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 247;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 248;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1430,7 +1466,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RT_KOPF=107, RT_BAUCH=108, RT_ARME=109, RT_BEINE=110, RT_FUESSE=111, RT_AKKU=112,
       RWERK=113,                        // 🔧 die Werkbank, an der er zusammengebaut wird
       RCHIP=114,                        // 💾 der Chip: hier programmiert Jonah seinen Roboter
-      RLADE=115;                        // 🔌 die Ladestation für den Roboter-Akku
+      RLADE=115,                        // 🔌 die Ladestation für den Roboter-Akku
+      GSPEICHER=116;                    // 💰 der Tresor im Geldspeicher tief unter der Erde
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1657,6 +1694,15 @@ const BLOCKS = {
     [0.82,0.14,0.18, 0.94,0.19,0.82, 27],
     [0.38,0.14,0.80, 0.62,0.90,0.96, 158],        // die Säule hinten
     [0.42,0.52,0.74, 0.58,0.80,0.82, 160]] },     // mit Akku-Anzeige
+  // 💰 DER TRESOR IM GELDSPEICHER: eine goldene Panzertür mit Handrad und
+  // Euro-Zeichen. Antippen: Geld hineintun oder herausholen.
+  [GSPEICHER]: { name:'Geldspeicher-Tresor 💰 (antippen = Geld hineintun und herausholen!)',
+    tiles:[164,164,164], solid:true, model:[
+    [0.00,0.00,0.00, 1.00,1.00,0.86, 80],         // der Panzerschrank aus Schutz-Stahl
+    [0.04,0.04,0.86, 0.96,0.96,1.00, 164],        // die goldene Tür vorne
+    [0.40,0.40,0.99, 0.60,0.60,1.04, 27],         // das Handrad in der Mitte
+    [0.46,0.30,0.99, 0.54,0.70,1.03, 27],
+    [0.30,0.46,0.99, 0.70,0.54,1.03, 27]] },
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -5055,6 +5101,8 @@ function genChunkData(cx, cz, ohneEdits) {
   // 🎬 DAS KINO auf die fertige Welt stempeln: Straßen, Boden und alles
   // andere bleiben also erhalten, nur wo das Kino steht, steht das Kino.
   if (kinoChunk(cx, cz)) kinoStempeln(data, cx, cz);
+  // 💰 DER GELDSPEICHER: oben das Häuschen, tief darunter die riesige Halle
+  if (speicherChunk(cx, cz)) speicherStempeln(data, cx, cz);
   // gespeicherte Änderungen des Spielers anwenden.
   // Alte Schnee- und Pfützen-Reste vom Wetter dürfen aber keine neuen
   // Gebäude kaputt machen: liegen sie mitten in einer frisch gebauten
@@ -5420,6 +5468,7 @@ function baueSpielstand() {
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
+      speicher: speicherStand,          // 💰 das Geld in deinem Geldspeicher
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
@@ -5592,6 +5641,7 @@ function loadGame() {
     if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
+    if (typeof s.speicher==='number') speicherStand = Math.max(0, Math.round(s.speicher));   // 💰 Geldspeicher
     if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
@@ -6232,6 +6282,17 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (x>=6 && x<=9 && y>=3 && y<=12) return vary(246,210,60,14);  // das Blitz-Zeichen
     if (y>=6 && y<=9 && x>=3 && x<=12) return vary(246,210,60,14);
     return vary(58,66,84,10);                                       // dunkles Metall
+  });
+  tile(164,(x,y)=>{                                                 // 💰 Tresor-Tür aus Gold
+    const r = Math.max(Math.abs(x-7.5), Math.abs(y-7.5));
+    if (r > 7) return vary(120,86,20,10);                           // dunkler Rahmen
+    if (r > 6) return vary(214,170,52,14);
+    // das dicke €-Zeichen in der Mitte
+    const dx = x-7.5, dy = y-7.5, d = Math.sqrt(dx*dx+dy*dy);
+    if (d > 2.4 && d < 4.6 && dx < 1.6) return vary(92,62,12,8);    // der runde Bogen
+    if (Math.abs(dy) < 0.9 && x >= 3 && x <= 11) return vary(92,62,12,8);   // die zwei Striche
+    if (Math.abs(dy-2.4) < 0.9 && x >= 3 && x <= 10) return vary(92,62,12,8);
+    return vary(242,200,72,16);                                     // blankes Gold
   });
   tile(161,(x,y)=>{                                                 // Werkbank-Platte
     if (y % 5 === 0) return vary(96,68,38,8);                       // Bretter-Fugen
@@ -11802,6 +11863,8 @@ function liftHalte(x, z, y0) {          // alle Etagen des Schachts, von unten n
   return offen.filter(y => !offen.includes(y-1));
 }
 function liftName(y) {                  // hübsche Namen statt nackter Zahlen
+  if (inSpeicherGebiet(player.x, player.z))            // 💰 im Geldspeicher
+    return y <= SP_HY + 4 ? '💰 Die große Geldspeicher-Halle' : '🏠 Das Häuschen oben';
   const B = burgPos();
   if (Math.hypot(player.x-B.bx, player.z-B.bz) < 80) {
     if (player.x < B.bx-38) {           // im Königs-Turm 🗼
@@ -14595,7 +14658,6 @@ let KINO_Y = 60, LW_Y0 = 63, LW_Y1 = 72, kinoHoeheFertig = false;
 // Das Kino steht auf einem Sockel, der bis aufs Gelände hinunterreicht -
 // sonst schwebt es in der Luft und der Teleport landet darunter statt drin.
 // Die Leinwand: breit, hoch, an der Vorderwand
-undefined
 // Die Sitzreihen steigen nach hinten an - so sieht jeder etwas
 const KINO_REIHEN = [10, 14, 18, 22, 26];
 const LW_X0 = 2, LW_X1 = 23;            // die Leinwand: von lx 2 bis 23
@@ -15779,6 +15841,281 @@ function drawKinoLeinwand() {
   setAttribs();
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
+}
+
+// ============== 💰 DER GELDSPEICHER ========================================
+// Jonahs Wunsch: oben auf der Erde ein kleines Häuschen, darin ein Fahrstuhl -
+// und der fährt TIEF unter die Erde in eine riesige Halle, in die sein ganzes
+// Geld kommt. Die Wände der Halle sind aus unzerstörbarem Schutz-Stein.
+// Und das Beste: jedes Geld, das er hineintut, wächst als echter GOLDBERG aus
+// dem Boden. Je mehr Geld, desto größer der Berg!
+const SP_BASIS_X = -12000, SP_BASIS_Z = 12000;   // weit draußen, da steht nichts im Weg
+let SP_X = SP_BASIS_X, SP_Z = SP_BASIS_Z;        // der genaue Platz wird gesucht
+const SP_W = 8;                         // das Häuschen oben: 9x9 (lx 0..8)
+const SP_R = 20;                        // die Halle unten: 41x41 innen
+const SP_HALLE_H = 16;                  // und 16 Blöcke hoch - richtig riesig
+const SP_HY = CH_MIN + 4;               // der Hallenboden, ganz tief unten
+const SP_MITTE = 4;                     // die Mitte von Häuschen und Schacht
+const SP_RAND = SP_R + 2;               // so weit reicht der Geldspeicher
+let SP_Y = 40, spHoeheFertig = false;   // auf dieser Höhe steht das Häuschen
+// WO und WIE HOCH steht das Häuschen? Jede Welt sieht anders aus - auf einem
+// festen Punkt stünde es mal mitten im Meer und mal im Steilhang. Darum wird
+// rund um den Basis-Punkt ein Platz gesucht, der TROCKEN und EBEN ist. Und die
+// Höhe ist die höchste Stelle im Grundriss, damit nichts hineinragt.
+function speicherHoehe() {
+  if (spHoeheFertig) return SP_Y;
+  // WICHTIG wie bei der Festung: immer in Jonahs normaler Welt messen. Sonst
+  // läge der Geldspeicher plötzlich auf Wolkenhöhe, wenn man ihn vom Himmel
+  // aus nachschlägt.
+  const merkDim = weltDim; weltDim = 0;
+  let bx = SP_BASIS_X, bz = SP_BASIS_Z, bestTief = -999;
+  for (let i = 0; i < 40; i++) {
+    const a = i * 2.39996, d = i === 0 ? 0 : 40 + i * 28;    // eine Spirale nach außen
+    const cx = SP_BASIS_X + Math.round(Math.cos(a) * d);
+    const cz = SP_BASIS_Z + Math.round(Math.sin(a) * d);
+    let tief = 9999, hoch = -9999;
+    for (let lx = -5; lx <= SP_W + 5; lx += 3)
+      for (let lz = -5; lz <= SP_W + 5; lz += 3) {
+        const t = terrainHeight(cx + lx, cz + lz);
+        if (t < tief) tief = t;
+        if (t > hoch) hoch = t;
+      }
+    if (tief > SEA + 1 && hoch - tief <= 4) { bx = cx; bz = cz; break; }   // trocken und eben!
+    if (tief > bestTief) { bestTief = tief; bx = cx; bz = cz; }            // der beste Notnagel
+  }
+  SP_X = bx; SP_Z = bz;
+  let hoch = SEA + 1;
+  for (let lx = -5; lx <= SP_W + 5; lx += 1)
+    for (let lz = -5; lz <= SP_W + 5; lz += 1)
+      hoch = Math.max(hoch, terrainHeight(SP_X + lx, SP_Z + lz));
+  SP_Y = Math.max(SEA + 2, hoch);
+  spHoeheFertig = true;
+  weltDim = merkDim;
+  return SP_Y;
+}
+function speicherEingang() {            // davor landet der Teleport
+  speicherHoehe();
+  return [SP_X + SP_MITTE, SP_Y + 1, SP_Z + SP_W + 3];
+}
+function inSpeicherGebiet(x, z) {
+  speicherHoehe();
+  return x > SP_X - SP_RAND && x < SP_X + SP_RAND &&
+         z > SP_Z - SP_RAND && z < SP_Z + SP_RAND;
+}
+function imSpeicherHaus() {             // steht Jonah oben im Häuschen?
+  speicherHoehe();
+  return weltDim === 0 && inSpeicherGebiet(player.x, player.z) &&
+         player.y > SP_Y - 1 && player.y < SP_Y + 7;
+}
+function imSpeicherHalle() {            // ... oder unten in der großen Halle?
+  speicherHoehe();
+  return weltDim === 0 && inSpeicherGebiet(player.x, player.z) &&
+         player.y > SP_HY - 1 && player.y < SP_HY + SP_HALLE_H + 2;
+}
+// --- Was steht an dieser Stelle? (lx/lz zählen vom Häuschen aus) -----------
+// null heißt: hier bleibt die Welt so, wie sie gewachsen ist.
+function speicherBlock(lx, lz, y) {
+  speicherHoehe();
+  const dx = lx - SP_MITTE, dz = lz - SP_MITTE;
+  // 1) DER FAHRSTUHL-SCHACHT - er geht vom Häuschen bis ganz hinunter
+  if (lx >= 2 && lx <= 6 && lz >= 2 && lz <= 6 && y >= SP_HY && y <= SP_Y + 4) {
+    const wand = lx === 2 || lx === 6 || lz === 2 || lz === 6;
+    // die zwei Ausstiege: oben im Häuschen und unten in der Halle.
+    // Genau EINE offene Seite - daran erkennt der Fahrstuhl eine Haltestelle.
+    const tuer = lz === 6 && lx >= 3 && lx <= 5 &&
+                 ((y === SP_Y + 1 || y === SP_Y + 2) ||
+                  (y === SP_HY + 1 || y === SP_HY + 2));
+    if (tuer) return AIR;
+    if (wand) return FAHRSTUHL;
+    return y === SP_HY ? SCHUTZ : AIR;      // unten der Kabinen-Boden
+  }
+  // 2) DIE RIESIGE HALLE tief unter der Erde - rundum unzerstörbar
+  if (Math.abs(dx) <= SP_R + 1 && Math.abs(dz) <= SP_R + 1 &&
+      y >= SP_HY - 1 && y <= SP_HY + SP_HALLE_H + 1) {
+    if (y <= SP_HY) return SCHUTZ;                              // Boden
+    if (y === SP_HY + SP_HALLE_H + 1) return SCHUTZ;            // Decke
+    if (Math.abs(dx) === SP_R + 1 || Math.abs(dz) === SP_R + 1) return SCHUTZ;   // Wände
+    // 💰 der Tresor steht gleich vor dem Fahrstuhl
+    if (dx === 0 && dz === 7 && y === SP_HY + 1) return GSPEICHER;
+    // Fackeln an den Wänden, damit die Halle schön leuchtet
+    if (y === SP_HY + 5 && (Math.abs(dx) === SP_R || Math.abs(dz) === SP_R) &&
+        (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
+    return AIR;
+  }
+  // 3) DAS HÄUSCHEN OBEN - klein und unscheinbar, wie Jonah es wollte
+  if (lx >= 0 && lx <= SP_W && lz >= 0 && lz <= SP_W) {
+    if (y > SP_Y + 5) return AIR;
+    if (y === SP_Y + 5) return GOLD;                            // goldenes Dach
+    if (y === SP_Y) return SCHUTZ;                              // der Fußboden
+    if (y < SP_Y) return y >= Math.min(terrainHeight(SP_X+lx, SP_Z+lz), SP_Y) - 2 ? STONE : null;
+    const wand = lx === 0 || lx === SP_W || lz === 0 || lz === SP_W;
+    if (wand) {
+      if (lz === SP_W && lx === SP_MITTE) {                     // die Eingangstür
+        if (y === SP_Y + 1) return DOOR;
+        if (y === SP_Y + 2) return DOOR_TOP;
+      }
+      return BRICK;
+    }
+    if (lx === 1 && lz === 1 && y === SP_Y + 2) return TORCH;   // Licht im Häuschen
+    if (lx === 7 && lz === 1 && y === SP_Y + 2) return TORCH;
+    if (lx === 1 && lz === 7 && y === SP_Y + 1) return SIGN;    // das Schild drinnen
+    return AIR;
+  }
+  // 4) DER VORPLATZ: ein kleiner ebener Fleck, damit man zur Tür kommt
+  if (lx >= -5 && lx <= SP_W + 5 && lz >= -5 && lz <= SP_W + 5) {
+    const gel = terrainHeight(SP_X + lx, SP_Z + lz);
+    if (y > SP_Y) return AIR;                                   // alles wegräumen
+    if (y === SP_Y) return lz > SP_W && lx >= 3 && lx <= 5 ? STRASSE : GRASS;
+    return y >= Math.min(gel, SP_Y) - 2 ? DIRT : null;
+  }
+  return null;
+}
+function speicherChunk(cx, cz) {
+  speicherHoehe();
+  const x0 = cx*CS, z0 = cz*CS, x1 = x0+CS-1, z1 = z0+CS-1;
+  return x1 >= SP_X + SP_MITTE - SP_RAND && x0 <= SP_X + SP_MITTE + SP_RAND &&
+         z1 >= SP_Z + SP_MITTE - SP_RAND && z0 <= SP_Z + SP_MITTE + SP_RAND;
+}
+function speicherStempeln(data, cx, cz) {
+  speicherHoehe();
+  const x0 = cx*CS, z0 = cz*CS;
+  for (let lz2 = 0; lz2 < CS; lz2++) for (let lx2 = 0; lx2 < CS; lx2++) {
+    const lx = x0 + lx2 - SP_X, lz = z0 + lz2 - SP_Z;
+    if (lx < SP_MITTE - SP_RAND || lx > SP_MITTE + SP_RAND ||
+        lz < SP_MITTE - SP_RAND || lz > SP_MITTE + SP_RAND) continue;
+    // Nur die Höhen anfassen, wo wirklich etwas steht - die ganze Säule von
+    // ganz unten bis nach oben durchzurechnen würde das Laden spürbar bremsen.
+    const setz = (von, bis) => {
+      for (let y = von; y <= bis; y++) {
+        const b = speicherBlock(lx, lz, y);
+        if (b !== null) data[bidx(lx2, y, lz2)] = b;
+      }
+    };
+    setz(SP_HY - 1, SP_HY + SP_HALLE_H + 1);                  // die Halle unten
+    if (lx >= 2 && lx <= 6 && lz >= 2 && lz <= 6)             // der Schacht dazwischen
+      setz(SP_HY + SP_HALLE_H + 2, SP_Y + 4);
+    const gel = terrainHeight(SP_X + lx, SP_Z + lz);          // Häuschen und Vorplatz
+    setz(Math.min(gel, SP_Y) - 3, Math.max(gel, SP_Y) + 8);
+  }
+  // die Schilder beschriften
+  const s1 = (SP_X+1) + ',' + (SP_Y+1) + ',' + (SP_Z+7);
+  if (!signTexts.has(s1))
+    signTexts.set(s1, '💰 GELDSPEICHER - stell dich in den Fahrstuhl, tipp die Wand an ' +
+                      'und fahr ganz nach unten in deine Schatz-Halle!');
+}
+// --- 🪙 DER GOLDBERG: Jonahs Geld wächst wirklich aus dem Boden ------------
+const BERG_PRO = 2;                     // für je 2 € wächst ein Goldblock
+const BERG_R = 12, BERG_HOCH = 7;       // so weit und so hoch darf der Berg werden
+let speicherStand = 0;                  // so viel Geld liegt im Speicher
+let _spSlots = null;
+// Welche Plätze dürfen zugeschüttet werden? Fahrstuhl und der Weg zum
+// Tresor bleiben IMMER frei - sonst steht Jonah im Gold fest.
+function speicherPlatzFrei(dx, dz) {
+  if (Math.abs(dx) <= 3 && Math.abs(dz) <= 3) return false;     // der Schacht
+  if (Math.abs(dx) <= 1 && dz >= 2 && dz <= 9) return false;    // der Weg zum Tresor
+  return true;
+}
+// Die Reihenfolge, in der der Berg wächst: erst unten um den Fahrstuhl herum,
+// dann immer weiter nach außen und nach oben - so entsteht ein Kegel.
+function speicherSlots() {
+  if (_spSlots) return _spSlots;
+  const s = [];
+  for (let y = 0; y < BERG_HOCH; y++) {
+    const r = BERG_R - y * 1.5;
+    if (r < 1.5) break;
+    for (let dx = -BERG_R; dx <= BERG_R; dx++)
+      for (let dz = -BERG_R; dz <= BERG_R; dz++) {
+        const d = Math.hypot(dx, dz);
+        if (d > r || !speicherPlatzFrei(dx, dz)) continue;
+        s.push([dx, dz, y, d]);
+      }
+  }
+  s.sort((a, b) => (a[2]*2.4 + a[3]) - (b[2]*2.4 + b[3]));
+  _spSlots = s.slice(0, 900);
+  return _spSlots;
+}
+// Wie viel Geld passt überhaupt als Berg in die Halle?
+function speicherBergMax() { return speicherSlots().length * BERG_PRO; }
+function speicherBergBauen() {
+  speicherHoehe();
+  const slots = speicherSlots();
+  const soll = Math.max(0, Math.min(slots.length, Math.floor(speicherStand / BERG_PRO)));
+  let geaendert = 0;
+  for (let i = 0; i < slots.length; i++) {
+    const [dx, dz, y] = slots[i];
+    const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz, wy = SP_HY + 1 + y;
+    const will = i < soll ? GOLD : AIR;
+    const ist = getBlock(wx, wy, wz);
+    if (ist === will) continue;
+    if (will === AIR && ist !== GOLD) continue;   // nur das eigene Gold wieder wegnehmen
+    setBlock(wx, wy, wz, will);
+    geaendert++;
+  }
+  return geaendert;
+}
+let spBergT = 0;
+function speicherTick(dt) {             // in der Halle den Berg nachwachsen lassen
+  spBergT -= dt;
+  if (spBergT > 0) return;
+  spBergT = 2.5;
+  if (!imSpeicherHalle()) return;
+  speicherBergBauen();
+}
+// --- Das Tresor-Fenster ----------------------------------------------------
+function speicherAnzeige() {
+  const bloecke = Math.floor(speicherStand / BERG_PRO);
+  document.getElementById('gsStand').textContent =
+    'Im Speicher: ' + speicherStand + ' €  ·  in der Tasche: ' + money + ' €';
+  document.getElementById('gsBerg').textContent =
+    speicherStand > 0
+      ? '🪙 Dein Goldberg: ' + bloecke + ' Goldblöcke'
+      : '🪙 Noch kein Gold hier unten – tu dein Geld hinein, dann wächst der Berg!';
+}
+function openSpeicher() {
+  speicherAnzeige();
+  document.getElementById('gsInput').value = '';
+  document.getElementById('gsBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(392,0.07); blip(523,0.07); blip(784,0.1);
+}
+function speicherAktion(was) {
+  const rein = n => {
+    n = Math.floor(n);
+    if (n <= 0) { blip(180,0.12); return; }
+    if (money < n) { toast('💶 So viel Geld hast du gar nicht dabei! (Du hast ' + money + ' €)', 3000); blip(180,0.12); return; }
+    money -= n; speicherStand += n;
+    toast('💰 ' + n + ' € sind im Geldspeicher! Hier liegen jetzt ' + speicherStand +
+          ' € – und dein Goldberg wächst! 🪙', 4000);
+    blip(700,0.06); blip(880,0.08); blip(1050,0.1);
+  };
+  const raus = n => {
+    n = Math.floor(n);
+    if (n <= 0) { blip(180,0.12); return; }
+    if (speicherStand < n) { toast('💰 So viel liegt gar nicht im Speicher! (Hier sind ' + speicherStand + ' €)', 3000); blip(180,0.12); return; }
+    speicherStand -= n; money += n;
+    toast('💰 ' + n + ' € herausgeholt! Du hast jetzt ' + money + ' € in der Tasche.', 3400);
+    blip(880,0.06); blip(700,0.08);
+  };
+  if (was === 'einAlles') rein(money);
+  if (was === 'aus10') raus(Math.min(10, speicherStand));
+  if (was === 'ausAlles') raus(speicherStand);
+  if (was === 'einKonto') {             // 🏦 auch das Ersparte von der Bank holen
+    if (kontoStand <= 0) { toast('🏦 Auf deinem Bank-Konto liegt gerade nichts.', 2800); blip(180,0.12); }
+    else {
+      const n = kontoStand; kontoStand = 0; speicherStand += n;
+      toast('🏦➡️💰 ' + n + ' € von der Bank in den Geldspeicher gebracht! Hier liegen jetzt ' +
+            speicherStand + ' €. 🪙', 4500);
+      blip(600,0.06); blip(800,0.07); blip(1000,0.1);
+    }
+  }
+  if (was === 'einEigen' || was === 'ausEigen') {
+    const n = Math.floor(Number(document.getElementById('gsInput').value));
+    if (!(n > 0)) { toast('💰 Schreib erst eine Zahl in das Feld – zum Beispiel 50. 🔢', 3200); blip(180,0.12); }
+    else if (was === 'einEigen') rein(n); else raus(n);
+  }
+  speicherAnzeige(); updateFoodHUD(); updateShopUI();
+  speicherBergBauen();
+  scheduleSave();
 }
 
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
@@ -18959,6 +19296,8 @@ function teleportZiele() {
   if (weltDim === 0) {                                  // 🎬 ab ins Kino!
     const [kx, , kz] = kinoEingang();
     ziele.push(['🎬 Das Kino', kx, kz]);
+    const [sx, , sz] = speicherEingang();               // 💰 und zum Geldspeicher!
+    ziele.push(['💰 Dein Geldspeicher', sx, sz]);
   }
   return ziele;
 }
@@ -19639,6 +19978,18 @@ for (const el of document.querySelectorAll('#bankBox .senderRow')) {
   el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
 }
 document.getElementById('bankClose').addEventListener('click', ()=>{ bankBox.style.display='none'; });
+// 💰 der Geldspeicher-Tresor
+for (const el of document.querySelectorAll('#gsBox .senderRow')) {
+  const w = () => speicherAktion(el.dataset.gs);
+  el.addEventListener('click', w);
+  el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+}
+document.getElementById('gsClose').addEventListener('click', ()=>{
+  document.getElementById('gsBox').style.display='none'; blip(400,0.06); });
+document.getElementById('gsInput').addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key==='Enter') { e.target.blur(); speicherAktion('einEigen'); }
+});
 // im Zahlen-Feld sollen die Tasten nicht das Spiel steuern
 document.getElementById('bankInput').addEventListener('keydown', e => {
   e.stopPropagation();
@@ -20115,7 +20466,7 @@ const MAP_BLOCK_COL = {
   [UFOPAD]:'#4a5260', [UFOMARK]:'#7ef0e6', [BAUPLAN]:'#e8dcb8',
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
-  [RLADE]:'#7ef0e6',
+  [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -22906,6 +23257,7 @@ function doBreak(dir) {
   if (hit && hit.block === RWERK) { openWerkstatt(hit.x, hit.y, hit.z); return; }
   if (hit && hit.block === RCHIP) { openChip(); return; }
   if (hit && hit.block === RLADE) { ladeStationTipp(); return; }
+  if (hit && hit.block === GSPEICHER) { openSpeicher(); return; }   // 💰 geht nie kaputt
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -23276,6 +23628,10 @@ function doPlace(dir) {
   }
   if (hit.block === RLADE) {            // 🔌 die Ladestation
     ladeStationTipp();
+    return;
+  }
+  if (hit.block === GSPEICHER) {        // 💰 der Tresor im Geldspeicher
+    openSpeicher();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -24319,6 +24675,7 @@ function frame(now) {
   missionTick(dt);                      // 📜 Mission geschafft?
   basisTick(dt);                        // 🏗️ ist die Alien-Basis gewachsen?
   roboLadeTick(dt);                     // 🔌 lädt der Roboter zu Hause auf?
+  try { speicherTick(dt); } catch(e) {}  // 💰 wächst gerade der Goldberg im Speicher?
   chipBtnEl.style.display = roboGebaut ? 'flex' : 'none';   // 💾 Chip-Knopf
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
