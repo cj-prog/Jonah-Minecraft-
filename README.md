@@ -221,6 +221,27 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN GELDSPEICHER (v248)! 💰🛗 Jonah wollte einen Ort, wo sein ganzes Geld
+  hinkommt – und hat genau beschrieben, wie: oben ein kleines Häuschen, drinnen
+  ein Fahrstuhl, und ganz tief unten eine riesige Halle aus unzerstörbaren
+  Blöcken. Genau so ist es geworden!
+  🏠 DAS HÄUSCHEN steht draußen auf normalem Boden: Ziegelwände, goldenes Dach,
+  eine Tür und ein Steinweg davor. Das Spiel sucht dafür in jeder Welt einen
+  trockenen, ebenen Platz – nie im Meer und nie im Steilhang. Du kommst mit dem
+  🛸-Teleport hin: „💰 Dein Geldspeicher".
+  🛗 DER FAHRSTUHL steht mitten im Häuschen und fährt über 90 Blöcke nach unten.
+  Reingehen, die Wand antippen, Etage aussuchen: „🏠 Das Häuschen oben" oder
+  „💰 Die große Geldspeicher-Halle".
+  🏛️ DIE HALLE ist 41×41 Blöcke groß und 16 hoch – Wände, Boden UND Decke
+  komplett aus dem unzerstörbaren Schutz-Block 🛡️, mit Fackeln an den Wänden.
+  💰 DER GOLDENE TRESOR steht direkt vor dem Fahrstuhl. Tipp ihn an: Geld
+  hineintun, herausholen, oder gleich alles von deinem Bank-Konto herüberholen.
+  Kaputt geht er nie.
+  🪙 UND DAS BESTE: für je 2 € wächst ein echter GOLDBLOCK aus dem Hallenboden!
+  Je mehr Geld du hineintust, desto größer wird dein Goldberg – bei 1500 € sind
+  das 750 Goldblöcke rund um den Fahrstuhl. Der Weg zum Tresor und der Fahrstuhl
+  bleiben dabei immer frei. Holst du Geld heraus, schrumpft der Berg wieder.
+  🔒 Hier unten kommt kein Räuber hin – sicherer geht es nicht.
 - FILME SO LANG, WIE DU WILLST (v247)! 🎥⏱️ Jonah wollte länger drehen können –
   die 14 Sekunden waren ihm zu kurz. Jetzt gibt es gar keine kurze Grenze mehr!
   ⏱️ SO LANGE DU WILLST: dreh deine ganze Burg-Tour, dein ganzes Abenteuer, den
