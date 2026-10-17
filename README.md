@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- BUCHSTABEN IM TRESOR-CODE (v256)! 🔤🔐 Jonah wollte, dass er auch Buchstaben
+  in den Code eintippen kann.
+  🔡 DAS TASTENFELD hat jetzt alle Ziffern 0–9 UND alle Buchstaben A–Z – 38
+  Tasten, schön groß zum Tippen auf dem Handy.
+  📝 DEIN CODE darf 3 bis 8 Zeichen lang sein und Zahlen und Buchstaben mischen.
+  Du kannst also ein richtiges Wort nehmen, zum Beispiel JONAH, oder etwas
+  Verrücktes wie B7X9!
+  🎵 JEDE TASTE klingt anders – so hörst du beim Tippen, dass es geklappt hat.
+  🙈 Angezeigt werden weiterhin nur gelbe Punkte, und am Computer kannst du den
+  Code einfach auf der Tastatur tippen.
 - DIE TRESORTÜR BRAUCHT EINEN GEHEIMCODE (v255)! 🔑🔐 Jonah wollte, dass man
   einen Code eintippen muss, um die Tresortür zu öffnen.
   🔢 EIN ECHTES ZAHLENFELD: Tippst du die Tresortür an, klappt ein Tastenfeld
