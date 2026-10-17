@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- GOLDBARREN – 100 € IN EINEM BLOCK (v261)! 🏅💰 Jonahs Geldspeicher war voll,
+  und er hatte immer noch Geld übrig. Jetzt passt hundertmal so viel hinein!
+  🏅 DER NEUE BLOCK: ein Stapel Goldbarren. Einer ist 100 € wert – hinlegen
+  kostet 100 €, aufheben gibt 100 € zurück. Du findest ihn in der Blockleiste
+  gleich neben den Münzen.
+  💪 DIE PRESSE: Tipp die 🪣 Geld-Schütte an und dann auf „🏅 Geld pressen“ –
+  Johann sammelt ALLES Geld im Tresorraum ein und presst je 100 Blöcke zu einem
+  Barren. Kein Euro geht verloren, aber auf einmal ist der Raum fast leer!
+  (Aus 35.000 Geld-Blöcken werden 351 Goldbarren.)
+  🪣 ODER GLEICH ALS GOLD: In der Schütte gibt es jetzt auch „Goldbarren
+  reinschütten“ – dann purzelt dein Geld gleich als Barren hinein.
+  🏊 SCHWIMMEN geht auch im Gold, und Räuber kommen natürlich auch an die
+  Barren nicht heran.
 - KEIN RÄUBER KOMMT MEHR AN DEIN GELD (v260)! 🔒🚫 Jonah hat gemerkt: ein Räuber
   stand plötzlich in seinem Tresorraum und hat geklaut – obwohl die Tresortür ZU
   war. Das war ein Fehler im Spiel, und er ist jetzt weg.

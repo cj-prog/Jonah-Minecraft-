@@ -538,6 +538,8 @@
   #schuettKnoepfe button { font-size:15px; font-weight:bold; padding:9px 0; border-radius:10px;
     border:none; background:#6b5a2f; color:#fff; }
   #schuettKnoepfe button.alles { background:#2f7a48; }
+  #schuettKnoepfe button.gold { background:#9a7a22; }
+  #schuettKnoepfe button.pressen { background:#7a3f6b; }
   #schuettKnoepfe button:disabled { background:#4a4740; color:#9a958a; }
   #schuettZu { font-size:14px; font-weight:bold; padding:6px 18px; border-radius:8px;
     border:none; background:#3f5b6b; color:#fff; }
@@ -1302,7 +1304,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 260 &middot; 🔒🚫 KEIN RÄUBER KOMMT MEHR AN DEIN GELD! Auf deinem ganzen Geldspeicher-Grundstück ist Klauen jetzt unmöglich – und falls sich doch einer hereinschleicht, setzt Johann ihn vor die Tür. 🤵💰</p>
+    Version 261 &middot; 🏅 GOLDBARREN! Dein Geldspeicher ist voll? Johann presst dein Geld zu Goldbarren – ein Barren ist 100 € wert, da passt HUNDERTMAL so viel hinein. Tipp die 🪣 Schütte an und dann auf „Geld pressen“! 💰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1348,7 +1350,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 260;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 261;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1511,9 +1513,13 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RLADE=115,                        // 🔌 die Ladestation für den Roboter-Akku
       GSPEICHER=116,                    // 💰 der alte Tresor aus Version 248 (wird nicht mehr gebaut)
       TRESORTUER=117, TRESORRAD=118,    // 🔐 die große runde Tresortür und ihr Handrad
-      GELDSCHUETTE=119;                 // 🪣 die Geld-Schütte im Tresorraum
+      GELDSCHUETTE=119,                 // 🪣 die Geld-Schütte im Tresorraum
+      GOLDBARREN=120;                   // 🏅 ein Goldbarren - 100 € in EINEM Block!
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
-const GELD_BLOCK = new Set([GELD, MUENZEN]);
+// 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
+// Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
+const GELD_WERT = { [GELD]: 1, [MUENZEN]: 1, [GOLDBARREN]: 100 };
+const GELD_BLOCK = new Set([GELD, MUENZEN, GOLDBARREN]);
 const geldOrte = new Set();             // 💰 wo liegt Geld herum, an das Räuber rankommen?
 // 🛡️ Geld auf Jonahs Geldspeicher-Grundstück steht in einer EIGENEN Liste. Die
 // Räuber durchsuchen nur geldOrte - so kommt niemand mehr an den Tresorraum.
@@ -1757,6 +1763,12 @@ const BLOCKS = {
   [TRESORTUER]: { name:'Tresortür 🔐 (antippen = auf und zu!)', tiles:[165,165,165], solid:true },
   [TRESORRAD]:  { name:'Tresor-Handrad 🔐 (antippen = Tresortür auf und zu!)',
     tiles:[166,166,166], solid:true },
+  [GOLDBARREN]: { name:'Goldbarren 🏅 (100 € in einem Block – abbauen = 100 € zurück!)',
+    tiles:[168,168,168], solid:true, model:[
+      [0.07,0,0.14,    0.93,0.30,0.52, 168],            // unterer Barren hinten
+      [0.07,0,0.54,    0.93,0.30,0.92, 168],            // unterer Barren vorne
+      [0.13,0.30,0.34, 0.87,0.60,0.72, 168],            // mittlerer Barren
+      [0.19,0.60,0.40, 0.81,0.88,0.66, 168]] },         // der oberste Barren
   [GELDSCHUETTE]: { name:'Geld-Schütte 🪣 (antippen = dein Geld auf einmal reinkippen!)',
     tiles:[167,167,167], solid:true, model:[
       [0.05,0.52,0.05, 0.95,1.0,0.95, 167],             // der weite Trichter oben
@@ -1994,7 +2006,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, GOLDBARREN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -6393,6 +6405,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
   });
+  tile(168,(x,y)=>{                                                 // 🏅 Goldbarren
+    if (y < 2 || y > 13) return vary(188,142,34,8);                 // die Kanten
+    if (x < 2 || x > 13) return vary(176,132,30,8);
+    if (y < 5) return vary(255,230,130,10);                         // der helle Glanz oben
+    if ((x + y) % 9 === 0) return vary(255,244,186,12);             // ein Funkeln
+    return vary(238,196,58,12);
+  });
   tile(167,(x,y)=>{                                                 // 🪣 die Geld-Schütte
     const dx = x - 7.5;
     if (y < 2) return vary(58,62,72,8);                             // dunkler Rand
@@ -8443,7 +8462,7 @@ function geldKlau(a, dt) {
   // Zack - eingesteckt!
   setBlock(z[0], z[1], z[2], AIR);
   pruefeNachbarn(z[0], z[1], z[2]);
-  a.beute = (a.beute || 0) + 1;
+  a.beute = (a.beute || 0) + GELD_WERT[b];
   a.klauZiel = null;
   const nah = Math.hypot(player.x-a.x, player.z-a.z) < 45;
   if (nah) {
@@ -16399,9 +16418,9 @@ function speicherStempeln(data, cx, cz) {
   };
   schild(2, 1, 10, '💰 DER TRESORRAUM VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
                    'Am schnellsten geht es mit der 🪣 GELD-SCHÜTTE gegenüber: antippen und ' +
-                   'dein ganzes Geld purzelt auf einmal herein. Von Hand geht auch: 💵 Scheine ' +
-                   'oder 🪙 Münzen aus der Blockleiste nehmen - mit dem 🖌️ Pinsel (5×5) sogar ' +
-                   '25 Stück pro Tipper!');
+                   'dein ganzes Geld purzelt auf einmal herein. Ist es hier voll? Dann lass ' +
+                   'Johann das Geld zu 🏅 GOLDBARREN pressen - ein Barren ist 100 € wert, da ' +
+                   'passt hundertmal so viel hinein!');
   schild(-2, 1, 13, '🔐 DIE GROSSE TRESORTÜR - tipp sie an, dann schwingt sie auf. Mit dem ' +
                    'goldenen Handrad daneben machst du sie wieder zu. Dann kommt niemand rein!');
   schild(2, 1, SPT_SCHACHT + 3, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, ' +
@@ -16468,22 +16487,25 @@ function schuettFrei(dx, dz) {          // darf hier überhaupt Geld hin?
       dz <= SPT_SCHACHT + 2) return false;                           // der Fahrstuhl auch
   return true;
 }
-function geldSchuetten(wunsch) {
+// gold=true: statt Scheinen und Münzen kommen Goldbarren hinein - ein Barren
+// ist 100 € wert, da passt also hundertmal so viel in denselben Raum.
+function geldSchuetten(wunsch, gold) {
   speicherHoehe();
   const m = SP_MITTE, hy = SP_HY;
-  let rest = Math.min(wunsch, money, SCHUETT_MAX);
+  const wert = gold ? 100 : 1;
+  let rest = Math.min(wunsch, money, SCHUETT_MAX * wert);
   let n = 0;
-  for (let dy = 1; dy <= SP_HALLE_H - 2 && rest > 0; dy++) {
-    const sorte = (dy % 2) ? GELD : MUENZEN;        // gestreift: Scheine, Münzen, Scheine …
-    for (let dz = -SP_R; dz <= 11 && rest > 0; dz++)
-      for (let dx = -SP_R; dx <= SP_R && rest > 0; dx++) {
+  for (let dy = 1; dy <= SP_HALLE_H - 2 && rest >= wert; dy++) {
+    const sorte = gold ? GOLDBARREN : (dy % 2) ? GELD : MUENZEN;   // gestreift: Scheine, Münzen …
+    for (let dz = -SP_R; dz <= 11 && rest >= wert; dz++)
+      for (let dx = -SP_R; dx <= SP_R && rest >= wert; dx++) {
         if (!schuettFrei(dx, dz)) continue;
         const wx = SP_X + m + dx, wy = hy + dy, wz = SP_Z + m + dz;
         const ch = getChunk(wx >> 4, wz >> 4);
         if (!ch || !ch.data) continue;              // dieses Stück Welt ist noch nicht da
         if (getBlock(wx, wy, wz) !== AIR) continue; // hier liegt schon etwas
         setBlock(wx, wy, wz, sorte);
-        rest--; n++;
+        rest -= wert; n += wert;
       }
   }
   if (n > 0) {
@@ -16503,39 +16525,95 @@ function geldSchuetten(wunsch) {
   }
   return n;
 }
+// 🏅 DIE GOLDPRESSE: Johann sammelt alles Geld im Tresorraum ein und presst es
+// zu Goldbarren. Aus 100 Blöcken wird EIN Barren - so wird wieder viel Platz
+// frei, ohne dass ein einziger Euro verloren geht.
+function geldPressen() {
+  speicherHoehe();
+  const m = SP_MITTE, hy = SP_HY;
+  let summe = 0;
+  for (let dy = SP_HALLE_H + 1; dy >= 1; dy--)
+    for (let dz = -SP_R; dz <= 11; dz++)
+      for (let dx = -SP_R; dx <= SP_R; dx++) {
+        const wx = SP_X + m + dx, wy = hy + dy, wz = SP_Z + m + dz;
+        const ch = getChunk(wx >> 4, wz >> 4);
+        if (!ch || !ch.data) continue;
+        const b = getBlock(wx, wy, wz);
+        if (!GELD_BLOCK.has(b)) continue;
+        summe += GELD_WERT[b];
+        setBlock(wx, wy, wz, AIR);
+      }
+  if (!summe) return 0;
+  // und jetzt alles wieder hinein: erst die Barren, der Rest als Scheine
+  const barren = Math.floor(summe / 100);
+  money += summe;                       // kurz in die Tasche …
+  const vorher = money;
+  geldSchuetten(barren * 100, true);
+  geldSchuetten(summe % 100, false);
+  const unter = money;                  // … und wieder heraus
+  if (unter > vorher - summe) {         // hat nicht alles hineingepasst? Dann bleibt der Rest dabei
+    toast('🏅 Johann hat gepresst, aber ein Teil passt nicht mehr hinein – ' +
+          (unter - (vorher - summe)) + ' € hast du jetzt wieder dabei.', 6000);
+  }
+  updateFoodHUD(); scheduleSave();
+  return barren;
+}
 function schuettAnzeigen() {
+  const drin = speicherGeldZaehlen();
   document.getElementById('schuettInfo').innerHTML =
-    'Kipp dein Geld auf einen Schlag in den Tresorraum! Jeder Euro wird ein ' +
-    '💵 Geld-Block und stapelt sich ganz von allein von unten nach oben.<br>' +
-    'Du hast <b>' + money + ' €</b> dabei.';
+    'Kipp dein Geld auf einen Schlag in den Tresorraum! Ein 💵 Geld-Block ist ' +
+    '1 €, ein 🏅 Goldbarren gleich <b>100 €</b> – damit passt hundertmal so viel ' +
+    'hinein.<br>Du hast <b>' + money + ' €</b> dabei, im Tresorraum liegen <b>' +
+    drin + ' €</b>.';
   const feld = document.getElementById('schuettKnoepfe');
   feld.innerHTML = '';
-  const knopf = (txt, euro, alles) => {
+  const knopf = (txt, klasse, w) => {
     const b = document.createElement('button');
     b.textContent = txt;
-    if (alles) b.className = 'alles';
-    const w = () => {
-      const n = geldSchuetten(euro);
-      if (n > 0) {
-        toast('🪣💰 RAUSCH! ' + n + ' € sind in deinen Tresorraum gepurzelt – ' +
-              'als ' + n + ' Geld-Blöcke! Du hast noch ' + money + ' € dabei.', 5200);
-      } else {
-        toast('🪣 Hier passt gerade nichts mehr hinein – entweder ist dein Geldbeutel ' +
-              'leer oder der Tresorraum ist voll! 💰', 4000);
-        blip(200, 0.12);
+    if (klasse) b.className = klasse;
+    const h = () => {
+      w();
+      if (money <= 0 && !speicherGeldZaehlen()) {
+        document.getElementById('schuettBox').style.display = 'none'; return;
       }
-      if (money <= 0) { document.getElementById('schuettBox').style.display = 'none'; return; }
       schuettAnzeigen();
     };
-    b.addEventListener('click', w);
-    b.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
+    b.addEventListener('click', h);
+    b.addEventListener('touchstart', e => { e.preventDefault(); h(); }, {passive:false});
     feld.appendChild(b);
   };
-  for (const st of SCHUETT_STUFEN) if (money > st) knopf('💵 ' + st + ' € reinschütten', st, false);
-  knopf('💰 ALLES reinschütten (' + money + ' €)', money, true);
+  const kippen = (euro, gold) => () => {
+    const n = geldSchuetten(euro, gold);
+    if (n > 0) {
+      toast(gold
+        ? '🪣🏅 KLONK! ' + (n/100) + ' Goldbarren (' + n + ' €) sind in deinen Tresorraum ' +
+          'gepoltert! Du hast noch ' + money + ' € dabei.'
+        : '🪣💰 RAUSCH! ' + n + ' € sind in deinen Tresorraum gepurzelt – als ' + n +
+          ' Geld-Blöcke! Du hast noch ' + money + ' € dabei.', 5200);
+    } else {
+      toast('🪣 Hier passt gerade nichts mehr hinein! Tipp auf „🏅 Geld pressen", dann ' +
+            'macht Johann aus je 100 Blöcken EINEN Goldbarren – und du hast wieder ' +
+            'ganz viel Platz. 💪', 7000);
+      blip(200, 0.12);
+    }
+  };
+  for (const st of SCHUETT_STUFEN) if (money > st) knopf('💵 ' + st + ' € reinschütten', '', kippen(st, false));
+  if (money >= 100)
+    knopf('🏅 ' + Math.floor(money/100) + ' Goldbarren reinschütten (' +
+          Math.floor(money/100)*100 + ' €)', 'gold', kippen(Math.floor(money/100)*100, true));
+  if (money > 0) knopf('💰 ALLES reinschütten (' + money + ' €)', 'alles', kippen(money, false));
+  if (drin >= 100)
+    knopf('🏅 Geld pressen – macht Platz! (' + drin + ' €)', 'pressen', () => {
+      const barren = geldPressen();
+      if (barren > 0) {
+        toast('🏅 KRACH-BUMM! Johann hat dein Geld zu ' + barren + ' Goldbarren gepresst – ' +
+              'jeder 100 € wert. Jetzt ist wieder richtig viel Platz im Tresorraum! 💪', 7000);
+        for (const f of [330, 440, 550, 880]) blip(f, 0.1);
+      }
+    });
 }
 function openSchuette() {
-  if (money <= 0) {
+  if (money <= 0 && speicherGeldZaehlen() < 100) {
     toast('🪣 Deine Geld-Schütte! Hier kippst du dein ganzes Geld auf einmal in den ' +
           'Tresorraum – aber gerade hast du keinen Euro dabei. 💶', 4500);
     blip(260, 0.1); return;
@@ -16642,7 +16720,7 @@ function speicherGeldZaehlen() {
     if (y <= SP_HY || y > SP_HY + SP_HALLE_H + 1) continue;
     if (Math.abs(+p[0] - (SP_X + SP_MITTE)) > SP_R) continue;
     if (Math.abs(+p[2] - (SP_Z + SP_MITTE)) > SP_R) continue;
-    n++;
+    n += GELD_WERT[getBlock(+p[0], y, +p[2])] || 0;   // 🏅 ein Barren zählt 100 €
   }
   return n;
 }
@@ -16664,7 +16742,7 @@ function altesGoldAufraeumen() {
       for (let y = SP_ALT_HY; y <= SP_ALT_HY + 32; y++) {
         const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz;
         const b = getBlock(wx, y, wz);
-        if (GELD_BLOCK.has(b)) { setBlock(wx, y, wz, STONE); euro++; }
+        if (GELD_BLOCK.has(b)) { setBlock(wx, y, wz, STONE); euro += GELD_WERT[b]; }
         else if (b === GOLD) setBlock(wx, y, wz, STONE);
       }
   if (euro > 0) { money += euro; updateFoodHUD(); }
@@ -18962,7 +19040,7 @@ function finishLasso() {
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
       if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
-      if (GELD_BLOCK.has(b2)) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
+      if (GELD_BLOCK.has(b2)) { money += GELD_WERT[b2]; updateFoodHUD(); scheduleSave(); }
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,lCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -21082,7 +21160,7 @@ const MAP_BLOCK_COL = {
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
-  [GELDSCHUETTE]:'#f0c850',
+  [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -23958,12 +24036,14 @@ function doBreak(dir) {
     blip(200,0.07);
     return;
   }
-  if (GELD_BLOCK.has(hit.block)) {      // 💵🪙 Geld aufheben = der Euro kommt zurück
-    money++; updateFoodHUD(); scheduleSave();
-    const wie = hit.block===MUENZEN ? '🪙 Münzen eingesteckt' : '💵 Scheine eingesteckt';
+  if (GELD_BLOCK.has(hit.block)) {      // 💵🪙🏅 Geld aufheben = der Wert kommt zurück
+    const wert = GELD_WERT[hit.block];
+    money += wert; updateFoodHUD(); scheduleSave();
+    const wie = hit.block===MUENZEN ? '🪙 Münzen eingesteckt'
+              : hit.block===GOLDBARREN ? '🏅 Goldbarren eingesteckt' : '💵 Scheine eingesteckt';
     setBlock(hit.x,hit.y,hit.z,AIR);
     pruefeNachbarn(hit.x,hit.y,hit.z);
-    toast(wie+' – Kling! 1 Euro zurück in deinen Geldbeutel (jetzt '+money+' €).', 2800);
+    toast(wie+' – Kling! '+wert+' Euro zurück in deinen Geldbeutel (jetzt '+money+' €).', 2800);
     blip(1170,0.05); blip(880,0.06);
     return;
   }
@@ -24045,7 +24125,7 @@ function doBreak(dir) {
       if (b2>=PIC && b2<=PIC_W) removePainting(qx,qy,qz);
       if (b2===WOOL) wolle++;
       if (NASCH[b2]) { bonbons += NASCH[b2]; updateFoodHUD(); }   // 🍬 Naschkram wandert mit in den Beutel
-      if (GELD_BLOCK.has(b2)) { money++; updateFoodHUD(); scheduleSave(); }  // 💶 und die Euros kommen zurück
+      if (GELD_BLOCK.has(b2)) { money += GELD_WERT[b2]; updateFoodHUD(); scheduleSave(); }
       setBlock(qx,qy,qz,AIR); n++;
       weckeFluessigkeit(qx,qy,qz,wCtr);
       pruefeNachbarn(qx,qy,qz);
@@ -24461,13 +24541,16 @@ function doPlace(dir) {
     }
     snowCnt -= 3; updateFoodHUD(); scheduleSave();
   }
-  if (GELD_BLOCK.has(b)) {              // 💵🪙 mit dem eigenen Geld bauen: jedes Stück kostet 1 €
-    if (money <= 0) {
-      toast('💶 Du hast kein Geld mehr! Verkauf dem Händler 🥕 Gemüse, 🧶 Wolle oder 💎 Diamanten. 🏪', 3600);
+  if (GELD_BLOCK.has(b)) {              // 💵🪙🏅 mit dem eigenen Geld bauen
+    const kost = GELD_WERT[b];
+    if (money < kost) {
+      toast(kost > 1
+        ? '🏅 Ein Goldbarren kostet 100 € – so viel hast du gerade nicht dabei (' + money + ' €).'
+        : '💶 Du hast kein Geld mehr! Verkauf dem Händler 🥕 Gemüse, 🧶 Wolle oder 💎 Diamanten. 🏪', 3600);
       blip(180,0.15);
       return;
     }
-    money--; updateFoodHUD(); scheduleSave();
+    money -= kost; updateFoodHUD(); scheduleSave();
     blip(880,0.05); blip(1170,0.06);     // Kling! wie eine Münze
     if (!geldTipp) {
       geldTipp = true;
@@ -24517,7 +24600,7 @@ function doPlace(dir) {
     for (let u=-r;u<=r;u++) for (let v=-r;v<=r;v++) {
       if (u===0&&v===0) continue;
       if (b===WOOL && wool<=0) break;   // Wolle kostet weiter Wolle!
-      if (GELD_BLOCK.has(b) && money<=0) break;   // und Geld kostet weiter Geld!
+      if (GELD_BLOCK.has(b) && money < GELD_WERT[b]) break;   // und Geld kostet weiter Geld!
       let qx=px, qy=py, qz=pz;
       if (fx2!==0) { qy+=u; qz+=v; } else if (fy2!==0) { qx+=u; qz+=v; } else { qx+=u; qy+=v; }
       if (qy<=CH_MIN||qy>=CH) continue;
@@ -24531,7 +24614,7 @@ function doPlace(dir) {
           Math.abs(qx+0.5-player.x)<0.5+P_HALF && (qy+1>player.y) && (qy<player.y+P_HEIGHT) &&
           Math.abs(qz+0.5-player.z)<0.5+P_HALF) continue;   // nicht in dich selbst bauen
       if (b===WOOL) { wool--; }
-      if (GELD_BLOCK.has(b)) { money--; }
+      if (GELD_BLOCK.has(b)) { money -= GELD_WERT[b]; }
       setBlock(qx,qy,qz,b); n++;
       gebaut.push([qx,qy,qz]);
     }
