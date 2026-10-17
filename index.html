@@ -1224,7 +1224,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 250 &middot; 💰 DIE SCHATZ-HALLE GEHÖRT GANZ DIR! Kein Tresor und kein Goldberg mehr – fahr mit dem Fahrstuhl hinunter und leg dein Geld SELBST in die riesige Halle: 💵 Geldscheine und 🪙 Münzen aus deiner Blockleiste. Beim Hineinkommen sage ich dir, wie viel schon da liegt! 🔒</p>
+    Version 251 &middot; 🏊💰 SPRING INS GELD WIE DAGOBERT DUCK! Die Schatz-Halle ist jetzt doppelt so hoch und geht noch tiefer in den Boden. An der Wand steht ein 25 Blöcke hoher SPRUNGTURM mit Sprungbrett: antippen, hochlaufen, abspringen – und dann schwimmst du wirklich in deinem Geld herum! 🪙</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1270,7 +1270,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 250;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 251;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -6794,7 +6794,7 @@ function schwerelosAn() {
   return !imLuftraum();                 // drinnen in der Station geht alles normal
 }
 
-function collideBox(px,py,pz,half,height) { // steht diese AABB in einem festen Block?
+function collideBox(px,py,pz,half,height,geldWeich) { // steht diese AABB in einem festen Block?
   const x0=Math.floor(px-half), x1=Math.floor(px+half);
   const y0=Math.floor(py), y1=Math.floor(py+height-0.001);
   const z0=Math.floor(pz-half), z1=Math.floor(pz+half);
@@ -6805,11 +6805,17 @@ function collideBox(px,py,pz,half,height) { // steht diese AABB in einem festen 
       const chC = getChunk(x>>4, z>>4);
       if (!chC || !chC.data) return true;
     }
-    for (let y=y0;y<=y1;y++) if (isSolid(x,y,z)) return true;
+    for (let y=y0;y<=y1;y++) {
+      const b = getBlock(x,y,z);
+      if (b===AIR || !BLOCKS[b] || !BLOCKS[b].solid) continue;
+      // 💰 im Geldbad schwimmt Jonah einfach durch seine Geldscheine hindurch
+      if (geldWeich && GELD_BLOCK.has(b)) continue;
+      return true;
+    }
   }
   return false;
 }
-function collide(px,py,pz) { return collideBox(px,py,pz,P_HALF,P_HEIGHT); }
+function collide(px,py,pz) { return collideBox(px,py,pz,P_HALF,P_HEIGHT,geldBad); }
 
 function physics(dt) {
   // Der Boden unter dir wird SOFORT erzeugt - niemand fällt mehr ins Ungeladene
@@ -6895,6 +6901,53 @@ function physics(dt) {
   }
   wasSwim = swim;
 
+  // 💰 DAS GELDBAD: Jonah springt vom Sprungturm mitten in sein Geld hinein.
+  // Erst ab einem richtigen Sprung (nicht beim normalen Hüpfen) taucht er ein.
+  // Wichtig: ein Stück VORAUS schauen. Wer schnell fällt, legt in einem
+  // einzigen Bild über einen Block zurück - prüft man erst hinterher, ist er
+  // längst oben auf dem Geld gelandet statt hineingetaucht.
+  let geldTreffer = false;
+  if (!geldBad && player.vy < -14 && imSpeicherHalle()) {
+    const px = Math.floor(player.x), pz = Math.floor(player.z), fy = Math.floor(player.y);
+    const vor = Math.min(8, Math.ceil(-player.vy * dt) + 2);
+    for (let d = 0; d <= vor; d++)
+      if (GELD_BLOCK.has(getBlock(px, fy - d, pz))) { geldTreffer = true; break; }
+  }
+  if (geldTreffer) {
+    geldBad = true; geldBadT = 0.6;
+    document.getElementById('downBtn').style.display = 'flex';
+    toast('💰 PLATSCH! Du springst mitten in dein Geld! Schwimm darin herum – ' +
+          '⬆ bringt dich nach oben, ⬇ tiefer hinein. 🏊', 6000);
+    blip(900,0.07); blip(600,0.1); blip(380,0.18);
+    for (let i = 0; i < 18; i++)
+      fireworks.push({ x: player.x+(Math.random()-0.5)*1.8, y: player.y+0.4,
+        z: player.z+(Math.random()-0.5)*1.8, vx:(Math.random()-0.5)*5,
+        vy:2+Math.random()*4, vz:(Math.random()-0.5)*5,
+        tile: Math.random()<0.5 ? 93 : 94, t: 0.9 });
+  }
+  // Schwimmen tut er nur, wenn er WIRKLICH im Geld steckt. Beim Fallen davor
+  // zieht ihn ganz normal die Schwerkraft hinein - sonst bliebe er über dem
+  // Haufen in der Luft hängen.
+  const geldDrin = geldBad && (GELD_BLOCK.has(getBlock(Math.floor(player.x),
+                     Math.floor(player.y+0.2), Math.floor(player.z))) ||
+                   GELD_BLOCK.has(getBlock(Math.floor(player.x),
+                     Math.floor(player.y+0.9), Math.floor(player.z))) ||
+                   GELD_BLOCK.has(getBlock(Math.floor(player.x),
+                     Math.floor(player.y+1.5), Math.floor(player.z))));
+  if (geldBad) {
+    // Erst wenn Jonah wirklich frei steht, wird das Geld wieder fest - sonst
+    // steckte er plötzlich mitten in einem Block.
+    const frei = !collideBox(player.x, player.y, player.z, P_HALF, P_HEIGHT, false);
+    if (!frei) geldBadT = 0.5;
+    else {
+      geldBadT -= dt;
+      if (geldBadT <= 0 || !imSpeicherHalle()) {
+        geldBad = false;
+        document.getElementById('downBtn').style.display = flying ? 'flex' : 'none';
+      }
+    }
+  }
+
   // Lava ist HEISS: raus da, und zwar mit Schwung!
   lavaHurtT -= dt;
   const inLava = getBlock(Math.floor(player.x), Math.floor(player.y+0.2), Math.floor(player.z))===LAVA ||
@@ -6928,7 +6981,8 @@ function physics(dt) {
   if (ml>1) { mf/=ml; ms/=ml; }
   const schwerelos = schwerelosAn();
   let lukeZug = null;                   // 🚪 zieht gerade eine offene Luke an Jonah?
-  const speed = schwerelos ? 3.4 : swim ? 3.0 : superT > 0 ? 11.5 : (boostT > 0 ? 6.6 : WALK_SPEED);   // 🦸 Super-Speed!
+  const speed = schwerelos ? 3.4 : swim ? 3.0 : geldDrin ? 2.8 :
+                superT > 0 ? 11.5 : (boostT > 0 ? 6.6 : WALK_SPEED);   // 🦸 Super-Speed!
   const fx=Math.sin(yaw), fz=-Math.cos(yaw), rx=Math.cos(yaw), rz=Math.sin(yaw);
   if (schwerelos) {
     // im All gibt es nichts zum Abstoßen: Jonah kommt langsam in Fahrt und
@@ -6964,6 +7018,13 @@ function physics(dt) {
     player.vy -= 9*dt;
     if (jumpHeld || keys['Space']) player.vy = Math.min(player.vy+30*dt, 3.5);
     player.vy = Math.max(player.vy, -3.5);
+  } else if (geldDrin) {
+    // Geld ist dicker als Wasser: es trägt ein bisschen, man sinkt langsamer
+    player.vy -= 6.5*dt;
+    if (jumpHeld || keys['Space']) player.vy = Math.min(player.vy+26*dt, 3.0);
+    if (downHeld || keys['ShiftLeft'] || keys['ShiftRight'])
+      player.vy = Math.max(player.vy-26*dt, -2.6);
+    player.vy = Math.max(player.vy, -2.6);
   } else if ((jumpHeld||keys['Space']) && (lukeZug = lukenSchacht())) {
     // 🎈 durch die offene Luke nach oben: sanft und gleichmäßig, wie ein Aufzug -
     // und der Strom zieht Jonah dabei genau in die Mitte der Luke
@@ -7523,6 +7584,9 @@ let riding = null;                      // das Pferd, auf dem wir gerade sitzen
 let sitting = null;                     // der Stuhl, auf dem wir gerade sitzen
 let flying = false;                     // Flugmodus
 let wasSwim = false;                    // für den Platsch beim Eintauchen
+// 💰 DAS GELDBAD: wer aus der Höhe in seinen Geldhaufen springt, taucht
+// wirklich ein und schwimmt darin herum - wie Dagobert Duck!
+let geldBad = false, geldBadT = 0, geldFxT = 0;
 let jub100 = false;                     // wurde das große 100er-Fest schon gefeiert?
 function feiereJubilaeum() {            // 🎉 100 Versionen JonahCraft!
   const box = document.getElementById('jubel');
@@ -15827,8 +15891,15 @@ const SP_BASIS_X = -12000, SP_BASIS_Z = 12000;   // weit draußen, da steht nich
 let SP_X = SP_BASIS_X, SP_Z = SP_BASIS_Z;        // der genaue Platz wird gesucht
 const SP_W = 8;                         // das Häuschen oben: 9x9 (lx 0..8)
 const SP_R = 20;                        // die Halle unten: 41x41 innen
-const SP_HALLE_H = 16;                  // und 16 Blöcke hoch - richtig riesig
-const SP_HY = CH_MIN + 4;               // der Hallenboden, ganz tief unten
+const SP_HALLE_H = 30;                  // und 30 Blöcke hoch - Platz für den Sprungturm!
+const SP_HY = CH_MIN + 2;               // der Hallenboden: TIEFER geht es in der
+                                        // ganzen Welt nicht, darunter ist nur noch
+                                        // das Schutz-Netz am Welt-Boden
+// 🏊 DER SPRUNGTURM an der Nordwand: hochklettern, über das Sprungbrett laufen
+// und mitten in den eigenen Geldhaufen springen - wie bei Dagobert Duck!
+const SPT_DZ = -18;                     // dort steht der Turm (von der Mitte aus)
+const SPT_HOCH = 25;                    // so viele Blöcke ragt er hoch
+const SPT_BRETT = -10;                  // bis hierhin reicht das Sprungbrett
 const SP_MITTE = 4;                     // die Mitte von Häuschen und Schacht
 const SP_RAND = SP_R + 2;               // so weit reicht der Geldspeicher
 let SP_Y = 40, spHoeheFertig = false;   // auf dieser Höhe steht das Häuschen
@@ -15912,6 +15983,10 @@ function speicherBlock(lx, lz, y) {
     // 💰 ein Schild vor dem Fahrstuhl - sonst bleibt die Halle ganz leer,
     // denn hier baut Jonah selbst mit seinem Geld
     if (dx === 0 && dz === 7 && y === SP_HY + 1) return SIGN;
+    // 🏊 DER SPRUNGTURM: eine Säule an der Wand und oben das lange Sprungbrett
+    if (dx === 0 && dz === SPT_DZ && y > SP_HY && y <= SP_HY + SPT_HOCH) return SPRUNGTURM;
+    if (dx === 0 && dz > SPT_DZ && dz <= SPT_BRETT && y === SP_HY + SPT_HOCH) return SPRUNGTURM;
+    if (dx === 0 && dz === SPT_DZ + 1 && y === SP_HY + 1) return SIGN;   // das Schild davor
     // Fackeln an den Wänden, damit die Halle schön leuchtet
     if (y === SP_HY + 5 && (Math.abs(dx) === SP_R || Math.abs(dz) === SP_R) &&
         (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
@@ -15984,6 +16059,10 @@ function speicherStempeln(data, cx, cz) {
   if (!signTexts.has(s2))
     signTexts.set(s2, '💰 DEINE SCHATZ-HALLE - leg hier dein ganzes Geld ab! Nimm 💵 Geldscheine ' +
                       'oder 🪙 Münzen aus deiner Blockleiste und bau damit. Hier kommt kein Räuber hin!');
+  const s3 = (SP_X+SP_MITTE) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+SPT_DZ+1);
+  if (!signTexts.has(s3))
+    signTexts.set(s3, '🏊 SPRUNGTURM - tipp ihn an, dann bist du ganz oben! Lauf über das Brett ' +
+                      'und spring mitten in dein Geld. Dann kannst du darin schwimmen! 💰');
 }
 // --- 💰 JONAHS SCHATZ-HALLE: hier legt er sein Geld SELBST hin -------------
 // Früher (v248) stand hier ein Tresor und daraus wuchs ein Goldberg. Jonah
@@ -16007,7 +16086,9 @@ function speicherGeldZaehlen() {
   }
   return n;
 }
-// 🧹 Einmalig aufräumen: der Goldberg aus Version 248 verschwindet wieder.
+// 🧹 Einmalig aufräumen: der Goldberg aus Version 248 verschwindet wieder -
+// und weil der Hallenboden in Version 251 zwei Blöcke tiefer liegt, sackt alles
+// Geld, das in der Luft hängen geblieben ist, auf den neuen Boden hinunter.
 function altesGoldAufraeumen() {
   speicherHoehe();
   // Ist die Halle überhaupt schon gebaut? Wenn nicht, sieht man das alte Gold
@@ -16019,16 +16100,41 @@ function altesGoldAufraeumen() {
   let weg = 0;
   for (let dx = -13; dx <= 13; dx++)
     for (let dz = -13; dz <= 13; dz++)
-      for (let y = SP_HY + 1; y <= SP_HY + 8; y++) {
+      for (let y = SP_HY + 1; y <= SP_HY + 14; y++) {
         const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz;
         if (getBlock(wx, y, wz) !== GOLD) continue;
         setBlock(wx, y, wz, AIR); weg++;
+      }
+  // und jetzt das Geld absacken lassen - von unten nach oben, dann stapelt es
+  // sich sauber auf dem neuen Boden
+  for (let y = SP_HY + 1; y <= SP_HY + SP_HALLE_H; y++)
+    for (let dx = -SP_R; dx <= SP_R; dx++)
+      for (let dz = -SP_R; dz <= SP_R; dz++) {
+        const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz;
+        if (!GELD_BLOCK.has(getBlock(wx, y, wz))) continue;
+        let ny = y;
+        while (ny > SP_HY + 1 && getBlock(wx, ny - 1, wz) === AIR) ny--;
+        if (ny === y) continue;
+        const b = getBlock(wx, y, wz);
+        setBlock(wx, y, wz, AIR); setBlock(wx, ny, wz, b);
       }
   altesGoldWeg = true;
   return weg;
 }
 let spDrin = false, spBergT = 0;
 function speicherTick(dt) {
+  if (geldBad) {                        // 🪙 beim Schwimmen wirbeln die Scheine
+    geldFxT -= dt;
+    if (geldFxT <= 0) {
+      geldFxT = 0.2;
+      for (let i = 0; i < 2; i++)
+        fireworks.push({ x: player.x+(Math.random()-0.5)*1.5, y: player.y+0.3+Math.random()*1.2,
+          z: player.z+(Math.random()-0.5)*1.5, vx:(Math.random()-0.5)*2.4,
+          vy:1+Math.random()*2.2, vz:(Math.random()-0.5)*2.4,
+          tile: Math.random()<0.5 ? 93 : 94, t: 0.6 });
+      if (Math.random() < 0.5) blip(700+Math.random()*500, 0.035);
+    }
+  }
   spBergT -= dt;
   if (spBergT > 0) return;
   spBergT = 1;
@@ -16046,9 +16152,10 @@ function speicherTick(dt) {
   const n = speicherGeldZaehlen();
   toast(n > 0
     ? '💰 Willkommen in deiner Schatz-Halle! Hier liegen ' + n + ' € – und kein Räuber ' +
-      'kommt jemals hier herunter. 🔒'
+      'kommt jemals hier herunter. 🔒 Tipp den 🏊 Sprungturm an und spring ins Geld!'
     : '💰 Deine Schatz-Halle! Leg hier dein Geld ab: nimm 💵 Geldscheine oder 🪙 Münzen aus ' +
-      'deiner Blockleiste und bau damit. Hier unten ist alles sicher vor Räubern. 🔒', 8000);
+      'deiner Blockleiste und bau damit. Dann kannst du vom 🏊 Sprungturm hineinspringen ' +
+      'und darin schwimmen!', 9000);
 }
 
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
