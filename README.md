@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DER GELDSPEICHER STEHT JETZT ÜBER DER ERDE (v252)! 💰🏛️ Jonah: „Mir ist
+  eingefallen, dass ich den Geldspeicher doch über der Erde haben möchte – so
+  wie bei Dagobert Duck. Nur dass vorne nicht DD draufsteht, sondern JJ für
+  Jonah J."
+  🏛️ DAS BAUWERK: ein RIESIGER Würfel mitten in der Landschaft, 43×43 Blöcke
+  groß und über 30 hoch, komplett aus unzerstörbarem Schutz-Stein. Oben eine
+  goldene Krone, an den vier Ecken Türmchen mit goldener Spitze, rundherum eine
+  Reihe Fenster und vorne eine Tür mit Steinweg.
+  💰 UND DAS GROSSE JJ: zwei riesige goldene J an der Vorderwand, jedes aus
+  45 Goldblöcken – man sieht sie schon von weitem!
+  🏛️ DRINNEN ist eine einzige große Halle: genau die, in die Jonah sein Geld
+  legt. Der Fahrstuhl und das Sprungbrett sind mit umgezogen – also: Geld
+  hinlegen, mit 🛗 hochfahren, über das Brett laufen und hineinspringen!
+  ⛏️ Die alte Halle tief unter der Erde gibt es nicht mehr. Geld, das dort noch
+  lag, wandert beim ersten Besuch automatisch zurück in Jonahs Tasche.
+  🔭 Damit die große Halle nicht im Nebel verschwindet, wird der Nebel drinnen
+  weit weggeschoben – man sieht jetzt Decke und Rückwand gestochen scharf.
 - SPRING INS GELD WIE DAGOBERT DUCK (v251)! 🏊💰 Jonahs Idee: die Halle soll
   noch tiefer gehen, an der Wand ein Sprungturm – und dann will er von oben ins
   Geld springen und darin herumschwimmen.

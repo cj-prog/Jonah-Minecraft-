@@ -1224,7 +1224,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 251 &middot; 🏊💰 SPRING INS GELD WIE DAGOBERT DUCK! Die Schatz-Halle ist jetzt doppelt so hoch und geht noch tiefer in den Boden. An der Wand steht ein 25 Blöcke hoher SPRUNGTURM mit Sprungbrett: antippen, hochlaufen, abspringen – und dann schwimmst du wirklich in deinem Geld herum! 🪙</p>
+    Version 252 &middot; 💰 DEIN GELDSPEICHER STEHT JETZT ÜBER DER ERDE – wie bei Dagobert Duck! Ein riesiger Würfel mit goldener Krone, Ecktürmen und einem RIESIGEN goldenen JJ für Jonah J. an der Vorderseite. Drinnen: deine Geld-Halle, der Fahrstuhl und das Sprungbrett. 🏊🪙</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1270,7 +1270,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 251;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 252;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5433,7 +5433,8 @@ function baueSpielstand() {
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
-      goldWeg: altesGoldWeg,            // 🧹 ist der alte Goldberg aus v248 schon weg?
+      goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
+      ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
@@ -5606,16 +5607,16 @@ function loadGame() {
     if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
-    // 💰 Aus Version 248: Geld, das im alten Tresor lag, kommt zurück in die
-    // Tasche - und der Goldberg wird beim nächsten Besuch weggeräumt.
-    speicherStand = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
-    altesGoldWeg = s.goldWeg !== false && !speicherStand;
-    if (speicherStand > 0) {
-      money += speicherStand;
-      const zurueck = speicherStand; speicherStand = 0;
-      setTimeout(() => toast('💰 Der Tresor im Geldspeicher ist weg – dein Geld (' + zurueck +
-        ' €) liegt wieder in deiner Tasche. Leg es einfach selbst in die Halle! 💵🪙', 9000), 2500);
+    // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
+    const ausTresor = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
+    if (ausTresor > 0) {
+      money += ausTresor;
+      setTimeout(() => toast('💰 Der alte Tresor im Geldspeicher ist weg – dein Geld (' + ausTresor +
+        ' €) liegt wieder in deiner Tasche. Leg es einfach selbst in deinen Geldspeicher! 💵🪙', 9000), 2500);
     }
+    // 💰 Bis Version 251 lag die Halle unter der Erde. Jeder Spielstand, der
+    // davor gespeichert wurde, muss dort unten einmal aufgeräumt werden.
+    altesGoldWeg = s.ueberErde === true;
     if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
@@ -11902,7 +11903,7 @@ function liftHalte(x, z, y0) {          // alle Etagen des Schachts, von unten n
 }
 function liftName(y) {                  // hübsche Namen statt nackter Zahlen
   if (inSpeicherGebiet(player.x, player.z))            // 💰 im Geldspeicher
-    return y <= SP_HY + 4 ? '💰 Die große Geldspeicher-Halle' : '🏠 Das Häuschen oben';
+    return y <= SP_HY + 4 ? '💰 Unten in der Geld-Halle' : '🏊 Oben am Sprungbrett';
   const B = burgPos();
   if (Math.hypot(player.x-B.bx, player.z-B.bz) < 80) {
     if (player.x < B.bx-38) {           // im Königs-Turm 🗼
@@ -15881,32 +15882,58 @@ function drawKinoLeinwand() {
   gl.bindTexture(gl.TEXTURE_2D, tex);   // Block-Atlas wiederherstellen
 }
 
-// ============== 💰 DER GELDSPEICHER ========================================
-// Jonahs Wunsch: oben auf der Erde ein kleines Häuschen, darin ein Fahrstuhl -
-// und der fährt TIEF unter die Erde in eine riesige Halle, in die sein ganzes
-// Geld kommt. Die Wände der Halle sind aus unzerstörbarem Schutz-Stein.
-// Und das Beste: jedes Geld, das er hineintut, wächst als echter GOLDBERG aus
-// dem Boden. Je mehr Geld, desto größer der Berg!
+// ============== 💰 DER GELDSPEICHER VON JONAH JÜRGENS ======================
+// Jonahs Wunsch: "Ich möchte den Geldspeicher doch ÜBER der Erde haben - so
+// wie bei Dagobert Duck. Nur dass vorne nicht DD draufsteht, sondern JJ."
+// Also steht hier jetzt ein riesiger Würfel aus unzerstörbarem Schutz-Stein
+// mitten in der Landschaft: 43x43 Blöcke groß, über 30 hoch, mit goldener
+// Krone obendrauf, Ecktürmen, Fenstern - und einem RIESIGEN goldenen JJ an
+// der Vorderseite. Drinnen ist eine einzige große Halle: dort legt Jonah sein
+// ganzes Geld ab, fährt mit dem Fahrstuhl hoch aufs Sprungbrett und springt
+// von dort mitten in sein Geld hinein.
 const SP_BASIS_X = -12000, SP_BASIS_Z = 12000;   // weit draußen, da steht nichts im Weg
 let SP_X = SP_BASIS_X, SP_Z = SP_BASIS_Z;        // der genaue Platz wird gesucht
-const SP_W = 8;                         // das Häuschen oben: 9x9 (lx 0..8)
-const SP_R = 20;                        // die Halle unten: 41x41 innen
-const SP_HALLE_H = 30;                  // und 30 Blöcke hoch - Platz für den Sprungturm!
-const SP_HY = CH_MIN + 2;               // der Hallenboden: TIEFER geht es in der
-                                        // ganzen Welt nicht, darunter ist nur noch
-                                        // das Schutz-Netz am Welt-Boden
-// 🏊 DER SPRUNGTURM an der Nordwand: hochklettern, über das Sprungbrett laufen
-// und mitten in den eigenen Geldhaufen springen - wie bei Dagobert Duck!
-const SPT_DZ = -18;                     // dort steht der Turm (von der Mitte aus)
-const SPT_HOCH = 25;                    // so viele Blöcke ragt er hoch
-const SPT_BRETT = -10;                  // bis hierhin reicht das Sprungbrett
-const SP_MITTE = 4;                     // die Mitte von Häuschen und Schacht
-const SP_RAND = SP_R + 2;               // so weit reicht der Geldspeicher
-let SP_Y = 40, spHoeheFertig = false;   // auf dieser Höhe steht das Häuschen
-// WO und WIE HOCH steht das Häuschen? Jede Welt sieht anders aus - auf einem
-// festen Punkt stünde es mal mitten im Meer und mal im Steilhang. Darum wird
-// rund um den Basis-Punkt ein Platz gesucht, der TROCKEN und EBEN ist. Und die
-// Höhe ist die höchste Stelle im Grundriss, damit nichts hineinragt.
+const SP_W = 8;                         // nur noch zum Platz-Suchen: so bleibt der
+                                        // Geldspeicher in alten Welten da, wo er war
+const SP_MITTE = 4;                     // die Mitte des ganzen Bauwerks
+const SP_R = 20;                        // innen 41x41 Blöcke
+const SP_HALLE_H = 30;                  // und 30 Blöcke hoch
+const SP_RAND = SP_R + 8;               // so weit reicht der Vorplatz drumherum
+let SP_Y = 40, SP_HY = 40, spHoeheFertig = false;   // Boden = Erdboden
+// 🏊 Fahrstuhl und Sprungbrett stehen innen an der Rückwand
+const SPT_HOCH = 24;                    // so hoch liegt das Sprungbrett
+const SPT_BRETT = -8;                   // bis hierhin reicht es in die Halle
+const SPT_SCHACHT = -18;                // die Mitte des Fahrstuhl-Schachts
+const SP_ALT_HY = CH_MIN + 2;           // wo die Halle früher unter der Erde lag
+// 💰 DAS GROSSE JJ an der Vorderwand - jede 1 ist ein Goldblock
+const JJ_MUSTER = [
+  '1111111',
+  '0001110',
+  '0001110',
+  '0001110',
+  '0001110',
+  '0001110',
+  '0001110',
+  '1101110',
+  '1101110',
+  '1111110',
+  '0111100',
+];
+const JJ_OBEN = 24;                     // die oberste Zeile liegt 24 über dem Boden
+function jjGold(dx, dy) {
+  const zeile = JJ_OBEN - dy;
+  if (zeile < 0 || zeile >= JJ_MUSTER.length) return false;
+  let c = -1;                           // zwei J nebeneinander, mit Lücke
+  if (dx >= -8 && dx <= -2) c = dx + 8;
+  else if (dx >= 1 && dx <= 7) c = dx - 1;
+  if (c < 0) return false;
+  return JJ_MUSTER[zeile][c] === '1';
+}
+// WO und WIE HOCH steht der Geldspeicher? Jede Welt sieht anders aus - auf
+// einem festen Punkt stünde er mal mitten im Meer und mal im Steilhang. Darum
+// wird rund um den Basis-Punkt ein Platz gesucht, der TROCKEN und EBEN ist.
+// Gemessen wird dabei genau wie früher, damit der Geldspeicher in Jonahs Welt
+// an derselben Stelle stehen bleibt wie vorher.
 function speicherHoehe() {
   if (spHoeheFertig) return SP_Y;
   // WICHTIG wie bei der Festung: immer in Jonahs normaler Welt messen. Sonst
@@ -15929,97 +15956,106 @@ function speicherHoehe() {
     if (tief > bestTief) { bestTief = tief; bx = cx; bz = cz; }            // der beste Notnagel
   }
   SP_X = bx; SP_Z = bz;
+  // Der ganze GRUNDRISS zählt: der Geldspeicher soll auf der höchsten Stelle
+  // stehen, die er selbst bedeckt - sonst steckte er in einem Hügel und man
+  // sähe das große JJ gar nicht.
   let hoch = SEA + 1;
-  for (let lx = -5; lx <= SP_W + 5; lx += 1)
-    for (let lz = -5; lz <= SP_W + 5; lz += 1)
-      hoch = Math.max(hoch, terrainHeight(SP_X + lx, SP_Z + lz));
+  for (let dx = -SP_R - 1; dx <= SP_R + 1; dx += 2)
+    for (let dz = -SP_R - 1; dz <= SP_R + 1; dz += 2)
+      hoch = Math.max(hoch, terrainHeight(SP_X + SP_MITTE + dx, SP_Z + SP_MITTE + dz));
   SP_Y = Math.max(SEA + 2, hoch);
+  SP_HY = SP_Y;                         // der Hallenboden IST jetzt der Erdboden
   spHoeheFertig = true;
   weltDim = merkDim;
   return SP_Y;
 }
 function speicherEingang() {            // davor landet der Teleport
   speicherHoehe();
-  return [SP_X + SP_MITTE, SP_Y + 1, SP_Z + SP_W + 3];
+  return [SP_X + SP_MITTE, SP_Y + 1, SP_Z + SP_MITTE + SP_R + 6];
 }
 function inSpeicherGebiet(x, z) {
   speicherHoehe();
-  return x > SP_X - SP_RAND && x < SP_X + SP_RAND &&
-         z > SP_Z - SP_RAND && z < SP_Z + SP_RAND;
+  return Math.abs(x - (SP_X + SP_MITTE)) < SP_RAND &&
+         Math.abs(z - (SP_Z + SP_MITTE)) < SP_RAND;
 }
-function imSpeicherHaus() {             // steht Jonah oben im Häuschen?
+// Steht Jonah DRINNEN in der großen Halle? (nicht nur irgendwo auf dem Platz)
+function imSpeicherHalle() {
   speicherHoehe();
-  return weltDim === 0 && inSpeicherGebiet(player.x, player.z) &&
-         player.y > SP_Y - 1 && player.y < SP_Y + 7;
-}
-function imSpeicherHalle() {            // ... oder unten in der großen Halle?
-  speicherHoehe();
-  return weltDim === 0 && inSpeicherGebiet(player.x, player.z) &&
+  return weltDim === 0 &&
+         Math.abs(player.x - (SP_X + SP_MITTE)) < SP_R + 0.6 &&
+         Math.abs(player.z - (SP_Z + SP_MITTE)) < SP_R + 0.6 &&
          player.y > SP_HY - 1 && player.y < SP_HY + SP_HALLE_H + 2;
 }
-// --- Was steht an dieser Stelle? (lx/lz zählen vom Häuschen aus) -----------
+// --- Was steht an dieser Stelle? (lx/lz zählen vom Grundriss-Nullpunkt aus) -
 // null heißt: hier bleibt die Welt so, wie sie gewachsen ist.
 function speicherBlock(lx, lz, y) {
   speicherHoehe();
+  const hy = SP_HY;
   const dx = lx - SP_MITTE, dz = lz - SP_MITTE;
-  // 1) DER FAHRSTUHL-SCHACHT - er geht vom Häuschen bis ganz hinunter
-  if (lx >= 2 && lx <= 6 && lz >= 2 && lz <= 6 && y >= SP_HY && y <= SP_Y + 4) {
-    const wand = lx === 2 || lx === 6 || lz === 2 || lz === 6;
-    // die zwei Ausstiege: oben im Häuschen und unten in der Halle.
-    // Genau EINE offene Seite - daran erkennt der Fahrstuhl eine Haltestelle.
-    const tuer = lz === 6 && lx >= 3 && lx <= 5 &&
-                 ((y === SP_Y + 1 || y === SP_Y + 2) ||
-                  (y === SP_HY + 1 || y === SP_HY + 2));
-    if (tuer) return AIR;
+  const adx = Math.abs(dx), adz = Math.abs(dz);
+
+  // 1) DER FAHRSTUHL-SCHACHT innen an der Rückwand
+  if (adx <= 2 && dz >= SPT_SCHACHT - 2 && dz <= SPT_SCHACHT + 2 &&
+      y >= hy && y <= hy + 27) {
+    if (y === hy + 27) return SCHUTZ;                       // Deckel: hier ist Schluss
+    // genau EINE offene Seite je Haltestelle - daran erkennt der Fahrstuhl,
+    // wo man aussteigen kann: unten in der Halle und oben am Sprungbrett
+    if (dz === SPT_SCHACHT + 2 && adx <= 1 &&
+        (y === hy+1 || y === hy+2 || y === hy+25 || y === hy+26)) return AIR;
+    const wand = adx === 2 || dz === SPT_SCHACHT - 2 || dz === SPT_SCHACHT + 2;
     if (wand) return FAHRSTUHL;
-    return y === SP_HY ? SCHUTZ : AIR;      // unten der Kabinen-Boden
+    return y === hy ? SCHUTZ : AIR;
   }
-  // 2) DIE RIESIGE HALLE tief unter der Erde - rundum unzerstörbar
-  if (Math.abs(dx) <= SP_R + 1 && Math.abs(dz) <= SP_R + 1 &&
-      y >= SP_HY - 1 && y <= SP_HY + SP_HALLE_H + 1) {
-    if (y <= SP_HY) return SCHUTZ;                              // Boden
-    if (y === SP_HY + SP_HALLE_H + 1) return SCHUTZ;            // Decke
-    if (Math.abs(dx) === SP_R + 1 || Math.abs(dz) === SP_R + 1) return SCHUTZ;   // Wände
-    // 💰 ein Schild vor dem Fahrstuhl - sonst bleibt die Halle ganz leer,
-    // denn hier baut Jonah selbst mit seinem Geld
-    if (dx === 0 && dz === 7 && y === SP_HY + 1) return SIGN;
-    // 🏊 DER SPRUNGTURM: eine Säule an der Wand und oben das lange Sprungbrett
-    if (dx === 0 && dz === SPT_DZ && y > SP_HY && y <= SP_HY + SPT_HOCH) return SPRUNGTURM;
-    if (dx === 0 && dz > SPT_DZ && dz <= SPT_BRETT && y === SP_HY + SPT_HOCH) return SPRUNGTURM;
-    if (dx === 0 && dz === SPT_DZ + 1 && y === SP_HY + 1) return SIGN;   // das Schild davor
-    // Fackeln an den Wänden, damit die Halle schön leuchtet
-    if (y === SP_HY + 5 && (Math.abs(dx) === SP_R || Math.abs(dz) === SP_R) &&
-        (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
-    return AIR;
-  }
-  // 3) DAS HÄUSCHEN OBEN - klein und unscheinbar, wie Jonah es wollte.
-  // Und KOMPLETT aus dem unzerstörbaren Schutz-Block: Wände, Boden und Dach.
-  // Kein TNT, kein Monster und keine Explosion kommt hier durch - nur Jonah
-  // selbst könnte etwas wegnehmen.
-  if (lx >= 0 && lx <= SP_W && lz >= 0 && lz <= SP_W) {
-    if (y > SP_Y + 5) return AIR;
-    if (y === SP_Y + 5) return SCHUTZ;                          // das Dach
-    if (y === SP_Y) return SCHUTZ;                              // der Fußboden
-    if (y < SP_Y) return y >= Math.min(terrainHeight(SP_X+lx, SP_Z+lz), SP_Y) - 2 ? STONE : null;
-    const wand = lx === 0 || lx === SP_W || lz === 0 || lz === SP_W;
-    if (wand) {
-      if (lz === SP_W && lx === SP_MITTE) {                     // die Eingangstür
-        if (y === SP_Y + 1) return DOOR;
-        if (y === SP_Y + 2) return DOOR_TOP;
+  // 2) DAS SPRUNGBRETT samt seiner Stütze
+  if (adx <= 1 && dz >= SPT_BRETT - 7 && dz <= SPT_BRETT && y === hy + SPT_HOCH)
+    return SPRUNGTURM;
+  if (dx === 0 && dz === SPT_BRETT - 4 && y > hy && y <= hy + SPT_HOCH)
+    return SPRUNGTURM;                                      // die Stütze: antippen = rauf!
+
+  // 3) DAS BAUWERK: ein riesiger Würfel aus Schutz-Stein
+  if (adx <= SP_R + 1 && adz <= SP_R + 1) {
+    const ecke = adx === SP_R + 1 && adz === SP_R + 1;
+    const aussen = adx === SP_R + 1 || adz === SP_R + 1;
+    if (y === hy) return SCHUTZ;                            // der Hallenboden
+    if (y < hy)                                             // das Fundament
+      return y >= Math.min(terrainHeight(SP_X+lx, SP_Z+lz), hy) - 3 ? STONE : null;
+    if (aussen) {
+      const dach = hy + SP_HALLE_H + 1;
+      if (ecke) {                                           // die vier Ecktürme
+        if (y > dach + 3) return AIR;
+        return y > dach ? GOLD : SCHUTZ;
       }
+      if (y > dach) return AIR;
+      if (y === dach) return GOLD;                          // goldener Rand ganz oben
+      if (y >= hy + SP_HALLE_H - 1) return GOLD;            // die goldene Krone
+      // 🚪 die Eingangstür vorne in der Mitte
+      if (dz === SP_R + 1 && dx === 0 && (y === hy+1 || y === hy+2))
+        return y === hy + 1 ? DOOR : DOOR_TOP;
+      // 🪟 eine Reihe Fenster rundherum
+      if (y === hy + 6) {
+        const n = adz === SP_R + 1 ? dx : dz;
+        if (((n % 5) + 5) % 5 === 0) return GLASS;
+      }
+      // 💰 DAS GROSSE JJ an der Vorderseite
+      if (dz === SP_R + 1 && jjGold(dx, y - hy)) return GOLD;
       return SCHUTZ;
     }
-    if (lx === 1 && lz === 1 && y === SP_Y + 2) return TORCH;   // Licht im Häuschen
-    if (lx === 7 && lz === 1 && y === SP_Y + 2) return TORCH;
-    if (lx === 1 && lz === 7 && y === SP_Y + 1) return SIGN;    // das Schild drinnen
+    if (y === hy + SP_HALLE_H + 1) return SCHUTZ;           // das Dach
+    if (y > hy + SP_HALLE_H + 1) return AIR;
+    // 🔥 Fackeln an den Innenwänden
+    if (y === hy + 5 && (adx === SP_R || adz === SP_R) &&
+        (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
+    // 📋 die beiden Schilder
+    if (dx === 0 && dz === SP_R - 2 && y === hy + 1) return SIGN;
+    if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
     return AIR;
   }
-  // 4) DER VORPLATZ: ein kleiner ebener Fleck, damit man zur Tür kommt
-  if (lx >= -5 && lx <= SP_W + 5 && lz >= -5 && lz <= SP_W + 5) {
+  // 4) DER VORPLATZ: eine ebene Wiese rundherum, mit Weg zur Tür
+  if (adx <= SP_RAND && adz <= SP_RAND) {
     const gel = terrainHeight(SP_X + lx, SP_Z + lz);
-    if (y > SP_Y) return AIR;                                   // alles wegräumen
-    if (y === SP_Y) return lz > SP_W && lx >= 3 && lx <= 5 ? STRASSE : GRASS;
-    return y >= Math.min(gel, SP_Y) - 2 ? DIRT : null;
+    if (y > hy) return AIR;
+    if (y === hy) return (dz > SP_R + 1 && adx <= 1) ? STRASSE : GRASS;
+    return y >= Math.min(gel, hy) - 3 ? DIRT : null;
   }
   return null;
 }
@@ -16034,46 +16070,26 @@ function speicherStempeln(data, cx, cz) {
   const x0 = cx*CS, z0 = cz*CS;
   for (let lz2 = 0; lz2 < CS; lz2++) for (let lx2 = 0; lx2 < CS; lx2++) {
     const lx = x0 + lx2 - SP_X, lz = z0 + lz2 - SP_Z;
-    if (lx < SP_MITTE - SP_RAND || lx > SP_MITTE + SP_RAND ||
-        lz < SP_MITTE - SP_RAND || lz > SP_MITTE + SP_RAND) continue;
-    // Nur die Höhen anfassen, wo wirklich etwas steht - die ganze Säule von
-    // ganz unten bis nach oben durchzurechnen würde das Laden spürbar bremsen.
-    const setz = (von, bis) => {
-      for (let y = von; y <= bis; y++) {
-        const b = speicherBlock(lx, lz, y);
-        if (b !== null) data[bidx(lx2, y, lz2)] = b;
-      }
-    };
-    setz(SP_HY - 1, SP_HY + SP_HALLE_H + 1);                  // die Halle unten
-    if (lx >= 2 && lx <= 6 && lz >= 2 && lz <= 6)             // der Schacht dazwischen
-      setz(SP_HY + SP_HALLE_H + 2, SP_Y + 4);
-    const gel = terrainHeight(SP_X + lx, SP_Z + lz);          // Häuschen und Vorplatz
-    setz(Math.min(gel, SP_Y) - 3, Math.max(gel, SP_Y) + 8);
+    if (Math.abs(lx - SP_MITTE) > SP_RAND || Math.abs(lz - SP_MITTE) > SP_RAND) continue;
+    const gel = terrainHeight(SP_X + lx, SP_Z + lz);
+    for (let y = Math.min(gel, SP_HY) - 4; y <= SP_HY + SP_HALLE_H + 6; y++) {
+      const b = speicherBlock(lx, lz, y);
+      if (b !== null) data[bidx(lx2, y, lz2)] = b;
+    }
   }
   // die Schilder beschriften
-  const s1 = (SP_X+1) + ',' + (SP_Y+1) + ',' + (SP_Z+7);
+  const s1 = (SP_X+SP_MITTE) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+SP_R-2);
   if (!signTexts.has(s1))
-    signTexts.set(s1, '💰 GELDSPEICHER - stell dich in den Fahrstuhl, tipp die Wand an ' +
-                      'und fahr ganz nach unten in deine Schatz-Halle!');
-  const s2 = (SP_X+SP_MITTE) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+7);
+    signTexts.set(s1, '💰 DER GELDSPEICHER VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
+                      'Nimm 💵 Geldscheine oder 🪙 Münzen aus deiner Blockleiste und bau damit.');
+  const s2 = (SP_X+SP_MITTE+2) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+SPT_SCHACHT+3);
   if (!signTexts.has(s2))
-    signTexts.set(s2, '💰 DEINE SCHATZ-HALLE - leg hier dein ganzes Geld ab! Nimm 💵 Geldscheine ' +
-                      'oder 🪙 Münzen aus deiner Blockleiste und bau damit. Hier kommt kein Räuber hin!');
-  const s3 = (SP_X+SP_MITTE) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+SPT_DZ+1);
-  if (!signTexts.has(s3))
-    signTexts.set(s3, '🏊 SPRUNGTURM - tipp ihn an, dann bist du ganz oben! Lauf über das Brett ' +
-                      'und spring mitten in dein Geld. Dann kannst du darin schwimmen! 💰');
+    signTexts.set(s2, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, nach oben! ' +
+                      'Dann über das Brett laufen und mitten ins Geld springen. 💰');
 }
-// --- 💰 JONAHS SCHATZ-HALLE: hier legt er sein Geld SELBST hin -------------
-// Früher (v248) stand hier ein Tresor und daraus wuchs ein Goldberg. Jonah
-// wollte das anders: „Ich möchte mein Geld nicht in den Tresor legen, sondern
-// in die Halle rein. Und ich möchte keinen Goldberg." Also ist die Halle jetzt
-// einfach ein riesiger, leerer, unzerstörbarer Raum - und Jonah baut selbst
-// mit 💵 Geldscheinen und 🪙 Münzen darin, so wie er will.
-let speicherStand = 0;                  // nur noch für den Umzug aus Version 248
-let altesGoldWeg = true;                // steht noch altes Gold aus v248 herum?
-// Wie viel Geld liegt gerade in der Halle? Jeder Geld-Block ist 1 € wert.
-// Die Liste geldOrte weiß sowieso schon, wo überall Geld herumliegt.
+// --- 💰 Wie viel Geld liegt in der Halle? ---------------------------------
+// Jeder Geld-Block ist 1 € wert. Die Liste geldOrte weiß sowieso schon, wo
+// überall Geld herumliegt.
 function speicherGeldZaehlen() {
   speicherHoehe();
   let n = 0;
@@ -16081,45 +16097,36 @@ function speicherGeldZaehlen() {
     const p = k.split(',');
     const y = +p[1];
     if (y <= SP_HY || y > SP_HY + SP_HALLE_H + 1) continue;
-    if (!inSpeicherGebiet(+p[0], +p[2])) continue;
+    if (Math.abs(+p[0] - (SP_X + SP_MITTE)) > SP_R) continue;
+    if (Math.abs(+p[2] - (SP_Z + SP_MITTE)) > SP_R) continue;
     n++;
   }
   return n;
 }
-// 🧹 Einmalig aufräumen: der Goldberg aus Version 248 verschwindet wieder -
-// und weil der Hallenboden in Version 251 zwei Blöcke tiefer liegt, sackt alles
-// Geld, das in der Luft hängen geblieben ist, auf den neuen Boden hinunter.
+// 🧹 EINMALIG AUFRÄUMEN: bis Version 251 lag die Halle tief unter der Erde.
+// Jetzt steht der Geldspeicher über der Erde - also wird die alte Halle
+// zugeschüttet und Jonahs Geld von damals kommt zurück in seine Tasche.
+let altesGoldWeg = true;                // ist unten schon aufgeräumt?
 function altesGoldAufraeumen() {
   speicherHoehe();
-  // Ist die Halle überhaupt schon gebaut? Wenn nicht, sieht man das alte Gold
-  // gar nicht - und würde es für immer stehen lassen. Dann lieber abwarten.
-  for (const [dx, dz] of [[0,0],[-13,-13],[13,-13],[-13,13],[13,13]]) {
+  // Ist die Gegend überhaupt schon gebaut? Sonst sieht man das alte Geld gar
+  // nicht - und würde es für immer dort unten lassen.
+  for (const [dx, dz] of [[0,0],[-18,-18],[18,-18],[-18,18],[18,18]]) {
     const ch = getChunk((SP_X+SP_MITTE+dx)>>4, (SP_Z+SP_MITTE+dz)>>4);
     if (!ch || !ch.data) return -1;
   }
-  let weg = 0;
-  for (let dx = -13; dx <= 13; dx++)
-    for (let dz = -13; dz <= 13; dz++)
-      for (let y = SP_HY + 1; y <= SP_HY + 14; y++) {
+  let euro = 0;
+  for (let dx = -SP_R-1; dx <= SP_R+1; dx++)
+    for (let dz = -SP_R-1; dz <= SP_R+1; dz++)
+      for (let y = SP_ALT_HY; y <= SP_ALT_HY + 32; y++) {
         const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz;
-        if (getBlock(wx, y, wz) !== GOLD) continue;
-        setBlock(wx, y, wz, AIR); weg++;
-      }
-  // und jetzt das Geld absacken lassen - von unten nach oben, dann stapelt es
-  // sich sauber auf dem neuen Boden
-  for (let y = SP_HY + 1; y <= SP_HY + SP_HALLE_H; y++)
-    for (let dx = -SP_R; dx <= SP_R; dx++)
-      for (let dz = -SP_R; dz <= SP_R; dz++) {
-        const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz;
-        if (!GELD_BLOCK.has(getBlock(wx, y, wz))) continue;
-        let ny = y;
-        while (ny > SP_HY + 1 && getBlock(wx, ny - 1, wz) === AIR) ny--;
-        if (ny === y) continue;
         const b = getBlock(wx, y, wz);
-        setBlock(wx, y, wz, AIR); setBlock(wx, ny, wz, b);
+        if (GELD_BLOCK.has(b)) { setBlock(wx, y, wz, STONE); euro++; }
+        else if (b === GOLD) setBlock(wx, y, wz, STONE);
       }
+  if (euro > 0) { money += euro; updateFoodHUD(); }
   altesGoldWeg = true;
-  return weg;
+  return euro;
 }
 let spDrin = false, spBergT = 0;
 function speicherTick(dt) {
@@ -16140,22 +16147,23 @@ function speicherTick(dt) {
   spBergT = 1;
   const drin = imSpeicherHalle();
   if (!drin) { spDrin = false; return; }
-  if (!altesGoldWeg) {                  // der alte Goldberg macht Platz
-    const weg = altesGoldAufraeumen();
-    if (weg < 0) return;                // Halle noch nicht geladen: gleich nochmal
-    if (weg) toast('🧹 Der alte Goldberg ist weg – jetzt hast du die ganze Halle für ' +
-                   'dein eigenes Geld! 💵🪙', 6000);
+  if (!altesGoldWeg) {                  // die alte Halle unter der Erde räumen
+    const euro = altesGoldAufraeumen();
+    if (euro < 0) return;               // noch nicht geladen: gleich nochmal
+    if (euro > 0)
+      toast('💰 Dein Geld aus der alten Halle tief unter der Erde (' + euro + ' €) liegt ' +
+            'jetzt wieder in deiner Tasche – bau es hier oben neu auf! 💵🪙', 9000);
     scheduleSave();
   }
   if (spDrin) return;
   spDrin = true;                        // nur EINMAL pro Besuch Bescheid sagen
   const n = speicherGeldZaehlen();
   toast(n > 0
-    ? '💰 Willkommen in deiner Schatz-Halle! Hier liegen ' + n + ' € – und kein Räuber ' +
-      'kommt jemals hier herunter. 🔒 Tipp den 🏊 Sprungturm an und spring ins Geld!'
-    : '💰 Deine Schatz-Halle! Leg hier dein Geld ab: nimm 💵 Geldscheine oder 🪙 Münzen aus ' +
-      'deiner Blockleiste und bau damit. Dann kannst du vom 🏊 Sprungturm hineinspringen ' +
-      'und darin schwimmen!', 9000);
+    ? '💰 Willkommen in deinem Geldspeicher! Hier liegen ' + n + ' € – und kein Räuber ' +
+      'kommt hier jemals hinein. 🔒 Fahr mit dem 🛗 nach oben und spring ins Geld!'
+    : '💰 Dein Geldspeicher! Leg hier dein Geld ab: nimm 💵 Geldscheine oder 🪙 Münzen aus ' +
+      'deiner Blockleiste und bau damit. Dann fahr mit dem 🛗 hoch aufs Sprungbrett ' +
+      'und spring hinein!', 9000);
 }
 
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
@@ -24853,6 +24861,10 @@ function frame(now) {
     // rundherum sieht Jonah dann nur noch Sterne und seine Raumstation.
     const hr2 = hochRaum();
     if (hr2 > 0) { fn0 = fn0 + (26 - fn0)*hr2; ff0 = ff0 + (60 - ff0)*hr2; }
+    // 💰 IM GELDSPEICHER: die Halle ist 41 Blöcke breit und 30 hoch. Mit dem
+    // normalen Nebel (ab 32 Blöcken) verschwänden Decke und Rückwand im Dunst,
+    // als hätte das Haus gar kein Dach. Drinnen wird er darum weggeschoben.
+    try { if (imSpeicherHalle()) { fn0 = 150; ff0 = 260; } } catch(e) {}
     gl.uniform1f(loc.uFogNear, fn0 + (2.6 - fn0)*fRaum);
     gl.uniform1f(loc.uFogFar,  ff0 + (5.5 - ff0)*fRaum);
   }
