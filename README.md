@@ -221,6 +221,20 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE SCHATZ-HALLE GEHÖRT GANZ DIR (v250)! 💰🏛️ Jonah war einmal unten und
+  wollte es anders: „Ich möchte mein Geld nicht in den Tresor legen, sondern in
+  die Halle rein. Und ich möchte keinen Goldberg."
+  ❌ DER TRESOR IST WEG und der Goldberg auch. Die Halle ist jetzt einfach ein
+  riesiger, leerer, unzerstörbarer Raum – ganz für Jonah.
+  💵🪙 DU LEGST DEIN GELD SELBST HINEIN: nimm Geldscheine oder Münzen aus deiner
+  Blockleiste und bau damit, wie du willst – Stapel, Mauern, Berge, egal.
+  Jeder Block kostet 1 € aus deiner Tasche, und wenn du ihn wieder abbaust,
+  bekommst du deinen Euro zurück. Mit dem 🌀-Pinsel geht es gleich mehrfach.
+  🔢 BEIM HINEINKOMMEN sagt dir das Spiel, wie viel schon da liegt:
+  „💰 Willkommen in deiner Schatz-Halle! Hier liegen 304 €."
+  🔒 Kein Räuber kommt jemals hier herunter – hier ist dein Geld sicher.
+  🧹 Wer vorher schon Geld im Tresor hatte, bekommt es zurück in die Tasche, und
+  der alte Goldberg räumt sich beim nächsten Besuch von selbst weg.
 - DAS HÄUSCHEN IST JETZT UNZERSTÖRBAR (v249)! 🛡️💰 Jonah wollte, dass das
   kleine Häuschen oben – das, wo der Fahrstuhl drin steht – auch aus dem
   unzerstörbaren Block ist. Ist es jetzt: Wände, Boden UND Dach bestehen

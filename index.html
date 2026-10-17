@@ -527,24 +527,6 @@
     background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
   #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
     border-radius:8px; border:2px solid rgba(255,255,255,.45); }
-  /* 💰 DER GELDSPEICHER: der Tresor tief unter der Erde */
-  /* kompakt gehalten, damit alle Knöpfe auch im Querformat aufs Handy passen */
-  #gsBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
-    align-items:center; gap:3px; background:rgba(44,32,8,.97); padding:7px 14px; border-radius:14px;
-    color:#fff; z-index:41; text-align:center; max-height:97vh; overflow-y:auto;
-    border:3px solid #f0c850; }
-  #gsBox h3 { font-size:16px; margin:0; }
-  #gsBox p { font-size:10.5px; opacity:.88; max-width:250px; line-height:1.35; }
-  #gsBox .senderRow { font-size:13.5px; padding:4px 12px; min-width:208px; }
-  #gsStand { font-size:14px; font-weight:bold; background:rgba(255,255,255,.12);
-    padding:4px 12px; border-radius:9px; }
-  #gsBerg { font-size:12px; font-weight:bold; color:#ffe066; }
-  #gsEigen { display:flex; flex-direction:column; align-items:center; gap:4px;
-    background:rgba(255,255,255,.09); border-radius:11px; padding:5px 8px; }
-  #gsInput { font-size:16px; font-weight:bold; text-align:center; width:120px; padding:5px 8px;
-    border-radius:8px; border:2px solid rgba(255,255,255,.45); }
-  #gsClose { font-size:14px; font-weight:bold; padding:5px 20px; border-radius:8px; border:none;
-    background:#4caf50; color:#fff; }
   #radioBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,24,52,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
@@ -1069,24 +1051,6 @@
   <button id="bankClose">Fertig</button>
 </div>
 
-<div class="hud" id="gsBox">
-  <h3>💰 Dein Geldspeicher</h3>
-  <div id="gsStand">Im Speicher: 0 €</div>
-  <div id="gsBerg"></div>
-  <div id="gsEigen">
-    <input id="gsInput" type="number" min="1" step="1" inputmode="numeric" placeholder="z. B. 50">
-    <div class="senderRow" data-gs="einEigen">⬇️ so viel hineintun</div>
-    <div class="senderRow" data-gs="ausEigen">⬆️ so viel herausholen</div>
-  </div>
-  <div class="senderRow" data-gs="einAlles">⬇️ ALLES hineintun</div>
-  <div class="senderRow" data-gs="einKonto">🏦 Auch alles von der Bank holen</div>
-  <div class="senderRow" data-gs="aus10">⬆️ 10 € herausholen</div>
-  <div class="senderRow" data-gs="ausAlles">⬆️ ALLES herausholen</div>
-  <p>Hier unten ist dein Geld sicher &ndash; kein Räuber kommt hier herunter! 🔒
-    Für je 2 € wächst ein Goldblock. 🪙</p>
-  <button id="gsClose">Fertig</button>
-</div>
-
 <div class="hud" id="radioBox">
   <h3>📻 Dein Radio</h3>
   <p>Welchen Sender möchtest du hören? Die Musik läuft, solange du in der Nähe bist.</p>
@@ -1260,7 +1224,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 249 &middot; 🛡️ DAS HÄUSCHEN VOM GELDSPEICHER IST JETZT UNZERSTÖRBAR! Wände, Boden und Dach sind aus dem Schutz-Block – kein TNT, kein Monster und keine Explosion kommt da durch. Dein Fahrstuhl und dein Goldberg sind sicher! 💰🛗</p>
+    Version 250 &middot; 💰 DIE SCHATZ-HALLE GEHÖRT GANZ DIR! Kein Tresor und kein Goldberg mehr – fahr mit dem Fahrstuhl hinunter und leg dein Geld SELBST in die riesige Halle: 💵 Geldscheine und 🪙 Münzen aus deiner Blockleiste. Beim Hineinkommen sage ich dir, wie viel schon da liegt! 🔒</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1306,7 +1270,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 249;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 250;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1694,8 +1658,9 @@ const BLOCKS = {
     [0.82,0.14,0.18, 0.94,0.19,0.82, 27],
     [0.38,0.14,0.80, 0.62,0.90,0.96, 158],        // die Säule hinten
     [0.42,0.52,0.74, 0.58,0.80,0.82, 160]] },     // mit Akku-Anzeige
-  // 💰 DER TRESOR IM GELDSPEICHER: eine goldene Panzertür mit Handrad und
-  // Euro-Zeichen. Antippen: Geld hineintun oder herausholen.
+  // 💰 Der alte Tresor aus Version 248. Jonah wollte sein Geld lieber selbst
+  // in die Halle legen, darum wird er nicht mehr gebaut. Der Block bleibt aber
+  // beschrieben, damit alte Welten nicht über eine unbekannte Nummer stolpern.
   [GSPEICHER]: { name:'Geldspeicher-Tresor 💰 (antippen = Geld hineintun und herausholen!)',
     tiles:[164,164,164], solid:true, model:[
     [0.00,0.00,0.00, 1.00,1.00,0.86, 80],         // der Panzerschrank aus Schutz-Stahl
@@ -5468,7 +5433,7 @@ function baueSpielstand() {
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
-      speicher: speicherStand,          // 💰 das Geld in deinem Geldspeicher
+      goldWeg: altesGoldWeg,            // 🧹 ist der alte Goldberg aus v248 schon weg?
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
@@ -5641,7 +5606,16 @@ function loadGame() {
     if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
-    if (typeof s.speicher==='number') speicherStand = Math.max(0, Math.round(s.speicher));   // 💰 Geldspeicher
+    // 💰 Aus Version 248: Geld, das im alten Tresor lag, kommt zurück in die
+    // Tasche - und der Goldberg wird beim nächsten Besuch weggeräumt.
+    speicherStand = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
+    altesGoldWeg = s.goldWeg !== false && !speicherStand;
+    if (speicherStand > 0) {
+      money += speicherStand;
+      const zurueck = speicherStand; speicherStand = 0;
+      setTimeout(() => toast('💰 Der Tresor im Geldspeicher ist weg – dein Geld (' + zurueck +
+        ' €) liegt wieder in deiner Tasche. Leg es einfach selbst in die Halle! 💵🪙', 9000), 2500);
+    }
     if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
@@ -15935,8 +15909,9 @@ function speicherBlock(lx, lz, y) {
     if (y <= SP_HY) return SCHUTZ;                              // Boden
     if (y === SP_HY + SP_HALLE_H + 1) return SCHUTZ;            // Decke
     if (Math.abs(dx) === SP_R + 1 || Math.abs(dz) === SP_R + 1) return SCHUTZ;   // Wände
-    // 💰 der Tresor steht gleich vor dem Fahrstuhl
-    if (dx === 0 && dz === 7 && y === SP_HY + 1) return GSPEICHER;
+    // 💰 ein Schild vor dem Fahrstuhl - sonst bleibt die Halle ganz leer,
+    // denn hier baut Jonah selbst mit seinem Geld
+    if (dx === 0 && dz === 7 && y === SP_HY + 1) return SIGN;
     // Fackeln an den Wänden, damit die Halle schön leuchtet
     if (y === SP_HY + 5 && (Math.abs(dx) === SP_R || Math.abs(dz) === SP_R) &&
         (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
@@ -16005,120 +15980,75 @@ function speicherStempeln(data, cx, cz) {
   if (!signTexts.has(s1))
     signTexts.set(s1, '💰 GELDSPEICHER - stell dich in den Fahrstuhl, tipp die Wand an ' +
                       'und fahr ganz nach unten in deine Schatz-Halle!');
+  const s2 = (SP_X+SP_MITTE) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+7);
+  if (!signTexts.has(s2))
+    signTexts.set(s2, '💰 DEINE SCHATZ-HALLE - leg hier dein ganzes Geld ab! Nimm 💵 Geldscheine ' +
+                      'oder 🪙 Münzen aus deiner Blockleiste und bau damit. Hier kommt kein Räuber hin!');
 }
-// --- 🪙 DER GOLDBERG: Jonahs Geld wächst wirklich aus dem Boden ------------
-const BERG_PRO = 2;                     // für je 2 € wächst ein Goldblock
-const BERG_R = 12, BERG_HOCH = 7;       // so weit und so hoch darf der Berg werden
-let speicherStand = 0;                  // so viel Geld liegt im Speicher
-let _spSlots = null;
-// Welche Plätze dürfen zugeschüttet werden? Fahrstuhl und der Weg zum
-// Tresor bleiben IMMER frei - sonst steht Jonah im Gold fest.
-function speicherPlatzFrei(dx, dz) {
-  if (Math.abs(dx) <= 3 && Math.abs(dz) <= 3) return false;     // der Schacht
-  if (Math.abs(dx) <= 1 && dz >= 2 && dz <= 9) return false;    // der Weg zum Tresor
-  return true;
-}
-// Die Reihenfolge, in der der Berg wächst: erst unten um den Fahrstuhl herum,
-// dann immer weiter nach außen und nach oben - so entsteht ein Kegel.
-function speicherSlots() {
-  if (_spSlots) return _spSlots;
-  const s = [];
-  for (let y = 0; y < BERG_HOCH; y++) {
-    const r = BERG_R - y * 1.5;
-    if (r < 1.5) break;
-    for (let dx = -BERG_R; dx <= BERG_R; dx++)
-      for (let dz = -BERG_R; dz <= BERG_R; dz++) {
-        const d = Math.hypot(dx, dz);
-        if (d > r || !speicherPlatzFrei(dx, dz)) continue;
-        s.push([dx, dz, y, d]);
-      }
-  }
-  s.sort((a, b) => (a[2]*2.4 + a[3]) - (b[2]*2.4 + b[3]));
-  _spSlots = s.slice(0, 900);
-  return _spSlots;
-}
-// Wie viel Geld passt überhaupt als Berg in die Halle?
-function speicherBergMax() { return speicherSlots().length * BERG_PRO; }
-function speicherBergBauen() {
+// --- 💰 JONAHS SCHATZ-HALLE: hier legt er sein Geld SELBST hin -------------
+// Früher (v248) stand hier ein Tresor und daraus wuchs ein Goldberg. Jonah
+// wollte das anders: „Ich möchte mein Geld nicht in den Tresor legen, sondern
+// in die Halle rein. Und ich möchte keinen Goldberg." Also ist die Halle jetzt
+// einfach ein riesiger, leerer, unzerstörbarer Raum - und Jonah baut selbst
+// mit 💵 Geldscheinen und 🪙 Münzen darin, so wie er will.
+let speicherStand = 0;                  // nur noch für den Umzug aus Version 248
+let altesGoldWeg = true;                // steht noch altes Gold aus v248 herum?
+// Wie viel Geld liegt gerade in der Halle? Jeder Geld-Block ist 1 € wert.
+// Die Liste geldOrte weiß sowieso schon, wo überall Geld herumliegt.
+function speicherGeldZaehlen() {
   speicherHoehe();
-  const slots = speicherSlots();
-  const soll = Math.max(0, Math.min(slots.length, Math.floor(speicherStand / BERG_PRO)));
-  let geaendert = 0;
-  for (let i = 0; i < slots.length; i++) {
-    const [dx, dz, y] = slots[i];
-    const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz, wy = SP_HY + 1 + y;
-    const will = i < soll ? GOLD : AIR;
-    const ist = getBlock(wx, wy, wz);
-    if (ist === will) continue;
-    if (will === AIR && ist !== GOLD) continue;   // nur das eigene Gold wieder wegnehmen
-    setBlock(wx, wy, wz, will);
-    geaendert++;
+  let n = 0;
+  for (const k of geldOrte) {
+    const p = k.split(',');
+    const y = +p[1];
+    if (y <= SP_HY || y > SP_HY + SP_HALLE_H + 1) continue;
+    if (!inSpeicherGebiet(+p[0], +p[2])) continue;
+    n++;
   }
-  return geaendert;
+  return n;
 }
-let spBergT = 0;
-function speicherTick(dt) {             // in der Halle den Berg nachwachsen lassen
+// 🧹 Einmalig aufräumen: der Goldberg aus Version 248 verschwindet wieder.
+function altesGoldAufraeumen() {
+  speicherHoehe();
+  // Ist die Halle überhaupt schon gebaut? Wenn nicht, sieht man das alte Gold
+  // gar nicht - und würde es für immer stehen lassen. Dann lieber abwarten.
+  for (const [dx, dz] of [[0,0],[-13,-13],[13,-13],[-13,13],[13,13]]) {
+    const ch = getChunk((SP_X+SP_MITTE+dx)>>4, (SP_Z+SP_MITTE+dz)>>4);
+    if (!ch || !ch.data) return -1;
+  }
+  let weg = 0;
+  for (let dx = -13; dx <= 13; dx++)
+    for (let dz = -13; dz <= 13; dz++)
+      for (let y = SP_HY + 1; y <= SP_HY + 8; y++) {
+        const wx = SP_X + SP_MITTE + dx, wz = SP_Z + SP_MITTE + dz;
+        if (getBlock(wx, y, wz) !== GOLD) continue;
+        setBlock(wx, y, wz, AIR); weg++;
+      }
+  altesGoldWeg = true;
+  return weg;
+}
+let spDrin = false, spBergT = 0;
+function speicherTick(dt) {
   spBergT -= dt;
   if (spBergT > 0) return;
-  spBergT = 2.5;
-  if (!imSpeicherHalle()) return;
-  speicherBergBauen();
-}
-// --- Das Tresor-Fenster ----------------------------------------------------
-function speicherAnzeige() {
-  const bloecke = Math.floor(speicherStand / BERG_PRO);
-  document.getElementById('gsStand').textContent =
-    'Im Speicher: ' + speicherStand + ' €  ·  in der Tasche: ' + money + ' €';
-  document.getElementById('gsBerg').textContent =
-    speicherStand > 0
-      ? '🪙 Dein Goldberg: ' + bloecke + ' Goldblöcke'
-      : '🪙 Noch kein Gold hier unten – tu dein Geld hinein, dann wächst der Berg!';
-}
-function openSpeicher() {
-  speicherAnzeige();
-  document.getElementById('gsInput').value = '';
-  document.getElementById('gsBox').style.display = 'flex';
-  if (document.exitPointerLock) document.exitPointerLock();
-  blip(392,0.07); blip(523,0.07); blip(784,0.1);
-}
-function speicherAktion(was) {
-  const rein = n => {
-    n = Math.floor(n);
-    if (n <= 0) { blip(180,0.12); return; }
-    if (money < n) { toast('💶 So viel Geld hast du gar nicht dabei! (Du hast ' + money + ' €)', 3000); blip(180,0.12); return; }
-    money -= n; speicherStand += n;
-    toast('💰 ' + n + ' € sind im Geldspeicher! Hier liegen jetzt ' + speicherStand +
-          ' € – und dein Goldberg wächst! 🪙', 4000);
-    blip(700,0.06); blip(880,0.08); blip(1050,0.1);
-  };
-  const raus = n => {
-    n = Math.floor(n);
-    if (n <= 0) { blip(180,0.12); return; }
-    if (speicherStand < n) { toast('💰 So viel liegt gar nicht im Speicher! (Hier sind ' + speicherStand + ' €)', 3000); blip(180,0.12); return; }
-    speicherStand -= n; money += n;
-    toast('💰 ' + n + ' € herausgeholt! Du hast jetzt ' + money + ' € in der Tasche.', 3400);
-    blip(880,0.06); blip(700,0.08);
-  };
-  if (was === 'einAlles') rein(money);
-  if (was === 'aus10') raus(Math.min(10, speicherStand));
-  if (was === 'ausAlles') raus(speicherStand);
-  if (was === 'einKonto') {             // 🏦 auch das Ersparte von der Bank holen
-    if (kontoStand <= 0) { toast('🏦 Auf deinem Bank-Konto liegt gerade nichts.', 2800); blip(180,0.12); }
-    else {
-      const n = kontoStand; kontoStand = 0; speicherStand += n;
-      toast('🏦➡️💰 ' + n + ' € von der Bank in den Geldspeicher gebracht! Hier liegen jetzt ' +
-            speicherStand + ' €. 🪙', 4500);
-      blip(600,0.06); blip(800,0.07); blip(1000,0.1);
-    }
+  spBergT = 1;
+  const drin = imSpeicherHalle();
+  if (!drin) { spDrin = false; return; }
+  if (!altesGoldWeg) {                  // der alte Goldberg macht Platz
+    const weg = altesGoldAufraeumen();
+    if (weg < 0) return;                // Halle noch nicht geladen: gleich nochmal
+    if (weg) toast('🧹 Der alte Goldberg ist weg – jetzt hast du die ganze Halle für ' +
+                   'dein eigenes Geld! 💵🪙', 6000);
+    scheduleSave();
   }
-  if (was === 'einEigen' || was === 'ausEigen') {
-    const n = Math.floor(Number(document.getElementById('gsInput').value));
-    if (!(n > 0)) { toast('💰 Schreib erst eine Zahl in das Feld – zum Beispiel 50. 🔢', 3200); blip(180,0.12); }
-    else if (was === 'einEigen') rein(n); else raus(n);
-  }
-  speicherAnzeige(); updateFoodHUD(); updateShopUI();
-  speicherBergBauen();
-  scheduleSave();
+  if (spDrin) return;
+  spDrin = true;                        // nur EINMAL pro Besuch Bescheid sagen
+  const n = speicherGeldZaehlen();
+  toast(n > 0
+    ? '💰 Willkommen in deiner Schatz-Halle! Hier liegen ' + n + ' € – und kein Räuber ' +
+      'kommt jemals hier herunter. 🔒'
+    : '💰 Deine Schatz-Halle! Leg hier dein Geld ab: nimm 💵 Geldscheine oder 🪙 Münzen aus ' +
+      'deiner Blockleiste und bau damit. Hier unten ist alles sicher vor Räubern. 🔒', 8000);
 }
 
 // ============== 🚐🏦 DIE RÄUBERBANDE ÜBERFÄLLT DIE BANK ======================
@@ -19981,18 +19911,6 @@ for (const el of document.querySelectorAll('#bankBox .senderRow')) {
   el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
 }
 document.getElementById('bankClose').addEventListener('click', ()=>{ bankBox.style.display='none'; });
-// 💰 der Geldspeicher-Tresor
-for (const el of document.querySelectorAll('#gsBox .senderRow')) {
-  const w = () => speicherAktion(el.dataset.gs);
-  el.addEventListener('click', w);
-  el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
-}
-document.getElementById('gsClose').addEventListener('click', ()=>{
-  document.getElementById('gsBox').style.display='none'; blip(400,0.06); });
-document.getElementById('gsInput').addEventListener('keydown', e => {
-  e.stopPropagation();
-  if (e.key==='Enter') { e.target.blur(); speicherAktion('einEigen'); }
-});
 // im Zahlen-Feld sollen die Tasten nicht das Spiel steuern
 document.getElementById('bankInput').addEventListener('keydown', e => {
   e.stopPropagation();
@@ -23260,7 +23178,6 @@ function doBreak(dir) {
   if (hit && hit.block === RWERK) { openWerkstatt(hit.x, hit.y, hit.z); return; }
   if (hit && hit.block === RCHIP) { openChip(); return; }
   if (hit && hit.block === RLADE) { ladeStationTipp(); return; }
-  if (hit && hit.block === GSPEICHER) { openSpeicher(); return; }   // 💰 geht nie kaputt
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -23631,10 +23548,6 @@ function doPlace(dir) {
   }
   if (hit.block === RLADE) {            // 🔌 die Ladestation
     ladeStationTipp();
-    return;
-  }
-  if (hit.block === GSPEICHER) {        // 💰 der Tresor im Geldspeicher
-    openSpeicher();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
