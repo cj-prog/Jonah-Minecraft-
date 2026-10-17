@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- SPRING INS GELD WIE DAGOBERT DUCK (v251)! 🏊💰 Jonahs Idee: die Halle soll
+  noch tiefer gehen, an der Wand ein Sprungturm – und dann will er von oben ins
+  Geld springen und darin herumschwimmen.
+  ⬇️ DIE HALLE IST JETZT 30 BLÖCKE HOCH (vorher 16) und der Boden liegt ganz
+  unten am Welt-Grund – tiefer geht es in der ganzen Welt nicht mehr.
+  🏊 DER SPRUNGTURM steht an der Wand: 25 Blöcke hoch, mit einem 8 Blöcke langen
+  SPRUNGBRETT oben. Tipp den Turm an – schon stehst du ganz oben. Dann läufst du
+  über das Brett und springst ab!
+  💰 UND DANN DAS BESTE: Du landest nicht AUF dem Geld, du tauchst HINEIN!
+  „💰 PLATSCH! Du springst mitten in dein Geld!" Die Scheine wirbeln um dich
+  herum, und du schwimmst darin wie in Wasser: ⬆ bringt dich nach oben, ⬇ tiefer
+  hinein, und wenn du nichts drückst, sinkst du langsam ein.
+  🪙 Kletterst du oben heraus, wird das Geld wieder ganz normal fest – du stehst
+  dann einfach obendrauf. Und beim normalen Hüpfen passiert nichts: erst ein
+  richtiger Sprung aus der Höhe lässt dich eintauchen.
 - DIE SCHATZ-HALLE GEHÖRT GANZ DIR (v250)! 💰🏛️ Jonah war einmal unten und
   wollte es anders: „Ich möchte mein Geld nicht in den Tresor legen, sondern in
   die Halle rein. Und ich möchte keinen Goldberg."
