@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- UND JETZT AUCH ZEICHEN IM CODE (v257)! ✨🔐 Jonah wollte noch ein paar
+  Zeichen für seinen Tresor-Code haben.
+  ✨ NEUN NEUE TASTEN: ! ? + - * # & ★ ♥ – in Lila, gleich unter den
+  Buchstaben.
+  🔀 MISCHEN ERLAUBT: Zahlen, Buchstaben und Zeichen dürfen alle zusammen in
+  einen Code, zum Beispiel J7★!♥. Damit rät den wirklich keiner!
+  📱 DAS TASTENFELD wird auf dem Handy automatisch kleiner, damit alle Tasten
+  draufpassen – auch wenn du quer hältst.
+  ⌨️ Am Computer kannst du die Zeichen einfach auf der Tastatur tippen.
 - BUCHSTABEN IM TRESOR-CODE (v256)! 🔤🔐 Jonah wollte, dass er auch Buchstaben
   in den Code eintippen kann.
   🔡 DAS TASTENFELD hat jetzt alle Ziffern 0–9 UND alle Buchstaben A–Z – 38
