@@ -1260,7 +1260,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 248 &middot; 💰 DEIN GELDSPEICHER IST DA! Nimm den 🛸-Teleport zu „💰 Dein Geldspeicher": oben ein kleines Häuschen, drinnen ein Fahrstuhl – und ganz tief unten eine RIESIGE Halle aus unzerstörbaren Blöcken. Tipp den goldenen Tresor an und tu dein Geld hinein: für je 2 € wächst ein echter Goldberg aus dem Boden! 🪙🛗</p>
+    Version 249 &middot; 🛡️ DAS HÄUSCHEN VOM GELDSPEICHER IST JETZT UNZERSTÖRBAR! Wände, Boden und Dach sind aus dem Schutz-Block – kein TNT, kein Monster und keine Explosion kommt da durch. Dein Fahrstuhl und dein Goldberg sind sicher! 💰🛗</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1306,7 +1306,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 248;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 249;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -15942,10 +15942,13 @@ function speicherBlock(lx, lz, y) {
         (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
     return AIR;
   }
-  // 3) DAS HÄUSCHEN OBEN - klein und unscheinbar, wie Jonah es wollte
+  // 3) DAS HÄUSCHEN OBEN - klein und unscheinbar, wie Jonah es wollte.
+  // Und KOMPLETT aus dem unzerstörbaren Schutz-Block: Wände, Boden und Dach.
+  // Kein TNT, kein Monster und keine Explosion kommt hier durch - nur Jonah
+  // selbst könnte etwas wegnehmen.
   if (lx >= 0 && lx <= SP_W && lz >= 0 && lz <= SP_W) {
     if (y > SP_Y + 5) return AIR;
-    if (y === SP_Y + 5) return GOLD;                            // goldenes Dach
+    if (y === SP_Y + 5) return SCHUTZ;                          // das Dach
     if (y === SP_Y) return SCHUTZ;                              // der Fußboden
     if (y < SP_Y) return y >= Math.min(terrainHeight(SP_X+lx, SP_Z+lz), SP_Y) - 2 ? STONE : null;
     const wand = lx === 0 || lx === SP_W || lz === 0 || lz === SP_W;
@@ -15954,7 +15957,7 @@ function speicherBlock(lx, lz, y) {
         if (y === SP_Y + 1) return DOOR;
         if (y === SP_Y + 2) return DOOR_TOP;
       }
-      return BRICK;
+      return SCHUTZ;
     }
     if (lx === 1 && lz === 1 && y === SP_Y + 2) return TORCH;   // Licht im Häuschen
     if (lx === 7 && lz === 1 && y === SP_Y + 2) return TORCH;

@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS HÄUSCHEN IST JETZT UNZERSTÖRBAR (v249)! 🛡️💰 Jonah wollte, dass das
+  kleine Häuschen oben – das, wo der Fahrstuhl drin steht – auch aus dem
+  unzerstörbaren Block ist. Ist es jetzt: Wände, Boden UND Dach bestehen
+  komplett aus dem Schutz-Block. Kein TNT, kein Monster und keine Explosion
+  kommt da durch – nur Jonah selbst könnte etwas wegtippen. Damit ist der ganze
+  Geldspeicher von oben bis unten sicher: das Häuschen, der Fahrstuhl darin und
+  die große Halle mit dem Goldberg.
 - DEIN GELDSPEICHER (v248)! 💰🛗 Jonah wollte einen Ort, wo sein ganzes Geld
   hinkommt – und hat genau beschrieben, wie: oben ein kleines Häuschen, drinnen
   ein Fahrstuhl, und ganz tief unten eine riesige Halle aus unzerstörbaren
