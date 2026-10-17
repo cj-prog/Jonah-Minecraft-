@@ -1302,7 +1302,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 259 &middot; 🪣💰 DIE GELD-SCHÜTTE! Im Tresorraum steht jetzt eine goldene Schütte – einmal antippen und dein GANZES Geld purzelt auf einmal hinein, Schicht für Schicht. Und der 🖌️ Pinsel baut jetzt auch Geld: 25 Blöcke pro Tipper! ⚡</p>
+    Version 260 &middot; 🔒🚫 KEIN RÄUBER KOMMT MEHR AN DEIN GELD! Auf deinem ganzen Geldspeicher-Grundstück ist Klauen jetzt unmöglich – und falls sich doch einer hereinschleicht, setzt Johann ihn vor die Tür. 🤵💰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1348,7 +1348,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 259;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 260;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1514,7 +1514,11 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       GELDSCHUETTE=119;                 // 🪣 die Geld-Schütte im Tresorraum
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
-const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
+const geldOrte = new Set();             // 💰 wo liegt Geld herum, an das Räuber rankommen?
+// 🛡️ Geld auf Jonahs Geldspeicher-Grundstück steht in einer EIGENEN Liste. Die
+// Räuber durchsuchen nur geldOrte - so kommt niemand mehr an den Tresorraum.
+// (Und die Suche bleibt schnell, auch wenn dort Tausende Blöcke liegen.)
+const speicherGeldOrte = new Set();
 const kanonen = new Map();              // 💣 alle Wach-Kanonen: "x,y,z" -> Nachlade-Zeit
 // 🍬 alles, was man im Bonbon-Land wirklich naschen darf (Block -> wie viele Bonbons)
 const NASCH = { [BONBON]:1, [ZUCKERSTANGE]:2, [SCHOKO]:2, [LUTSCHER]:3 };
@@ -5327,8 +5331,8 @@ function setBlock(wx,wy,wz,v) {
   ch.data[i]=v;
   // 💰 Merkliste: wo liegt gerade Geld herum? (danach suchen die Räuber!)
   const gk = wx+','+wy+','+wz;
-  if (GELD_BLOCK.has(v)) geldOrte.add(gk);
-  else if (GELD_BLOCK.has(vorher)) geldOrte.delete(gk);
+  if (GELD_BLOCK.has(v)) (geldGeschuetzt(wx,wz) ? speicherGeldOrte : geldOrte).add(gk);
+  else if (GELD_BLOCK.has(vorher)) { geldOrte.delete(gk); speicherGeldOrte.delete(gk); }
   if (v===KANONE) kanonen.set(gk, 0);   // 💣 eine neue Wach-Kanone meldet sich zum Dienst
   else if (vorher===KANONE) kanonen.delete(gk);
   if (goldSet.size) goldSet.delete(gk);              // ✨ der Goldzauber geht mit weg
@@ -5519,7 +5523,7 @@ function baueSpielstand() {
       cabinets: Object.fromEntries(cabinets),
       carrots, tomatoes, apples, wheat, bread, wool, snowCnt, gems, cakes, money,
       bonbons, naschZahl,
-      geldOrte: [...geldOrte],          // 💰 wo dein Geld herumliegt (die Räuber suchen danach!)
+      geldOrte: [...geldOrte, ...speicherGeldOrte],   // 💰 wo überall dein Geld liegt
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
@@ -5696,7 +5700,14 @@ function loadGame() {
     if (typeof s.money==='number') money = s.money;
     if (typeof s.bonbons==='number') bonbons = s.bonbons;       // 🍬 der Naschbeutel
     if (typeof s.naschZahl==='number') naschZahl = s.naschZahl;
-    if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) geldOrte.add(k);
+    // 💰 beim Laden wieder aufteilen: Grundstück oder nicht? (Alte Spielstände
+    // hatten alles in einem Topf - auch die werden hier richtig sortiert.)
+    // Hier zählt nur der ORT, nicht weltDim: wer auf dem Mond gespeichert hat,
+    // soll sein Geld im Geldspeicher trotzdem richtig einsortiert bekommen.
+    if (Array.isArray(s.geldOrte)) for (const k of s.geldOrte) {
+      const t = k.split(',');
+      (inSpeicherGebiet(+t[0], +t[2]) ? speicherGeldOrte : geldOrte).add(k);
+    }
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
     // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
@@ -8104,6 +8115,7 @@ function spawnTick() {
         const v=villageAt(vx3,vz3);
         if (v && Math.hypot(v.vx-rx, v.vz-rz)<20) rfrei=false;
       }
+    if (inSpeicherGebiet(rx, rz)) rfrei = false;     // 🛡️ nicht auf Jonahs Grundstück!
     if (rfrei && spawnMob('raeuber', rx, rz, {hp:3})) {
       toast('😈 Ein Räuber schleicht durch die Gegend! Pass auf dein Geld auf!', 3500);
       blip(240,0.1); blip(190,0.1);
@@ -8391,6 +8403,7 @@ function naechstesGeld(a) {
     if (!ch || !ch.data) continue;                                   // Gegend nicht geladen
     if (!GELD_BLOCK.has(getBlock(x,y,z))) { geldOrte.delete(k); continue; }   // längst weg
     if (imBurgGelaende(x,z)) continue;                               // sicher hinter der Mauer
+    if (geldGeschuetzt(x,z)) { geldOrte.delete(k); speicherGeldOrte.add(k); continue; }
     const d = (x+0.5-a.x)*(x+0.5-a.x) + (y-a.y)*(y-a.y)*0.5 + (z+0.5-a.z)*(z+0.5-a.z);
     if (d < bestD) { bestD = d; best = [x,y,z]; }
   }
@@ -8417,7 +8430,7 @@ function geldKlau(a, dt) {
     if (a.onGround && d < 3 && z[1] > a.y+0.4) a.vy = 8;   // aufs Geld draufhüpfen
     // Steht ihm ein Berg oder eine Mauer im Weg? Räuber kennen Schleichwege!
     a.klauLauf = (a.klauLauf || 0) + dt;
-    if (a.klauLauf > 12) {
+    if (a.klauLauf > 12 && !geldGeschuetzt(z[0], z[2])) {
       a.klauLauf = 0;
       for (const [ox,oz] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]) {
         if (isSolid(z[0]+ox, z[1], z[2]+oz) || isSolid(z[0]+ox, z[1]+1, z[2]+oz)) continue;
@@ -16247,6 +16260,10 @@ function speicherEingang() {            // davor landet der Teleport
   speicherHoehe();
   return [SP_X + SP_MITTE, SP_Y + 1, SP_Z + SP_MITTE + SP_R + 6];
 }
+// 🛡️ Liegt dieses Geld auf Jonahs Grundstück? Dann rührt es kein Räuber an.
+function geldGeschuetzt(x, z) {
+  return weltDim === 0 && inSpeicherGebiet(x, z);
+}
 function inSpeicherGebiet(x, z) {
   speicherHoehe();
   return Math.abs(x - (SP_X + SP_MITTE)) < SP_RAND &&
@@ -16619,7 +16636,7 @@ function tresorAntippen() {
 function speicherGeldZaehlen() {
   speicherHoehe();
   let n = 0;
-  for (const k of geldOrte) {
+  for (const k of speicherGeldOrte) {
     const p = k.split(',');
     const y = +p[1];
     if (y <= SP_HY || y > SP_HY + SP_HALLE_H + 1) continue;
@@ -16654,7 +16671,7 @@ function altesGoldAufraeumen() {
   altesGoldWeg = true;
   return euro;
 }
-let spDrin = false, spBergT = 0;
+let spDrin = false, spBergT = 0, spRausT = 0;
 function speicherTick(dt) {
   if (geldBad) {                        // 🪙 beim Schwimmen wirbeln die Scheine
     geldFxT -= dt;
@@ -16682,6 +16699,25 @@ function speicherTick(dt) {
     scheduleSave();
   }
   tresorTuerSetzen();                   // 🔐 die Tresortür so stellen, wie sie sein soll
+  // 🤵🚫 DER RAUSSCHMEISSER: sollte sich doch einmal ein Räuber hereinverirren,
+  // setzt Johann ihn vor die Tür. Im Geldspeicher wird nicht geklaut!
+  spRausT -= 1;
+  for (const a of animals) {
+    if (a.type !== 'raeuber' || a.gefangen) continue;
+    if (Math.abs(a.x - (SP_X + SP_MITTE)) > SP_R + 1.5) continue;
+    if (Math.abs(a.z - (SP_Z + SP_MITTE)) > SP_R + 1.5) continue;
+    if (a.y < SP_HY - 1 || a.y > SP_HY + SP_HALLE_H + 2) continue;
+    a.x = SP_X + SP_MITTE + 0.5;        // ab vor die Tür, auf den Weg!
+    a.z = SP_Z + SP_MITTE + SP_R + 11.5;
+    a.y = SP_HY + 1; a.vy = 0;
+    a.klauZiel = null; a.klauLauf = 0;
+    if (spRausT <= 0) {
+      spRausT = 20;
+      toast('🤵🚫 Johann hat einen Räuber erwischt und vor die Tür gesetzt! ' +
+            '„Hier wird nicht geklaut, mein Herr!" 😤 Dein Geld ist sicher. 🔒', 6000);
+      blip(520,0.08); blip(320,0.1); blip(190,0.14);
+    }
+  }
   // 🤵 DER BUTLER wohnt im Geldspeicher und ist immer da, wenn Jonah kommt
   if (!animals.some(x => x.type === 'butler')) {
     animals.push({ type:'butler', name:'Johann', friend:3,
