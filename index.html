@@ -527,6 +527,28 @@
     background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
   #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
     border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  /* 🔐 DAS ZAHLENFELD AN DER TRESORTÜR */
+  #codeBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
+    align-items:center; gap:7px; background:rgba(24,28,38,.97); padding:11px 14px; border-radius:16px;
+    color:#fff; z-index:62; text-align:center; max-height:95vh; overflow-y:auto;
+    border:3px solid #8a909e; }
+  #codeBox h3 { font-size:17px; margin:0; }
+  #codeInfo { font-size:12px; color:#cfd6e4; line-height:1.35; max-width:250px; }
+  #codeAnzeige { font-size:28px; font-weight:bold; letter-spacing:7px; color:#ffe066;
+    background:rgba(0,0,0,.5); padding:4px 16px; border-radius:10px; min-width:150px;
+    border:2px solid rgba(255,255,255,.25); }
+  #codeAnzeige.falsch { color:#ff6a6a; border-color:#ff6a6a; }
+  #codeTasten { display:grid; grid-template-columns:repeat(3, 60px); gap:6px; }
+  #codeTasten button { font-size:21px; font-weight:bold; padding:8px 0; border-radius:10px;
+    border:none; background:#3a4458; color:#fff; }
+  #codeTasten button.ok  { background:#2f7a48; }
+  #codeTasten button.weg { background:#8a4030; }
+  #codeAendern { font-size:13px; font-weight:bold; padding:6px 14px; border-radius:9px;
+    border:none; background:#6b5a2f; color:#fff; }
+  #codeJohann { font-size:13px; font-weight:bold; padding:6px 14px; border-radius:9px;
+    border:none; background:#33507a; color:#fff; display:none; }
+  #codeZu { font-size:14px; font-weight:bold; padding:6px 18px; border-radius:8px; border:none;
+    background:#3f5b6b; color:#fff; }
   #radioBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(28,24,52,.96); padding:14px 18px; border-radius:14px;
     color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto; }
@@ -1051,6 +1073,16 @@
   <button id="bankClose">Fertig</button>
 </div>
 
+<div class="hud" id="codeBox">
+  <h3 id="codeKopf">🔐 Code eingeben</h3>
+  <div id="codeInfo"></div>
+  <div id="codeAnzeige">– – – –</div>
+  <div id="codeTasten"></div>
+  <button id="codeAendern">🔑 Neuen Code festlegen</button>
+  <button id="codeJohann">🤵 Johann fragen</button>
+  <button id="codeZu">✔ Abbrechen</button>
+</div>
+
 <div class="hud" id="radioBox">
   <h3>📻 Dein Radio</h3>
   <p>Welchen Sender möchtest du hören? Die Musik läuft, solange du in der Nähe bist.</p>
@@ -1224,7 +1256,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 254 &middot; 🔐 EINE RIESIGE TRESORTÜR schützt jetzt deinen Geldraum! Eine runde Panzertür aus 21 Blöcken mit goldenem Handrad – antippen und sie schwingt auf, mit dem Rad daneben machst du sie wieder zu. Dann kommt NIEMAND mehr an dein Geld! 💰🔒</p>
+    Version 255 &middot; 🔑 DIE TRESORTÜR BRAUCHT JETZT EINEN GEHEIMCODE! Beim ersten Mal denkst du dir einen aus (3 bis 6 Zahlen), danach geht die Tür nur noch auf, wenn du ihn am Zahlenfeld eintippst. Vergessen? Dann frag Johann – er kennt ihn! 🤵🔐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1270,7 +1302,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 254;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 255;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5442,6 +5474,7 @@ function baueSpielstand() {
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
       ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
       tresorAuf: tresorOffen,           // 🔐 steht die große Tresortür offen?
+      tresorCode: tresorCode,           // 🔑 Jonahs geheimer Tresor-Code
       bowlBest, brkBest, racBest, snkBest, pngBest, invBest, frgBest, jub100: jub100?1:0,
       sword: sword?1:0, bow: bow?1:0,
       anzug: hatAnzug?1:0,             // 👨‍🚀 trägt Jonah den Astronautenanzug?
@@ -5625,6 +5658,7 @@ function loadGame() {
     // davor gespeichert wurde, muss dort unten einmal aufgeräumt werden.
     altesGoldWeg = s.ueberErde === true;
     tresorOffen = s.tresorAuf === true;              // 🔐 die große Tresortür
+    if (typeof s.tresorCode === 'string') tresorCode = s.tresorCode;   // 🔑 der Code
     if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
@@ -10235,6 +10269,36 @@ document.getElementById('planClose').addEventListener('click', ()=>{
 document.getElementById('liftClose').addEventListener('click', ()=>{
   document.getElementById('liftBox').style.display='none'; blip(400,0.06);
 });
+// 🔐 Das Zahlenfeld an der Tresortür
+(function bauCodeFeld(){
+  const feld = document.getElementById('codeTasten');
+  const tasten = ['1','2','3','4','5','6','7','8','9','weg','0','ok'];
+  for (const t of tasten) {
+    const b = document.createElement('button');
+    b.textContent = t === 'weg' ? '⌫' : t === 'ok' ? '✔' : t;
+    if (t === 'ok') b.className = 'ok';
+    if (t === 'weg') b.className = 'weg';
+    const w = () => codeTaste(t);
+    b.addEventListener('click', w);
+    b.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
+    feld.appendChild(b);
+  }
+})();
+document.getElementById('codeAendern').addEventListener('click', ()=>{ openCodeFeld('neu'); });
+document.getElementById('codeJohann').addEventListener('click', ()=>{
+  document.getElementById('codeBox').style.display = 'none';
+  toast('🤵 Johann flüstert dir zu: „Ihr Code lautet ' + tresorCode + ', König Jonah." 🔑', 9000);
+  blip(700,0.07); blip(900,0.09);
+});
+document.getElementById('codeZu').addEventListener('click', ()=>{
+  document.getElementById('codeBox').style.display='none'; blip(400,0.06); });
+// am Computer kann man den Code auch tippen
+window.addEventListener('keydown', e => {
+  if (document.getElementById('codeBox').style.display !== 'flex') return;
+  if (e.key >= '0' && e.key <= '9') { e.stopPropagation(); codeTaste(e.key); }
+  else if (e.key === 'Backspace') { e.stopPropagation(); codeTaste('weg'); }
+  else if (e.key === 'Enter') { e.stopPropagation(); codeTaste('ok'); }
+}, true);
 document.getElementById('butlerClose').addEventListener('click', ()=>{
   document.getElementById('butlerBox').style.display='none'; blip(400,0.06);
 });
@@ -16234,24 +16298,103 @@ function tresorTuerSetzen() {
     }
   return n;
 }
-function tresorToggle() {
-  speicherHoehe();
-  tresorOffen = !tresorOffen;
-  tresorTuerSetzen();
-  if (tresorOffen) {
-    toast('🔐 KNARZ … die riesige Tresortür schwingt auf! Jetzt kommst du in deinen ' +
-          'Tresorraum. 💰 (Zum Zumachen das goldene Handrad daneben antippen!)', 7000);
-    blip(90,0.2); blip(140,0.16); blip(220,0.14); blip(330,0.18);
-  } else {
-    toast('🔐 WUMM! Die Tresortür ist zu – jetzt kommt niemand mehr an dein Geld! 🔒', 5500);
-    blip(330,0.12); blip(180,0.16); blip(90,0.26);
-  }
+function tresorFunken() {
   for (let i = 0; i < 12; i++)                 // ein paar Funken am Stahl
     fireworks.push({ x: SP_X+SP_MITTE+0.5+(Math.random()-0.5)*4,
       y: SP_HY+3+(Math.random()-0.5)*4, z: SP_Z+SP_MITTE+12.5,
       vx:(Math.random()-0.5)*2.2, vy:(Math.random()-0.5)*2.2, vz:(Math.random()-0.5)*1.2,
       tile:166, t:0.55 });
+}
+function tresorAufmachen() {
+  speicherHoehe();
+  tresorOffen = true; tresorTuerSetzen(); tresorFunken();
+  toast('🔐✅ Code richtig! KNARZ … die riesige Tresortür schwingt auf! 💰 ' +
+        '(Zum Zumachen das goldene Handrad antippen.)', 7000);
+  blip(90,0.2); blip(140,0.16); blip(220,0.14); blip(330,0.18); blip(520,0.2);
   scheduleSave();
+}
+function tresorZumachen() {
+  speicherHoehe();
+  tresorOffen = false; tresorTuerSetzen(); tresorFunken();
+  toast('🔐 WUMM! Die Tresortür ist zu – jetzt kommt nur noch mit dem Code jemand rein! 🔒', 5500);
+  blip(330,0.12); blip(180,0.16); blip(90,0.26);
+  scheduleSave();
+}
+// 🔐 DER GEHEIMCODE: ohne ihn geht die Tresortür nicht auf.
+let tresorCode = '';                    // Jonahs eigener Code
+let codeEingabe = '', codeModus = 'auf', codeFalsch = 0;
+function codeAnzeigen() {
+  const el = document.getElementById('codeAnzeige');
+  el.textContent = codeEingabe ? codeEingabe.split('').map(() => '●').join(' ') : '– – – –';
+  el.classList.remove('falsch');
+  document.getElementById('codeJohann').style.display =
+    (codeModus === 'auf' && codeFalsch >= 2 && tresorCode) ? 'block' : 'none';
+  document.getElementById('codeAendern').style.display =
+    (codeModus === 'neu' || !tresorCode) ? 'none' : 'block';
+}
+function openCodeFeld(modus) {
+  codeModus = modus; codeEingabe = '';
+  const kopf = document.getElementById('codeKopf');
+  const info = document.getElementById('codeInfo');
+  if (modus === 'neu') {
+    kopf.textContent = '🔑 Dein geheimer Tresor-Code';
+    info.innerHTML = 'Denk dir einen Code aus – <b>3 bis 6 Zahlen</b> – und tippe ihn hier ein. ' +
+                     'Nur mit diesem Code geht deine Tresortür wieder auf. <b>Merk ihn dir gut!</b> ' +
+                     '(Johann kennt ihn auch, falls du ihn vergisst. 🤵)';
+  } else {
+    kopf.textContent = '🔐 Code eingeben';
+    info.innerHTML = 'Tippe deinen geheimen Code ein, dann schwingt die Tresortür auf.';
+  }
+  codeAnzeigen();
+  document.getElementById('codeBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(600,0.05); blip(760,0.05);
+}
+function codeTaste(t) {
+  if (t === 'weg') { codeEingabe = codeEingabe.slice(0, -1); blip(300,0.04); codeAnzeigen(); return; }
+  if (t === 'ok')  { codeFertig(); return; }
+  if (codeEingabe.length >= 6) { blip(200,0.06); return; }
+  codeEingabe += t;
+  blip(620 + (+t) * 45, 0.04);
+  codeAnzeigen();
+}
+function codeFertig() {
+  if (codeModus === 'neu') {
+    if (codeEingabe.length < 3) {
+      toast('🔑 Dein Code braucht mindestens 3 Zahlen – tipp noch ein paar ein!', 4000);
+      blip(200,0.12); return;
+    }
+    tresorCode = codeEingabe; codeFalsch = 0;
+    document.getElementById('codeBox').style.display = 'none';
+    toast('🔑 Gespeichert! Dein Tresor-Code ist ' + tresorCode + ' – merk ihn dir gut! ' +
+          'Nur damit geht die Tresortür auf. 🔐', 10000);
+    for (const f of [523,659,784,1047]) blip(f,0.09);
+    scheduleSave();
+    return;
+  }
+  if (codeEingabe === tresorCode) {
+    codeFalsch = 0;
+    document.getElementById('codeBox').style.display = 'none';
+    tresorAufmachen();
+    return;
+  }
+  codeFalsch++;
+  codeEingabe = '';
+  const el = document.getElementById('codeAnzeige');
+  el.textContent = '✖ ✖ ✖ ✖'; el.classList.add('falsch');
+  // der Hilfe-Knopf kommt SOFORT, nicht erst wenn die Anzeige zurückspringt
+  document.getElementById('codeJohann').style.display =
+    (codeFalsch >= 2 && tresorCode) ? 'block' : 'none';
+  toast('🔐❌ FALSCH! Das war nicht der richtige Code. Versuch es nochmal!' +
+        (codeFalsch >= 2 ? ' (Oder frag Johann – er kennt ihn! 🤵)' : ''), 4500);
+  blip(220,0.14); blip(140,0.2);
+  setTimeout(codeAnzeigen, 900);
+}
+// 🔐 Die Tür antippen: zumachen geht immer, aufmachen nur mit Code
+function tresorAntippen() {
+  speicherHoehe();
+  if (tresorOffen) { tresorZumachen(); return; }
+  openCodeFeld(tresorCode ? 'auf' : 'neu');
 }
 // --- 💰 Wie viel Geld liegt im Tresorraum? --------------------------------
 // Jeder Geld-Block ist 1 € wert. Die Liste geldOrte weiß sowieso schon, wo
@@ -23475,7 +23618,7 @@ function doBreak(dir) {
   if (hit && hit.block === RCHIP) { openChip(); return; }
   if (hit && hit.block === RLADE) { ladeStationTipp(); return; }
   // 🔐 Die Tresortür geht nie kaputt - antippen macht sie nur auf und zu
-  if (hit && (hit.block === TRESORTUER || hit.block === TRESORRAD)) { tresorToggle(); return; }
+  if (hit && (hit.block === TRESORTUER || hit.block === TRESORRAD)) { tresorAntippen(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -23849,7 +23992,7 @@ function doPlace(dir) {
     return;
   }
   if (hit.block === TRESORTUER || hit.block === TRESORRAD) {   // 🔐 die Tresortür
-    tresorToggle();
+    tresorAntippen();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {

@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE TRESORTÜR BRAUCHT EINEN GEHEIMCODE (v255)! 🔑🔐 Jonah wollte, dass man
+  einen Code eintippen muss, um die Tresortür zu öffnen.
+  🔢 EIN ECHTES ZAHLENFELD: Tippst du die Tresortür an, klappt ein Tastenfeld
+  mit 0–9, ⌫ und ✔ auf. Beim Tippen siehst du nur gelbe Punkte – keiner kann
+  mitlesen! 🙈
+  🔑 BEIM ERSTEN MAL denkst du dir deinen eigenen Code aus (3 bis 6 Zahlen).
+  Du bekommst ihn einmal angezeigt – gut merken!
+  ❌ FALSCHER CODE? Dann blinken vier rote Kreuze und die Tür bleibt zu.
+  🤵 VERGESSEN? Nach zwei Fehlversuchen kommt der Knopf „Johann fragen" – dein
+  Butler flüstert dir den Code zu. So bleibst du nie ausgesperrt!
+  🔒 ZUMACHEN geht immer ohne Code: einfach das goldene Handrad antippen.
+  Und mit „🔑 Neuen Code festlegen" änderst du ihn jederzeit.
 - DIE GROSSE TRESORTÜR (v254)! 🔐💰 Jonah wollte, dass vor dem Geldraum eine
   richtige Tresortür ist – „dass man da nicht durchkommt" und das Ganze ein
   echter Tresorraum wird.
