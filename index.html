@@ -1224,7 +1224,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 252 &middot; 💰 DEIN GELDSPEICHER STEHT JETZT ÜBER DER ERDE – wie bei Dagobert Duck! Ein riesiger Würfel mit goldener Krone, Ecktürmen und einem RIESIGEN goldenen JJ für Jonah Jürgens an der Vorderseite. Drinnen: deine Geld-Halle, der Fahrstuhl und das Sprungbrett. 🏊🪙</p>
+    Version 253 &middot; 🏛️🤵 DEIN GELDSPEICHER HAT JETZT RÄUME UND EINEN BUTLER! Hinter der Tür: ein Flur mit vier Zimmern (Büro, Butler-Zimmer, Küche, Trophäen-Raum) – und JOHANN, dein Butler, der alles für dich macht. Draußen führt ein beleuchteter Weg zur Tür, und rundherum stehen Warnschilder wie bei Dagobert! ⚠️💰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1270,7 +1270,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 252;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 253;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -6926,19 +6926,24 @@ function physics(dt) {
         vy:2+Math.random()*4, vz:(Math.random()-0.5)*5,
         tile: Math.random()<0.5 ? 93 : 94, t: 0.9 });
   }
+  // Steckt Jonah gerade IM Geld? (Münzen sind nicht fest - man kann
+  // hindurchlaufen - aber im Geldbad zählen sie trotzdem als "drin".)
+  const geldHier = (() => {
+    const fx = Math.floor(player.x), fz = Math.floor(player.z);
+    for (const dy of [0.2, 0.9, 1.5])
+      if (GELD_BLOCK.has(getBlock(fx, Math.floor(player.y + dy), fz))) return true;
+    return false;
+  })();
   // Schwimmen tut er nur, wenn er WIRKLICH im Geld steckt. Beim Fallen davor
   // zieht ihn ganz normal die Schwerkraft hinein - sonst bliebe er über dem
   // Haufen in der Luft hängen.
-  const geldDrin = geldBad && (GELD_BLOCK.has(getBlock(Math.floor(player.x),
-                     Math.floor(player.y+0.2), Math.floor(player.z))) ||
-                   GELD_BLOCK.has(getBlock(Math.floor(player.x),
-                     Math.floor(player.y+0.9), Math.floor(player.z))) ||
-                   GELD_BLOCK.has(getBlock(Math.floor(player.x),
-                     Math.floor(player.y+1.5), Math.floor(player.z))));
+  const geldDrin = geldBad && geldHier;
   if (geldBad) {
     // Erst wenn Jonah wirklich frei steht, wird das Geld wieder fest - sonst
-    // steckte er plötzlich mitten in einem Block.
-    const frei = !collideBox(player.x, player.y, player.z, P_HALF, P_HEIGHT, false);
+    // steckte er plötzlich mitten in einem Block. Und solange er noch IM Geld
+    // steckt (und seien es nur Münzen), schwimmt er natürlich weiter.
+    const frei = !geldHier &&
+                 !collideBox(player.x, player.y, player.z, P_HALF, P_HEIGHT, false);
     if (!frei) geldBadT = 0.5;
     else {
       geldBadT -= dt;
@@ -15929,6 +15934,66 @@ function jjGold(dx, dy) {
   if (c < 0) return false;
   return JJ_MUSTER[zeile][c] === '1';
 }
+// ⚠️ DIE WARNSCHILDER rund um den Geldspeicher - genau wie bei Dagobert Duck
+const SP_SCHILDER = [
+  [ 19,  26, '⚠️ PRIVATGRUNDSTÜCK! Hier wohnt das Geld von JONAH JÜRGENS. 💰'],
+  [-13,  26, '🚫 BETRETEN VERBOTEN – außer für Jonah!'],
+  [ 13,  26, '👀 ACHTUNG, WACHHUND! (Und Wach-Kanonen!) 🐕'],
+  [-26,  13, '🛑 RÄUBER BITTE DRAUSSEN BLEIBEN! 😠'],
+  [ 26,  13, '💰 HIER WIRD NICHTS VERSCHENKT!'],
+  [-26, -13, '🔒 ALLES UNZERSTÖRBAR – spart euch die Mühe!'],
+  [ 26, -13, '📢 EIGENTUM VON JONAH JÜRGENS – Hände weg!'],
+  [-19,  26, '💵 Hier liegt mehr Geld als sonst irgendwo auf der Welt!'],
+  [  0, -26, '🙈 Von hinten kommt man auch nicht rein!'],
+];
+// 🏛️ DIE RÄUME an der Vorderseite: durch die Tür kommt man in einen Flur,
+// und links und rechts liegen vier Zimmer - Büro, Butler-Zimmer, Küche und
+// Trophäen-Raum. Dahinter geht es in die große Geld-Halle.
+// Die Decke der Räume ist gleichzeitig ein Balkon über dem Geld.
+function speicherMoebel(dx, dz, y, hy) {
+  if (y === hy + 3 && (Math.abs(dx) === 19 || Math.abs(dx) === 5) &&
+      (dz === 14 || dz === 19)) return TORCH;
+  if (y === hy + 2 && dx === 8 && dz === 14) return POKAL;        // der Pokal auf dem Tisch
+  if (y !== hy + 1) return null;
+  const links = dx < 0, vorne = dz >= 17;
+  if (links && vorne) {                 // 🧾 JONAHS BÜRO
+    if (dx === -8  && dz === 19) return TABLE;
+    if (dx === -8  && dz === 18) return CHAIR;
+    if (dx === -6  && dz === 20) return CABINET;
+    if (dx === -10 && dz === 20) return SIGN;
+    if (dx === -14 && dz === 19) return CHEST;
+  } else if (links) {                   // 🛏️ DAS ZIMMER VOM BUTLER
+    if (dx === -8  && dz === 14) return BED;
+    if (dx === -6  && dz === 13) return CABINET;
+    if (dx === -10 && dz === 13) return SIGN;
+    if (dx === -13 && dz === 15) return TABLE;
+  } else if (vorne) {                   // 🍽️ DIE KÜCHE
+    if (dx === 8  && dz === 19) return TABLE;
+    if (dx === 8  && dz === 18) return CHAIR;
+    if (dx === 6  && dz === 20) return SINK;
+    if (dx === 10 && dz === 20) return SIGN;
+    if (dx === 12 && dz === 19) return CHEST;
+  } else {                              // 🏆 DER TROPHÄEN-RAUM
+    if (dx === 8  && dz === 14) return TABLE;
+    if (dx === 6  && dz === 13) return CHEST;
+    if (dx === 10 && dz === 13) return SIGN;
+    if (dx === 12 && dz === 15) return CABINET;
+  }
+  return null;
+}
+function speicherRaeume(dx, dz, y, hy) {
+  if (dz < 12 || dz > 20) return null;
+  if (y === hy + 7) return SCHUTZ;                      // die Decke = der Balkon
+  if (y > hy + 7 || y <= hy) return null;               // darüber die Halle, darunter der Boden
+  // die Wand zur Geld-Halle - mit einem großen Durchgang in der Mitte
+  if (dz === 12) return (Math.abs(dx) <= 1 && y <= hy + 3) ? AIR : SCHUTZ;
+  // die Flur-Wände, jede mit zwei Türen
+  if (Math.abs(dx) === 3) return ((dz === 18 || dz === 14) && y <= hy + 2) ? AIR : SCHUTZ;
+  if (Math.abs(dx) < 3) return AIR;                     // der Flur selbst
+  if (dz === 16) return SCHUTZ;                         // Trennwand vorne/hinten
+  const m = speicherMoebel(dx, dz, y, hy);
+  return m === null ? AIR : m;
+}
 // WO und WIE HOCH steht der Geldspeicher? Jede Welt sieht anders aus - auf
 // einem festen Punkt stünde er mal mitten im Meer und mal im Steilhang. Darum
 // wird rund um den Basis-Punkt ein Platz gesucht, der TROCKEN und EBEN ist.
@@ -16016,7 +16081,8 @@ function speicherBlock(lx, lz, y) {
   if (adx <= SP_R + 1 && adz <= SP_R + 1) {
     const ecke = adx === SP_R + 1 && adz === SP_R + 1;
     const aussen = adx === SP_R + 1 || adz === SP_R + 1;
-    if (y === hy) return SCHUTZ;                            // der Hallenboden
+    // der Hallenboden - in den Zimmern vorne aber ein gemütlicher Holzboden
+    if (y === hy) return (!aussen && dz >= 12 && dz <= 20) ? PLANK : SCHUTZ;
     if (y < hy)                                             // das Fundament
       return y >= Math.min(terrainHeight(SP_X+lx, SP_Z+lz), hy) - 3 ? STONE : null;
     if (aussen) {
@@ -16042,19 +16108,35 @@ function speicherBlock(lx, lz, y) {
     }
     if (y === hy + SP_HALLE_H + 1) return SCHUTZ;           // das Dach
     if (y > hy + SP_HALLE_H + 1) return AIR;
+    // 🏛️ die vier Räume und der Flur gleich hinter der Eingangstür
+    const raum = speicherRaeume(dx, dz, y, hy);
+    if (raum !== null) return raum;
     // 🔥 Fackeln an den Innenwänden
     if (y === hy + 5 && (adx === SP_R || adz === SP_R) &&
         (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
-    // 📋 die beiden Schilder
-    if (dx === 0 && dz === SP_R - 2 && y === hy + 1) return SIGN;
+    // 📋 die beiden Schilder in der Geld-Halle
+    if (dx === 2 && dz === 10 && y === hy + 1) return SIGN;
     if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
     return AIR;
   }
   // 4) DER VORPLATZ: eine ebene Wiese rundherum, mit Weg zur Tür
   if (adx <= SP_RAND && adz <= SP_RAND) {
     const gel = terrainHeight(SP_X + lx, SP_Z + lz);
-    if (y > hy) return AIR;
-    if (y === hy) return (dz > SP_R + 1 && adx <= 1) ? STRASSE : GRASS;
+    if (y > hy) {
+      // ⚠️ die Warnschilder auf ihren Pfosten
+      for (const sch of SP_SCHILDER)
+        if (dx === sch[0] && dz === sch[1]) {
+          if (y === hy + 1 || y === hy + 2) return FENCE;
+          if (y === hy + 3) return SIGN;
+        }
+      // 🏮 die Laternen links und rechts vom Weg
+      if (dz > SP_R + 1 && adx === 5 && ((dz - SP_R) % 6) === 0) {
+        if (y <= hy + 2) return FENCE;
+        if (y === hy + 3) return TORCH;
+      }
+      return AIR;
+    }
+    if (y === hy) return (dz > SP_R + 1 && adx <= 2) ? STRASSE : GRASS;
     return y >= Math.min(gel, hy) - 3 ? DIRT : null;
   }
   return null;
@@ -16077,15 +16159,20 @@ function speicherStempeln(data, cx, cz) {
       if (b !== null) data[bidx(lx2, y, lz2)] = b;
     }
   }
-  // die Schilder beschriften
-  const s1 = (SP_X+SP_MITTE) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+SP_R-2);
-  if (!signTexts.has(s1))
-    signTexts.set(s1, '💰 DER GELDSPEICHER VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
-                      'Nimm 💵 Geldscheine oder 🪙 Münzen aus deiner Blockleiste und bau damit.');
-  const s2 = (SP_X+SP_MITTE+2) + ',' + (SP_HY+1) + ',' + (SP_Z+SP_MITTE+SPT_SCHACHT+3);
-  if (!signTexts.has(s2))
-    signTexts.set(s2, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, nach oben! ' +
-                      'Dann über das Brett laufen und mitten ins Geld springen. 💰');
+  // alle Schilder beschriften
+  const schild = (dx, dy, dz, txt) => {
+    const k = (SP_X+SP_MITTE+dx) + ',' + (SP_HY+dy) + ',' + (SP_Z+SP_MITTE+dz);
+    if (!signTexts.has(k)) signTexts.set(k, txt);
+  };
+  schild(2, 1, 10, '💰 DER GELDSPEICHER VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
+                   'Nimm 💵 Geldscheine oder 🪙 Münzen aus deiner Blockleiste und bau damit.');
+  schild(2, 1, SPT_SCHACHT + 3, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, ' +
+                   'nach oben! Dann über das Brett laufen und mitten ins Geld springen. 💰');
+  schild(-10, 1, 20, '🧾 JONAHS BÜRO - hier zählt der Chef sein Geld!');
+  schild(-10, 1, 13, '🛏️ DAS ZIMMER VOM BUTLER - hier wohnt Johann.');
+  schild( 10, 1, 20, '🍽️ DIE KÜCHE - hier kocht der Butler für dich!');
+  schild( 10, 1, 13, '🏆 DER TROPHÄEN-RAUM - hier stehen deine Pokale!');
+  for (const sch of SP_SCHILDER) schild(sch[0], 3, sch[1], sch[2]);
 }
 // --- 💰 Wie viel Geld liegt in der Halle? ---------------------------------
 // Jeder Geld-Block ist 1 € wert. Die Liste geldOrte weiß sowieso schon, wo
@@ -16154,6 +16241,20 @@ function speicherTick(dt) {
       toast('💰 Dein Geld aus der alten Halle tief unter der Erde (' + euro + ' €) liegt ' +
             'jetzt wieder in deiner Tasche – bau es hier oben neu auf! 💵🪙', 9000);
     scheduleSave();
+  }
+  // 🤵 DER BUTLER wohnt im Geldspeicher und ist immer da, wenn Jonah kommt
+  if (!animals.some(x => x.type === 'butler')) {
+    animals.push({ type:'butler', name:'Johann', friend:3,
+      x: SP_X + SP_MITTE + 0.5, y: SP_HY + 1.5, z: SP_Z + SP_MITTE + 17.5,
+      yaw: 0, vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false });
+    // erst die Begrüßung der Halle lesen lassen, dann stellt sich Johann vor -
+    // sonst überschreibt eine Meldung sofort die andere
+    setTimeout(() => {
+      toast('🤵 „Willkommen in Ihrem Geldspeicher, König Jonah!" – das ist JOHANN, dein ' +
+            'Butler. Tipp ihn an: er folgt dir, räumt auf, macht Licht, bringt Snacks ' +
+            'und baut alles, was du ihm sagst!', 9000);
+      blip(523,0.07); blip(659,0.07); blip(784,0.1);
+    }, 7000);
   }
   if (spDrin) return;
   spDrin = true;                        // nur EINMAL pro Besuch Bescheid sagen
