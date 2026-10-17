@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE GELD-SCHÜTTE (v259)! 🪣💰 Jonah hat so viel Geld, dass es ewig
+  gedauert hat, es Block für Block in den Geldspeicher zu legen. Jetzt geht es
+  auf einen Schlag!
+  🪣 IM TRESORRAUM steht eine goldene Schütte – gleich gegenüber vom großen
+  Schild. Tipp sie an!
+  💰 EIN TIPPER, TAUSEND EURO: Du wählst 100 €, 1000 € oder gleich ALLES – und
+  dein Geld purzelt von allein in den Raum und stapelt sich von unten nach
+  oben, Schicht für Schicht (abwechselnd 💵 Scheine und 🪙 Münzen).
+  🛗 FAHRSTUHL UND TREPPE bleiben dabei frei – da kommt kein Geld hinein.
+  🏊 STEHST DU MITTENDRIN, während es rieselt? Dann schwimmst du einfach in
+  deinem Geld, wie Dagobert!
+  🖌️ AUCH VON HAND GEHT ES SCHNELLER: Der Pinsel baut jetzt auch Geld – auf
+  5×5 legst du 25 Blöcke mit einem einzigen Tipper hin.
 - SCHILDER VOR DEN ZIMMERN UND EINE TREPPE AUFS DACH (v258)! 🪧🪜 Jonah wollte
   vor jedem Zimmer ein Schild haben – und eine Treppe, mit der er aufs Dach kommt.
   🪧 IM FLUR steht jetzt vor jeder der vier Zimmertüren ein Schild: Büro, Küche,

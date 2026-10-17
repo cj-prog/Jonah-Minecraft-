@@ -527,6 +527,25 @@
     background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
   #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
     border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  /* 🪣 DIE GELD-SCHÜTTE im Tresorraum */
+  #schuettBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; align-items:center; gap:8px; background:rgba(28,26,18,.97);
+    padding:12px 16px; border-radius:16px; color:#fff; z-index:62; text-align:center;
+    max-height:95vh; overflow-y:auto; border:3px solid #d8a93c; }
+  #schuettBox h3 { font-size:18px; margin:0; }
+  #schuettInfo { font-size:13px; color:#f0e4c0; line-height:1.4; max-width:290px; }
+  #schuettKnoepfe { display:flex; flex-direction:column; gap:6px; width:min(86vw, 290px); }
+  #schuettKnoepfe button { font-size:15px; font-weight:bold; padding:9px 0; border-radius:10px;
+    border:none; background:#6b5a2f; color:#fff; }
+  #schuettKnoepfe button.alles { background:#2f7a48; }
+  #schuettKnoepfe button:disabled { background:#4a4740; color:#9a958a; }
+  #schuettZu { font-size:14px; font-weight:bold; padding:6px 18px; border-radius:8px;
+    border:none; background:#3f5b6b; color:#fff; }
+  @media (max-height: 480px) {
+    #schuettInfo { font-size:11px; max-width:420px; }
+    #schuettKnoepfe { width:min(92vw, 420px); gap:4px; }
+    #schuettKnoepfe button { font-size:13px; padding:5px 0; }
+  }
   /* 🔐 DAS ZAHLENFELD AN DER TRESORTÜR */
   #codeBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:7px; background:rgba(24,28,38,.97); padding:11px 14px; border-radius:16px;
@@ -1093,6 +1112,13 @@
   <button id="bankClose">Fertig</button>
 </div>
 
+<div class="hud" id="schuettBox">
+  <h3>🪣 DIE GELD-SCHÜTTE</h3>
+  <div id="schuettInfo"></div>
+  <div id="schuettKnoepfe"></div>
+  <button id="schuettZu">✔ Fertig</button>
+</div>
+
 <div class="hud" id="codeBox">
   <h3 id="codeKopf">🔐 Code eingeben</h3>
   <div id="codeInfo"></div>
@@ -1276,7 +1302,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 258 &middot; 🪜🏰 EINE TREPPE AUFS DACH DEINES GELDSPEICHERS! Links im Tresorraum läufst du einfach hoch – ohne Springen – und kommst oben durch eine Luke heraus. Und vor jeder Zimmertür hängt jetzt ein Schild! 🪧</p>
+    Version 259 &middot; 🪣💰 DIE GELD-SCHÜTTE! Im Tresorraum steht jetzt eine goldene Schütte – einmal antippen und dein GANZES Geld purzelt auf einmal hinein, Schicht für Schicht. Und der 🖌️ Pinsel baut jetzt auch Geld: 25 Blöcke pro Tipper! ⚡</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1322,7 +1348,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 258;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 259;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1484,7 +1510,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       RCHIP=114,                        // 💾 der Chip: hier programmiert Jonah seinen Roboter
       RLADE=115,                        // 🔌 die Ladestation für den Roboter-Akku
       GSPEICHER=116,                    // 💰 der alte Tresor aus Version 248 (wird nicht mehr gebaut)
-      TRESORTUER=117, TRESORRAD=118;    // 🔐 die große runde Tresortür und ihr Handrad
+      TRESORTUER=117, TRESORRAD=118,    // 🔐 die große runde Tresortür und ihr Handrad
+      GELDSCHUETTE=119;                 // 🪣 die Geld-Schütte im Tresorraum
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 const GELD_BLOCK = new Set([GELD, MUENZEN]);
 const geldOrte = new Set();             // 💰 wo liegt gerade Geld herum? ("x,y,z")
@@ -1726,6 +1753,11 @@ const BLOCKS = {
   [TRESORTUER]: { name:'Tresortür 🔐 (antippen = auf und zu!)', tiles:[165,165,165], solid:true },
   [TRESORRAD]:  { name:'Tresor-Handrad 🔐 (antippen = Tresortür auf und zu!)',
     tiles:[166,166,166], solid:true },
+  [GELDSCHUETTE]: { name:'Geld-Schütte 🪣 (antippen = dein Geld auf einmal reinkippen!)',
+    tiles:[167,167,167], solid:true, model:[
+      [0.05,0.52,0.05, 0.95,1.0,0.95, 167],             // der weite Trichter oben
+      [0.34,0.14,0.34, 0.66,0.52,0.66, 167],            // das Rohr nach unten
+      [0.22,0,0.22, 0.78,0.14,0.78, 166]] },            // der goldene Fuß
   [UFOPAD]:  { name:'Alien-Metallplatte 🛸', tiles:[155,155,155], solid:true },
   [UFOMARK]: { name:'Leuchtstreifen 🛸', tiles:[156,156,156], solid:true },
   [FAHRSTUHL]: { name:'Fahrstuhl-Wand 🛗 (bau einen Schacht - die Kabine kommt von allein!)',
@@ -6350,6 +6382,14 @@ atlas.width = atlas.height = T*ATLAS_N;
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
   });
+  tile(167,(x,y)=>{                                                 // 🪣 die Geld-Schütte
+    const dx = x - 7.5;
+    if (y < 2) return vary(58,62,72,8);                             // dunkler Rand
+    if (y < 6 && Math.abs(dx) < 5.6) return vary(38,42,50,6);       // das Loch oben
+    const h = 240 - Math.abs(dx)*4 - (y-6)*4;
+    if ((x + y) % 7 === 0) return vary(h-24, h-62, 36, 8);          // Blech-Maserung
+    return vary(h, h-34, 58, 12);                                   // goldenes Blech
+  });
   tile(161,(x,y)=>{                                                 // Werkbank-Platte
     if (y % 5 === 0) return vary(96,68,38,8);                       // Bretter-Fugen
     if ((x*3+y) % 11 === 0) return vary(150,110,64,10);             // Maserung
@@ -10310,6 +10350,8 @@ const CODE_TASTEN = '123456789'.split('')
     feld.appendChild(b);
   }
 })();
+document.getElementById('schuettZu').addEventListener('click', ()=>{
+  document.getElementById('schuettBox').style.display='none'; blip(400,0.06); });
 document.getElementById('codeAendern').addEventListener('click', ()=>{ openCodeFeld('neu'); });
 document.getElementById('codeJohann').addEventListener('click', ()=>{
   document.getElementById('codeBox').style.display = 'none';
@@ -16288,6 +16330,7 @@ function speicherBlock(lx, lz, y) {
         (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
     // 📋 die beiden Schilder in der Geld-Halle
     if (dx === 2 && dz === 10 && y === hy + 1) return SIGN;
+    if (dx === -2 && dz === 10 && y === hy + 1) return GELDSCHUETTE;   // 🪣 die Schütte
     if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
     if (dx === SPT_TR_X + 2 && dz === SPT_TR_Z0 && y === hy + 1) return SIGN;  // an der Treppe
     return AIR;
@@ -16338,7 +16381,10 @@ function speicherStempeln(data, cx, cz) {
     if (!signTexts.has(k)) signTexts.set(k, txt);
   };
   schild(2, 1, 10, '💰 DER TRESORRAUM VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
-                   'Nimm 💵 Geldscheine oder 🪙 Münzen aus deiner Blockleiste und bau damit.');
+                   'Am schnellsten geht es mit der 🪣 GELD-SCHÜTTE gegenüber: antippen und ' +
+                   'dein ganzes Geld purzelt auf einmal herein. Von Hand geht auch: 💵 Scheine ' +
+                   'oder 🪙 Münzen aus der Blockleiste nehmen - mit dem 🖌️ Pinsel (5×5) sogar ' +
+                   '25 Stück pro Tipper!');
   schild(-2, 1, 13, '🔐 DIE GROSSE TRESORTÜR - tipp sie an, dann schwingt sie auf. Mit dem ' +
                    'goldenen Handrad daneben machst du sie wieder zu. Dann kommt niemand rein!');
   schild(2, 1, SPT_SCHACHT + 3, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, ' +
@@ -16393,6 +16439,94 @@ function tresorZumachen() {
   toast('🔐 WUMM! Die Tresortür ist zu – jetzt kommt nur noch mit dem Code jemand rein! 🔒', 5500);
   blip(330,0.12); blip(180,0.16); blip(90,0.26);
   scheduleSave();
+}
+// 🪣 DIE GELD-SCHÜTTE: Jonah hat SEHR viel Geld - jeden Schein einzeln
+// hinzulegen dauert ewig. Hier kippt er alles auf einen Schlag hinein: die
+// Schütte stapelt das Geld von unten nach oben, Schicht für Schicht.
+const SCHUETT_MAX = 12000;              // so viel geht in einem Rutsch
+const SCHUETT_STUFEN = [100, 1000, 10000];
+function schuettFrei(dx, dz) {          // darf hier überhaupt Geld hin?
+  if (dx === SPT_TR_X && treppeStufe(dz) >= 0) return false;         // die Treppe bleibt frei
+  if (Math.abs(dx) <= 2 && dz >= SPT_SCHACHT - 2 &&
+      dz <= SPT_SCHACHT + 2) return false;                           // der Fahrstuhl auch
+  return true;
+}
+function geldSchuetten(wunsch) {
+  speicherHoehe();
+  const m = SP_MITTE, hy = SP_HY;
+  let rest = Math.min(wunsch, money, SCHUETT_MAX);
+  let n = 0;
+  for (let dy = 1; dy <= SP_HALLE_H - 2 && rest > 0; dy++) {
+    const sorte = (dy % 2) ? GELD : MUENZEN;        // gestreift: Scheine, Münzen, Scheine …
+    for (let dz = -SP_R; dz <= 11 && rest > 0; dz++)
+      for (let dx = -SP_R; dx <= SP_R && rest > 0; dx++) {
+        if (!schuettFrei(dx, dz)) continue;
+        const wx = SP_X + m + dx, wy = hy + dy, wz = SP_Z + m + dz;
+        const ch = getChunk(wx >> 4, wz >> 4);
+        if (!ch || !ch.data) continue;              // dieses Stück Welt ist noch nicht da
+        if (getBlock(wx, wy, wz) !== AIR) continue; // hier liegt schon etwas
+        setBlock(wx, wy, wz, sorte);
+        rest--; n++;
+      }
+  }
+  if (n > 0) {
+    money -= n; updateFoodHUD(); scheduleSave();
+    for (const f of [520, 660, 790, 990]) blip(f, 0.07);
+    for (let i = 0; i < 20; i++)        // es rieselt!
+      fireworks.push({ x: player.x+(Math.random()-0.5)*2.4, y: player.y+1.2+Math.random(),
+        z: player.z+(Math.random()-0.5)*2.4, vx:(Math.random()-0.5)*1.6, vy:-1.2-Math.random(),
+        vz:(Math.random()-0.5)*1.6, tile: i%2 ? 93 : 94, t:0.9 });
+    // Steckt Jonah jetzt selbst mitten im Geld? Dann schwimmt er eben darin!
+    if (!geldBad && imSpeicherHalle() &&
+        GELD_BLOCK.has(getBlock(Math.floor(player.x), Math.floor(player.y+0.2),
+                                Math.floor(player.z)))) {
+      geldBad = true; geldBadT = 0.6;
+      document.getElementById('downBtn').style.display = 'flex';
+    }
+  }
+  return n;
+}
+function schuettAnzeigen() {
+  document.getElementById('schuettInfo').innerHTML =
+    'Kipp dein Geld auf einen Schlag in den Tresorraum! Jeder Euro wird ein ' +
+    '💵 Geld-Block und stapelt sich ganz von allein von unten nach oben.<br>' +
+    'Du hast <b>' + money + ' €</b> dabei.';
+  const feld = document.getElementById('schuettKnoepfe');
+  feld.innerHTML = '';
+  const knopf = (txt, euro, alles) => {
+    const b = document.createElement('button');
+    b.textContent = txt;
+    if (alles) b.className = 'alles';
+    const w = () => {
+      const n = geldSchuetten(euro);
+      if (n > 0) {
+        toast('🪣💰 RAUSCH! ' + n + ' € sind in deinen Tresorraum gepurzelt – ' +
+              'als ' + n + ' Geld-Blöcke! Du hast noch ' + money + ' € dabei.', 5200);
+      } else {
+        toast('🪣 Hier passt gerade nichts mehr hinein – entweder ist dein Geldbeutel ' +
+              'leer oder der Tresorraum ist voll! 💰', 4000);
+        blip(200, 0.12);
+      }
+      if (money <= 0) { document.getElementById('schuettBox').style.display = 'none'; return; }
+      schuettAnzeigen();
+    };
+    b.addEventListener('click', w);
+    b.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
+    feld.appendChild(b);
+  };
+  for (const st of SCHUETT_STUFEN) if (money > st) knopf('💵 ' + st + ' € reinschütten', st, false);
+  knopf('💰 ALLES reinschütten (' + money + ' €)', money, true);
+}
+function openSchuette() {
+  if (money <= 0) {
+    toast('🪣 Deine Geld-Schütte! Hier kippst du dein ganzes Geld auf einmal in den ' +
+          'Tresorraum – aber gerade hast du keinen Euro dabei. 💶', 4500);
+    blip(260, 0.1); return;
+  }
+  schuettAnzeigen();
+  document.getElementById('schuettBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(520,0.05); blip(700,0.05);
 }
 // 🔐 DER GEHEIMCODE: ohne ihn geht die Tresortür nicht auf.
 let tresorCode = '';                    // Jonahs eigener Code
@@ -18811,7 +18945,9 @@ function finishLasso() {
 
 // Bau-Pinsel: 1x1, 3x3 oder 5x5 Blöcke auf einmal setzen/abbauen 🖌️
 let brushSize = 1;
-const MULTI_OK = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL, FENCE, BLUME];
+// 💵🪙 Geld darf mit: damit geht das Füllen des Geldspeichers 25-mal schneller
+const MULTI_OK = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, WOOL, FENCE,
+                  BLUME, GELD, MUENZEN];
 function toggleBrush() {
   brushSize = brushSize===1 ? 3 : brushSize===3 ? 5 : 1;
   const el = document.getElementById('brushBtn');
@@ -20910,6 +21046,7 @@ const MAP_BLOCK_COL = {
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
+  [GELDSCHUETTE]:'#f0c850',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -23702,6 +23839,8 @@ function doBreak(dir) {
   if (hit && hit.block === RLADE) { ladeStationTipp(); return; }
   // 🔐 Die Tresortür geht nie kaputt - antippen macht sie nur auf und zu
   if (hit && (hit.block === TRESORTUER || hit.block === TRESORRAD)) { tresorAntippen(); return; }
+  // 🪣 Die Geld-Schütte auch nicht - antippen kippt nur Geld hinein
+  if (hit && hit.block === GELDSCHUETTE) { openSchuette(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -24078,6 +24217,10 @@ function doPlace(dir) {
     tresorAntippen();
     return;
   }
+  if (hit.block === GELDSCHUETTE) {     // 🪣 die Geld-Schütte
+    openSchuette();
+    return;
+  }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
     openBank();                         // 🏦 Konto-Fenster: einzahlen und abheben
     return;
@@ -24338,6 +24481,7 @@ function doPlace(dir) {
     for (let u=-r;u<=r;u++) for (let v=-r;v<=r;v++) {
       if (u===0&&v===0) continue;
       if (b===WOOL && wool<=0) break;   // Wolle kostet weiter Wolle!
+      if (GELD_BLOCK.has(b) && money<=0) break;   // und Geld kostet weiter Geld!
       let qx=px, qy=py, qz=pz;
       if (fx2!==0) { qy+=u; qz+=v; } else if (fy2!==0) { qx+=u; qz+=v; } else { qx+=u; qy+=v; }
       if (qy<=CH_MIN||qy>=CH) continue;
@@ -24351,12 +24495,13 @@ function doPlace(dir) {
           Math.abs(qx+0.5-player.x)<0.5+P_HALF && (qy+1>player.y) && (qy<player.y+P_HEIGHT) &&
           Math.abs(qz+0.5-player.z)<0.5+P_HALF) continue;   // nicht in dich selbst bauen
       if (b===WOOL) { wool--; }
+      if (GELD_BLOCK.has(b)) { money--; }
       setBlock(qx,qy,qz,b); n++;
       gebaut.push([qx,qy,qz]);
     }
     for (const [qx,qy,qz] of gebaut) fallQ.push([qx,qy,qz]);   // ohne Halt? Dann plumps!
     if (n>1) { toast('🧱 Zack! '+n+' Blöcke auf einmal gebaut!', 1600); blip(392,0.05); blip(494,0.06); }
-    if (b===WOOL) { updateFoodHUD(); scheduleSave(); }
+    if (b===WOOL || GELD_BLOCK.has(b)) { updateFoodHUD(); scheduleSave(); }
     return;
   }
   if (b===SIGN) openSignEditor(px+','+py+','+pz);   // gleich beschriften!
