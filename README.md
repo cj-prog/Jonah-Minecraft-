@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- RÄUME, EIN BUTLER UND WARNSCHILDER (v253)! 🏛️🤵 Jonah wollte, dass im
+  Geldspeicher – wie bei Dagobert – noch mehr Räume sind, dass ein Butler darin
+  wohnt, dass vorne ein Weg hinführt und rundherum Schilder stehen.
+  🚪 HINTER DER EINGANGSTÜR liegt jetzt ein Flur mit VIER ZIMMERN, jedes mit
+  Holzboden, Fackeln, Möbeln und einem Schild an der Tür:
+  🧾 Jonahs Büro (Schreibtisch, Stuhl, Schrank, Truhe) · 🛏️ das Zimmer vom
+  Butler (Bett, Schrank, Tisch) · 🍽️ die Küche (Tisch, Spüle, Vorratstruhe) ·
+  🏆 der Trophäen-Raum (mit deinem Pokal auf dem Tisch).
+  Hinten führt ein großer Durchgang in die Geld-Halle – und die Decke der
+  Zimmer ist ein Balkon, von dem aus du über dein ganzes Geld schaust.
+  🤵 JOHANN, DEIN BUTLER wohnt jetzt im Geldspeicher und steht gleich hinter
+  der Tür. Tipp ihn an: er folgt dir, wartet, bringt dir Snacks, macht Licht,
+  räumt auf, tanzt – und baut alles, was du ihm aufschreibst.
+  🛣️ DER WEG: ein 5 Blöcke breiter Steinweg führt zur Tür, links und rechts
+  stehen Laternen.
+  ⚠️ UND RUNDHERUM 9 WARNSCHILDER wie bei Dagobert: „PRIVATGRUNDSTÜCK!",
+  „BETRETEN VERBOTEN – außer für Jonah!", „ACHTUNG, WACHHUND!", „RÄUBER BITTE
+  DRAUSSEN BLEIBEN!" und mehr.
 - DER GELDSPEICHER STEHT JETZT ÜBER DER ERDE (v252)! 💰🏛️ Jonah: „Mir ist
   eingefallen, dass ich den Geldspeicher doch über der Erde haben möchte – so
   wie bei Dagobert Duck. Nur dass vorne nicht DD draufsteht, sondern JJ für
