@@ -534,13 +534,15 @@
     border:3px solid #8a909e; }
   #codeBox h3 { font-size:17px; margin:0; }
   #codeInfo { font-size:12px; color:#cfd6e4; line-height:1.35; max-width:250px; }
-  #codeAnzeige { font-size:28px; font-weight:bold; letter-spacing:7px; color:#ffe066;
+  #codeAnzeige { font-size:26px; font-weight:bold; letter-spacing:6px; color:#ffe066;
     background:rgba(0,0,0,.5); padding:4px 16px; border-radius:10px; min-width:150px;
     border:2px solid rgba(255,255,255,.25); }
   #codeAnzeige.falsch { color:#ff6a6a; border-color:#ff6a6a; }
-  #codeTasten { display:grid; grid-template-columns:repeat(3, 60px); gap:6px; }
-  #codeTasten button { font-size:21px; font-weight:bold; padding:8px 0; border-radius:10px;
+  #codeTasten { display:grid; grid-template-columns:repeat(9, 1fr); gap:4px;
+    width:min(88vw, 396px); }
+  #codeTasten button { font-size:16px; font-weight:bold; padding:7px 0; border-radius:8px;
     border:none; background:#3a4458; color:#fff; }
+  #codeTasten button.zahl { background:#45527a; }
   #codeTasten button.ok  { background:#2f7a48; }
   #codeTasten button.weg { background:#8a4030; }
   #codeAendern { font-size:13px; font-weight:bold; padding:6px 14px; border-radius:9px;
@@ -1256,7 +1258,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 255 &middot; 🔑 DIE TRESORTÜR BRAUCHT JETZT EINEN GEHEIMCODE! Beim ersten Mal denkst du dir einen aus (3 bis 6 Zahlen), danach geht die Tür nur noch auf, wenn du ihn am Zahlenfeld eintippst. Vergessen? Dann frag Johann – er kennt ihn! 🤵🔐</p>
+    Version 256 &middot; 🔤 DEIN TRESOR-CODE DARF JETZT AUCH BUCHSTABEN HABEN! Am Tastenfeld gibt es alle Zahlen UND alle Buchstaben – nimm ruhig ein Wort wie JONAH oder misch beides. Bis zu 8 Zeichen! 🔑🔐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1302,7 +1304,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 255;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 256;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -10272,12 +10274,16 @@ document.getElementById('liftClose').addEventListener('click', ()=>{
 // 🔐 Das Zahlenfeld an der Tresortür
 (function bauCodeFeld(){
   const feld = document.getElementById('codeTasten');
-  const tasten = ['1','2','3','4','5','6','7','8','9','weg','0','ok'];
+  // 🔢🔤 Zahlen UND Buchstaben - Jonah darf sich auch Wörter als Code ausdenken
+  const tasten = '123456789'.split('')
+    .concat('0ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''))
+    .concat(['weg', 'ok']);
   for (const t of tasten) {
     const b = document.createElement('button');
-    b.textContent = t === 'weg' ? '⌫' : t === 'ok' ? '✔' : t;
-    if (t === 'ok') b.className = 'ok';
-    if (t === 'weg') b.className = 'weg';
+    b.textContent = t === 'weg' ? '⌫ Löschen' : t === 'ok' ? '✔ Fertig' : t;
+    if (t === 'ok')  { b.className = 'ok';  b.style.gridColumn = 'span 5'; }
+    if (t === 'weg') { b.className = 'weg'; b.style.gridColumn = 'span 4'; }
+    if (t >= '0' && t <= '9') b.className = 'zahl';
     const w = () => codeTaste(t);
     b.addEventListener('click', w);
     b.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
@@ -10296,6 +10302,7 @@ document.getElementById('codeZu').addEventListener('click', ()=>{
 window.addEventListener('keydown', e => {
   if (document.getElementById('codeBox').style.display !== 'flex') return;
   if (e.key >= '0' && e.key <= '9') { e.stopPropagation(); codeTaste(e.key); }
+  else if (/^[a-zA-Z]$/.test(e.key)) { e.stopPropagation(); codeTaste(e.key.toUpperCase()); }
   else if (e.key === 'Backspace') { e.stopPropagation(); codeTaste('weg'); }
   else if (e.key === 'Enter') { e.stopPropagation(); codeTaste('ok'); }
 }, true);
@@ -16338,12 +16345,14 @@ function openCodeFeld(modus) {
   const info = document.getElementById('codeInfo');
   if (modus === 'neu') {
     kopf.textContent = '🔑 Dein geheimer Tresor-Code';
-    info.innerHTML = 'Denk dir einen Code aus – <b>3 bis 6 Zahlen</b> – und tippe ihn hier ein. ' +
+    info.innerHTML = 'Denk dir einen Code aus – <b>3 bis 8 Zahlen und/oder Buchstaben</b>. ' +
+                     'Du kannst also auch ein Wort nehmen, zum Beispiel <b>JONAH</b> oder <b>B7X</b>! ' +
                      'Nur mit diesem Code geht deine Tresortür wieder auf. <b>Merk ihn dir gut!</b> ' +
                      '(Johann kennt ihn auch, falls du ihn vergisst. 🤵)';
   } else {
     kopf.textContent = '🔐 Code eingeben';
-    info.innerHTML = 'Tippe deinen geheimen Code ein, dann schwingt die Tresortür auf.';
+    info.innerHTML = 'Tippe deinen geheimen Code ein (Zahlen und Buchstaben), dann schwingt ' +
+                     'die Tresortür auf.';
   }
   codeAnzeigen();
   document.getElementById('codeBox').style.display = 'flex';
@@ -16353,15 +16362,21 @@ function openCodeFeld(modus) {
 function codeTaste(t) {
   if (t === 'weg') { codeEingabe = codeEingabe.slice(0, -1); blip(300,0.04); codeAnzeigen(); return; }
   if (t === 'ok')  { codeFertig(); return; }
-  if (codeEingabe.length >= 6) { blip(200,0.06); return; }
+  if (codeEingabe.length >= 8) {
+    toast('🔑 Acht Zeichen sind genug – länger geht nicht!', 2800);
+    blip(200,0.06); return;
+  }
   codeEingabe += t;
-  blip(620 + (+t) * 45, 0.04);
+  // jede Taste klingt ein bisschen anders - wie an einem echten Tresor
+  const n = t >= '0' && t <= '9' ? +t : t.charCodeAt(0) - 65 + 10;
+  blip(560 + n * 22, 0.04);
   codeAnzeigen();
 }
 function codeFertig() {
   if (codeModus === 'neu') {
     if (codeEingabe.length < 3) {
-      toast('🔑 Dein Code braucht mindestens 3 Zahlen – tipp noch ein paar ein!', 4000);
+      toast('🔑 Dein Code braucht mindestens 3 Zeichen – tipp noch ein paar Zahlen oder ' +
+            'Buchstaben ein!', 4000);
       blip(200,0.12); return;
     }
     tresorCode = codeEingabe; codeFalsch = 0;
