@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- WOHER KAM DIE BILLION? (v262) 🏦🔍 Jonah hatte auf einmal
+  1.032.175.098.757 € in der Tasche. Wir haben beide Ursachen gefunden:
+  🇬🇧 EIN FEHLER BEI DEN ENGLISCH-AUFGABEN: Die 2 € kamen erst eine halbe
+  Sekunde nach dem Tippen – wer in der Zeit nochmal auf die richtige Karte
+  tippte, bekam nochmal 2 €. Und nochmal. Jetzt gibt es pro Aufgabe genau
+  einmal 2 €, und sie zählt auch nur einmal als gelöst. (Beim Rechnen war es
+  immer schon richtig.)
+  🏦 DIE BANK: Sie hat alle 2 Minuten 5 % auf ALLES draufgelegt – auch auf die
+  Zinsen von vorher. Aus 1.000 € werden so in 2 Stunden 18.511 € und über viele
+  Spieltage eben Billionen. Jetzt gibt es Zinsen nur noch für die ersten
+  10.000 € auf dem Konto, also höchstens 500 € auf einmal. Sparen lohnt sich
+  weiter – aber das Geld wächst nicht mehr ins Unendliche.
+  💶 GROSSE ZAHLEN MIT PUNKTEN: oben im Spiel, bei der Bank, im Laden und an
+  der Geld-Schütte steht jetzt 1.032.175.098.757 € statt einer endlosen
+  Ziffernschlange.
+  🏅 Und die Schütte sagt dir, wie viel überhaupt in den Tresorraum passt
+  (etwa 3.500.000 € als Goldbarren) – der Rest gehört auf die Bank.
 - GOLDBARREN – 100 € IN EINEM BLOCK (v261)! 🏅💰 Jonahs Geldspeicher war voll,
   und er hatte immer noch Geld übrig. Jetzt passt hundertmal so viel hinein!
   🏅 DER NEUE BLOCK: ein Stapel Goldbarren. Einer ist 100 € wert – hinlegen
