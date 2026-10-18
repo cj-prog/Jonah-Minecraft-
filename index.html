@@ -1330,7 +1330,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 264 &middot; 🌪️ DER GELD-SAUGER! Neben der 🪣 Schütte steht jetzt sein Gegenstück: Er saugt dein Geld von oben wieder aus dem Tresorraum heraus, zurück in deinen Geldbeutel – 100 €, 1.000 €, nur die Goldbarren oder gleich ALLES. 💰</p>
+    Version 265 &middot; 🚪 FREIE BAHN IM TRESORRAUM! Gleich hinter der Tresortür bleibt jetzt immer ein breiter Gang frei – da kippt die Schütte kein Geld mehr hin. So kommst du rein, an die Geräte und an die Treppe. 🧹💰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1376,7 +1376,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 264;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 265;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -16621,7 +16621,14 @@ const SCHUETT_MAX = 12000;              // so viele Blöcke gehen in einem Rutsc
 // 35.000 Plätze mal 100 € je Barren.
 const SP_GOLD_PLATZ = 3500000;
 const SCHUETT_STUFEN = [100, 1000, 10000];
+// 🚪 Der Gang gleich hinter der Tresortür: hier kippt die Schütte NIE Geld hin.
+// Sonst steht man beim Aufmachen sofort vor einer Wand aus Goldbarren und kommt
+// gar nicht erst in seinen eigenen Tresorraum. Von hier aus erreicht Jonah die
+// Tür, die 🪣 Schütte, den 🌪️ Sauger, das Schild und die 🪜 Treppe aufs Dach.
+const EINGANG_DZ = 9;                   // alles ab dz=9 bleibt frei (bis zur Tür bei 12)
+function imEingang(dz) { return dz >= EINGANG_DZ; }
 function schuettFrei(dx, dz) {          // darf hier überhaupt Geld hin?
+  if (imEingang(dz)) return false;      // 🚪 der Gang hinter der Tür bleibt frei
   if (dx === SPT_TR_X && treppeStufe(dz) >= 0) return false;         // die Treppe bleibt frei
   // Vor der Tafel bleibt eine ganze Nische frei - sonst steht man irgendwann bis
   // zum Hals im Geld und sieht die unteren Zeilen nicht mehr.
@@ -16796,6 +16803,32 @@ function geldSaugen(wunsch, nurGold) {
     tafelAuffrischen(true);             // 🏛️ die Tafel zeigt gleich den neuen Stand
   }
   return n;
+}
+// 🧹 In alten Spielständen liegt im Eingangs-Gang schon Geld. Das wird einmal
+// eingesammelt und weiter hinten im Raum wieder abgelegt - kein Euro geht weg.
+function eingangFreiRaeumen() {
+  speicherHoehe();
+  const m = SP_MITTE, hy = SP_HY;
+  let barren = 0, scheine = 0;
+  for (let dy = 1; dy <= SP_HALLE_H + 1; dy++)
+    for (let dz = EINGANG_DZ; dz <= 11; dz++)
+      for (let dx = -SP_R; dx <= SP_R; dx++) {
+        const wx = SP_X + m + dx, wy = hy + dy, wz = SP_Z + m + dz;
+        const ch = getChunk(wx >> 4, wz >> 4);
+        if (!ch || !ch.data) continue;
+        const b = getBlock(wx, wy, wz);
+        if (!GELD_BLOCK.has(b)) continue;
+        if (b === GOLDBARREN) barren++; else scheine++;
+        setBlock(wx, wy, wz, AIR);
+      }
+  const summe = barren * 100 + scheine;
+  if (!summe) return 0;
+  money += summe;                       // kurz in die Tasche …
+  geldSchuetten(barren * 100, true);    // … und weiter hinten wieder hinlegen
+  geldSchuetten(scheine, false);
+  updateFoodHUD(); scheduleSave();
+  tafelAuffrischen(true);
+  return summe;
 }
 function saugAnzeigen() {
   const info = speicherGeldInfo();
@@ -17067,6 +17100,11 @@ function speicherTick(dt) {
   }
   if (spDrin) return;
   spDrin = true;                        // nur EINMAL pro Besuch Bescheid sagen
+  const frei = eingangFreiRaeumen();    // 🚪 den Weg hinter der Tür freiräumen
+  if (frei > 0)
+    setTimeout(() => toast('🧹🚪 Johann hat den Weg hinter der Tresortür freigeräumt – ' +
+      euroText(frei) + ' € lagen dir im Eingang. Sie liegen jetzt weiter hinten im Raum ' +
+      '(oder in deiner Tasche, falls es nicht mehr hineinpasst). 💰', 9000), 3500);
   const n = speicherGeldZaehlen();
   toast(n > 0
     ? '💰 Willkommen in deinem Geldspeicher! Im Tresorraum liegen ' + n + ' € – und kein ' +
