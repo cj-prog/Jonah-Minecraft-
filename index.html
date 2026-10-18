@@ -1110,7 +1110,7 @@
   <div class="senderRow" data-bank="aus1">⬆️ 1 € abheben</div>
   <div class="senderRow" data-bank="aus5">⬆️ 5 € abheben</div>
   <div class="senderRow" data-bank="ausAlles">⬆️ ALLES abheben</div>
-  <p>Geld auf dem Konto ist sicher &ndash; da kommt kein Räuber ran! Und alle 2 Minuten gibt es Zinsen: 1 € für jede vollen 20 € auf dem Konto. 💶</p>
+  <p>Geld auf dem Konto ist sicher &ndash; da kommt kein Räuber ran! Und alle 2 Minuten gibt es Zinsen: 1 € für jede vollen 20 € &ndash; für die ersten 10.000 € auf dem Konto, also bis zu 500 € jedes Mal. 💶</p>
   <button id="bankClose">Fertig</button>
 </div>
 
@@ -1304,7 +1304,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 261 &middot; 🏅 GOLDBARREN! Dein Geldspeicher ist voll? Johann presst dein Geld zu Goldbarren – ein Barren ist 100 € wert, da passt HUNDERTMAL so viel hinein. Tipp die 🪣 Schütte an und dann auf „Geld pressen“! 💰</p>
+    Version 262 &middot; 🏦 DIE BANK IST GEZÄHMT! Sie hat dir immer weiter Zinsen auf die Zinsen gegeben – daher deine Billion. Jetzt gibt es Zinsen nur noch für die ersten 10.000 €. Und große Zahlen stehen endlich mit Punkten da: 1.032.175.098.757 € 💶</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1350,7 +1350,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 261;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 262;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -10478,13 +10478,19 @@ let money = 5;                          // dein Geldbeutel: 5 Euro Startgeld! �
 let boostT = 0, jumpT = 0, cropT = 0, balloonT = 0;
 let rutschV = 0, rutschT = 0;           // 🛝 wie schnell rutscht Jonah gerade?
 
+// 💶 Große Zahlen liest kein Mensch am Stück: 1032175 € wird zu 1.032.175 €
+function euroText(n) {
+  return Math.round(n).toLocaleString('de-DE');
+}
 function updateFoodHUD() {
   const set=(id,emoji,n)=>{ const el=document.getElementById(id);
     el.textContent=emoji+' '+n; el.style.display = n>0 ? 'flex':'none'; };
   set('foodC','🥕',carrots); set('foodT','🍅',tomatoes); set('foodA','🍎',apples);
   set('foodW','🌾',wheat); set('foodB','🍞',bread); set('foodWo','🧶',wool);
   set('foodS','❄️',snowCnt); set('foodG','💎',gems); set('foodK','🍰',cakes);
-  set('foodBo','🍬',bonbons); set('foodM','💶',money);
+  set('foodBo','🍬',bonbons);
+  { const el=document.getElementById('foodM');       // 💶 das Geld mit Punkten
+    el.textContent='💶 '+euroText(money); el.style.display = money>0 ? 'flex':'none'; }
   { const el=document.getElementById('foodAn');     // 👨‍🚀 der Anzug ist an
     if (el) { el.textContent='👨‍🚀 AN'; el.style.display = hatAnzug ? 'flex' : 'none'; } }
 }
@@ -10541,7 +10547,7 @@ function eatFood(kind) {
     toast('💎 Deine Schatz-Sammlung: '+gems+' Diamanten! Der Händler im Laden tauscht sie in Euro um!', 3200);
     return;
   } else if (kind==='m') {
-    toast('💶 Dein Geldbeutel: '+money+' Euro · 🏦 auf der Bank: '+kontoStand+' Euro. Verdiene mehr beim Händler 🏪, bau mit dem Geld-Block – oder bring es zum Tresor, dann ist es sicher!', 4800);
+    toast('💶 Dein Geldbeutel: '+euroText(money)+' Euro · 🏦 auf der Bank: '+euroText(kontoStand)+' Euro. Verdiene mehr beim Händler 🏪, bau mit dem Geld-Block – oder bring es zum Tresor, dann ist es sicher!', 4800);
     return;
   } else return;
   updateFoodHUD(); scheduleSave();
@@ -11753,7 +11759,7 @@ function openShop(a) {
   blip(523,0.08); blip(659,0.1);
 }
 function updateShopUI() {
-  document.getElementById('shopGems').textContent = 'Du hast: 💶 ' + money + ' Euro · 💎 ' + gems;
+  document.getElementById('shopGems').textContent = 'Du hast: 💶 ' + euroText(money) + ' Euro · 💎 ' + gems;
 }
 // Was alles im Laden liegt und was es kostet 🏪
 const PREISE = { cake:2, bonbon:2, apple:1, brot:3, samen:8, schnee:2, turbo:2, sprung:2,
@@ -16479,7 +16485,10 @@ function tresorZumachen() {
 // 🪣 DIE GELD-SCHÜTTE: Jonah hat SEHR viel Geld - jeden Schein einzeln
 // hinzulegen dauert ewig. Hier kippt er alles auf einen Schlag hinein: die
 // Schütte stapelt das Geld von unten nach oben, Schicht für Schicht.
-const SCHUETT_MAX = 12000;              // so viel geht in einem Rutsch
+const SCHUETT_MAX = 12000;              // so viele Blöcke gehen in einem Rutsch
+// So viel Geld passt als Goldbarren überhaupt in den Tresorraum: ungefähr
+// 35.000 Plätze mal 100 € je Barren.
+const SP_GOLD_PLATZ = 3500000;
 const SCHUETT_STUFEN = [100, 1000, 10000];
 function schuettFrei(dx, dz) {          // darf hier überhaupt Geld hin?
   if (dx === SPT_TR_X && treppeStufe(dz) >= 0) return false;         // die Treppe bleibt frei
@@ -16563,8 +16572,13 @@ function schuettAnzeigen() {
   document.getElementById('schuettInfo').innerHTML =
     'Kipp dein Geld auf einen Schlag in den Tresorraum! Ein 💵 Geld-Block ist ' +
     '1 €, ein 🏅 Goldbarren gleich <b>100 €</b> – damit passt hundertmal so viel ' +
-    'hinein.<br>Du hast <b>' + money + ' €</b> dabei, im Tresorraum liegen <b>' +
-    drin + ' €</b>.';
+    'hinein.<br>Du hast <b>' + euroText(money) + ' €</b> dabei, im Tresorraum liegen <b>' +
+    euroText(drin) + ' €</b>.' +
+    (money > SP_GOLD_PLATZ
+      ? '<br>🏦 In den Tresorraum passen als Goldbarren höchstens etwa <b>' +
+        euroText(SP_GOLD_PLATZ) + ' €</b> – bring den Rest lieber auf die Bank, da ist ' +
+        'er auch sicher!'
+      : '');
   const feld = document.getElementById('schuettKnoepfe');
   feld.innerHTML = '';
   const knopf = (txt, klasse, w) => {
@@ -16586,10 +16600,10 @@ function schuettAnzeigen() {
     const n = geldSchuetten(euro, gold);
     if (n > 0) {
       toast(gold
-        ? '🪣🏅 KLONK! ' + (n/100) + ' Goldbarren (' + n + ' €) sind in deinen Tresorraum ' +
-          'gepoltert! Du hast noch ' + money + ' € dabei.'
-        : '🪣💰 RAUSCH! ' + n + ' € sind in deinen Tresorraum gepurzelt – als ' + n +
-          ' Geld-Blöcke! Du hast noch ' + money + ' € dabei.', 5200);
+        ? '🪣🏅 KLONK! ' + euroText(n/100) + ' Goldbarren (' + euroText(n) + ' €) sind in ' +
+          'deinen Tresorraum gepoltert! Du hast noch ' + euroText(money) + ' € dabei.'
+        : '🪣💰 RAUSCH! ' + euroText(n) + ' € sind in deinen Tresorraum gepurzelt – als ' +
+          euroText(n) + ' Geld-Blöcke! Du hast noch ' + euroText(money) + ' € dabei.', 5200);
     } else {
       toast('🪣 Hier passt gerade nichts mehr hinein! Tipp auf „🏅 Geld pressen", dann ' +
             'macht Johann aus je 100 Blöcken EINEN Goldbarren – und du hast wieder ' +
@@ -16597,16 +16611,21 @@ function schuettAnzeigen() {
       blip(200, 0.12);
     }
   };
-  for (const st of SCHUETT_STUFEN) if (money > st) knopf('💵 ' + st + ' € reinschütten', '', kippen(st, false));
-  if (money >= 100)
-    knopf('🏅 ' + Math.floor(money/100) + ' Goldbarren reinschütten (' +
-          Math.floor(money/100)*100 + ' €)', 'gold', kippen(Math.floor(money/100)*100, true));
-  if (money > 0) knopf('💰 ALLES reinschütten (' + money + ' €)', 'alles', kippen(money, false));
+  for (const st of SCHUETT_STUFEN)
+    if (money > st) knopf('💵 ' + euroText(st) + ' € reinschütten', '', kippen(st, false));
+  if (money >= 100) {
+    const gold = Math.min(Math.floor(money/100), SCHUETT_MAX) * 100;
+    knopf('🏅 ' + euroText(gold/100) + ' Goldbarren reinschütten (' + euroText(gold) + ' €)',
+          'gold', kippen(gold, true));
+  }
+  if (money > 0)
+    knopf('💰 ALLES reinschütten (' + euroText(Math.min(money, SCHUETT_MAX)) + ' €)',
+          'alles', kippen(money, false));
   if (drin >= 100)
-    knopf('🏅 Geld pressen – macht Platz! (' + drin + ' €)', 'pressen', () => {
+    knopf('🏅 Geld pressen – macht Platz! (' + euroText(drin) + ' €)', 'pressen', () => {
       const barren = geldPressen();
       if (barren > 0) {
-        toast('🏅 KRACH-BUMM! Johann hat dein Geld zu ' + barren + ' Goldbarren gepresst – ' +
+        toast('🏅 KRACH-BUMM! Johann hat dein Geld zu ' + euroText(barren) + ' Goldbarren gepresst – ' +
               'jeder 100 € wert. Jetzt ist wieder richtig viel Platz im Tresorraum! 💪', 7000);
         for (const f of [330, 440, 550, 880]) blip(f, 0.1);
       }
@@ -20616,7 +20635,7 @@ let riesenBesiegt = 0;                  // 👹 wie viele Riesen hat Jonah schon
 const bankBox = document.getElementById('bankBox');
 function bankAnzeige() {
   document.getElementById('bankStand').textContent =
-    'Konto: ' + kontoStand + ' €  ·  in der Tasche: ' + money + ' €';
+    'Konto: ' + euroText(kontoStand) + ' €  ·  in der Tasche: ' + euroText(money) + ' €';
 }
 function openBank(a) {
   // Steht ein Bankier am Schalter, begrüßt er dich persönlich
@@ -20641,11 +20660,12 @@ function bankAktion(was) {
   const rein = n => {
     if (money < n || n <= 0) { toast('💶 So viel Geld hast du gar nicht dabei! (Du hast '+money+' €)', 3000); blip(180,0.12); return; }
     money -= n; kontoStand += n;
-    toast('🏦 '+n+' € eingezahlt! Auf deinem Konto sind jetzt '+kontoStand+' € – sicher vor Räubern. 🔒', 3600);
+    toast('🏦 '+euroText(n)+' € eingezahlt! Auf deinem Konto sind jetzt '+euroText(kontoStand)+
+          ' € – sicher vor Räubern. 🔒', 3600);
     blip(700,0.06); blip(880,0.08);
   };
   const raus = n => {
-    if (kontoStand < n || n <= 0) { toast('🏦 So viel liegt nicht auf deinem Konto! (Da sind '+kontoStand+' €)', 3000); blip(180,0.12); return; }
+    if (kontoStand < n || n <= 0) { toast('🏦 So viel liegt nicht auf deinem Konto! (Da sind '+euroText(kontoStand)+' €)', 3000); blip(180,0.12); return; }
     kontoStand -= n; money += n;
     toast('🏦 '+n+' € abgehoben! Du hast jetzt '+money+' € in der Tasche.', 3400);
     blip(880,0.06); blip(700,0.08);
@@ -20665,14 +20685,20 @@ function bankAktion(was) {
   }
   bankAnzeige(); updateFoodHUD(); updateShopUI(); scheduleSave();
 }
+// 🏦 Zinsen gibt es nur für die ersten ZINS_BASIS Euro. Vorher wuchs das Konto
+// immer weiter auf sich selbst - nach einem Tag waren daraus Billionen geworden,
+// und dann ist es egal, wie viel Geld man hat. So bleibt Sparen etwas wert, aber
+// das Geld wächst nicht mehr ins Unendliche.
+const ZINS_BASIS = 10000;
 function zinsTick(dt) {                 // alle 2 Minuten schreibt die Bank Zinsen gut
   if (kontoStand < 20) { zinsT = 0; return; }
   zinsT += dt;
   if (zinsT < 120) return;
   zinsT = 0;
-  const zins = Math.floor(kontoStand / 20);
+  const zins = Math.floor(Math.min(kontoStand, ZINS_BASIS) / 20);
   kontoStand += zins;
-  toast('🏦✨ Zinsen! Die Bank schenkt dir '+zins+' € fürs Sparen. Konto: '+kontoStand+' €', 4200);
+  toast('🏦✨ Zinsen! Die Bank schenkt dir '+zins+' € fürs Sparen. Konto: '+
+        euroText(kontoStand)+' €', 4200);
   blip(660,0.06); blip(830,0.06); blip(990,0.1);
   if (bankBox.style.display==='flex') bankAnzeige();
   scheduleSave();
@@ -23064,7 +23090,7 @@ function vokWaehlen() {
 function vokabelStellen() {
   if (mathePause || !started) return;
   vokJetzt = vokWaehlen();
-  vokVersuch = 0;
+  vokVersuch = 0; vokGeloest = false;
   mathePause = true;                    // die Welt hält an - wie beim Rechnen
   // zwei falsche Bilder dazu, die ganz anders aussehen
   const andere = vokVorrat().filter(w => w.en !== vokJetzt.en && w.pic !== vokJetzt.pic);
@@ -23097,8 +23123,9 @@ function vokZeichnen(hinweis) {
     feld.appendChild(d);
   });
 }
+let vokGeloest = false;                 // schon richtig getippt? Dann zählt kein Tipper mehr
 function vokTippen(w, knopf) {
-  if (!mathePause || !vokJetzt) return;
+  if (!mathePause || !vokJetzt || vokGeloest) return;
   if (w.en === vokJetzt.en) {
     knopf.classList.add('gut');
     if (vokVersuch === 0) {             // auf Anhieb richtig
@@ -23114,6 +23141,11 @@ function vokTippen(w, knopf) {
     if (vokLetzte.length > 10) vokLetzte = vokLetzte.slice(-10);
     vokGesamt++;
     lernNotieren('v', vokVersuch === 0);     // 📊 fürs Lern-Tagebuch
+    // WICHTIG: ab hier ist die Aufgabe erledigt. Die Belohnung kommt zwar erst
+    // in einer halben Sekunde (damit man die grüne Karte sieht) - aber ein
+    // zweiter Tipper darf in der Zeit NICHT nochmal 2 € und einen zweiten
+    // gelösten Punkt bringen.
+    vokGeloest = true;
     setTimeout(vokFertig, 550);
     return;
   }
@@ -23131,6 +23163,7 @@ function vokZeichnenHinweis(text) {      // nur den Hinweis ändern, Karten steh
   document.getElementById('vokHinweis').textContent = text;
 }
 function vokFertig() {
+  vokGeloest = false;
   document.getElementById('vokBox').style.display = 'none';
   mathePause = false;
   vokJetzt = null;
