@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE GOLDENE TAFEL (v263)! 🏛️⭐ Jonah wollte eine große goldene Anzeigetafel
+  für seinen Reichtum – hier ist sie.
+  🏛️ AN DER RECHTEN WAND im Tresorraum hängt jetzt eine riesige goldene Tafel,
+  9 Blöcke breit und 4 hoch.
+  ⭐ DARAUF STEHT IMMER: wie viel Geld in deinem Tresorraum liegt, wie viele
+  🏅 Goldbarren das sind, was auf der 🏦 Bank liegt, was du in der Tasche
+  hast – und ganz unten alles ZUSAMMEN.
+  🔄 Sie rechnet sich von allein neu, sobald sich eine Zahl ändert.
+  👆 ANTIPPEN sagt dir alles nochmal als Meldung – kaputt geht sie nie.
+  👀 Und vor der Tafel bleibt eine Nische frei: Die Geld-Schütte kippt dort kein
+  Geld hin, damit du sie immer lesen kannst.
 - WOHER KAM DIE BILLION? (v262) 🏦🔍 Jonah hatte auf einmal
   1.032.175.098.757 € in der Tasche. Wir haben beide Ursachen gefunden:
   🇬🇧 EIN FEHLER BEI DEN ENGLISCH-AUFGABEN: Die 2 € kamen erst eine halbe

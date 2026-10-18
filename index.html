@@ -1304,7 +1304,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 262 &middot; 🏦 DIE BANK IST GEZÄHMT! Sie hat dir immer weiter Zinsen auf die Zinsen gegeben – daher deine Billion. Jetzt gibt es Zinsen nur noch für die ersten 10.000 €. Und große Zahlen stehen endlich mit Punkten da: 1.032.175.098.757 € 💶</p>
+    Version 263 &middot; 🏛️ DEINE GOLDENE TAFEL! Im Tresorraum hängt jetzt eine riesige goldene Anzeigetafel – darauf steht immer, wie viel Geld in deinem Tresorraum liegt, wie viele Goldbarren das sind, was auf der Bank ist und wie reich du insgesamt bist. ⭐💰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1350,7 +1350,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 262;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 263;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1514,7 +1514,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       GSPEICHER=116,                    // 💰 der alte Tresor aus Version 248 (wird nicht mehr gebaut)
       TRESORTUER=117, TRESORRAD=118,    // 🔐 die große runde Tresortür und ihr Handrad
       GELDSCHUETTE=119,                 // 🪣 die Geld-Schütte im Tresorraum
-      GOLDBARREN=120;                   // 🏅 ein Goldbarren - 100 € in EINEM Block!
+      GOLDBARREN=120,                   // 🏅 ein Goldbarren - 100 € in EINEM Block!
+      GOLDTAFEL=121;                    // 🏛️ die goldene Tafel im Geldspeicher
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -1769,6 +1770,8 @@ const BLOCKS = {
       [0.07,0,0.54,    0.93,0.30,0.92, 168],            // unterer Barren vorne
       [0.13,0.30,0.34, 0.87,0.60,0.72, 168],            // mittlerer Barren
       [0.19,0.60,0.40, 0.81,0.88,0.66, 168]] },         // der oberste Barren
+  [GOLDTAFEL]: { name:'Goldene Tafel 🏛️ (zeigt deinen ganzen Reichtum!)',
+    tiles:[169,169,169], solid:true },
   [GELDSCHUETTE]: { name:'Geld-Schütte 🪣 (antippen = dein Geld auf einmal reinkippen!)',
     tiles:[167,167,167], solid:true, model:[
       [0.05,0.52,0.05, 0.95,1.0,0.95, 167],             // der weite Trichter oben
@@ -6405,6 +6408,11 @@ atlas.width = atlas.height = T*ATLAS_N;
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
   });
+  tile(169,(x,y)=>{                                                 // 🏛️ die goldene Tafel
+    if (x === 0 || x === 15 || y === 0 || y === 15) return vary(126,92,22,6);   // Rahmen
+    if (x === 1 || x === 14 || y === 1 || y === 14) return vary(255,226,110,10);
+    return vary(206,162,44,9);                                      // mattes Gold zum Lesen
+  });
   tile(168,(x,y)=>{                                                 // 🏅 Goldbarren
     if (y < 2 || y > 13) return vary(188,142,34,8);                 // die Kanten
     if (x < 2 || x > 13) return vary(176,132,30,8);
@@ -10173,6 +10181,77 @@ function makeSignTexture(key, text) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   signTexs[key]={tex:tx};
+}
+// ---------------- 🏛️ DIE GOLDENE TAFEL IM GELDSPEICHER ----------------------
+// Eine große Anzeigetafel, auf der immer steht, wie reich Jonah gerade ist.
+// Der Text wird als Bild gemalt (wie bei den Schildern) und nur dann neu
+// gemalt, wenn sich wirklich eine Zahl geändert hat.
+let tafelTex = null, tafelStand = '';
+function tafelZeilen() {
+  const info = speicherGeldInfo();
+  return ['💰 JONAHS REICHTUM',
+          'Im Tresorraum:  ' + euroText(info.euro) + ' €',
+          'davon ' + euroText(info.barren) + ' Goldbarren 🏅',
+          'Auf der Bank:  ' + euroText(kontoStand) + ' €',
+          'In der Tasche:  ' + euroText(money) + ' €',
+          '⭐ ZUSAMMEN:  ' + euroText(info.euro + kontoStand + money) + ' €'];
+}
+function tafelMalen(zeilen) {
+  const c = document.createElement('canvas'); c.width = 768; c.height = 384;
+  const g = c.getContext('2d');
+  g.clearRect(0, 0, 768, 384);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#3a2a08';
+  g.font = 'bold 54px sans-serif';
+  g.fillText(zeilen[0], 384, 52, 740);
+  g.strokeStyle = '#6b5118'; g.lineWidth = 4;
+  g.beginPath(); g.moveTo(70, 88); g.lineTo(698, 88); g.stroke();
+  g.font = 'bold 40px sans-serif';
+  for (let i = 1; i < zeilen.length - 1; i++)
+    g.fillText(zeilen[i], 384, 128 + (i-1)*52, 740);
+  g.font = 'bold 46px sans-serif';
+  g.fillStyle = '#5a3c00';
+  g.fillText(zeilen[zeilen.length-1], 384, 346, 740);
+  if (tafelTex) gl.deleteTexture(tafelTex);
+  tafelTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tafelTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+}
+function tafelAuffrischen(zwang) {
+  const zeilen = tafelZeilen(), stand = zeilen.join('|');
+  if (!zwang && stand === tafelStand && tafelTex) return false;
+  tafelStand = stand;
+  tafelMalen(zeilen);
+  return true;
+}
+function drawGoldTafel() {
+  if (weltDim !== 0 || !spHoeheFertig) return;
+  const m = SP_MITTE;
+  const px = SP_X + m + TAFEL_X, pz0 = SP_Z + m + TAFEL_Z0, pz1 = SP_Z + m + TAFEL_Z1 + 1;
+  if (Math.abs(player.x - px) > 44 || Math.abs(player.z - (pz0+pz1)/2) > 44) return;
+  if (getBlock(SP_X+m+TAFEL_X, SP_HY+TAFEL_Y0, SP_Z+m+TAFEL_Z0) !== GOLDTAFEL) return;
+  if (!tafelTex) tafelAuffrischen(true);
+  const x = px - 0.03;                      // einen Hauch vor dem Gold
+  const y0 = SP_HY + TAFEL_Y0, y1 = SP_HY + TAFEL_Y1 + 1;
+  const s = 1.0;
+  const a = [
+    x,y0,pz0,0,1,s,  x,y0,pz1,1,1,s,  x,y1,pz1,1,0,s,
+    x,y0,pz0,0,1,s,  x,y1,pz1,1,0,s,  x,y1,pz0,0,0,s,
+    // und einmal andersherum, damit sie von beiden Seiten gezeichnet wird
+    x,y0,pz1,1,1,s,  x,y0,pz0,0,1,s,  x,y1,pz0,0,0,s,
+    x,y0,pz1,1,1,s,  x,y1,pz0,0,0,s,  x,y1,pz1,1,0,s,
+  ];
+  gl.uniform1f(loc.uAlpha, 1);
+  gl.bindTexture(gl.TEXTURE_2D, tafelTex);
+  gl.bindBuffer(gl.ARRAY_BUFFER, signBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW);
+  setAttribs();
+  gl.drawArrays(gl.TRIANGLES, 0, 12);
+  gl.bindTexture(gl.TEXTURE_2D, tex);       // Block-Atlas wiederherstellen
 }
 function setSignText(key, text) {
   signTexts.set(key, text);
@@ -16183,6 +16262,9 @@ function speicherMoebel(dx, dz, y, hy) {
 // 🪜 DIE TREPPE AUFS DACH: direkt an der linken Innenwand läuft sie vom
 // Tresorraum ganz nach oben und kommt durch eine Luke auf dem Dach heraus.
 // Die Stufen sind halbe Stufen (TREP) - einfach hochlaufen, ohne zu springen!
+// 🏛️ DIE GOLDENE TAFEL: eine große Anzeigetafel an der rechten Innenwand des
+// Tresorraums. Darauf steht immer, wie reich Jonah gerade ist.
+const TAFEL_X = SP_R, TAFEL_Z0 = 0, TAFEL_Z1 = 8, TAFEL_Y0 = 3, TAFEL_Y1 = 6;
 const SPT_TR_X  = -SP_R;              // die Spalte direkt an der linken Wand
 const SPT_TR_Z0 = 11;                 // hier liegt die unterste Stufe
 const SPT_TR_N  = SP_HALLE_H;         // so viele Stufen - die oberste IST das Dach
@@ -16367,6 +16449,11 @@ function speicherBlock(lx, lz, y) {
     // 🏛️ die vier Räume und der Flur gleich hinter der Eingangstür
     const raum = speicherRaeume(dx, dz, y, hy);
     if (raum !== null) return raum;
+    // 🏛️ DIE GOLDENE TAFEL an der rechten Innenwand, gleich neben dem Eingang.
+    // WICHTIG: vor den Wand-Fackeln! Sonst steckt mitten in der Tafel eine Fackel
+    // und lässt ein Loch in der goldenen Fläche.
+    if (dx === TAFEL_X && dz >= TAFEL_Z0 && dz <= TAFEL_Z1 &&
+        y >= hy + TAFEL_Y0 && y <= hy + TAFEL_Y1) return GOLDTAFEL;
     // 🔥 Fackeln an den Innenwänden
     if (y === hy + 5 && (adx === SP_R || adz === SP_R) &&
         (((dx + dz) % 6) + 6) % 6 === 0) return TORCH;
@@ -16492,6 +16579,9 @@ const SP_GOLD_PLATZ = 3500000;
 const SCHUETT_STUFEN = [100, 1000, 10000];
 function schuettFrei(dx, dz) {          // darf hier überhaupt Geld hin?
   if (dx === SPT_TR_X && treppeStufe(dz) >= 0) return false;         // die Treppe bleibt frei
+  // Vor der Tafel bleibt eine ganze Nische frei - sonst steht man irgendwann bis
+  // zum Hals im Geld und sieht die unteren Zeilen nicht mehr.
+  if (dx >= TAFEL_X - 4 && dz >= TAFEL_Z0 - 2 && dz <= TAFEL_Z1 + 2) return false;
   if (Math.abs(dx) <= 2 && dz >= SPT_SCHACHT - 2 &&
       dz <= SPT_SCHACHT + 2) return false;                           // der Fahrstuhl auch
   return true;
@@ -16631,6 +16721,16 @@ function schuettAnzeigen() {
       }
     });
 }
+function tafelAntippen() {
+  tafelAuffrischen(true);
+  const info = speicherGeldInfo();
+  const gesamt = info.euro + kontoStand + money;
+  toast('🏛️💰 DEINE GOLDENE TAFEL: Im Tresorraum liegen ' + euroText(info.euro) + ' € (' +
+        euroText(info.barren) + ' Goldbarren 🏅), auf der Bank sind ' + euroText(kontoStand) +
+        ' € und in der Tasche hast du ' + euroText(money) + ' €. ⭐ ZUSAMMEN: ' +
+        euroText(gesamt) + ' €!', 9000);
+  for (const f of [523, 659, 784, 1047]) blip(f, 0.08);
+}
 function openSchuette() {
   if (money <= 0 && speicherGeldZaehlen() < 100) {
     toast('🪣 Deine Geld-Schütte! Hier kippst du dein ganzes Geld auf einmal in den ' +
@@ -16730,19 +16830,22 @@ function tresorAntippen() {
 // --- 💰 Wie viel Geld liegt im Tresorraum? --------------------------------
 // Jeder Geld-Block ist 1 € wert. Die Liste geldOrte weiß sowieso schon, wo
 // überall Geld herumliegt.
-function speicherGeldZaehlen() {
+function speicherGeldInfo() {           // wie viel Geld - und wie viele Barren?
   speicherHoehe();
-  let n = 0;
+  let euro = 0, barren = 0;
   for (const k of speicherGeldOrte) {
     const p = k.split(',');
     const y = +p[1];
     if (y <= SP_HY || y > SP_HY + SP_HALLE_H + 1) continue;
     if (Math.abs(+p[0] - (SP_X + SP_MITTE)) > SP_R) continue;
     if (Math.abs(+p[2] - (SP_Z + SP_MITTE)) > SP_R) continue;
-    n += GELD_WERT[getBlock(+p[0], y, +p[2])] || 0;   // 🏅 ein Barren zählt 100 €
+    const b = getBlock(+p[0], y, +p[2]);
+    euro += GELD_WERT[b] || 0;                        // 🏅 ein Barren zählt 100 €
+    if (b === GOLDBARREN) barren++;
   }
-  return n;
+  return { euro, barren };
 }
+function speicherGeldZaehlen() { return speicherGeldInfo().euro; }
 // 🧹 EINMALIG AUFRÄUMEN: bis Version 251 lag die Halle tief unter der Erde.
 // Jetzt steht der Geldspeicher über der Erde - also wird die alte Halle
 // zugeschüttet und Jonahs Geld von damals kommt zurück in seine Tasche.
@@ -16796,6 +16899,7 @@ function speicherTick(dt) {
     scheduleSave();
   }
   tresorTuerSetzen();                   // 🔐 die Tresortür so stellen, wie sie sein soll
+  tafelAuffrischen(false);              // 🏛️ die goldene Tafel auf den neuesten Stand
   // 🤵🚫 DER RAUSSCHMEISSER: sollte sich doch einmal ein Räuber hereinverirren,
   // setzt Johann ihn vor die Tür. Im Geldspeicher wird nicht geklaut!
   spRausT -= 1;
@@ -21186,7 +21290,7 @@ const MAP_BLOCK_COL = {
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
-  [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a',
+  [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -23988,6 +24092,7 @@ function doBreak(dir) {
   if (hit && (hit.block === TRESORTUER || hit.block === TRESORRAD)) { tresorAntippen(); return; }
   // 🪣 Die Geld-Schütte auch nicht - antippen kippt nur Geld hinein
   if (hit && hit.block === GELDSCHUETTE) { openSchuette(); return; }
+  if (hit && hit.block === GOLDTAFEL) { tafelAntippen(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -24368,6 +24473,10 @@ function doPlace(dir) {
   }
   if (hit.block === GELDSCHUETTE) {     // 🪣 die Geld-Schütte
     openSchuette();
+    return;
+  }
+  if (hit.block === GOLDTAFEL) {        // 🏛️ die goldene Tafel
+    tafelAntippen();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -25612,6 +25721,7 @@ function frame(now) {
   gl.depthMask(false);
   gl.disable(gl.CULL_FACE);
   drawSignTexts();
+  try { drawGoldTafel(); } catch(e) {}   // 🏛️ die goldene Tafel im Geldspeicher
   drawPaintings();
   try { drawKinoLeinwand(); } catch(e) {}   // 🎬 läuft gerade ein Film?
   gl.uniform1f(loc.uAlpha,0.62);
