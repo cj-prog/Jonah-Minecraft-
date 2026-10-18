@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN EIGENES WISCH-MUSTER (v267)! 🖐️🔮 Jonah wollte das zweite Rätsel anders:
+  kein Zeichen abmalen („sonst wäre es ja viel zu einfach“), sondern selbst eins
+  zeichnen – wie das PIN-Muster auf dem Handy.
+  🖐️ NEUN PUNKTE: Beim ersten Mal denkst du dir dein eigenes Muster aus und
+  fährst mit dem Finger darüber – mindestens vier Punkte. Ab dann brauchst du
+  genau dieses Muster jedes Mal wieder. Es steht in deinem Spielstand.
+  🤵 VERGESSEN? Nach zwei Fehlversuchen verrät dir Johann, wie viele Punkte es
+  sind und welcher der erste ist.
+  ⛔ KLEINERES PORTAL: Es ist jetzt nur noch vier Felder groß statt sechs.
+  ⌒ DER RAHMEN IST UNTEN OFFEN – nur die beiden Seiten und oben.
+  ✨ UND DAS PORTAL SCHWEBT FREI darin: Es berührt den Rahmen nirgends mehr,
+  rundherum ist Luft.
 - DIE RIESENBURG HINTER DEM PORTAL (v266)! 🔮🏰 Jonahs großer Wunsch: ein
   silberner Rahmen in seiner Burg, dahinter – nach ganz vielen Codes – eine
   gigantische Festung.

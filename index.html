@@ -545,6 +545,12 @@
   #rbZeigen .zielzelle { width:14px; height:14px; border-radius:3px; background:#2b2545;
     border:1px solid #5a4e86; }
   #rbZeigen .zielzelle.an { background:#ffe066; border-color:#ffe066; }
+  #rbMusterFeld { display:none; flex:none; width:min(62vw, 230px); height:min(62vw, 230px);
+    background:rgba(0,0,0,.45); border-radius:14px; border:2px solid #6a5a9a;
+    touch-action:none; }
+  @media (max-height: 480px) {
+    #rbMusterFeld { width:min(34vh, 180px); height:min(34vh, 180px); }
+  }
   #rbFeld { display:grid; gap:4px; }
   #rbFeld button { font-size:16px; font-weight:bold; padding:7px 0; border-radius:8px;
     border:none; background:#43386a; color:#fff; min-width:30px; }
@@ -1184,6 +1190,7 @@
   <div id="rbStufenReihe"></div>
   <div id="rbInfo"></div>
   <div id="rbZeigen"></div>
+  <canvas id="rbMusterFeld" width="270" height="270"></canvas>
   <div id="rbFeld"></div>
   <button id="rbOk">✔ Fertig</button>
   <button id="rbZu">Abbrechen</button>
@@ -1386,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 266 &middot; 🔮🏰 DIE RIESENBURG! In deiner Burg steht jetzt ein silberner Rahmen. Löse die vier Rätsel – Zahlen-Code, ein Zeichen zum Malen, eine Farben-Folge und das Zauberwort – dann wächst darin ein Portal. Dahinter: eine gigantische Burg mit 36 Zimmern auf vier Etagen! ✨</p>
+    Version 267 &middot; 🖐️ DEIN EIGENES WISCH-MUSTER! Beim zweiten Rätsel denkst du dir jetzt selbst ein Muster aus – wie der PIN auf dem Handy. Und das Portal ist kleiner geworden: Der Rahmen ist unten offen, und das Portal schwebt frei darin. 🔮</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1432,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 266;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 267;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4935,12 +4942,12 @@ function genChunkData(cx, cz, ohneEdits) {
       P(-22,by+1,13,CHAIR); P(-20,by+1,13,CHAIR); P(-21,by+1,12,CHAIR); P(-21,by+1,14,CHAIR);
       P(-28,by+1,20,CABINET);
       // 🔮 DER SILBERNE RAHMEN im Westzimmer: dahinter wartet die Riesenburg!
-      for (let dx=RB_RAHMEN_X0; dx<=RB_RAHMEN_X0+4; dx++)
-        for (let dy=1; dy<=4; dy++)
-          if (dx===RB_RAHMEN_X0 || dx===RB_RAHMEN_X0+4 || dy===1 || dy===4)
-            P(dx, by+dy, RB_RAHMEN_Z, SILBERRAHMEN);
-      P(RB_RAHMEN_X0+6, by+1, RB_RAHMEN_Z, SIGN);
-      const rbsig=(B.bx+RB_RAHMEN_X0+6)+','+(by+1)+','+(B.bz+RB_RAHMEN_Z);
+      for (let ox=0; ox<=RB_RAHMEN_B; ox++)
+        for (let oy=1; oy<=RB_RAHMEN_H; oy++)
+          if (ox===0 || ox===RB_RAHMEN_B || oy===RB_RAHMEN_H)   // nur Seiten und oben
+            P(RB_RAHMEN_X0+ox, by+oy, RB_RAHMEN_Z, SILBERRAHMEN);
+      P(RB_RAHMEN_X0+7, by+1, RB_RAHMEN_Z, SIGN);
+      const rbsig=(B.bx+RB_RAHMEN_X0+7)+','+(by+1)+','+(B.bz+RB_RAHMEN_Z);
       if (!signTexts.has(rbsig)) signTexts.set(rbsig,'🔮 DER SILBERNE RAHMEN - tipp ihn an! ' +
         'Löse die vier Rätsel, dann wächst ein Portal darin, bis du hindurchpasst. ' +
         'Dahinter liegt DIE RIESENBURG! 🏰 Aber Achtung: Sobald du durch bist, ' +
@@ -5650,6 +5657,7 @@ function baueSpielstand() {
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
+      rbMuster: rbMusterCode,           // 🖐️ Jonahs eigenes Wisch-Muster
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
       ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
       tresorAuf: tresorOffen,           // 🔐 steht die große Tresortür offen?
@@ -5834,6 +5842,7 @@ function loadGame() {
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
     if (typeof s.rbStufe==='number') rbStufe = s.rbStufe;    // 🔮 Riesenburg-Rätsel
+    if (typeof s.rbMuster==='string') rbMusterCode = s.rbMuster;   // 🖐️ das Wisch-Muster
     // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
     const ausTresor = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
     if (ausTresor > 0) {
@@ -10589,6 +10598,18 @@ const CODE_TASTEN = '123456789'.split('')
     feld.appendChild(b);
   }
 })();
+{
+  const mf = document.getElementById('rbMusterFeld');
+  const start = e => { e.preventDefault(); musterMalt = true; musterZug = [];
+                       musterMalen(); musterZiehen(e); };
+  const ende  = () => { musterMalt = false; };
+  mf.addEventListener('mousedown', start);
+  mf.addEventListener('mousemove', e => { e.preventDefault(); musterZiehen(e); });
+  mf.addEventListener('touchstart', start, {passive:false});
+  mf.addEventListener('touchmove', e => { e.preventDefault(); musterZiehen(e); }, {passive:false});
+  window.addEventListener('mouseup', ende);
+  window.addEventListener('touchend', ende);
+}
 document.getElementById('rbOk').addEventListener('click', ()=>{ rbPruefen(); });
 document.getElementById('rbZu').addEventListener('click', ()=>{
   document.getElementById('rbBox').style.display='none'; blip(400,0.06); });
@@ -16639,9 +16660,11 @@ function speicherStempeln(data, cx, cz) {
     }
   }
   // alle Schilder beschriften
+  // Die Schilder des Geldspeichers gewinnen immer: steht der Speicher zufällig
+  // auf einem Dorf, hatte sonst ein Dorf-Schild den Platz zuerst belegt - und
+  // auf Jonahs Tresorraum-Schild stand dann die Erklärung der Dorfbank.
   const schild = (dx, dy, dz, txt) => {
-    const k = (SP_X+SP_MITTE+dx) + ',' + (SP_HY+dy) + ',' + (SP_Z+SP_MITTE+dz);
-    if (!signTexts.has(k)) signTexts.set(k, txt);
+    signTexts.set((SP_X+SP_MITTE+dx) + ',' + (SP_HY+dy) + ',' + (SP_Z+SP_MITTE+dz), txt);
   };
   schild(2, 1, 10, '💰 DER TRESORRAUM VON JONAH JÜRGENS - leg hier dein ganzes Geld ab! ' +
                    'Am schnellsten geht es mit der 🪣 GELD-SCHÜTTE gegenüber: antippen und ' +
@@ -16668,9 +16691,13 @@ function speicherStempeln(data, cx, cz) {
 }
 // 🔮 DAS PORTAL ZUR RIESENBURG steht in Jonahs Burg, im Westzimmer.
 const RB_RAHMEN_X0 = -24, RB_RAHMEN_Z = 16;     // linke untere Ecke des Rahmens
-// in dieser Reihenfolge wächst das Portal auf, ein Rätsel nach dem anderen
-const RB_PORTAL_FELDER = [[2,2],[2,3],[1,2],[3,2],[1,3],[3,3]];
-const RB_STUFEN = [1, 2, 4, 6];                 // so viele Felder je gelöstem Rätsel
+// 6 Blöcke breit (0..5) und 5 hoch: so bleibt über dem Portal noch eine Reihe
+// Luft, und es berührt den Rahmen WIRKLICH nirgends.
+const RB_RAHMEN_B = 5, RB_RAHMEN_H = 5;
+// Der Rahmen ist ein BOGEN: nur die beiden Seiten und oben - unten bleibt er
+// offen. Und das Portal schwebt frei in der Mitte, ohne den Rahmen zu berühren.
+const RB_PORTAL_FELDER = [[2,2],[2,3],[3,2],[3,3]];
+const RB_STUFEN = [1, 2, 3, 4];                 // so viele Felder je gelöstem Rätsel
 let rbStufe = 0;                                // wie viele Rätsel sind gelöst?
 let rbSperre = 0;                               // kurze Pause nach dem Durchgehen
 // ============== 🏰 DIE RIESENBURG ===========================================
@@ -16817,8 +16844,11 @@ function riesenBlock(dx, dz, y) {
          adx === RB_KERN - 1 || adz === RB_KERN - 1) &&
         ((dx + dz) % 8 + 8) % 8 === 0) return TORCH;
     // ✨ DAS RÜCK-PORTAL mitten in der Portal-Halle im Erdgeschoss
-    if (et === 0 && dz === 0 && adx <= 2 && aufEtage >= 1 && aufEtage <= 4)
-      return (adx === 2 || aufEtage === 1 || aufEtage === 4) ? SILBERRAHMEN : RBPORTAL;
+    if (et === 0 && dz === 0 && dx >= -3 && dx <= 2 && aufEtage >= 1 && aufEtage <= 5) {
+      if (dx === -3 || dx === 2 || aufEtage === 5) return SILBERRAHMEN;   // Bogen
+      if ((dx === -1 || dx === 0) && (aufEtage === 2 || aufEtage === 3)) return RBPORTAL;
+      return AIR;                                 // das Portal schwebt frei darin
+    }
     // 🛏️ DIE EINRICHTUNG der 36 Zimmer
     if (aufEtage === 1) {
       const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
@@ -16869,26 +16899,19 @@ function riesenBlock(dx, dz, y) {
 // Jonah wollte mehrere Codes hintereinander: erst Zahlen, dann ein Zeichen zum
 // Malen, dann noch mehr. Nach jedem gelösten Rätsel wächst das Portal ein Stück,
 // bis er hindurchpasst.
-const MAL_N = 7;                        // das Malfeld ist 7x7 groß
-// das Zeichen, das Jonah nachmalen muss: ein Blitz ⚡
-const MAL_ZIEL = [
-  '...##..',
-  '..##...',
-  '.##....',
-  '.#####.',
-  '...##..',
-  '..##...',
-  '.##....',
-];
+// 🖐️ DAS WISCH-MUSTER: neun Punkte wie beim Handy-PIN. Beim ersten Mal denkt
+// sich Jonah selbst ein Muster aus (mindestens vier Punkte), danach muss er
+// genau dieses wieder zeichnen.
+const MUSTER_N = 3;                     // 3x3 Punkte
+let rbMusterCode = '';                  // Jonahs eigenes Muster, z.B. "0,3,6,7"
+let musterZug = [], musterMalt = false, musterFalsch = 0;
 const RB_RAETSEL = [
   { art:'zahlen', kopf:'1. DER ZAHLEN-CODE 🔢',
     info:'Diese vier Zahlen sind durcheinander geraten. Tipp sie der Reihe nach ein – ' +
          'von der KLEINSTEN zur GRÖSSTEN!',
     zeigen:'7  3  9  1', loesung:'1379' },
-  { art:'malen',  kopf:'2. DAS ZEICHEN ⚡',
-    info:'Mal das Zeichen nach! Tipp die Kästchen an, bis dein Bild genauso aussieht ' +
-         'wie das hier oben. Nochmal tippen macht ein Kästchen wieder aus.',
-    zeigen:'', loesung:MAL_ZIEL.join('') },
+  { art:'muster', kopf:'2. DEIN WISCH-MUSTER 🖐️',
+    info:'', zeigen:'', loesung:'' },
   { art:'farben', kopf:'3. DIE FARBEN-FOLGE 🌈',
     info:'Hier ist eine Folge von Farben. Tipp sie RÜCKWÄRTS ein – also die letzte zuerst!',
     zeigen:'🔴 🟡 🔵 🟢 🟡', loesung:'🟡🟢🔵🟡🔴' },
@@ -16897,9 +16920,56 @@ const RB_RAETSEL = [
          'das große Gebäude, in dem ein König wohnt.)',
     zeigen:'G  R  U  B', loesung:'BURG' },
 ];
-let rbEingabe = '', rbMalFeld = [];
+let rbEingabe = '';
 function rbStufenReihe(fertig) {
   return RB_RAETSEL.map((r, i) => i < fertig ? '✅' : i === fertig ? '🔸' : '⬜').join(' ');
+}
+// 🖐️ Das Wisch-Feld malen: neun Punkte und die Linie dazwischen
+function musterMalen() {
+  const c = document.getElementById('rbMusterFeld');
+  const g = c.getContext('2d');
+  const W = c.width, R = W / (MUSTER_N * 2);
+  const mitte = i => [ (i % MUSTER_N) * 2 * R + R, ((i / MUSTER_N) | 0) * 2 * R + R ];
+  g.clearRect(0, 0, W, W);
+  g.strokeStyle = '#ffe066'; g.lineWidth = 7; g.lineCap = 'round'; g.lineJoin = 'round';
+  if (musterZug.length > 1) {
+    g.beginPath();
+    musterZug.forEach((i, n) => { const [x,y] = mitte(i); n ? g.lineTo(x,y) : g.moveTo(x,y); });
+    g.stroke();
+  }
+  for (let i = 0; i < MUSTER_N * MUSTER_N; i++) {
+    const [x, y] = mitte(i), an = musterZug.includes(i);
+    g.beginPath(); g.arc(x, y, R * 0.42, 0, Math.PI * 2);
+    g.fillStyle = an ? '#ffe066' : '#413a66'; g.fill();
+    g.lineWidth = 3; g.strokeStyle = an ? '#fff6c0' : '#6a5a9a'; g.stroke();
+    if (an) {                            // die Reihenfolge mit draufschreiben
+      g.fillStyle = '#2a2440';
+      g.font = 'bold ' + Math.round(R * 0.5) + 'px sans-serif';
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(String(musterZug.indexOf(i) + 1), x, y);
+    }
+  }
+}
+// welcher Punkt liegt unter dem Finger? (-1 = keiner)
+function musterPunkt(ev) {
+  const c = document.getElementById('rbMusterFeld');
+  const r = c.getBoundingClientRect();
+  const t = ev.touches ? ev.touches[0] : ev;
+  const x = (t.clientX - r.left) / r.width * MUSTER_N;
+  const y = (t.clientY - r.top) / r.height * MUSTER_N;
+  if (x < 0 || y < 0 || x >= MUSTER_N || y >= MUSTER_N) return -1;
+  const sx = x - Math.floor(x) - 0.5, sy = y - Math.floor(y) - 0.5;
+  if (Math.hypot(sx, sy) > 0.42) return -1;            // zwischen den Punkten zählt nicht
+  return Math.floor(y) * MUSTER_N + Math.floor(x);
+}
+function musterZiehen(ev) {
+  if (!musterMalt) return;
+  const i = musterPunkt(ev);
+  if (i < 0 || musterZug.includes(i)) return;
+  musterZug.push(i);
+  blip(520 + i * 40, 0.05);
+  musterMalen();
+  document.getElementById('rbZeigen').textContent = '🖐️ ' + musterZug.length + ' Punkte';
 }
 function rbKnopf(txt, klasse, w) {
   const b = document.createElement('button');
@@ -16917,22 +16987,28 @@ function rbZeichnen() {
   const zeig = document.getElementById('rbZeigen');
   const feld = document.getElementById('rbFeld');
   feld.innerHTML = '';
-  if (r.art === 'malen') {
-    // die Vorlage als kleines Gitter - mit Emoji wurde daraus nur ein schwarzer Strich
-    zeig.innerHTML = '<div class="zielbild">' + MAL_ZIEL.map(z =>
-      '<div class="zielzeile">' + z.split('').map(c =>
-        '<span class="zielzelle' + (c === '#' ? ' an' : '') + '"></span>').join('') +
-      '</div>').join('') + '</div>';
-    feld.style.gridTemplateColumns = 'repeat(' + MAL_N + ', 1fr)';
-    for (let i = 0; i < MAL_N * MAL_N; i++) {
-      const b = rbKnopf('', 'malzelle' + (rbMalFeld[i] === '#' ? ' an' : ''), () => {
-        rbMalFeld[i] = rbMalFeld[i] === '#' ? '.' : '#';
-        rbZeichnen();
-      });
-      feld.appendChild(b);
-    }
+  const mf = document.getElementById('rbMusterFeld');
+  if (r.art === 'muster') {
+    const neu = !rbMusterCode;
+    document.getElementById('rbInfo').innerHTML = neu
+      ? 'Denk dir ein eigenes Wisch-Muster aus! Fahr mit dem Finger über die Punkte – ' +
+        '<b>mindestens vier</b> müssen es sein. Genau dieses Muster brauchst du ab jetzt ' +
+        'immer wieder. <b>Merk es dir gut!</b> 🖐️'
+      : 'Zeichne dein geheimes Wisch-Muster! Fahr mit dem Finger über die Punkte – ' +
+        'genau so, wie du es dir ausgedacht hast. 🖐️' +
+        (musterFalsch >= 2 ? '<br>🤵 Tipp von Johann: es sind ' +
+         rbMusterCode.split(',').length + ' Punkte, der erste ist Nummer ' +
+         (+rbMusterCode.split(',')[0] + 1) + ' (von oben links gezählt).' : '');
+    zeig.textContent = musterZug.length ? '🖐️ ' + musterZug.length + ' Punkte' : '🖐️';
+    mf.style.display = 'block';
+    musterMalen();
+    feld.appendChild(rbKnopf('↺ Nochmal', 'weg', () => {
+      musterZug = []; musterMalen(); rbZeichnen();
+    }));
+    feld.style.gridTemplateColumns = '1fr';
     return;
   }
+  mf.style.display = 'none';
   zeig.textContent = r.zeigen + (rbEingabe ? '   ➜   ' + rbEingabe : '');
   if (r.art === 'zahlen') {
     feld.style.gridTemplateColumns = 'repeat(5, 1fr)';
@@ -16958,9 +17034,7 @@ function openRahmen() {
           'DIE RIESENBURG. 🏰 (Hinter dir fällt es sofort wieder zu.)', 7000);
     blip(700,0.08); return;
   }
-  rbEingabe = '';
-  if (RB_RAETSEL[rbStufe].art === 'malen' && rbMalFeld.length !== MAL_N*MAL_N)
-    rbMalFeld = new Array(MAL_N*MAL_N).fill('.');
+  rbEingabe = ''; musterZug = [];
   rbZeichnen();
   document.getElementById('rbBox').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
@@ -16968,10 +17042,33 @@ function openRahmen() {
 }
 function rbPruefen() {
   const r = RB_RAETSEL[rbStufe];
-  const eingabe = r.art === 'malen' ? rbMalFeld.join('') : rbEingabe;
+  // 🖐️ beim Wisch-Muster: beim ersten Mal wird es festgelegt, danach geprüft
+  if (r.art === 'muster') {
+    if (!rbMusterCode) {
+      if (musterZug.length < 4) {
+        toast('🖐️ Dein Muster braucht mindestens vier Punkte – zieh noch ein Stück ' +
+              'weiter!', 4000);
+        blip(200,0.12); return false;
+      }
+      rbMusterCode = musterZug.join(',');
+      musterFalsch = 0;
+      toast('🖐️✅ Gemerkt! Das ist ab jetzt DEIN Wisch-Muster (' + musterZug.length +
+            ' Punkte). Merk es dir gut – du brauchst es jedes Mal wieder! 🤫', 9000);
+    } else if (musterZug.join(',') !== rbMusterCode) {
+      musterFalsch++;
+      musterZug = [];
+      toast('🖐️❌ Das war nicht dein Muster. Probier es nochmal!' +
+            (musterFalsch >= 2 ? ' (Johann gibt dir oben einen Tipp. 🤵)' : ''), 5000);
+      blip(220,0.14); blip(140,0.2);
+      rbZeichnen();
+      return false;
+    } else musterFalsch = 0;
+  }
+  const eingabe = r.art === 'muster' ? r.loesung : rbEingabe;
   if (eingabe === r.loesung) {
     rbStufe++;
-    rbEingabe = ''; rbMalFeld = [];
+    rbEingabe = ''; musterZug = [];
+    document.getElementById('rbMusterFeld').style.display = 'none';
     rbPortalSetzen();
     rbFunken();
     for (const f of [523,659,784,1047]) blip(f,0.09);
@@ -16989,7 +17086,6 @@ function rbPruefen() {
     return true;
   }
   rbEingabe = '';
-  if (r.art === 'malen') rbMalFeld = new Array(MAL_N*MAL_N).fill('.');
   toast('🔮❌ Das war noch nicht richtig. Schau nochmal genau hin und probier es ' +
         'wieder – du schaffst das! 💪', 5000);
   blip(220,0.14); blip(140,0.2);
@@ -17021,8 +17117,12 @@ function rbFunken() {
 function rbPortalTick(dt) {
   if (rbSperre > 0) { rbSperre -= dt; return; }
   if (weltDim !== 0) return;
-  const fy = Math.floor(player.y + 0.4);
-  if (getBlock(Math.floor(player.x), fy, Math.floor(player.z)) !== RBPORTAL) return;
+  // Das Portal schwebt über dem Boden - also auch auf Brust- und Kopfhöhe schauen
+  const px = Math.floor(player.x), pz = Math.floor(player.z);
+  let drin = false;
+  for (const h of [0.4, 1.0, 1.6])
+    if (getBlock(px, Math.floor(player.y + h), pz) === RBPORTAL) drin = true;
+  if (!drin) return;
   rbSperre = 2.5;
   if (inRiesenburg(player.x, player.z)) {         // zurück nach Hause
     const B = burgPos();
@@ -17065,8 +17165,7 @@ function riesenStempeln(data, cx, cz) {
     }
   }
   const schild = (dx, dy, dz, txt) => {
-    const k = (RB_X+dx) + ',' + (RB_Y+dy) + ',' + (RB_Z+dz);
-    if (!signTexts.has(k)) signTexts.set(k, txt);
+    signTexts.set((RB_X+dx) + ',' + (RB_Y+dy) + ',' + (RB_Z+dz), txt);
   };
   for (let et = 0; et < RB_ETAGEN; et++)
     for (let nr = 0; nr < 9; nr++) {
