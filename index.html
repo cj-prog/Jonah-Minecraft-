@@ -527,6 +527,25 @@
     background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
   #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
     border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  /* 🌪️ DER GELD-SAUGER im Tresorraum */
+  #saugBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; align-items:center; gap:8px; background:rgba(18,26,38,.97);
+    padding:12px 16px; border-radius:16px; color:#fff; z-index:62; text-align:center;
+    max-height:95vh; overflow-y:auto; border:3px solid #6aa6d8; }
+  #saugBox h3 { font-size:18px; margin:0; }
+  #saugInfo { font-size:13px; color:#d6e6f4; line-height:1.4; max-width:290px; }
+  #saugKnoepfe { display:flex; flex-direction:column; gap:6px; width:min(86vw, 290px); }
+  #saugKnoepfe button { font-size:15px; font-weight:bold; padding:9px 0; border-radius:10px;
+    border:none; background:#33507a; color:#fff; }
+  #saugKnoepfe button.gold { background:#6b5a2f; }
+  #saugKnoepfe button.alles { background:#2f6a7a; }
+  #saugZu { font-size:14px; font-weight:bold; padding:6px 18px; border-radius:8px;
+    border:none; background:#3f5b6b; color:#fff; }
+  @media (max-height: 480px) {
+    #saugInfo { font-size:11px; max-width:420px; }
+    #saugKnoepfe { width:min(92vw, 420px); gap:4px; }
+    #saugKnoepfe button { font-size:13px; padding:5px 0; }
+  }
   /* 🪣 DIE GELD-SCHÜTTE im Tresorraum */
   #schuettBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; align-items:center; gap:8px; background:rgba(28,26,18,.97);
@@ -1114,6 +1133,13 @@
   <button id="bankClose">Fertig</button>
 </div>
 
+<div class="hud" id="saugBox">
+  <h3>🌪️ DER GELD-SAUGER</h3>
+  <div id="saugInfo"></div>
+  <div id="saugKnoepfe"></div>
+  <button id="saugZu">✔ Fertig</button>
+</div>
+
 <div class="hud" id="schuettBox">
   <h3>🪣 DIE GELD-SCHÜTTE</h3>
   <div id="schuettInfo"></div>
@@ -1304,7 +1330,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 263 &middot; 🏛️ DEINE GOLDENE TAFEL! Im Tresorraum hängt jetzt eine riesige goldene Anzeigetafel – darauf steht immer, wie viel Geld in deinem Tresorraum liegt, wie viele Goldbarren das sind, was auf der Bank ist und wie reich du insgesamt bist. ⭐💰</p>
+    Version 264 &middot; 🌪️ DER GELD-SAUGER! Neben der 🪣 Schütte steht jetzt sein Gegenstück: Er saugt dein Geld von oben wieder aus dem Tresorraum heraus, zurück in deinen Geldbeutel – 100 €, 1.000 €, nur die Goldbarren oder gleich ALLES. 💰</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1350,7 +1376,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 263;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 264;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1515,7 +1541,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       TRESORTUER=117, TRESORRAD=118,    // 🔐 die große runde Tresortür und ihr Handrad
       GELDSCHUETTE=119,                 // 🪣 die Geld-Schütte im Tresorraum
       GOLDBARREN=120,                   // 🏅 ein Goldbarren - 100 € in EINEM Block!
-      GOLDTAFEL=121;                    // 🏛️ die goldene Tafel im Geldspeicher
+      GOLDTAFEL=121,                    // 🏛️ die goldene Tafel im Geldspeicher
+      GELDSAUGER=122;                   // 🌪️ der Geld-Sauger holt alles wieder heraus
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -1770,6 +1797,12 @@ const BLOCKS = {
       [0.07,0,0.54,    0.93,0.30,0.92, 168],            // unterer Barren vorne
       [0.13,0.30,0.34, 0.87,0.60,0.72, 168],            // mittlerer Barren
       [0.19,0.60,0.40, 0.81,0.88,0.66, 168]] },         // der oberste Barren
+  [GELDSAUGER]: { name:'Geld-Sauger 🌪️ (antippen = Geld wieder einsaugen!)',
+    tiles:[170,170,170], solid:true, model:[
+      [0.24,0,0.24,    0.76,0.12,0.76, 170],            // der Fuß
+      [0.36,0.12,0.36, 0.64,0.62,0.64, 170],            // das Rohr
+      [0.10,0.62,0.10, 0.90,0.96,0.90, 170],            // der weite Saugkopf
+      [0.20,0.96,0.20, 0.80,1.0,0.80, 86]] },           // das Gitter obendrauf
   [GOLDTAFEL]: { name:'Goldene Tafel 🏛️ (zeigt deinen ganzen Reichtum!)',
     tiles:[169,169,169], solid:true },
   [GELDSCHUETTE]: { name:'Geld-Schütte 🪣 (antippen = dein Geld auf einmal reinkippen!)',
@@ -6408,6 +6441,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
   });
+  tile(170,(x,y)=>{                                                 // 🌪️ der Geld-Sauger
+    const dx = x - 7.5;
+    if (y < 2) return vary(58,62,72,8);                             // dunkler Rand
+    if ((x + y * 2) % 9 === 0) return vary(150,196,230,10);         // Glanzstreifen
+    const h = 176 - Math.abs(dx) * 4 - (y - 6) * 3;
+    return vary(h - 40, h - 10, h + 26, 11);                        // silbrig-blaues Blech
+  });
   tile(169,(x,y)=>{                                                 // 🏛️ die goldene Tafel
     if (x === 0 || x === 15 || y === 0 || y === 15) return vary(126,92,22,6);   // Rahmen
     if (x === 1 || x === 14 || y === 1 || y === 14) return vary(255,226,110,10);
@@ -10461,6 +10501,8 @@ const CODE_TASTEN = '123456789'.split('')
     feld.appendChild(b);
   }
 })();
+document.getElementById('saugZu').addEventListener('click', ()=>{
+  document.getElementById('saugBox').style.display='none'; blip(400,0.06); });
 document.getElementById('schuettZu').addEventListener('click', ()=>{
   document.getElementById('schuettBox').style.display='none'; blip(400,0.06); });
 document.getElementById('codeAendern').addEventListener('click', ()=>{ openCodeFeld('neu'); });
@@ -16460,6 +16502,7 @@ function speicherBlock(lx, lz, y) {
     // 📋 die beiden Schilder in der Geld-Halle
     if (dx === 2 && dz === 10 && y === hy + 1) return SIGN;
     if (dx === -2 && dz === 10 && y === hy + 1) return GELDSCHUETTE;   // 🪣 die Schütte
+    if (dx === -5 && dz === 10 && y === hy + 1) return GELDSAUGER;     // 🌪️ der Sauger
     if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
     if (dx === SPT_TR_X + 2 && dz === SPT_TR_Z0 && y === hy + 1) return SIGN;  // an der Treppe
     return AIR;
@@ -16513,7 +16556,8 @@ function speicherStempeln(data, cx, cz) {
                    'Am schnellsten geht es mit der 🪣 GELD-SCHÜTTE gegenüber: antippen und ' +
                    'dein ganzes Geld purzelt auf einmal herein. Ist es hier voll? Dann lass ' +
                    'Johann das Geld zu 🏅 GOLDBARREN pressen - ein Barren ist 100 € wert, da ' +
-                   'passt hundertmal so viel hinein!');
+                   'passt hundertmal so viel hinein! Und mit dem 🌪️ GELD-SAUGER daneben holst ' +
+                   'du dein Geld jederzeit wieder heraus.');
   schild(-2, 1, 13, '🔐 DIE GROSSE TRESORTÜR - tipp sie an, dann schwingt sie auf. Mit dem ' +
                    'goldenen Handrad daneben machst du sie wieder zu. Dann kommt niemand rein!');
   schild(2, 1, SPT_SCHACHT + 3, '🛗🏊 FAHRSTUHL zum SPRUNGBRETT - reingehen, Wand antippen, ' +
@@ -16720,6 +16764,94 @@ function schuettAnzeigen() {
         for (const f of [330, 440, 550, 880]) blip(f, 0.1);
       }
     });
+}
+// 🌪️ DER GELD-SAUGER: das Gegenstück zur Schütte. Er holt das Geld von OBEN
+// wieder aus dem Tresorraum heraus, direkt zurück in Jonahs Geldbeutel.
+// nurGold=true saugt nur die Goldbarren ein.
+function geldSaugen(wunsch, nurGold) {
+  speicherHoehe();
+  const m = SP_MITTE, hy = SP_HY;
+  let rest = wunsch, n = 0, bloecke = 0;
+  for (let dy = SP_HALLE_H + 1; dy >= 1 && rest > 0 && bloecke < SCHUETT_MAX; dy--)
+    for (let dz = -SP_R; dz <= 11 && rest > 0 && bloecke < SCHUETT_MAX; dz++)
+      for (let dx = -SP_R; dx <= SP_R && rest > 0 && bloecke < SCHUETT_MAX; dx++) {
+        const wx = SP_X + m + dx, wy = hy + dy, wz = SP_Z + m + dz;
+        const ch = getChunk(wx >> 4, wz >> 4);
+        if (!ch || !ch.data) continue;              // dieses Stück Welt ist noch nicht da
+        const b = getBlock(wx, wy, wz);
+        if (!GELD_BLOCK.has(b)) continue;
+        if (nurGold && b !== GOLDBARREN) continue;
+        const wert = GELD_WERT[b];
+        if (wert > rest) continue;                  // ein ganzer Barren passt nicht mehr
+        setBlock(wx, wy, wz, AIR);
+        rest -= wert; n += wert; bloecke++;
+      }
+  if (n > 0) {
+    money += n; updateFoodHUD(); scheduleSave();
+    for (const f of [990, 790, 660, 520]) blip(f, 0.07);   // schlürf!
+    for (let i = 0; i < 20; i++)        // es saugt!
+      fireworks.push({ x: player.x+(Math.random()-0.5)*2.4, y: player.y+0.4+Math.random(),
+        z: player.z+(Math.random()-0.5)*2.4, vx:(Math.random()-0.5)*1.4, vy:1.4+Math.random(),
+        vz:(Math.random()-0.5)*1.4, tile: i%2 ? 93 : 94, t:0.9 });
+    tafelAuffrischen(true);             // 🏛️ die Tafel zeigt gleich den neuen Stand
+  }
+  return n;
+}
+function saugAnzeigen() {
+  const info = speicherGeldInfo();
+  document.getElementById('saugInfo').innerHTML =
+    'Hol dein Geld wieder aus dem Tresorraum heraus! Der Sauger nimmt es von ' +
+    'oben weg und steckt es zurück in deinen Geldbeutel.<br>Im Tresorraum liegen ' +
+    '<b>' + euroText(info.euro) + ' €</b>' +
+    (info.barren ? ' (davon ' + euroText(info.barren) + ' 🏅 Goldbarren)' : '') +
+    ', in der Tasche hast du <b>' + euroText(money) + ' €</b>.';
+  const feld = document.getElementById('saugKnoepfe');
+  feld.innerHTML = '';
+  const knopf = (txt, klasse, w) => {
+    const b = document.createElement('button');
+    b.textContent = txt;
+    if (klasse) b.className = klasse;
+    const h = () => {
+      const n = w();
+      if (n > 0) {
+        const rest = speicherGeldZaehlen();
+        toast('🌪️💰 SCHLÜRF! ' + euroText(n) + ' € sind aus deinem Tresorraum zurück in ' +
+              'den Geldbeutel gewandert. Du hast jetzt ' + euroText(money) + ' € dabei.' +
+              (rest > 0 ? ' Im Tresorraum liegen noch ' + euroText(rest) +
+                          ' € – tipp nochmal, dann kommt der Rest! 🔁' : ''), 6000);
+      } else {
+        toast('🌪️ Hier ist gerade nichts zum Einsaugen – im Tresorraum liegt kein ' +
+              'Geld mehr! 💨', 4000);
+        blip(200, 0.12);
+      }
+      if (speicherGeldZaehlen() <= 0) {
+        document.getElementById('saugBox').style.display = 'none'; return;
+      }
+      saugAnzeigen();
+    };
+    b.addEventListener('click', h);
+    b.addEventListener('touchstart', e => { e.preventDefault(); h(); }, {passive:false});
+    feld.appendChild(b);
+  };
+  for (const st of SCHUETT_STUFEN)
+    if (info.euro > st) knopf('💵 ' + euroText(st) + ' € einsaugen', '',
+                              () => geldSaugen(st, false));
+  if (info.barren)
+    knopf('🏅 Nur die Goldbarren einsaugen (' + euroText(info.barren * 100) + ' €)',
+          'gold', () => geldSaugen(info.barren * 100, true));
+  knopf('💰 ALLES einsaugen (' + euroText(info.euro) + ' €)', 'alles',
+        () => geldSaugen(info.euro, false));
+}
+function openSauger() {
+  if (speicherGeldZaehlen() <= 0) {
+    toast('🌪️ Dein Geld-Sauger! Hier holst du das Geld wieder aus dem Tresorraum heraus – ' +
+          'aber gerade liegt dort gar keins. Kipp erst welches mit der 🪣 Schütte hinein!', 5500);
+    blip(260, 0.1); return;
+  }
+  saugAnzeigen();
+  document.getElementById('saugBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(760,0.05); blip(520,0.05);
 }
 function tafelAntippen() {
   tafelAuffrischen(true);
@@ -21291,6 +21423,7 @@ const MAP_BLOCK_COL = {
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
   [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
+  [GELDSAUGER]:'#8ab4d8',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -24093,6 +24226,7 @@ function doBreak(dir) {
   // 🪣 Die Geld-Schütte auch nicht - antippen kippt nur Geld hinein
   if (hit && hit.block === GELDSCHUETTE) { openSchuette(); return; }
   if (hit && hit.block === GOLDTAFEL) { tafelAntippen(); return; }
+  if (hit && hit.block === GELDSAUGER) { openSauger(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -24477,6 +24611,10 @@ function doPlace(dir) {
   }
   if (hit.block === GOLDTAFEL) {        // 🏛️ die goldene Tafel
     tafelAntippen();
+    return;
+  }
+  if (hit.block === GELDSAUGER) {       // 🌪️ der Geld-Sauger
+    openSauger();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {

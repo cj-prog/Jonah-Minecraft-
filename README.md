@@ -221,6 +221,17 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DER GELD-SAUGER (v264)! 🌪️💰 Jonah wollte auch ein Gerät, mit dem er sein
+  Geld wieder aus dem Geldspeicher herausholen kann – das Gegenstück zur Schütte.
+  🌪️ DIREKT NEBEN DER 🪣 SCHÜTTE steht jetzt der Geld-Sauger: ein silbern-blaues
+  Gerät mit einem großen Saugkopf obendrauf.
+  💶 ANTIPPEN und aussuchen: 100 €, 1.000 €, 10.000 €, nur die 🏅 Goldbarren –
+  oder gleich ALLES.
+  ⬆️ ER SAUGT VON OBEN: das Geld verschwindet von der obersten Schicht nach unten,
+  und jeder Euro landet sofort wieder in deinem Geldbeutel.
+  🔁 Ist sehr viel drin, schafft er es nicht in einem Rutsch – dann sagt er dir,
+  wie viel noch da ist, und du tippst einfach nochmal.
+  🏛️ Die goldene Tafel rechnet sofort mit.
 - DIE GOLDENE TAFEL (v263)! 🏛️⭐ Jonah wollte eine große goldene Anzeigetafel
   für seinen Reichtum – hier ist sie.
   🏛️ AN DER RECHTEN WAND im Tresorraum hängt jetzt eine riesige goldene Tafel,
