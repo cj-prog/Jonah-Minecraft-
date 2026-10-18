@@ -527,6 +527,52 @@
     background:rgba(255,255,255,.09); border-radius:11px; padding:8px 10px; }
   #bankInput { font-size:19px; font-weight:bold; text-align:center; width:130px; padding:7px 8px;
     border-radius:8px; border:2px solid rgba(255,255,255,.45); }
+  /* 🔮 DIE RÄTSEL AM SILBERNEN RAHMEN */
+  #rbBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; align-items:center; gap:7px; background:rgba(22,18,34,.97);
+    padding:12px 16px; border-radius:16px; color:#fff; z-index:63; text-align:center;
+    max-height:96vh; overflow-y:auto; border:3px solid #a98ad8; }
+  #rbBox h3 { font-size:17px; margin:0; }
+  #rbStufenReihe { font-size:17px; letter-spacing:5px; }
+  #rbInfo { font-size:13px; color:#e2dcf2; line-height:1.4; max-width:320px; }
+  /* flex:none ist wichtig - sonst quetscht die Box den Inhalt auf min-height zusammen */
+  #rbZeigen { font-size:26px; letter-spacing:5px; font-weight:bold; color:#ffe066;
+    background:rgba(0,0,0,.45); padding:4px 14px; border-radius:10px; min-height:10px;
+    flex:none; }
+  #rbInfo, #rbFeld, #rbStufenReihe, #rbOk, #rbZu { flex:none; }
+  #rbZeigen .zielbild { display:flex; flex-direction:column; gap:2px; padding:2px 0; }
+  #rbZeigen .zielzeile { display:flex; gap:2px; justify-content:center; }
+  #rbZeigen .zielzelle { width:14px; height:14px; border-radius:3px; background:#2b2545;
+    border:1px solid #5a4e86; }
+  #rbZeigen .zielzelle.an { background:#ffe066; border-color:#ffe066; }
+  #rbFeld { display:grid; gap:4px; }
+  #rbFeld button { font-size:16px; font-weight:bold; padding:7px 0; border-radius:8px;
+    border:none; background:#43386a; color:#fff; min-width:30px; }
+  #rbFeld button.weg { background:#8a4030; }
+  #rbFeld button.an { background:#e8d44a; color:#222; }
+  #rbFeld button.malzelle { padding:0; width:28px; height:28px; background:#2a2440;
+    border:1px solid #6a5a9a; border-radius:4px; }
+  #rbFeld button.malzelle.an { background:#ffe066; }
+  #rbOk { font-size:15px; font-weight:bold; padding:7px 22px; border-radius:9px;
+    border:none; background:#2f7a48; color:#fff; }
+  #rbZu { font-size:13px; padding:5px 16px; border-radius:8px; border:none;
+    background:#3f4b6b; color:#fff; }
+  /* Handy quer: alles ein gutes Stück kleiner, damit „✔ Fertig" nicht unten
+     aus dem Bild rutscht - das Malfeld ist sonst einfach zu hoch. */
+  @media (max-height: 480px) {
+    #rbBox { gap:4px; padding:6px 12px; }
+    #rbBox h3 { font-size:15px; }
+    #rbStufenReihe { font-size:14px; }
+    #rbInfo { font-size:11px; max-width:520px; line-height:1.25; }
+    #rbZeigen { font-size:20px; padding:2px 10px; }
+    #rbZeigen .zielzelle { width:9px; height:9px; border-radius:2px; }
+    #rbZeigen .zielbild, #rbZeigen .zielzeile { gap:1px; }
+    #rbFeld { gap:3px; }
+    #rbFeld button { font-size:13px; padding:3px 0; }
+    #rbFeld button.malzelle { width:18px; height:18px; }
+    #rbOk { font-size:13px; padding:4px 18px; }
+    #rbZu { font-size:12px; padding:3px 14px; }
+  }
   /* 🌪️ DER GELD-SAUGER im Tresorraum */
   #saugBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; align-items:center; gap:8px; background:rgba(18,26,38,.97);
@@ -1133,6 +1179,16 @@
   <button id="bankClose">Fertig</button>
 </div>
 
+<div class="hud" id="rbBox">
+  <h3 id="rbKopf">🔮 DER SILBERNE RAHMEN</h3>
+  <div id="rbStufenReihe"></div>
+  <div id="rbInfo"></div>
+  <div id="rbZeigen"></div>
+  <div id="rbFeld"></div>
+  <button id="rbOk">✔ Fertig</button>
+  <button id="rbZu">Abbrechen</button>
+</div>
+
 <div class="hud" id="saugBox">
   <h3>🌪️ DER GELD-SAUGER</h3>
   <div id="saugInfo"></div>
@@ -1330,7 +1386,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 265 &middot; 🚪 FREIE BAHN IM TRESORRAUM! Gleich hinter der Tresortür bleibt jetzt immer ein breiter Gang frei – da kippt die Schütte kein Geld mehr hin. So kommst du rein, an die Geräte und an die Treppe. 🧹💰</p>
+    Version 266 &middot; 🔮🏰 DIE RIESENBURG! In deiner Burg steht jetzt ein silberner Rahmen. Löse die vier Rätsel – Zahlen-Code, ein Zeichen zum Malen, eine Farben-Folge und das Zauberwort – dann wächst darin ein Portal. Dahinter: eine gigantische Burg mit 36 Zimmern auf vier Etagen! ✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1376,7 +1432,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 265;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 266;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1542,7 +1598,9 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       GELDSCHUETTE=119,                 // 🪣 die Geld-Schütte im Tresorraum
       GOLDBARREN=120,                   // 🏅 ein Goldbarren - 100 € in EINEM Block!
       GOLDTAFEL=121,                    // 🏛️ die goldene Tafel im Geldspeicher
-      GELDSAUGER=122;                   // 🌪️ der Geld-Sauger holt alles wieder heraus
+      GELDSAUGER=122,                   // 🌪️ der Geld-Sauger holt alles wieder heraus
+      SILBERRAHMEN=123,                 // 🔮 der silberne Rahmen fürs Riesenburg-Portal
+      RBPORTAL=124;                     // ✨ das Portal selbst
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -1797,6 +1855,9 @@ const BLOCKS = {
       [0.07,0,0.54,    0.93,0.30,0.92, 168],            // unterer Barren vorne
       [0.13,0.30,0.34, 0.87,0.60,0.72, 168],            // mittlerer Barren
       [0.19,0.60,0.40, 0.81,0.88,0.66, 168]] },         // der oberste Barren
+  [SILBERRAHMEN]: { name:'Silberner Rahmen 🔮 (antippen = die Rätsel lösen!)',
+    tiles:[171,171,171], solid:true },
+  [RBPORTAL]: { name:'Portal ✨ (einfach hineingehen!)', tiles:[172,172,172], solid:false },
   [GELDSAUGER]: { name:'Geld-Sauger 🌪️ (antippen = Geld wieder einsaugen!)',
     tiles:[170,170,170], solid:true, model:[
       [0.24,0,0.24,    0.76,0.12,0.76, 170],            // der Fuß
@@ -4873,6 +4934,17 @@ function genChunkData(cx, cz, ohneEdits) {
       P(-21,by+1,13,TABLE);                             // das Wohnzimmer
       P(-22,by+1,13,CHAIR); P(-20,by+1,13,CHAIR); P(-21,by+1,12,CHAIR); P(-21,by+1,14,CHAIR);
       P(-28,by+1,20,CABINET);
+      // 🔮 DER SILBERNE RAHMEN im Westzimmer: dahinter wartet die Riesenburg!
+      for (let dx=RB_RAHMEN_X0; dx<=RB_RAHMEN_X0+4; dx++)
+        for (let dy=1; dy<=4; dy++)
+          if (dx===RB_RAHMEN_X0 || dx===RB_RAHMEN_X0+4 || dy===1 || dy===4)
+            P(dx, by+dy, RB_RAHMEN_Z, SILBERRAHMEN);
+      P(RB_RAHMEN_X0+6, by+1, RB_RAHMEN_Z, SIGN);
+      const rbsig=(B.bx+RB_RAHMEN_X0+6)+','+(by+1)+','+(B.bz+RB_RAHMEN_Z);
+      if (!signTexts.has(rbsig)) signTexts.set(rbsig,'🔮 DER SILBERNE RAHMEN - tipp ihn an! ' +
+        'Löse die vier Rätsel, dann wächst ein Portal darin, bis du hindurchpasst. ' +
+        'Dahinter liegt DIE RIESENBURG! 🏰 Aber Achtung: Sobald du durch bist, ' +
+        'schließt es sich sofort wieder.');
       P(16,by+1,6,SIGN);                                // die Garage (Tor im Osten!)
       const gsig=(B.bx+16)+','+(by+1)+','+(B.bz+6);
       if (!signTexts.has(gsig)) signTexts.set(gsig,'🅿️ Jonahs Garage - hier stehen Jet, Hubschrauber, Mähdrescher, Drache und der RIESEN-ROBOTER!');
@@ -5210,6 +5282,8 @@ function genChunkData(cx, cz, ohneEdits) {
   if (kinoChunk(cx, cz)) kinoStempeln(data, cx, cz);
   // 💰 DER GELDSPEICHER: oben das Häuschen, tief darunter die riesige Halle
   if (speicherChunk(cx, cz)) speicherStempeln(data, cx, cz);
+  // 🏰 DIE RIESENBURG: gigantisch groß, ganz aus Schutz-Stein
+  if (riesenChunk(cx, cz)) riesenStempeln(data, cx, cz);
   // gespeicherte Änderungen des Spielers anwenden.
   // Alte Schnee- und Pfützen-Reste vom Wetter dürfen aber keine neuen
   // Gebäude kaputt machen: liegen sie mitten in einer frisch gebauten
@@ -5575,6 +5649,7 @@ function baueSpielstand() {
       kanonen: [...kanonen.keys()],     // 💣 wo deine Wach-Kanonen stehen
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
+      rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
       ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
       tresorAuf: tresorOffen,           // 🔐 steht die große Tresortür offen?
@@ -5758,6 +5833,7 @@ function loadGame() {
     }
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
+    if (typeof s.rbStufe==='number') rbStufe = s.rbStufe;    // 🔮 Riesenburg-Rätsel
     // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
     const ausTresor = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
     if (ausTresor > 0) {
@@ -6440,6 +6516,18 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 6.8 && (Math.abs(dx) < 1.0 || Math.abs(dy) < 1.0)) return vary(246,206,70,14);
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
+  });
+  tile(171,(x,y)=>{                                                 // 🔮 silberner Rahmen
+    if (x === 0 || x === 15 || y === 0 || y === 15) return vary(96,102,116,6);
+    if ((x + y) % 6 === 0) return vary(236,242,250,10);              // Glanz
+    const h = 196 - Math.abs(x - 7.5) * 2 - Math.abs(y - 7.5);
+    return vary(h, h + 4, h + 14, 9);
+  });
+  tile(172,(x,y)=>{                                                 // ✨ das Portal
+    const dx = x - 7.5, dy = y - 7.5, r = Math.sqrt(dx*dx + dy*dy);
+    if ((x * 3 + y * 5) % 13 === 0) return vary(246,240,255,16);     // Funken
+    const h = 150 - r * 7;
+    return vary(h + 40, 40 + r * 4, h + 90, 18);                     // violettes Leuchten
   });
   tile(170,(x,y)=>{                                                 // 🌪️ der Geld-Sauger
     const dx = x - 7.5;
@@ -10501,6 +10589,9 @@ const CODE_TASTEN = '123456789'.split('')
     feld.appendChild(b);
   }
 })();
+document.getElementById('rbOk').addEventListener('click', ()=>{ rbPruefen(); });
+document.getElementById('rbZu').addEventListener('click', ()=>{
+  document.getElementById('rbBox').style.display='none'; blip(400,0.06); });
 document.getElementById('saugZu').addEventListener('click', ()=>{
   document.getElementById('saugBox').style.display='none'; blip(400,0.06); });
 document.getElementById('schuettZu').addEventListener('click', ()=>{
@@ -16575,6 +16666,422 @@ function speicherStempeln(data, cx, cz) {
   schild( 10, 1, 13, '🏆 DER TROPHÄEN-RAUM - hier stehen deine Pokale!');
   for (const sch of SP_SCHILDER) schild(sch[0], 3, sch[1], sch[2]);
 }
+// 🔮 DAS PORTAL ZUR RIESENBURG steht in Jonahs Burg, im Westzimmer.
+const RB_RAHMEN_X0 = -24, RB_RAHMEN_Z = 16;     // linke untere Ecke des Rahmens
+// in dieser Reihenfolge wächst das Portal auf, ein Rätsel nach dem anderen
+const RB_PORTAL_FELDER = [[2,2],[2,3],[1,2],[3,2],[1,3],[3,3]];
+const RB_STUFEN = [1, 2, 4, 6];                 // so viele Felder je gelöstem Rätsel
+let rbStufe = 0;                                // wie viele Rätsel sind gelöst?
+let rbSperre = 0;                               // kurze Pause nach dem Durchgehen
+// ============== 🏰 DIE RIESENBURG ===========================================
+// Jonahs Wunsch: eine WIRKLICH gigantische Festung, viel größer als seine Burg,
+// mit ganz vielen Räumen - und komplett aus unzerstörbarem Schutz-Stein.
+// Man kommt nur durch das Portal hinein, das erst nach mehreren Rätseln aufgeht.
+const RB_BASIS_X = 15000, RB_BASIS_Z = -15000;
+let RB_X = RB_BASIS_X, RB_Z = RB_BASIS_Z, RB_Y = 40, rbHoeheFertig = false;
+const RB_MAUER = 80;                    // halbe Breite der Ringmauer (161x161!)
+const RB_MAUER_H = 18;                  // so hoch ist die Mauer
+const RB_KERN = 45;                     // halbe Breite des Hauptgebäudes (91x91)
+const RB_ETAGE = 12;                    // so hoch ist eine Etage
+const RB_ETAGEN = 4;                    // so viele Etagen hat der Kern
+const RB_DACH = RB_ETAGEN * RB_ETAGE;   // das Dach liegt auf dieser Höhe
+const RB_WAND = 15;                     // Zimmerwände bei |dx|=15 und |dz|=15
+const RB_RAND = RB_MAUER + 12;
+const RB_TR_X = RB_KERN - 3;            // hier läuft die Treppe nach oben
+// Wo steht die Riesenburg? Genau wie beim Geldspeicher: ein trockener, ebener
+// Platz in der Nähe des Basis-Punktes.
+function riesenHoehe() {
+  if (rbHoeheFertig) return RB_Y;
+  const merkDim = weltDim; weltDim = 0;
+  let bx = RB_BASIS_X, bz = RB_BASIS_Z, bestTief = -999;
+  for (let i = 0; i < 40; i++) {
+    const a = i * 2.39996, d = i === 0 ? 0 : 90 + i * 40;
+    const cx = RB_BASIS_X + Math.round(Math.cos(a) * d);
+    const cz = RB_BASIS_Z + Math.round(Math.sin(a) * d);
+    let tief = 9999, hoch = -9999;
+    for (let lx = -RB_MAUER; lx <= RB_MAUER; lx += 20)
+      for (let lz = -RB_MAUER; lz <= RB_MAUER; lz += 20) {
+        const t = terrainHeight(cx + lx, cz + lz);
+        if (t < tief) tief = t;
+        if (t > hoch) hoch = t;
+      }
+    if (tief > SEA + 1 && hoch - tief <= 6) { bx = cx; bz = cz; break; }
+    if (tief > bestTief) { bestTief = tief; bx = cx; bz = cz; }
+  }
+  RB_X = bx; RB_Z = bz;
+  let hoch = SEA + 1;
+  for (let dx = -RB_MAUER; dx <= RB_MAUER; dx += 8)
+    for (let dz = -RB_MAUER; dz <= RB_MAUER; dz += 8)
+      hoch = Math.max(hoch, terrainHeight(RB_X + dx, RB_Z + dz));
+  RB_Y = Math.max(SEA + 2, hoch);
+  rbHoeheFertig = true;
+  weltDim = merkDim;
+  return RB_Y;
+}
+function riesenAnkunft() {              // hier kommt Jonah aus dem Portal heraus
+  riesenHoehe();
+  return [RB_X, RB_Y + 1, RB_Z + 4];
+}
+function inRiesenburg(x, z) {
+  riesenHoehe();
+  return weltDim === 0 && Math.abs(x - RB_X) < RB_RAND && Math.abs(z - RB_Z) < RB_RAND;
+}
+// Welche Etage und wie weit über ihrem Boden liegt dieses y?
+function rbEtage(dy) { return Math.floor((dy - 1) / RB_ETAGE); }
+// 🛏️ DIE 36 ZIMMER: jedes bekommt seine eigene Einrichtung. rx/rz sagen, in
+// welchem der drei mal drei Zimmer man steht, mx/mz ist dessen Mittelpunkt.
+const RB_ZIMMER = [
+  { name: '🛏️ Schlafsaal',     deko: (ox, oz) => (oz === -3 && ox % 4 === 0 && Math.abs(ox) <= 8) ? BED
+                                      : (oz === -3 && ((ox+1) % 4 === 0) && Math.abs(ox) <= 9) ? CHEST : null },
+  { name: '🍽️ Speisesaal',     deko: (ox, oz) => (Math.abs(ox) <= 3 && oz === 0) ? TABLE
+                                      : (Math.abs(ox) <= 4 && Math.abs(oz) === 1 && Math.abs(ox) <= 3) ? CHAIR : null },
+  { name: '💎 Schatzkammer',   deko: (ox, oz) => (Math.abs(oz) === 4 && ox % 3 === 0 && Math.abs(ox) <= 6) ? CHEST
+                                      : (ox === 0 && oz === 0) ? POKAL : null },
+  { name: '📚 Bücherzimmer',   deko: (ox, oz) => (Math.abs(oz) === 5 && Math.abs(ox) <= 7) ? CABINET : null },
+  { name: '🏋️ Trainingsraum',  deko: (ox, oz) => (ox === -4 && oz === 0) ? HANTEL
+                                      : (ox === 0 && oz === 0) ? LAUFBAND
+                                      : (ox === 4 && oz === 0) ? TRAMPOLIN : null },
+  { name: '🛁 Badezimmer',     deko: (ox, oz) => (oz === -4 && ox % 4 === 0 && Math.abs(ox) <= 4) ? TOILET
+                                      : (oz === -4 && ((ox+2) % 4 === 0) && Math.abs(ox) <= 6) ? SINK : null },
+];
+function rbZimmerNr(dx, dz) {           // 0..8 - welches Zimmer der Etage?
+  const rx = dx < -RB_WAND ? 0 : dx > RB_WAND ? 2 : 1;
+  const rz = dz < -RB_WAND ? 0 : dz > RB_WAND ? 2 : 1;
+  return { rx, rz, nr: rz*3 + rx, mx: [-30, 0, 30][rx], mz: [-30, 0, 30][rz] };
+}
+// --- Was steht an dieser Stelle der Riesenburg? ---------------------------
+function riesenBlock(dx, dz, y) {
+  riesenHoehe();
+  const by = RB_Y, adx = Math.abs(dx), adz = Math.abs(dz);
+  const dy = y - by;
+  if (adx > RB_RAND || adz > RB_RAND) return null;
+
+  // 1) FUNDAMENT und BODEN
+  if (dy < 0) return y >= Math.min(terrainHeight(RB_X + dx, RB_Z + dz), by) - 4 ? STONE : null;
+  if (dy === 0) {
+    if (adx <= RB_KERN && adz <= RB_KERN) return SCHUTZ;            // Boden im Haus
+    if (adx <= RB_MAUER && adz <= RB_MAUER)
+      return (adx <= 3 && dz > RB_KERN) ? STRASSE : GRASS;          // Hof mit Weg zum Tor
+    return GRASS;
+  }
+
+  // 2) DAS HAUPTGEBÄUDE: vier Etagen, je neun Zimmer
+  if (adx <= RB_KERN && adz <= RB_KERN) {
+    const aussen = adx === RB_KERN || adz === RB_KERN;
+    const ecke = adx === RB_KERN && adz === RB_KERN;
+    if (dy > RB_DACH) {                                             // über dem Dach
+      if (ecke) return dy <= RB_DACH + 8 ? (dy > RB_DACH + 5 ? GOLD : SCHUTZ) : AIR;
+      if (aussen && dy === RB_DACH + 1) return FENCE;               // Geländer am Dachrand
+      return AIR;
+    }
+    if (dy === RB_DACH) {                                           // das Dach
+      // Die LETZTE Stufe liegt genau im Dach - so läuft Jonah oben einfach
+      // heraus, statt vor der Decke stehenzubleiben (wie im Geldspeicher).
+      if (dx === RB_TR_X && dz === -RB_KERN + 13) return TREP_S;
+      if (dx === RB_TR_X && dz >= -RB_KERN + 2 && dz <= -RB_KERN + 12) return AIR;
+      return SCHUTZ;
+    }
+    if (aussen) {
+      if (dz === RB_KERN && adx <= 1 && dy <= 4) return AIR;        // das große Haupttor
+      if (dy % RB_ETAGE === 6 && ((dx + dz) % 7 + 7) % 7 === 0) return GLASS;   // Fenster
+      if (dy === RB_DACH - 1) return GOLD;                          // goldener Kranz oben
+      return SCHUTZ;
+    }
+    // --- innen: Etagenböden, Treppe, Zimmerwände -------------------------
+    const et = rbEtage(dy), aufEtage = dy - (et * RB_ETAGE);        // 1..RB_ETAGE
+    // DIE TREPPE: in der Nordwest-Ecke, je Etage ein gerader Lauf nach oben
+    if (dx === RB_TR_X) {
+      const stufe = dz - (-RB_KERN + 2);                            // 0..RB_ETAGE-1
+      if (stufe >= 0 && stufe < RB_ETAGE) {
+        if (aufEtage === stufe + 1) return TREP_S;                  // die Stufe
+        if (stufe >= 1 && aufEtage === stufe) return SCHUTZ;        // Unterbau
+      }
+    }
+    if (aufEtage === RB_ETAGE) {                                    // Decke = Boden darüber
+      if (dx === RB_TR_X && dz >= -RB_KERN + 2 && dz <= -RB_KERN + 13) return AIR;  // Treppenloch
+      if (dx === RB_TR_X - 1 && dz >= -RB_KERN + 9 && dz <= -RB_KERN + 13) return AIR;
+      return SCHUTZ;
+    }
+    // ZIMMERWÄNDE: drei mal drei Zimmer je Etage, mit Türen in der Mitte
+    if (adx === RB_WAND || adz === RB_WAND) {
+      const laengs = adx === RB_WAND ? dz : dx;
+      const tuer = Math.abs(((laengs % 30) + 30) % 30 - 15) <= 2;   // alle 30 eine Tür
+      if (tuer && aufEtage <= 4) return AIR;
+      if (aufEtage === 7 && ((laengs % 5) + 5) % 5 === 0) return GLASS;  // Innenfenster
+      return SCHUTZ;
+    }
+    // 🔥 LICHT: Fackeln an allen Innenwänden, alle paar Blöcke
+    if (aufEtage === 7 &&
+        (adx === RB_WAND - 1 || adz === RB_WAND - 1 ||
+         adx === RB_WAND + 1 || adz === RB_WAND + 1 ||
+         adx === RB_KERN - 1 || adz === RB_KERN - 1) &&
+        ((dx + dz) % 8 + 8) % 8 === 0) return TORCH;
+    // ✨ DAS RÜCK-PORTAL mitten in der Portal-Halle im Erdgeschoss
+    if (et === 0 && dz === 0 && adx <= 2 && aufEtage >= 1 && aufEtage <= 4)
+      return (adx === 2 || aufEtage === 1 || aufEtage === 4) ? SILBERRAHMEN : RBPORTAL;
+    // 🛏️ DIE EINRICHTUNG der 36 Zimmer
+    if (aufEtage === 1) {
+      const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
+      if (ox === 0 && oz === 6) return SIGN;        // 🪧 das Schild mit dem Zimmernamen
+      // der Thronsaal: die Mitte der obersten Etage
+      if (et === RB_ETAGEN - 1 && z.nr === 4) {
+        if (ox === 0 && oz === -2) return THRON;
+        if (Math.abs(ox) <= 2 && oz >= -3 && oz <= -1) return null;   // Podest unten drunter
+        if (ox === -1 && oz === -3) return KRONE;
+        if (ox === 1 && oz === -3) return ZEPTER;
+        return null;
+      }
+      if (et === 0 && z.nr === 4) return null;                        // die Portal-Halle bleibt frei
+      const m = RB_ZIMMER[(et * 9 + z.nr) % RB_ZIMMER.length].deko(ox, oz);
+      if (m !== null) return m;
+    }
+    if (aufEtage === 0 && et === RB_ETAGEN - 1) {
+      const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
+      if (z.nr === 4 && Math.abs(ox) <= 2 && oz >= -3 && oz <= -1) return GOLD;  // goldenes Podest
+    }
+    return AIR;
+  }
+
+  // 3) DIE RINGMAUER mit Türmen und Tor
+  if (adx <= RB_MAUER && adz <= RB_MAUER) {
+    const aufMauer = adx === RB_MAUER || adz === RB_MAUER;
+    const turm = adx >= RB_MAUER - 3 && adz >= RB_MAUER - 3;
+    if (turm) {
+      if (dy <= RB_MAUER_H + 10) return dy > RB_MAUER_H + 7 ? GOLD : SCHUTZ;
+      return AIR;
+    }
+    if (aufMauer) {
+      if (dz === RB_MAUER && adx <= 3 && dy <= 6) return AIR;       // das Burgtor
+      if (dy === RB_MAUER_H + 1) return (((dx + dz) % 2) + 2) % 2 === 0 ? SCHUTZ : AIR;  // Zinnen
+      if (dy <= RB_MAUER_H) return SCHUTZ;
+      return AIR;
+    }
+    // der Hof: ein paar Laternen am Weg
+    if (adx === 5 && dz > RB_KERN + 2 && ((dz - RB_KERN) % 8) === 0) {
+      if (dy <= 2) return FENCE;
+      if (dy === 3) return TORCH;
+    }
+    return AIR;
+  }
+  return dy === 0 ? GRASS : AIR;
+}
+// ============== 🔮 DIE VIER RÄTSEL AM SILBERNEN RAHMEN ======================
+// Jonah wollte mehrere Codes hintereinander: erst Zahlen, dann ein Zeichen zum
+// Malen, dann noch mehr. Nach jedem gelösten Rätsel wächst das Portal ein Stück,
+// bis er hindurchpasst.
+const MAL_N = 7;                        // das Malfeld ist 7x7 groß
+// das Zeichen, das Jonah nachmalen muss: ein Blitz ⚡
+const MAL_ZIEL = [
+  '...##..',
+  '..##...',
+  '.##....',
+  '.#####.',
+  '...##..',
+  '..##...',
+  '.##....',
+];
+const RB_RAETSEL = [
+  { art:'zahlen', kopf:'1. DER ZAHLEN-CODE 🔢',
+    info:'Diese vier Zahlen sind durcheinander geraten. Tipp sie der Reihe nach ein – ' +
+         'von der KLEINSTEN zur GRÖSSTEN!',
+    zeigen:'7  3  9  1', loesung:'1379' },
+  { art:'malen',  kopf:'2. DAS ZEICHEN ⚡',
+    info:'Mal das Zeichen nach! Tipp die Kästchen an, bis dein Bild genauso aussieht ' +
+         'wie das hier oben. Nochmal tippen macht ein Kästchen wieder aus.',
+    zeigen:'', loesung:MAL_ZIEL.join('') },
+  { art:'farben', kopf:'3. DIE FARBEN-FOLGE 🌈',
+    info:'Hier ist eine Folge von Farben. Tipp sie RÜCKWÄRTS ein – also die letzte zuerst!',
+    zeigen:'🔴 🟡 🔵 🟢 🟡', loesung:'🟡🟢🔵🟡🔴' },
+  { art:'wort',   kopf:'4. DAS ZAUBERWORT 🔤',
+    info:'Die Buchstaben sind durcheinander. Wie heißt das Wort? (Tipp: so nennt man ' +
+         'das große Gebäude, in dem ein König wohnt.)',
+    zeigen:'G  R  U  B', loesung:'BURG' },
+];
+let rbEingabe = '', rbMalFeld = [];
+function rbStufenReihe(fertig) {
+  return RB_RAETSEL.map((r, i) => i < fertig ? '✅' : i === fertig ? '🔸' : '⬜').join(' ');
+}
+function rbKnopf(txt, klasse, w) {
+  const b = document.createElement('button');
+  b.textContent = txt;
+  if (klasse) b.className = klasse;
+  b.addEventListener('click', w);
+  b.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
+  return b;
+}
+function rbZeichnen() {
+  const r = RB_RAETSEL[rbStufe];
+  document.getElementById('rbKopf').textContent = r.kopf;
+  document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
+  document.getElementById('rbInfo').innerHTML = r.info;
+  const zeig = document.getElementById('rbZeigen');
+  const feld = document.getElementById('rbFeld');
+  feld.innerHTML = '';
+  if (r.art === 'malen') {
+    // die Vorlage als kleines Gitter - mit Emoji wurde daraus nur ein schwarzer Strich
+    zeig.innerHTML = '<div class="zielbild">' + MAL_ZIEL.map(z =>
+      '<div class="zielzeile">' + z.split('').map(c =>
+        '<span class="zielzelle' + (c === '#' ? ' an' : '') + '"></span>').join('') +
+      '</div>').join('') + '</div>';
+    feld.style.gridTemplateColumns = 'repeat(' + MAL_N + ', 1fr)';
+    for (let i = 0; i < MAL_N * MAL_N; i++) {
+      const b = rbKnopf('', 'malzelle' + (rbMalFeld[i] === '#' ? ' an' : ''), () => {
+        rbMalFeld[i] = rbMalFeld[i] === '#' ? '.' : '#';
+        rbZeichnen();
+      });
+      feld.appendChild(b);
+    }
+    return;
+  }
+  zeig.textContent = r.zeigen + (rbEingabe ? '   ➜   ' + rbEingabe : '');
+  if (r.art === 'zahlen') {
+    feld.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    for (const t of '1234567890'.split(''))
+      feld.appendChild(rbKnopf(t, '', () => { rbEingabe += t; blip(600+(+t)*30,0.04); rbZeichnen(); }));
+  } else if (r.art === 'farben') {
+    feld.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    for (const t of ['🔴','🟡','🔵','🟢'])
+      feld.appendChild(rbKnopf(t, '', () => { rbEingabe += t; blip(700,0.05); rbZeichnen(); }));
+  } else {
+    feld.style.gridTemplateColumns = 'repeat(7, 1fr)';
+    for (const t of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''))
+      feld.appendChild(rbKnopf(t, '', () => { rbEingabe += t; blip(620,0.04); rbZeichnen(); }));
+  }
+  feld.appendChild(rbKnopf('⌫', 'weg', () => {
+    rbEingabe = r.art === 'farben' ? [...rbEingabe].slice(0,-1).join('') : rbEingabe.slice(0,-1);
+    blip(300,0.04); rbZeichnen();
+  }));
+}
+function openRahmen() {
+  if (rbStufe >= RB_RAETSEL.length) {
+    toast('🔮✨ Das Portal steht weit offen – geh einfach hindurch! Dahinter wartet ' +
+          'DIE RIESENBURG. 🏰 (Hinter dir fällt es sofort wieder zu.)', 7000);
+    blip(700,0.08); return;
+  }
+  rbEingabe = '';
+  if (RB_RAETSEL[rbStufe].art === 'malen' && rbMalFeld.length !== MAL_N*MAL_N)
+    rbMalFeld = new Array(MAL_N*MAL_N).fill('.');
+  rbZeichnen();
+  document.getElementById('rbBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(520,0.05); blip(700,0.05); blip(900,0.05);
+}
+function rbPruefen() {
+  const r = RB_RAETSEL[rbStufe];
+  const eingabe = r.art === 'malen' ? rbMalFeld.join('') : rbEingabe;
+  if (eingabe === r.loesung) {
+    rbStufe++;
+    rbEingabe = ''; rbMalFeld = [];
+    rbPortalSetzen();
+    rbFunken();
+    for (const f of [523,659,784,1047]) blip(f,0.09);
+    scheduleSave();
+    if (rbStufe >= RB_RAETSEL.length) {
+      document.getElementById('rbBox').style.display = 'none';
+      toast('🔮✨ ALLE VIER RÄTSEL GELÖST! Das Portal ist jetzt so groß, dass du ' +
+            'hindurchpasst. Geh hinein – DIE RIESENBURG wartet auf dich! 🏰', 9000);
+    } else {
+      document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
+      toast('🔮 RICHTIG! Das Portal wächst… noch ' + (RB_RAETSEL.length - rbStufe) +
+            ' Rätsel, dann passt du hindurch. ✨', 5000);
+      rbZeichnen();
+    }
+    return true;
+  }
+  rbEingabe = '';
+  if (r.art === 'malen') rbMalFeld = new Array(MAL_N*MAL_N).fill('.');
+  toast('🔮❌ Das war noch nicht richtig. Schau nochmal genau hin und probier es ' +
+        'wieder – du schaffst das! 💪', 5000);
+  blip(220,0.14); blip(140,0.2);
+  rbZeichnen();
+  return false;
+}
+// ✨ Das Portal im Rahmen so setzen, wie viele Rätsel gelöst sind
+function rbPortalSetzen() {
+  const B = burgPos(), by = B.base;
+  const wie = rbStufe > 0 ? RB_STUFEN[Math.min(rbStufe, RB_STUFEN.length) - 1] : 0;
+  let n = 0;
+  for (let i = 0; i < RB_PORTAL_FELDER.length; i++) {
+    const [ox, oy] = RB_PORTAL_FELDER[i];
+    const wx = B.bx + RB_RAHMEN_X0 + ox, wy = by + oy, wz = B.bz + RB_RAHMEN_Z;
+    const will = i < wie ? RBPORTAL : AIR;
+    if (getBlock(wx, wy, wz) !== will) { setBlock(wx, wy, wz, will); n++; }
+  }
+  return n;
+}
+function rbFunken() {
+  const B = burgPos(), by = B.base;
+  for (let i = 0; i < 18; i++)
+    fireworks.push({ x: B.bx + RB_RAHMEN_X0 + 2.5 + (Math.random()-0.5)*3,
+      y: by + 2.5 + (Math.random()-0.5)*2.5, z: B.bz + RB_RAHMEN_Z + 0.5,
+      vx:(Math.random()-0.5)*2.4, vy:1+Math.random()*2, vz:(Math.random()-0.5)*1.2,
+      tile:172, t:0.8 });
+}
+// 🚶 DURCH DAS PORTAL GEHEN: hin zur Riesenburg - und zurück
+function rbPortalTick(dt) {
+  if (rbSperre > 0) { rbSperre -= dt; return; }
+  if (weltDim !== 0) return;
+  const fy = Math.floor(player.y + 0.4);
+  if (getBlock(Math.floor(player.x), fy, Math.floor(player.z)) !== RBPORTAL) return;
+  rbSperre = 2.5;
+  if (inRiesenburg(player.x, player.z)) {         // zurück nach Hause
+    const B = burgPos();
+    player.x = B.bx + RB_RAHMEN_X0 + 2.5; player.z = B.bz + RB_RAHMEN_Z + 2.5;
+    player.y = B.base + 2; player.vy = 0;
+    toast('✨🏠 Zurück in deiner Burg! Der silberne Rahmen steht gleich vor dir. 🔮', 6000);
+  } else {                                         // ab in die Riesenburg!
+    // WICHTIG: erst das Portal zumachen, solange die Burg-Chunks noch geladen
+    // sind - danach ist Jonah weg und setBlock würde dort ins Leere greifen.
+    rbStufe = 0; rbPortalSetzen();                 // das Portal fällt hinter ihm zu
+    const [ax, ay, az] = riesenAnkunft();
+    player.x = ax + 0.5; player.z = az + 0.5; player.y = ay; player.vy = 0;
+    toast('✨🏰 WUSCH! Du bist in DER RIESENBURG! 36 Zimmer auf vier Etagen, alles aus ' +
+          'unzerstörbarem Stein. Hinter dir ist das Portal zugefallen – das hier bringt ' +
+          'dich wieder nach Hause. 🔮', 10000);
+  }
+  for (const f of [880,660,520,760,990]) blip(f,0.09);
+  for (let i = 0; i < 24; i++)
+    fireworks.push({ x: player.x+(Math.random()-0.5)*2, y: player.y+0.5+Math.random()*2,
+      z: player.z+(Math.random()-0.5)*2, vx:(Math.random()-0.5)*3, vy:1+Math.random()*3,
+      vz:(Math.random()-0.5)*3, tile:172, t:1 });
+  scheduleSave();
+}
+function riesenChunk(cx, cz) {
+  riesenHoehe();
+  const x0 = cx*CS, z0 = cz*CS, x1 = x0+CS-1, z1 = z0+CS-1;
+  return x1 >= RB_X - RB_RAND && x0 <= RB_X + RB_RAND &&
+         z1 >= RB_Z - RB_RAND && z0 <= RB_Z + RB_RAND;
+}
+function riesenStempeln(data, cx, cz) {
+  riesenHoehe();
+  const x0 = cx*CS, z0 = cz*CS;
+  for (let lz2 = 0; lz2 < CS; lz2++) for (let lx2 = 0; lx2 < CS; lx2++) {
+    const dx = x0 + lx2 - RB_X, dz = z0 + lz2 - RB_Z;
+    if (Math.abs(dx) > RB_RAND || Math.abs(dz) > RB_RAND) continue;
+    const gel = terrainHeight(RB_X + dx, RB_Z + dz);
+    for (let y = Math.min(gel, RB_Y) - 5; y <= RB_Y + RB_DACH + 10; y++) {
+      const b = riesenBlock(dx, dz, y);
+      if (b !== null) data[bidx(lx2, y, lz2)] = b;
+    }
+  }
+  const schild = (dx, dy, dz, txt) => {
+    const k = (RB_X+dx) + ',' + (RB_Y+dy) + ',' + (RB_Z+dz);
+    if (!signTexts.has(k)) signTexts.set(k, txt);
+  };
+  for (let et = 0; et < RB_ETAGEN; et++)
+    for (let nr = 0; nr < 9; nr++) {
+      const rx = nr % 3, rz = (nr / 3) | 0;
+      const mx = [-30, 0, 30][rx], mz = [-30, 0, 30][rz];
+      const name = (et === RB_ETAGEN - 1 && nr === 4) ? '👑 DER THRONSAAL'
+                 : (et === 0 && nr === 4) ? '✨ DIE PORTAL-HALLE'
+                 : RB_ZIMMER[(et * 9 + nr) % RB_ZIMMER.length].name;
+      schild(mx, et * RB_ETAGE + 1, mz + 6, name + ' · Etage ' + (et + 1) + ' von ' +
+             RB_ETAGEN + ' · Riesenburg 🏰');
+    }
+  schild(0, 1, RB_KERN + 3, '🏰 DIE RIESENBURG VON KÖNIG JONAH - 36 Zimmer auf vier Etagen, ' +
+                            'alles aus unzerstörbarem Schutz-Stein! Die Treppe nach oben ' +
+                            'findest du in der Nordwest-Ecke. 🪜');
+}
 // --- 🔐 DIE GROSSE TRESORTÜR: zu ist zu - da kommt niemand durch! ---------
 let tresorOffen = false;                // steht die Tresortür gerade offen?
 function tresorTuerSetzen() {
@@ -21461,7 +21968,7 @@ const MAP_BLOCK_COL = {
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
   [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
-  [GELDSAUGER]:'#8ab4d8',
+  [GELDSAUGER]:'#8ab4d8', [SILBERRAHMEN]:'#c4ccda', [RBPORTAL]:'#a060e0',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
@@ -24265,6 +24772,7 @@ function doBreak(dir) {
   if (hit && hit.block === GELDSCHUETTE) { openSchuette(); return; }
   if (hit && hit.block === GOLDTAFEL) { tafelAntippen(); return; }
   if (hit && hit.block === GELDSAUGER) { openSauger(); return; }
+  if (hit && hit.block === SILBERRAHMEN) { openRahmen(); return; }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -24653,6 +25161,10 @@ function doPlace(dir) {
   }
   if (hit.block === GELDSAUGER) {       // 🌪️ der Geld-Sauger
     openSauger();
+    return;
+  }
+  if (hit.block === SILBERRAHMEN) {     // 🔮 der silberne Rahmen
+    openRahmen();
     return;
   }
   if (hit.block===BANK && HOTBAR_ITEMS[selSlot]!==BANK) {
@@ -25714,6 +26226,7 @@ function frame(now) {
   kanonenTick(dt);                      // 💣 halten deine Kanonen Wache?
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
+  try { rbPortalTick(dt); } catch(e) {} // 🔮 steht Jonah gerade im Portal?
   flugTick(dt);                         // 🚀 läuft gerade ein Raketenflug?
   superTick(dt);                        // 🦸 laufen die Superkräfte?
   if (faustKuehl > 0) {                 // 🦾 die Roboter-Faust lädt nach
@@ -25860,6 +26373,9 @@ function frame(now) {
     // normalen Nebel (ab 32 Blöcken) verschwänden Decke und Rückwand im Dunst,
     // als hätte das Haus gar kein Dach. Drinnen wird er darum weggeschoben.
     try { if (imSpeicherHalle()) { fn0 = 150; ff0 = 260; } } catch(e) {}
+    // 🏰 IN DER RIESENBURG genauso: sie ist 161 Blöcke breit und 48 hoch - im
+    // normalen Nebel sähe man von ihrer Größe fast nichts.
+    try { if (inRiesenburg(player.x, player.z)) { fn0 = 200; ff0 = 340; } } catch(e) {}
     gl.uniform1f(loc.uFogNear, fn0 + (2.6 - fn0)*fRaum);
     gl.uniform1f(loc.uFogFar,  ff0 + (5.5 - ff0)*fRaum);
   }
