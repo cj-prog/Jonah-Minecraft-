@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- FREIE BAHN HINTER DER TRESORTÜR (v265)! 🚪🧹 Jonah hat gemerkt: Beim Aufmachen
+  der Tresortür standen die Goldbarren direkt davor – und er kam gar nicht in
+  seinen eigenen Tresorraum hinein.
+  🚪 EIN BREITER GANG bleibt jetzt immer frei: die drei Reihen gleich hinter der
+  Tür, über die ganze Breite des Raums. Dort kippt die Schütte kein Geld mehr hin.
+  🪣🌪️🪜 Von da aus kommst du an die Schütte, den Sauger, das große Schild und
+  die Treppe aufs Dach – egal wie voll der Raum ist.
+  🧹 UND WAS SCHON DA LAG? Beim nächsten Betreten räumt Johann den Gang einmalig
+  frei und legt das Geld weiter hinten im Raum wieder ab. Kein Euro geht
+  verloren – passt etwas nicht mehr hinein, landet es in deiner Tasche.
 - DER GELD-SAUGER (v264)! 🌪️💰 Jonah wollte auch ein Gerät, mit dem er sein
   Geld wieder aus dem Geldspeicher herausholen kann – das Gegenstück zur Schütte.
   🌪️ DIREKT NEBEN DER 🪣 SCHÜTTE steht jetzt der Geld-Sauger: ein silbern-blaues
