@@ -221,6 +221,24 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RIESENBURG HINTER DEM PORTAL (v266)! 🔮🏰 Jonahs großer Wunsch: ein
+  silberner Rahmen in seiner Burg, dahinter – nach ganz vielen Codes – eine
+  gigantische Festung.
+  🔮 DER SILBERNE RAHMEN steht im Westzimmer deiner Burg. Tipp ihn an!
+  🧩 VIER RÄTSEL nacheinander: ein 🔢 Zahlen-Code (die Zahlen der Größe nach),
+  ein ⚡ Zeichen zum Nachmalen auf einem 7×7-Feld, eine 🌈 Farben-Folge (rückwärts!)
+  und zum Schluss das 🔤 Zauberwort.
+  ✨ NACH JEDEM RÄTSEL WÄCHST DAS PORTAL: erst ein Feld, dann zwei, dann vier –
+  und nach dem vierten Rätsel ist es so groß, dass du hindurchpasst.
+  🏰 DAHINTER DIE RIESENBURG: eine Ringmauer von 161×161 Blöcken mit goldenen
+  Ecktürmen und Burgtor, und darin ein Hauptgebäude von 91×91 Blöcken, 48 hoch,
+  mit 36 ZIMMERN auf vier Etagen: Schlafsäle, Speisesäle, Schatzkammern,
+  Bücherzimmer, Trainingsräume, Bäder – und ganz oben ein Thronsaal. Alles aus
+  dem unzerstörbaren Schutz-Stein. Eine Treppe führt durch alle Etagen bis aufs
+  Dach.
+  🔒 EINMAL DURCH – UND ZU: Sobald du hindurchgegangen bist, fällt das Portal
+  hinter dir zu, und die Rätsel fangen von vorne an.
+  🏠 ZURÜCK NACH HAUSE kommst du durch das Portal in der Portal-Halle.
 - FREIE BAHN HINTER DER TRESORTÜR (v265)! 🚪🧹 Jonah hat gemerkt: Beim Aufmachen
   der Tresortür standen die Goldbarren direkt davor – und er kam gar nicht in
   seinen eigenen Tresorraum hinein.
