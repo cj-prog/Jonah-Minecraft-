@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- NUR DURCH DAS PORTAL ZUR RIESENBURG (v274)! 🏰🔮 Jonah hat erklärt, wie er
+  es gemeint hatte: Die Tore sollen natürlich offen sein – aber HINKOMMEN soll
+  man nur durch das Portal. Beides gibt es jetzt: Das Haupttor am Haus und das
+  Burgtor in der Ringmauer stehen wieder offen, und wer durch das Portal
+  gekommen ist, darf drüben überall herumlaufen – im Haus, im Hof, auf dem Dach,
+  im Keller. Aber der 🛸-Teleport bringt ihn nicht mehr dorthin („Zur RIESENBURG
+  kommst du NUR durch dein Portal!"), und wer trotzdem irgendwie in die Gegend
+  gerät (zum Beispiel hingeflogen), steht sofort wieder daheim vor seinem
+  silbernen Rahmen. Das Spiel merkt sich im Spielstand, ob Jonah ordentlich
+  durch das Portal gegangen ist – nach dem Neuladen wird er also nicht aus
+  Versehen nach Hause geschickt. (Nebenbei repariert: Beim Zusammen-Spielen in
+  der Welt eines Freundes standen Riesenburg und Geldspeicher noch an den
+  Plätzen der alten Welt.)
 - DEIN GROSSER SAFE (v273)! 🔐💎 Unten im Riesen-Keller der Festung steht jetzt
   ein echter Panzer-Safe: ein Kasten aus 7×7 Blöcken, in den Jonah hineingehen
   kann. Seine Wände, der Boden, die Decke und die Tür sind UNZERSTÖRBAR – kein

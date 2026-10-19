@@ -1393,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 273 &middot; 🔐 DEIN GROSSER SAFE! Unten im Riesen-Keller deiner Festung steht jetzt ein echter Panzer-Safe – unzerstörbar, da kommt keiner durch, nicht mal du. Auf geht er nur mit SECHS eigenen Codes: Zahlen, Wisch-Muster, Farben, Zauberwort, Tiere und Zeichen. Dann klappt die Tür nach außen auf und du kannst deine wertvollsten Sachen hineintun. 💎</p>
+    Version 274 &middot; 🏰🔮 ZUR RIESENBURG KOMMST DU NUR DURCH DEIN PORTAL! Die Tore sind wieder offen – drüben darfst du überall hin, auch in den Hof. Aber hinbeamen oder hinfliegen geht nicht mehr: Wer es versucht, steht sofort wieder vor seinem silbernen Rahmen. Und im Keller deiner Festung wartet weiter dein großer Safe mit den sechs Codes. 🔐</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 273;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 274;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5695,6 +5695,7 @@ function baueSpielstand() {
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
       rbCodes,                          // 🔮 Jonahs vier eigene Codes
+      rbDrin,                           // 🏰 ist er gerade drüben in der Riesenburg?
       safeCodes,                        // 🔐 seine sechs Safe-Codes
       safeAuf: safeOffen,               // 🔐 steht der große Safe offen?
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
@@ -5754,6 +5755,8 @@ function loadGame() {
     if (typeof s.seed !== 'number') return null;
     seed = s.seed;
     kinoHoeheFertig = false;   // 🎬 in einer anderen Welt steht das Kino woanders
+    rbHoeheFertig = false;     // 🏰 und die Riesenburg und der Geldspeicher auch!
+    spHoeheFertig = false;
     // Alte Speicherstände kannten noch keinen tiefen Untergrund: ihre
     // Schicht-Nummern werden auf die neue, tiefere Welt umgerechnet.
     const shift = ((-CH_MIN) - (typeof s.depth==='number' ? s.depth : 0)) << 8;
@@ -5884,6 +5887,12 @@ function loadGame() {
     if (Array.isArray(s.rbCodes))                            // 🔮 die vier eigenen Codes
       for (let i = 0; i < rbCodes.length; i++)
         if (typeof s.rbCodes[i] === 'string') rbCodes[i] = s.rbCodes[i];
+    // 🏰 Stand er beim Speichern drüben bei der Riesenburg? Dann darf er da
+    // natürlich bleiben - auch wenn der Spielstand noch von früher ist.
+    riesenHoehe();
+    rbDrin = s.rbDrin === true ||
+             (!!s.player && Math.abs(s.player.x - RB_X) < RB_RAND &&
+              Math.abs(s.player.z - RB_Z) < RB_RAND);
     if (Array.isArray(s.safeCodes))                          // 🔐 die sechs Safe-Codes
       for (let i = 0; i < safeCodes.length; i++)
         if (typeof s.safeCodes[i] === 'string') safeCodes[i] = s.safeCodes[i];
@@ -16771,6 +16780,10 @@ const RB_PORTAL_FELDER = [[2,2],[2,3],[3,2],[3,3]];
 const RB_STUFEN = [1, 2, 3, 4];                 // so viele Felder je gelöstem Rätsel
 let rbStufe = 0;                                // wie viele Rätsel sind gelöst?
 let rbSperre = 0;                               // kurze Pause nach dem Durchgehen
+// 🔒 Ist Jonah ORDENTLICH durch das Portal gekommen? Nur dann darf er in der
+// Gegend der Riesenburg sein. Wer sich dorthin teleportiert oder hinfliegt,
+// wird wieder nach Hause gebracht - die Riesenburg liegt hinter dem Portal.
+let rbDrin = false;
 // ============== 🏰 DIE RIESENBURG ===========================================
 // Jonahs Wunsch: eine WIRKLICH gigantische Festung, viel größer als seine Burg,
 // mit ganz vielen Räumen - und komplett aus unzerstörbarem Schutz-Stein.
@@ -17084,8 +17097,7 @@ function riesenBlock(dx, dz, y) {
       return SCHUTZ;
     }
     if (aussen) {
-      // 🔒 KEIN TOR MEHR: Jonah wollte, dass man NUR durch das Portal
-      // hineinkommt. Darum ist die Außenwand rundherum geschlossen.
+      if (dz === RB_KERN && adx <= 1 && dy <= 4) return AIR;        // das große Haupttor
       if (dy % RB_ETAGE === 6 && ((dx + dz) % 7 + 7) % 7 === 0) return GLASS;   // Fenster
       if (dy === RB_DACH - 1) return GOLD;                          // goldener Kranz oben
       return SCHUTZ;
@@ -17165,7 +17177,7 @@ function riesenBlock(dx, dz, y) {
       return AIR;
     }
     if (aufMauer) {
-      // 🔒 Auch die Ringmauer hat kein Tor mehr - es gibt keinen Weg hinein.
+      if (dz === RB_MAUER && adx <= 3 && dy <= 6) return AIR;       // das Burgtor
       if (dy === RB_MAUER_H + 1) return (((dx + dz) % 2) + 2) % 2 === 0 ? SCHUTZ : AIR;  // Zinnen
       if (dy <= RB_MAUER_H) return SCHUTZ;
       return AIR;
@@ -17484,19 +17496,23 @@ function rbPortalTick(dt) {
   // Block hängengeblieben (zum Beispiel weil die Chunks gerade nicht geladen
   // waren), stünde das Portal für immer offen. Darum: in der Nähe des Rahmens
   // einmal pro Sekunde aufräumen.
-  // 🔒 NUR DURCH DAS PORTAL! Wer anders in die Riesenburg kommt - zum Beispiel
-  // über die Mauer geflogen -, landet gleich wieder daheim vor dem Rahmen.
-  // So bleibt das Portal wirklich der einzige Weg hinein.
-  if (inRiesenburg(player.x, player.z) &&
-      (Math.abs(player.x - RB_X) > RB_KERN || Math.abs(player.z - RB_Z) > RB_KERN)) {
-    const B = burgPos();
-    player.x = B.bx + RB_RAHMEN_X0 + 2.5; player.z = B.bz + RB_RAHMEN_Z + 2.5;
-    player.y = B.base + 2; player.vy = 0;
-    rbSperre = 2.5;
-    toast('🏰🔒 In die Riesenburg kommt man NUR durch das Portal – es gibt keinen ' +
-          'anderen Weg hinein! Du bist wieder bei deinem silbernen Rahmen. 🔮', 7000);
-    for (const f of [520,400,300]) blip(f,0.1);
-    return;
+  // 🔒 NUR DURCH DAS PORTAL in die Gegend der Riesenburg! Wer durch das Portal
+  // gekommen ist, darf dort überall herumlaufen - im Haus, im Hof, auf dem Dach.
+  // Wer sich aber dorthin TELEPORTIERT oder hinfliegt, kommt gleich wieder heim.
+  if (inRiesenburg(player.x, player.z)) {
+    if (!rbDrin) {
+      const B = burgPos();
+      player.x = B.bx + RB_RAHMEN_X0 + 2.5; player.z = B.bz + RB_RAHMEN_Z + 2.5;
+      player.y = B.base + 2; player.vy = 0;
+      rbSperre = 2.5;
+      toast('🏰🔒 Zur RIESENBURG kommst du NUR durch dein Portal! Tipp den silbernen ' +
+            'Rahmen an und gib deine vier Codes ein – dann geht es hinüber. 🔮', 7000);
+      for (const f of [520,400,300]) blip(f,0.1);
+      return;
+    }
+  } else if (Math.abs(player.x - RB_X) > RB_RAND + 300 ||
+             Math.abs(player.z - RB_Z) > RB_RAND + 300) {
+    rbDrin = false;                     // er ist längst wieder woanders unterwegs
   }
   rbPruefUhr -= dt;
   if (rbPruefUhr <= 0) {
@@ -17515,6 +17531,7 @@ function rbPortalTick(dt) {
   rbSperre = 2.5;
   if (inRiesenburg(player.x, player.z)) {         // zurück nach Hause
     const B = burgPos();
+    rbDrin = false;                              // ab jetzt wieder nur mit Portal
     player.x = B.bx + RB_RAHMEN_X0 + 2.5; player.z = B.bz + RB_RAHMEN_Z + 2.5;
     player.y = B.base + 2; player.vy = 0;
     toast('✨🏠 Zurück in deiner Burg! Der silberne Rahmen steht gleich vor dir. 🔮', 6000);
@@ -17522,6 +17539,7 @@ function rbPortalTick(dt) {
     // WICHTIG: erst das Portal zumachen, solange die Burg-Chunks noch geladen
     // sind - danach ist Jonah weg und setBlock würde dort ins Leere greifen.
     rbStufe = 0; rbPortalSetzen();                 // das Portal fällt hinter ihm zu
+    rbDrin = true;                                 // er ist ordentlich hindurchgegangen
     const [ax, ay, az] = riesenAnkunft();
     player.x = ax + 0.5; player.z = az + 0.5; player.y = ay; player.vy = 0;
     toast('✨🏰 WUSCH! Du bist in DER RIESENBURG! 36 Zimmer auf vier Etagen, alles aus ' +
@@ -21402,6 +21420,15 @@ function teleportZiele() {
 }
 function teleportZu(zx, zz, label) {
   if (flugT > 0) { toast('🚀 Nicht mitten im Raketenflug! Warte, bis du gelandet bist.', 2800); return; }
+  // 🏰🔒 In die Gegend der Riesenburg beamt dich niemand - da geht es NUR
+  // durch dein Portal hinüber!
+  if (!rbDrin && inRiesenburg(zx, zz)) {
+    document.getElementById('tpBox').style.display = 'none';
+    toast('🏰🔒 Zur RIESENBURG kommst du NUR durch dein Portal! Tipp in deiner Burg ' +
+          'den silbernen Rahmen an und gib deine vier Codes ein. 🔮', 6500);
+    blip(220,0.12); blip(160,0.16);
+    return;
+  }
   document.getElementById('tpBox').style.display = 'none';
   const bx = Math.round(zx), bz = Math.round(zz);
   for (let cx=(bx-16)>>4; cx<=(bx+16)>>4; cx++)         // die Welt dort erst mal bauen
@@ -22345,6 +22372,8 @@ function wireChan() {
       mpGuest = true;
       seed = m.seed;
       kinoHoeheFertig = false;   // 🎬 in einer anderen Welt steht das Kino woanders
+      rbHoeheFertig = false;     // 🏰 und die Riesenburg und der Geldspeicher auch!
+      spHoeheFertig = false;
       edits.clear();
       for (const k in (m.edits||{})) {
         const a=m.edits[k], mm=new Map();
