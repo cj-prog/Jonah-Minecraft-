@@ -1393,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 272 &middot; 🏰 DIE RIESENBURG HAT JETZT PERSONAL, SCHILDER UND EINEN KELLER! Vier Diener und vier Hausmeister wohnen dort, vor jeder Tür steht ein Schild mit dem Nachbarzimmer, und eine Treppe in der Portal-Halle führt hinunter in den riesigen Keller mit Gold-Lager, Schatzkammer, Vorratskammer und geheimer Spielhöhle. Und: Es gibt KEINEN Eingang mehr – nur noch durch das Portal! 🔒</p>
+    Version 273 &middot; 🔐 DEIN GROSSER SAFE! Unten im Riesen-Keller deiner Festung steht jetzt ein echter Panzer-Safe – unzerstörbar, da kommt keiner durch, nicht mal du. Auf geht er nur mit SECHS eigenen Codes: Zahlen, Wisch-Muster, Farben, Zauberwort, Tiere und Zeichen. Dann klappt die Tür nach außen auf und du kannst deine wertvollsten Sachen hineintun. 💎</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 272;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 273;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1607,7 +1607,14 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       GOLDTAFEL=121,                    // 🏛️ die goldene Tafel im Geldspeicher
       GELDSAUGER=122,                   // 🌪️ der Geld-Sauger holt alles wieder heraus
       SILBERRAHMEN=123,                 // 🔮 der silberne Rahmen fürs Riesenburg-Portal
-      RBPORTAL=124;                     // ✨ das Portal selbst
+      RBPORTAL=124,                     // ✨ das Portal selbst
+      SAFE=125,                         // 🔐 die Panzerwand von Jonahs großem Safe
+      SAFE_TUER=126,                    // 🔐 die Safe-Tür (zu)
+      SAFE_RAD=127,                     // 🔐 das Handrad mitten auf der Safe-Tür
+      SAFE_AUF=128;                     // 🔐 dieselbe Tür, nach außen aufgeklappt
+// 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
+// TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
+const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -1853,6 +1860,10 @@ const BLOCKS = {
     [0.30,0.46,0.99, 0.70,0.54,1.03, 27]] },
   // 🔐 DIE GROSSE TRESORTÜR vor dem Geldraum: dicker Panzerstahl mit Nieten.
   // Antippen = auf und zu. Kaputt geht sie nie.
+  [SAFE]:       { name:'Safe-Panzerwand 🔐 (unzerstörbar!)', tiles:[173,173,173], solid:true },
+  [SAFE_TUER]:  { name:'Safe-Tür 🔐 (antippen = Codes eingeben!)', tiles:[174,174,174], solid:true },
+  [SAFE_RAD]:   { name:'Safe-Handrad 🔐 (antippen = Codes eingeben!)', tiles:[166,166,166], solid:true },
+  [SAFE_AUF]:   { name:'offene Safe-Tür 🔐 (antippen = wieder zu!)', tiles:[174,174,174], solid:true },
   [TRESORTUER]: { name:'Tresortür 🔐 (antippen = auf und zu!)', tiles:[165,165,165], solid:true },
   [TRESORRAD]:  { name:'Tresor-Handrad 🔐 (antippen = Tresortür auf und zu!)',
     tiles:[166,166,166], solid:true },
@@ -5067,6 +5078,31 @@ function genChunkData(cx, cz, ohneEdits) {
       P(21,by+1,3,SIGN);
       const kks=(B.bx+21)+','+(by+1)+','+(B.bz+3);
       if (!signTexts.has(kks)) signTexts.set(kks,'⬇️ Hier geht es in den RIESEN-KELLER!');
+      // 🔐 DER GROSSE SAFE unten im Keller: ein Panzerkasten, den NIEMAND
+      // kaputt kriegt - auch Jonah nicht. Auf geht er nur mit sechs Codes.
+      for (let sx=-SAFE_R; sx<=SAFE_R; sx++) for (let sz=-SAFE_R; sz<=SAFE_R; sz++) {
+        const rand = Math.abs(sx)===SAFE_R || Math.abs(sz)===SAFE_R;
+        P(SAFE_DX+sx, by+SAFE_Y, SAFE_DZ+sz, SAFE);          // der Panzerboden
+        for (let h=1; h<=SAFE_H; h++)
+          P(SAFE_DX+sx, by+SAFE_Y+h, SAFE_DZ+sz, (rand || h===SAFE_H) ? SAFE : AIR);
+      }
+      for (const tx of SAFE_TUER_DX) for (let h=1; h<=3; h++)
+        P(SAFE_DX+tx, by+SAFE_Y+h, SAFE_DZ+SAFE_R,
+          safeOffen ? AIR : (h===2 && tx===0 ? SAFE_RAD : SAFE_TUER));
+      if (safeOffen) for (let i=1; i<=3; i++) for (let h=1; h<=3; h++)
+        P(SAFE_DX+SAFE_R-1, by+SAFE_Y+h, SAFE_DZ+SAFE_R+i, SAFE_AUF);
+      for (const [lx,lz] of [[-2,-2],[2,-2],[-2,2],[2,2]])
+        P(SAFE_DX+lx, by+SAFE_Y+3, SAFE_DZ+lz, TORCH);       // Licht im Safe
+      P(SAFE_DX-4, by+SAFE_Y+1, SAFE_DZ+SAFE_R+1, SIGN);
+      const safsig=(B.bx+SAFE_DX-4)+','+(by+SAFE_Y+1)+','+(B.bz+SAFE_DZ+SAFE_R+1);
+      signTexts.set(safsig, '🔐 DEIN GROSSER SAFE - unzerstörbar! Tipp die Tür an: ' +
+        'Du denkst dir SECHS eigene Codes aus (Zahlen, Wisch-Muster, Farben, ' +
+        'Zauberwort, Tiere und Zeichen) und musst sie jedes Mal alle wieder ' +
+        'eingeben. Dann klappt die Tür auf und du kannst deine wertvollsten ' +
+        'Sachen hineintun. 💎');
+      P(20,by+SAFE_Y+1,2,SIGN);                              // Wegweiser an der Treppe
+      const safweg=(B.bx+20)+','+(by+SAFE_Y+1)+','+(B.bz+2);
+      signTexts.set(safweg, '➡️ Da hinten steht DEIN GROSSER SAFE! 🔐');
       // das Gefängnis (Keller-Westen): 3 Zellen hinter Gitterstäben
       for (let dz=-20; dz<=-6; dz++) for (let y=by-4; y<=by-1; y++) P(-24,y,dz,GITTER);
       for (const dz of [-18,-13,-8]) for (let y=by-4; y<=by-3; y++) P(-24,y,dz,GTUER_AUF);   // Zellen-Türen (offen)
@@ -5659,6 +5695,8 @@ function baueSpielstand() {
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
       rbCodes,                          // 🔮 Jonahs vier eigene Codes
+      safeCodes,                        // 🔐 seine sechs Safe-Codes
+      safeAuf: safeOffen,               // 🔐 steht der große Safe offen?
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
       ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
       tresorAuf: tresorOffen,           // 🔐 steht die große Tresortür offen?
@@ -5846,6 +5884,11 @@ function loadGame() {
     if (Array.isArray(s.rbCodes))                            // 🔮 die vier eigenen Codes
       for (let i = 0; i < rbCodes.length; i++)
         if (typeof s.rbCodes[i] === 'string') rbCodes[i] = s.rbCodes[i];
+    if (Array.isArray(s.safeCodes))                          // 🔐 die sechs Safe-Codes
+      for (let i = 0; i < safeCodes.length; i++)
+        if (typeof s.safeCodes[i] === 'string') safeCodes[i] = s.safeCodes[i];
+    safeOffen = s.safeAuf === true;                          // 🔐 stand der Safe offen?
+    safeStufe = 0;
     // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
     const ausTresor = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
     if (ausTresor > 0) {
@@ -6528,6 +6571,23 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 6.8 && (Math.abs(dx) < 1.0 || Math.abs(dy) < 1.0)) return vary(246,206,70,14);
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
+  });
+  tile(173,(x,y)=>{                                                 // 🔐 Safe-Panzerwand
+    const dx = x-7.5, dy = y-7.5;
+    // dicke Stahlplatte mit Nieten in allen vier Ecken
+    const nr = Math.sqrt((Math.abs(dx)-5)**2 + (Math.abs(dy)-5)**2);
+    if (nr < 1.5) return vary(196,202,214,10);                      // die Nieten
+    if (Math.abs(dx) > 6.6 || Math.abs(dy) > 6.6) return vary(40,44,54,8);   // dunkle Fuge
+    const h = 96 - (Math.abs(dx)+Math.abs(dy))*1.6;
+    return vary(h, h+5, h+16, 9);
+  });
+  tile(174,(x,y)=>{                                                 // 🔐 die Safe-Tür
+    const dx = x-7.5, dy = y-7.5, r = Math.sqrt(dx*dx+dy*dy);
+    if (Math.abs(dx) > 6.6 || Math.abs(dy) > 6.6) return vary(34,38,48,8);   // Türspalt
+    if (r > 5.4 && r < 6.2) return vary(240,200,70,12);             // goldener Ring
+    if (r < 1.3) return vary(240,200,70,14);                        // Schlüsselloch-Nabe
+    const h = 150 + (dy < 0 ? 18 : -18) - r*1.4;
+    return vary(h, h+5, h+16, 9);
   });
   tile(171,(x,y)=>{                                                 // 🔮 silberner Rahmen
     if (x === 0 || x === 15 || y === 0 || y === 15) return vary(96,102,116,6);
@@ -10616,7 +10676,9 @@ const CODE_TASTEN = '123456789'.split('')
 }
 document.getElementById('rbOk').addEventListener('click', ()=>{ rbPruefen(); });
 document.getElementById('rbZu').addEventListener('click', ()=>{
-  document.getElementById('rbBox').style.display='none'; blip(400,0.06); });
+  document.getElementById('rbBox').style.display='none';
+  rbZiel = 'portal';                    // 🔐 der Safe fängt beim nächsten Mal von vorn an
+  blip(400,0.06); });
 document.getElementById('saugZu').addEventListener('click', ()=>{
   document.getElementById('saugBox').style.display='none'; blip(400,0.06); });
 document.getElementById('schuettZu').addEventListener('click', ()=>{
@@ -17150,8 +17212,65 @@ const RB_RAETSEL = [
 let rbCodes = ['', '', '', ''];         // Jonahs eigene Codes, einer je Rätsel
 let rbFalsch = [0, 0, 0, 0];            // wie oft war es schon daneben?
 let rbEingabe = '';
+// ============== 🔐 DIE SECHS CODES VON JONAHS GROSSEM SAFE ==================
+// Genau wie am Portal denkt sich Jonah jeden Code selbst aus - nur sind es
+// hier SECHS Stück, und sie müssen JEDES Mal alle wieder eingegeben werden.
+const SAFE_RAETSEL = [
+  { art:'zahlen', kopf:'1. DEIN SAFE-ZAHLEN-CODE 🔢', min:4, was:'Safe-Zahlen-Code',
+    neu:'Denk dir einen Zahlen-Code für deinen Safe aus – <b>mindestens 4 Zahlen</b>. ' +
+        '<b>Merk ihn dir gut!</b>',
+    auf:'Tipp deinen geheimen Safe-Zahlen-Code ein.' },
+  { art:'muster', kopf:'2. DEIN SAFE-WISCH-MUSTER 🖐️', min:4, was:'Safe-Wisch-Muster',
+    neu:'Denk dir ein Wisch-Muster aus – fahr mit dem Finger über die Punkte, ' +
+        '<b>mindestens vier</b>. <b>Merk es dir gut!</b>',
+    auf:'Zeichne dein geheimes Safe-Wisch-Muster.' },
+  { art:'farben', kopf:'3. DEINE SAFE-FARBEN 🌈', min:4, was:'Safe-Farben-Folge',
+    neu:'Denk dir eine Farben-Folge aus – <b>mindestens vier</b> Farben nacheinander.',
+    auf:'Tipp deine geheime Farben-Folge ein.' },
+  { art:'wort',   kopf:'4. DEIN SAFE-ZAUBERWORT 🔤', min:3, was:'Safe-Zauberwort',
+    neu:'Denk dir ein Zauberwort aus – <b>mindestens 3 Buchstaben</b>.',
+    auf:'Tipp dein geheimes Safe-Zauberwort ein.' },
+  { art:'tiere',  kopf:'5. DEINE TIER-FOLGE 🐾', min:4, was:'Tier-Folge',
+    tasten:['🐶','🐱','🐷','🐮','🐑','🐸'],
+    neu:'Denk dir eine Tier-Folge aus – <b>mindestens vier</b> Tiere nacheinander. ' +
+        'Zum Beispiel 🐶🐷🐸🐮.',
+    auf:'Tipp deine geheime Tier-Folge ein.' },
+  { art:'zeichen',kopf:'6. DEINE ZEICHEN-FOLGE ⭐', min:4, was:'Zeichen-Folge',
+    tasten:['⭐','🔥','⚡','🌙','⚽','🚀'],
+    neu:'Und zum Schluss eine Zeichen-Folge – <b>mindestens vier</b> Zeichen. ' +
+        'Danach springt der Safe auf! 🔐',
+    auf:'Tipp deine geheime Zeichen-Folge ein – dann geht der Safe auf.' },
+];
+let safeCodes = ['', '', '', '', '', ''];   // Jonahs sechs Safe-Codes
+let safeFalsch = [0, 0, 0, 0, 0, 0];
+let safeStufe = 0;                      // wie viele Safe-Codes sind gerade geschafft?
+let safeOffen = false;                  // steht die Safe-Tür offen?
+// Welches Rätsel läuft gerade: das Portal oder der Safe?
+let rbZiel = 'portal';
+function rbAkt() {
+  if (rbZiel === 'safe') return {
+    liste: SAFE_RAETSEL, codes: safeCodes, falsch: safeFalsch, stufe: safeStufe,
+    setStufe: v => { safeStufe = v; },
+    schritt: () => { safeKlack(); },
+    weiter: n => '🔐 RICHTIG! Noch ' + n + (n === 1 ? ' Code' : ' Codes') +
+                 ', dann springt der Safe auf. 🔒',
+    fertig: g => safeOeffnen(g),
+  };
+  return {
+    liste: RB_RAETSEL, codes: rbCodes, falsch: rbFalsch, stufe: rbStufe,
+    setStufe: v => { rbStufe = v; },
+    schritt: () => { rbPortalSetzen(); rbFunken(); },
+    weiter: n => '🔮 RICHTIG! Das Portal wächst… noch ' + n +
+                 ' Codes, dann passt du hindurch. ✨',
+    fertig: g => {
+      toast(g + '🔮✨ ALLE VIER CODES RICHTIG! Das Portal ist jetzt so groß, dass du ' +
+            'hindurchpasst. Geh hinein – DIE RIESENBURG wartet auf dich! 🏰',
+            g ? 14000 : 9000);
+    },
+  };
+}
 function rbStufenReihe(fertig) {
-  return RB_RAETSEL.map((r, i) => i < fertig ? '✅' : i === fertig ? '🔸' : '⬜').join(' ');
+  return rbAkt().liste.map((r, i) => i < fertig ? '✅' : i === fertig ? '🔸' : '⬜').join(' ');
 }
 // 🖐️ Das Wisch-Feld malen: neun Punkte und die Linie dazwischen
 function musterMalen() {
@@ -17209,16 +17328,17 @@ function rbKnopf(txt, klasse, w) {
   return b;
 }
 function rbZeichnen() {
-  const r = RB_RAETSEL[rbStufe];
+  const A = rbAkt();
+  const r = A.liste[A.stufe];
   document.getElementById('rbKopf').textContent = r.kopf;
-  document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
+  document.getElementById('rbStufenReihe').textContent = rbStufenReihe(A.stufe);
   // beim ersten Mal ausdenken, danach eingeben - und nach zwei Fehlversuchen
   // flüstert Johann den Code zu, damit Jonah sich nie aussperrt
-  const istNeu = !rbCodes[rbStufe];
+  const istNeu = !A.codes[A.stufe];
   document.getElementById('rbInfo').innerHTML = (istNeu ? r.neu : r.auf) +
-    (!istNeu && rbFalsch[rbStufe] >= 2
+    (!istNeu && A.falsch[A.stufe] >= 2
       ? '<br>🤵 Johann flüstert dir zu: dein ' + r.was + ' ist <b>' +
-        rbCodeText(rbStufe) + '</b>'
+        rbCodeText(A.stufe) + '</b>'
       : '');
   const zeig = document.getElementById('rbZeigen');
   const feld = document.getElementById('rbFeld');
@@ -17243,9 +17363,11 @@ function rbZeichnen() {
     feld.style.gridTemplateColumns = 'repeat(5, 1fr)';
     for (const t of '1234567890'.split(''))
       feld.appendChild(rbKnopf(t, '', () => { rbEingabe += t; blip(600+(+t)*30,0.04); rbZeichnen(); }));
-  } else if (r.art === 'farben') {
-    feld.style.gridTemplateColumns = 'repeat(4, 1fr)';
-    for (const t of ['🔴','🟡','🔵','🟢'])
+  } else if (r.art === 'farben' || r.tasten) {
+    // 🌈🐾⭐ Farben, Tiere, Zeichen - alle haben ihre eigenen Knöpfe
+    const tasten = r.tasten || ['🔴','🟡','🔵','🟢'];
+    feld.style.gridTemplateColumns = 'repeat(' + Math.min(tasten.length, 6) + ', 1fr)';
+    for (const t of tasten)
       feld.appendChild(rbKnopf(t, '', () => { rbEingabe += t; blip(700,0.05); rbZeichnen(); }));
   } else {
     feld.style.gridTemplateColumns = 'repeat(7, 1fr)';
@@ -17253,11 +17375,12 @@ function rbZeichnen() {
       feld.appendChild(rbKnopf(t, '', () => { rbEingabe += t; blip(620,0.04); rbZeichnen(); }));
   }
   feld.appendChild(rbKnopf('⌫', 'weg', () => {
-    rbEingabe = r.art === 'farben' ? [...rbEingabe].slice(0,-1).join('') : rbEingabe.slice(0,-1);
+    rbEingabe = [...rbEingabe].slice(0, -1).join('');   // auch Emojis ganz löschen
     blip(300,0.04); rbZeichnen();
   }));
 }
 function openRahmen() {
+  rbZiel = 'portal';
   if (rbStufe >= RB_RAETSEL.length) {
     toast('🔮✨ Das Portal steht weit offen – geh einfach hindurch! Dahinter wartet ' +
           'DIE RIESENBURG. 🏰 (Hinter dir fällt es sofort wieder zu.)', 7000);
@@ -17270,60 +17393,62 @@ function openRahmen() {
   blip(520,0.05); blip(700,0.05); blip(900,0.05);
 }
 function rbEingabeJetzt() {             // was hat Jonah gerade eingegeben?
-  return RB_RAETSEL[rbStufe].art === 'muster' ? musterZug.join(',') : rbEingabe;
+  const A = rbAkt();
+  return A.liste[A.stufe].art === 'muster' ? musterZug.join(',') : rbEingabe;
 }
 function rbLaenge() {                   // wie viele Zeichen/Punkte sind das?
-  const r = RB_RAETSEL[rbStufe];
+  const A = rbAkt();
+  const r = A.liste[A.stufe];
   return r.art === 'muster' ? musterZug.length : [...rbEingabe].length;
 }
 function rbCodeText(i) {                // so sieht der gespeicherte Code lesbar aus
-  return RB_RAETSEL[i].art === 'muster'
-    ? rbCodes[i].split(',').map(n => +n + 1).join(' → ')
-    : rbCodes[i];
+  const A = rbAkt();
+  return A.liste[i].art === 'muster'
+    ? A.codes[i].split(',').map(n => +n + 1).join(' → ')
+    : A.codes[i];
 }
 function rbPruefen() {
-  const r = RB_RAETSEL[rbStufe];
+  const A = rbAkt();
+  const r = A.liste[A.stufe];
   const eingabe = rbEingabeJetzt();
+  const zeichen = rbZiel === 'safe' ? '🔐' : '🔮';
   let gemerkt = '';                     // die Nachricht „neuer Code gemerkt"
-  if (!rbCodes[rbStufe]) {              // ---- beim ERSTEN Mal: Code festlegen ----
+  if (!A.codes[A.stufe]) {              // ---- beim ERSTEN Mal: Code festlegen ----
     if (rbLaenge() < r.min) {
-      toast('🔮 Dein ' + r.was + ' braucht mindestens ' + r.min +
+      toast(zeichen + ' Dein ' + r.was + ' braucht mindestens ' + r.min +
             (r.art === 'muster' ? ' Punkte' : ' Zeichen') + ' – mach noch ein bisschen ' +
             'weiter!', 4500);
       blip(200,0.12); return false;
     }
-    rbCodes[rbStufe] = eingabe;
-    rbFalsch[rbStufe] = 0;
+    A.codes[A.stufe] = eingabe;
+    A.falsch[A.stufe] = 0;
     // WICHTIG: das steht gleich mit in der Erfolgs-Nachricht - sonst wäre es nach
     // einem Augenblick wieder weg und Jonah wüsste seinen neuen Code nicht mehr.
-    gemerkt = '🔮✅ GEMERKT! Dein ' + r.was + ' ist ab jetzt: ' + rbCodeText(rbStufe) +
+    gemerkt = zeichen + '✅ GEMERKT! Dein ' + r.was + ' ist ab jetzt: ' + rbCodeText(A.stufe) +
               ' – merk es dir gut, du brauchst es jedes Mal wieder! 🤫 ';
-  } else if (eingabe !== rbCodes[rbStufe]) {   // ---- danach: prüfen ----
-    rbFalsch[rbStufe]++;
+  } else if (eingabe !== A.codes[A.stufe]) {   // ---- danach: prüfen ----
+    A.falsch[A.stufe]++;
     rbEingabe = ''; musterZug = [];
-    toast('🔮❌ Das war nicht dein ' + r.was + '. Probier es nochmal!' +
-          (rbFalsch[rbStufe] >= 2 ? ' (Johann flüstert dir oben einen Tipp zu. 🤵)' : ''), 5500);
+    toast(zeichen + '❌ Das war nicht dein ' + r.was + '. Probier es nochmal!' +
+          (A.falsch[A.stufe] >= 2 ? ' (Johann flüstert dir oben einen Tipp zu. 🤵)' : ''), 5500);
     blip(220,0.14); blip(140,0.2);
     rbZeichnen();
     return false;
-  } else rbFalsch[rbStufe] = 0;
-  // ---- geschafft: das Portal wächst ----
-  rbStufe++;
+  } else A.falsch[A.stufe] = 0;
+  // ---- geschafft: das Portal wächst / der Safe klackt ----
+  A.setStufe(A.stufe + 1);
   rbEingabe = ''; musterZug = [];
   document.getElementById('rbMusterFeld').style.display = 'none';
-  rbPortalSetzen();
-  rbFunken();
+  A.schritt();
   for (const f of [523,659,784,1047]) blip(f,0.09);
   scheduleSave();
-  if (rbStufe >= RB_RAETSEL.length) {
+  const N = rbAkt();                    // jetzt mit der NEUEN Stufe
+  if (N.stufe >= N.liste.length) {
     document.getElementById('rbBox').style.display = 'none';
-    toast(gemerkt + '🔮✨ ALLE VIER CODES RICHTIG! Das Portal ist jetzt so groß, dass du ' +
-          'hindurchpasst. Geh hinein – DIE RIESENBURG wartet auf dich! 🏰',
-          gemerkt ? 14000 : 9000);
+    N.fertig(gemerkt);
   } else {
-    document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
-    toast(gemerkt + '🔮 RICHTIG! Das Portal wächst… noch ' + (RB_RAETSEL.length - rbStufe) +
-          ' Codes, dann passt du hindurch. ✨', gemerkt ? 12000 : 5000);
+    document.getElementById('rbStufenReihe').textContent = rbStufenReihe(N.stufe);
+    toast(gemerkt + N.weiter(N.liste.length - N.stufe), gemerkt ? 12000 : 5000);
     rbZeichnen();
   }
   return true;
@@ -17463,6 +17588,92 @@ function riesenStempeln(data, cx, cz) {
   schild(0, 1, RB_KERN + 3, '🏰 DIE RIESENBURG VON KÖNIG JONAH - 36 Zimmer auf vier Etagen, ' +
                             'alles aus unzerstörbarem Schutz-Stein! Die Treppe nach oben ' +
                             'findest du in der Nordwest-Ecke. 🪜');
+}
+// ============== 🔐 JONAHS GROSSER SAFE ======================================
+// Er steht im Riesen-Keller unter der Festung: ein Panzerkasten aus 7x7 Blöcken,
+// die KEINER kaputt kriegt - auch Jonah nicht. Auf geht er nur mit sechs
+// eigenen Codes; dann klappt die Tür nach außen auf und man kann hineingehen.
+const SAFE_DX = 8, SAFE_DZ = 4;         // wo im Keller steht er?
+const SAFE_R = 3;                       // halbe Breite (7x7 Blöcke)
+const SAFE_Y = -5;                      // sein Boden liegt auf dem Kellerboden
+const SAFE_H = 4;                       // so hoch sind Wände und Decke
+const SAFE_TUER_DX = [-1, 0, 1];        // die Tür ist drei Blöcke breit
+function safePos() {
+  const B = burgPos();
+  return { x: B.bx + SAFE_DX, y: B.base + SAFE_Y, z: B.bz + SAFE_DZ, base: B.base, B };
+}
+// Die Tür so setzen, wie der Safe gerade steht: zu (in der Wand) oder
+// aufgeklappt (sie steht dann seitlich vor dem Safe und man sieht sie noch).
+function safeTuerSetzen() {
+  const B = burgPos(), by = B.base;
+  let n = 0;
+  const S = (dx, dy, dz, b) => {
+    const wx = B.bx + dx, wy = by + dy, wz = B.bz + dz;
+    if (getBlock(wx, wy, wz) !== b) { setBlock(wx, wy, wz, b); n++; }
+  };
+  for (const tx of SAFE_TUER_DX)
+    for (let h = 1; h <= 3; h++)
+      S(SAFE_DX + tx, SAFE_Y + h, SAFE_DZ + SAFE_R,
+        safeOffen ? AIR : (h === 2 && tx === 0 ? SAFE_RAD : SAFE_TUER));
+  // aufgeklappt: die Tür steht quer vor dem Safe, am Scharnier rechts
+  for (let i = 1; i <= 3; i++)
+    for (let h = 1; h <= 3; h++)
+      S(SAFE_DX + SAFE_R - 1, SAFE_Y + h, SAFE_DZ + SAFE_R + i, safeOffen ? SAFE_AUF : AIR);
+  return n;
+}
+function safeKlack() {                  // ein Code sitzt: es klackt im Schloss
+  const P = safePos();
+  blip(300, 0.08); blip(220, 0.1);
+  for (let i = 0; i < 8; i++)
+    fireworks.push({ x: P.x + (Math.random()-0.5)*3, y: P.y + 2 + Math.random()*2,
+      z: P.z + SAFE_R + 0.5, vx:(Math.random()-0.5)*1.2, vy:0.6+Math.random(),
+      vz:(Math.random()-0.5)*1.2, tile:166, t:0.6 });
+}
+function safeOeffnen(gemerkt) {
+  safeOffen = true; safeStufe = 0;
+  safeTuerSetzen();
+  safeKlack(); for (const f of [523,659,784,1047,1319]) blip(f,0.1);
+  toast((gemerkt || '') + '🔐✨ ALLE SECHS CODES RICHTIG! Der Safe schwingt auf – ' +
+        'jetzt kannst du deine wertvollsten Sachen hineintun. Tipp die offene Tür ' +
+        'an, dann ist er wieder zu. 🔒', 12000);
+  clearTimeout(saveTimer); saveGame();  // SOFORT merken, dass er offen ist
+}
+function safeSchliessen() {
+  safeOffen = false; safeStufe = 0;
+  // Steht Jonah gerade mitten in der Tür? Dann schiebt sie ihn sanft hinaus,
+  // damit er nicht in der Türöffnung stecken bleibt.
+  const B0 = burgPos();
+  if (Math.abs(player.x - (B0.bx + SAFE_DX)) <= 1.6 &&
+      Math.abs(player.z - (B0.bz + SAFE_DZ + SAFE_R)) < 1.2)
+    player.z = B0.bz + SAFE_DZ + SAFE_R + 1.6;
+  safeTuerSetzen();
+  blip(200,0.12); blip(140,0.16);
+  toast('🔐🔒 RUMMS! Der Safe ist wieder zu. Deine Sachen sind sicher – nur mit ' +
+        'deinen sechs Codes geht er wieder auf.', 6000);
+  clearTimeout(saveTimer); saveGame();
+}
+function openSafe() {
+  if (safeOffen) { safeSchliessen(); return; }
+  rbZiel = 'safe';
+  safeStufe = 0;                        // JEDES Mal alle sechs Codes!
+  rbEingabe = ''; musterZug = [];
+  rbZeichnen();
+  document.getElementById('rbBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(420,0.05); blip(560,0.05); blip(700,0.05);
+}
+// 🛡️ Sicherheitsnetz: In der Nähe sieht das Spiel jede Sekunde nach, ob die
+// Safe-Tür auch wirklich so steht, wie der Safe gerade ist.
+let safeUhr = 0;
+function safeTick(dt) {
+  if (weltDim !== 0) return;
+  safeUhr -= dt;
+  if (safeUhr > 0) return;
+  safeUhr = 1;
+  const B = burgPos();
+  if (Math.abs(player.x - (B.bx + SAFE_DX)) > 40 ||
+      Math.abs(player.z - (B.bz + SAFE_DZ)) > 40) return;
+  safeTuerSetzen();
 }
 // --- 🔐 DIE GROSSE TRESORTÜR: zu ist zu - da kommt niemand durch! ---------
 let tresorOffen = false;                // steht die Tresortür gerade offen?
@@ -20212,6 +20423,7 @@ function finishLasso() {
       const b2 = hit.block;
       // Besondere Blöcke lässt das Lasso in Ruhe (den Schutz-Block sowieso!)
       if (b2===AIR || b2===WATER || b2===TNT || b2===TNT_LIT || b2===SNOW || b2===SCHUTZ ||
+          UNZERSTOERBAR.has(b2) ||
           (b2>=CARROT0 && b2<=WHEAT2) || DOOR_PARTS.includes(b2)) continue;
       found.set(hit.x+','+hit.y+','+hit.z, [hit.x, hit.y, hit.z, b2]);
       if (found.size >= 120) break outer;
@@ -22349,6 +22561,7 @@ const MAP_BLOCK_COL = {
   [RT_KOPF]:'#b6c0cc', [RT_BAUCH]:'#b6c0cc', [RT_ARME]:'#b6c0cc', [RT_BEINE]:'#b6c0cc',
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
+  [SAFE]:'#5a6070', [SAFE_TUER]:'#7e8696', [SAFE_RAD]:'#f0c850', [SAFE_AUF]:'#7e8696',
   [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
   [GELDSAUGER]:'#8ab4d8', [SILBERRAHMEN]:'#c4ccda', [RBPORTAL]:'#a060e0',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
@@ -23035,7 +23248,8 @@ function baggerPhysics(dt) {
           if (qy<=CH_MIN||qy>=CH) continue;
           const b=getBlock(qx,qy,qz);
           // Wasser, Lava, TNT und Schutz-Blöcke lässt sogar der Mähdrescher in Ruhe
-          if (b===AIR||b===WATER||b===LAVA||b===SCHUTZ||b===TNT||b===TNT_LIT) continue;
+          if (b===AIR||b===WATER||b===LAVA||b===SCHUTZ||b===TNT||b===TNT_LIT||
+              UNZERSTOERBAR.has(b)) continue;
           if (b>=CARROT0 && b<=WHEAT2) {           // ein Mähdrescher ERNTET natürlich!
             if (b===WHEAT2) { wheat+=2; geerntet++; }
             else if (b===CARROT2) { carrots+=2; geerntet++; }
@@ -23472,7 +23686,8 @@ function roboterFaust() {
         const qy=fy0+hoch;
         if (qy<=CH_MIN || qy>=CH) continue;
         const b=getBlock(qx,qy,qz);
-        if (b===AIR||b===WATER||b===LAVA||b===SCHUTZ||b===TNT||b===TNT_LIT) continue;
+        if (b===AIR||b===WATER||b===LAVA||b===SCHUTZ||b===TNT||b===TNT_LIT||
+            UNZERSTOERBAR.has(b)) continue;
         if (b===SIGN) removeSign(qx,qy,qz);
         if (b===CABINET) removeCabinet(qx,qy,qz);
         if (b>=PIC&&b<=PIC_W) removePainting(qx,qy,qz);
@@ -25155,6 +25370,14 @@ function doBreak(dir) {
   if (hit && hit.block === GOLDTAFEL) { tafelAntippen(); return; }
   if (hit && hit.block === GELDSAUGER) { openSauger(); return; }
   if (hit && hit.block === SILBERRAHMEN) { openRahmen(); return; }
+  if (hit && (hit.block === SAFE_TUER || hit.block === SAFE_RAD || hit.block === SAFE_AUF)) {
+    openSafe(); return;                 // 🔐 Tür antippen: Codes eingeben (oder zumachen)
+  }
+  if (hit && hit.block === SAFE) {      // 🛡️ an die Panzerwand kommt NIEMAND ran
+    toast('🔐🛡️ Der große Safe ist UNZERSTÖRBAR – da kommt keiner durch, nicht ' +
+          'mal du! Geh vorn zur Tür und tipp sie an. 🔑', 4500);
+    blip(180,0.12); return;
+  }
   // 🗺️ DIE BAUPLAN-TAFEL wird NIE abgebaut. Antippen zeigt immer den Plan -
   // egal ob gerade ⛏️ Abbauen oder 🧱 Bauen eingestellt ist. Sonst wäre sie
   // beim ersten falschen Tipper weg, und Jonah stünde ohne Plan da.
@@ -25319,6 +25542,7 @@ function doBreak(dir) {
       const b2=getBlock(qx,qy,qz);
       // Spezial-Blöcke (TNT, Beete, Schnee, Türen, Schutz-Blöcke ...) lässt der Pinsel in Ruhe
       if (b2===AIR || b2===WATER || b2===TNT || b2===TNT_LIT || b2===SNOW || b2===SCHUTZ ||
+          UNZERSTOERBAR.has(b2) ||
           (b2>=CARROT0 && b2<=WHEAT2) || DOOR_PARTS.includes(b2)) continue;
       if (b2===SIGN) removeSign(qx,qy,qz);
       if (b2===CABINET) removeCabinet(qx,qy,qz);
@@ -26023,6 +26247,7 @@ function explode(cx,cy,cz) {
     const b=getBlock(x,y,z);
     if (b===AIR || b===WATER) continue;
     if (b===SCHUTZ) continue;           // der Schutz-Block hält JEDER Explosion stand!
+    if (UNZERSTOERBAR.has(b)) continue; // 🔐 und der Safe erst recht!
     if (b===TNT) { igniteTNT(x,y,z, 0.15+Math.random()*0.35); continue; }  // Kettenreaktion!
     setBlock(x,y,z,AIR);
     weckeFluessigkeit(x,y,z,exCtr);     // Wasser und Lava strömen in den Krater!
@@ -26609,6 +26834,7 @@ function frame(now) {
   radioTick(dt);                        // 📻 spielt das Radio gerade Musik?
   zinsTick(dt);                         // 🏦 gibt es Zinsen fürs Sparen?
   try { rbPortalTick(dt); } catch(e) {} // 🔮 steht Jonah gerade im Portal?
+  try { safeTick(dt); } catch(e) {}     // 🔐 steht die Safe-Tür richtig?
   flugTick(dt);                         // 🚀 läuft gerade ein Raketenflug?
   superTick(dt);                        // 🦸 laufen die Superkräfte?
   if (faustKuehl > 0) {                 // 🦾 die Roboter-Faust lädt nach

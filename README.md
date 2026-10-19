@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DEIN GROSSER SAFE (v273)! 🔐💎 Unten im Riesen-Keller der Festung steht jetzt
+  ein echter Panzer-Safe: ein Kasten aus 7×7 Blöcken, in den Jonah hineingehen
+  kann. Seine Wände, der Boden, die Decke und die Tür sind UNZERSTÖRBAR – kein
+  Abbauen, kein TNT, kein Bagger, kein Laser kommt durch; auch Jonah selbst
+  nicht. Aufgemacht wird er mit SECHS eigenen Codes, die er sich alle selbst
+  ausdenkt und jedes Mal wieder eingeben muss: 🔢 Zahlen, 🖐️ Wisch-Muster,
+  🌈 Farben, 🔤 Zauberwort, 🐾 Tier-Folge und ⭐ Zeichen-Folge. Nach jedem
+  richtigen Code klackt es im Schloss; nach dem sechsten klappt die schwere Tür
+  nach außen auf – man sieht sie dann seitlich am Safe stehen – und Jonah kann
+  seine wertvollsten Sachen hineintragen. Tippt er die offene Tür an, fällt sie
+  wieder zu, und beim nächsten Mal geht es wieder bei Code 1 los. (Verzettelt
+  er sich, flüstert Johann ihm nach zwei Fehlversuchen den richtigen Code zu.)
 - PERSONAL, TÜR-SCHILDER UND EIN KELLER FÜR DIE RIESENBURG (v272)! 🏰🤵🕳️
   Vier Wünsche von Jonah auf einmal:
   🤵🔧 In der Riesenburg wohnen jetzt VIER Diener und VIER Hausmeister –
