@@ -1393,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 271 &middot; 🔮🔒 DAS PORTAL FÄLLT JETZT WIRKLICH HINTER DIR ZU! Sollte doch einmal ein Portal-Block stehenbleiben, räumt das Spiel ihn von selbst weg – und in der Riesenburg steht jetzt ein Schild, das dir das Rück-Portal erklärt: DAS bleibt immer offen, es ist dein Heimweg. 🏠</p>
+    Version 272 &middot; 🏰 DIE RIESENBURG HAT JETZT PERSONAL, SCHILDER UND EINEN KELLER! Vier Diener und vier Hausmeister wohnen dort, vor jeder Tür steht ein Schild mit dem Nachbarzimmer, und eine Treppe in der Portal-Halle führt hinunter in den riesigen Keller mit Gold-Lager, Schatzkammer, Vorratskammer und geheimer Spielhöhle. Und: Es gibt KEINEN Eingang mehr – nur noch durch das Portal! 🔒</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 271;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 272;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -8123,7 +8123,7 @@ function hofstaatTick() {
   const by = KO_Y;
   // 🤵🔧 König Jonah hat auch hier seinen eigenen DIENER und einen HAUSMEISTER!
   for (const [typ, nm, dx3, dz3] of [['butler','Diener Anton',-6,-4], ['hausmeister','Hausmeister Willi',6,-4]]) {
-    if (animals.some(x => x.type===typ)) continue;
+    if (animals.some(x => x.type===typ && x.home !== 'riesenburg')) continue;
     animals.push({ type: typ, name: nm, friend: 3,
       x: dx3+0.5, y: by+1.1, z: dz3+0.5,
       yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:5,
@@ -8189,6 +8189,7 @@ function spawnTick() {
     if (frei && spawnMob('zombie', zx, zz, {hp:2})) blip(80,0.2);
   }
   if (weltDim===0) { // die WÄCHTER der Riesen-Festung: Ritter auf Posten! 🛡️
+    riesenPersonalTick();               // 🤵🔧 das Personal der Riesenburg
     const MB = burgPos();
     if (Math.hypot(player.x-MB.bx, player.z-MB.bz) < 80 &&
         countType(a=>a.type==='knight' && a.home==='megaburg') < 5 && Math.random() < 0.5) {
@@ -8200,7 +8201,7 @@ function spawnTick() {
     // 🔧🤵 Hausmeister und Butler wohnen in der Festung und sind immer da!
     if (imBurghof()) {
       for (const [typ, nm, dx3, dz3] of [['hausmeister','Kurt',7,3], ['butler','James',-6,3]]) {
-        if (animals.some(x => x.type===typ)) continue;
+        if (animals.some(x => x.type===typ && x.home !== 'riesenburg')) continue;
         animals.push({ type: typ, name: nm, friend: 3,
           x: MB.bx+dx3, y: MB.base+1.5, z: MB.bz+dz3,
           yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:5,
@@ -12928,13 +12929,18 @@ function sucheLoch(mx, my, mz, r, hoch, tief) {
 }
 // 🔧🤵 Wo wohnen Hausmeister und Diener? Auf der Erde in der Riesen-Festung -
 // und auf Jonahs geheimem Planeten im Königsschloss!
-function dienstHeim() {
+function dienstHeim(a) {
+  // 🏰 Das Personal der Riesenburg bleibt natürlich IN der Riesenburg!
+  if (a && a.home === 'riesenburg') {
+    riesenHoehe();
+    return { hx: RB_X, hy: RB_Y, hz: RB_Z, r: RB_KERN - 4 };
+  }
   if (weltDim === 9) return { hx: 0, hy: KO_Y, hz: 0, r: 46 };
   const B = burgPos();
   return { hx: B.bx, hy: B.base, hz: B.bz, r: 26 };
 }
 function hausmeisterTick(a, dt) {
-  const B = dienstHeim();
+  const B = dienstHeim(a);
   a.heim = a.heim || [B.hx+6, B.hy+1, B.hz+2];
   if (a.pause) return;                  // Jonah hat ihm Pause gegeben
   a.repT = (a.repT===undefined ? 1.5 : a.repT-dt);
@@ -13274,7 +13280,7 @@ function arbeitsTick(a, dt) {
   return true;
 }
 function butlerTick(a, dt) {
-  const B = dienstHeim();
+  const B = dienstHeim(a);
   const dp = Math.hypot(player.x-a.x, player.z-a.z);
   if (arbeitsTick(a, dt)) return;       // 🔨 er arbeitet einen Auftrag ab!
   if (a.tanzT > 0) {                    // 💃 er tanzt gerade für dich!
@@ -16717,6 +16723,11 @@ const RB_ETAGEN = 4;                    // so viele Etagen hat der Kern
 const RB_DACH = RB_ETAGEN * RB_ETAGE;   // das Dach liegt auf dieser Höhe
 const RB_WAND = 15;                     // Zimmerwände bei |dx|=15 und |dz|=15
 const RB_RAND = RB_MAUER + 12;
+// 🕳️ DER KELLER: eine riesige Halle TIEF unter der Riesenburg
+const RB_KELLER_R = 30;                 // halbe Breite (61x61 Blöcke)
+const RB_KELLER_T = 10;                 // so tief liegt sein Boden unter dem Erdgeschoss
+const RB_K_TR_X = 8;                    // hier führt die Treppe hinunter
+const RB_K_TR_Z = -4;                   // ... und bei diesem dz fängt sie an
 const RB_TR_X = RB_KERN - 3;            // hier läuft die Treppe nach oben
 // Wo steht die Riesenburg? Genau wie beim Geldspeicher: ein trockener, ebener
 // Platz in der Nähe des Basis-Punktes.
@@ -16747,6 +16758,94 @@ function riesenHoehe() {
   rbHoeheFertig = true;
   weltDim = merkDim;
   return RB_Y;
+}
+// Der Bauplan des Kellers. Gibt null zurück, wenn hier (noch) nichts vom
+// Keller steht - dann gilt der normale Bauplan der Riesenburg.
+function rbKellerBlock(dx, dz, dy) {
+  const adx = Math.abs(dx), adz = Math.abs(dz);
+  if (adx > RB_KELLER_R || adz > RB_KELLER_R) return null;
+  // 🪜 DIE KELLERTREPPE: die oberste Stufe liegt genau im Boden der Portal-Halle,
+  // so steigt Jonah einfach hinab, statt in ein Loch zu fallen.
+  if (dx === RB_K_TR_X && dz >= RB_K_TR_Z && dz < RB_K_TR_Z + RB_KELLER_T) {
+    const stufe = dz - RB_K_TR_Z;
+    if (dy === -stufe) return TREP_S;                 // die Stufe
+    if (dy > -stufe) return dy <= 0 ? AIR : null;     // das Loch durch die Decke
+    if (dy > -RB_KELLER_T) return SCHUTZ;             // der Unterbau
+  }
+  if (dy >= 0) return null;                           // oben gilt der normale Plan
+  if (dy <= -RB_KELLER_T) return SCHUTZ;              // der Kellerboden (und sein Fundament)
+  if (adx === RB_KELLER_R || adz === RB_KELLER_R) return SCHUTZ;   // die Wände
+  // 🏛️ tragende Säulen, damit die Halle nicht leer wirkt
+  if (adx <= 20 && adz <= 20 && adx % 10 === 0 && adz % 10 === 0 &&
+      !(dx === 0 && dz === 0)) return SCHUTZ;
+  // 🔥 Fackeln an den Wänden
+  if ((adx === RB_KELLER_R - 1 || adz === RB_KELLER_R - 1) && dy === -6 &&
+      ((dx + dz) % 6 + 6) % 6 === 0) return TORCH;
+  const boden = dy === -(RB_KELLER_T - 1);            // die unterste Luftschicht
+  const feld = (cx, cz) => Math.max(Math.abs(dx - cx), Math.abs(dz - cz));
+  // 👑 DAS GOLD-LAGER
+  if (feld(18, 18) <= 5) {
+    if (dy === -8 && feld(18, 18) <= 2) return GOLD;              // der Gold-Haufen
+    if (boden && ((dx + dz) % 2 + 2) % 2 === 0) return GOLD;      // goldener Boden
+  }
+  // 💎 DIE SCHATZKAMMER
+  if (feld(-18, 18) <= 5 && boden) {
+    if (dx === -18 && dz === 18) return POKAL;
+    if (Math.abs(dz - 18) === 3 && ((dx + 18) % 2 + 2) % 2 === 0) return CHEST;
+  }
+  // 🍬 DIE VORRATSKAMMER
+  if (feld(-18, -18) <= 5) {
+    const sued = [BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO];
+    if (dy >= -9 && dy <= -7 && Math.abs(dz + 18) === 4 && Math.abs(dx + 18) <= 4)
+      return sued[(Math.abs(dx + 18) + (-dy)) % sued.length];
+    if (boden && dx === -18 && dz === -18) return TABLE;
+    if (boden && Math.abs(dx + 18) === 1 && dz === -18) return CHAIR;
+  }
+  // 🕹️ DIE GEHEIME SPIELHÖHLE
+  if (feld(18, -18) <= 5 && boden) {
+    const autom = [SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE,
+                   SCREEN_PONG, SCREEN_FROG];
+    if (dz === -22 && dx >= 14 && dx <= 22 && (dx - 14) % 2 === 0)
+      return autom[((dx - 14) / 2) % autom.length];
+    if (dz === -20 && dx >= 14 && dx <= 22 && (dx - 14) % 2 === 0) return CHAIR;
+    if (dz === -16 && Math.abs(dx - 18) <= 1) return TRAMPOLIN;
+  }
+  // 🪧 das Schild unten an der Treppe
+  if (boden && dx === RB_K_TR_X - 1 && dz === RB_K_TR_Z + RB_KELLER_T - 1) return SIGN;
+  return AIR;
+}
+// 🤵🔧 DAS PERSONAL DER RIESENBURG: mehrere Butler und mehrere Hausmeister.
+// Sie wohnen hier und gehen nie weg - jeder hat seinen eigenen Platz.
+const RB_PERSONAL = [
+  ['butler',      'Diener Ferdinand',    6,  6],
+  ['butler',      'Diener Gustav',      -6,  6],
+  ['butler',      'Dienerin Marie',     -30, 10],
+  ['butler',      'Diener Konstantin',   30, 10],
+  ['hausmeister', 'Hausmeister Rudi',    6, -6],
+  ['hausmeister', 'Hausmeister Theo',   -6, -6],
+  ['hausmeister', 'Hausmeisterin Berta',-30, -10],
+  ['hausmeister', 'Hausmeister Ottokar', 30, -10],
+];
+function riesenPersonalTick() {
+  if (!inRiesenburg(player.x, player.z)) {
+    // weit weg? Dann räumen wir sie wieder weg - sonst stehen sie Jonah
+    // daheim in der Liste im Weg.
+    for (let i = animals.length - 1; i >= 0; i--)
+      if (animals[i].home === 'riesenburg' &&
+          Math.hypot(animals[i].x - player.x, animals[i].z - player.z) > 200)
+        animals.splice(i, 1);
+    return;
+  }
+  const ch = getChunk(RB_X >> 4, RB_Z >> 4);
+  if (!ch || !ch.data) return;          // die Burg ist noch gar nicht geladen
+  for (const [typ, nm, dx, dz] of RB_PERSONAL) {
+    if (animals.some(x => x.name === nm)) continue;
+    animals.push({ type: typ, name: nm, friend: 3, home: 'riesenburg',
+      x: RB_X + dx + 0.5, y: RB_Y + 1.1, z: RB_Z + dz + 0.5,
+      hx: RB_X + dx + 0.5, hz: RB_Z + dz + 0.5,
+      yaw: Math.random() * 6, vy: 0, kx: 0, kz: 0, hp: 5,
+      walking: false, t: 2, ph: 0, onGround: false });
+  }
 }
 function riesenAnkunft() {              // hier kommt Jonah aus dem Portal heraus
   riesenHoehe();
@@ -16853,6 +16952,34 @@ const RB_ZIMMER = [
       if (oz === -6 && ((ox+2) % 4 === 0) && Math.abs(ox) <= 6) return SINK;
       return null; } },
 ];
+// 🪧 VOR JEDER TÜR EIN SCHILD: Jonah wollte an jeder Tür lesen können, was im
+// Zimmer nebenan ist. Für jede der vier Türen eines Zimmers steht deshalb
+// gleich daneben ein Schild - und darauf steht der Name des NACHBARZIMMERS.
+// [Platz im Zimmer (ox, oz), Richtung zum Nachbarn (rx, rz)]
+const RB_TUER_SCHILD = [
+  [ 14,  3,  1,  0],
+  [-14, -3, -1,  0],
+  [ -3, 14,  0,  1],
+  [  3,-14,  0, -1],
+];
+// Wie heißt das Zimmer Nummer nr auf Etage et?
+function rbZimmerName(et, nr) {
+  if (et === RB_ETAGEN - 1 && nr === 4) return '👑 DER THRONSAAL';
+  if (et === 0 && nr === 4) return '✨ DIE PORTAL-HALLE';
+  return RB_ZIMMER[(et * 9 + nr) % RB_ZIMMER.length].name;
+}
+// Steht an dieser Stelle im Zimmer ein Tür-Schild? Dann sagt es, zu welchem
+// Nachbarzimmer die Tür daneben führt (sonst null).
+function rbTuerSchild(dx, dz) {
+  const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
+  for (const [sx, sz, nx, nz] of RB_TUER_SCHILD) {
+    if (ox !== sx || oz !== sz) continue;
+    const rx = z.rx + nx, rz = z.rz + nz;
+    if (rx < 0 || rx > 2 || rz < 0 || rz > 2) return null;   // da ist die Außenwand
+    return rz * 3 + rx;
+  }
+  return null;
+}
 function rbZimmerNr(dx, dz) {           // 0..8 - welches Zimmer der Etage?
   const rx = dx < -RB_WAND ? 0 : dx > RB_WAND ? 2 : 1;
   const rz = dz < -RB_WAND ? 0 : dz > RB_WAND ? 2 : 1;
@@ -16864,6 +16991,10 @@ function riesenBlock(dx, dz, y) {
   const by = RB_Y, adx = Math.abs(dx), adz = Math.abs(dz);
   const dy = y - by;
   if (adx > RB_RAND || adz > RB_RAND) return null;
+
+  // 0) 🕳️ DER KELLER tief unten (und seine Treppe nach oben)
+  const keller = rbKellerBlock(dx, dz, dy);
+  if (keller !== null) return keller;
 
   // 1) FUNDAMENT und BODEN
   if (dy < 0) return y >= Math.min(terrainHeight(RB_X + dx, RB_Z + dz), by) - 4 ? STONE : null;
@@ -16891,7 +17022,8 @@ function riesenBlock(dx, dz, y) {
       return SCHUTZ;
     }
     if (aussen) {
-      if (dz === RB_KERN && adx <= 1 && dy <= 4) return AIR;        // das große Haupttor
+      // 🔒 KEIN TOR MEHR: Jonah wollte, dass man NUR durch das Portal
+      // hineinkommt. Darum ist die Außenwand rundherum geschlossen.
       if (dy % RB_ETAGE === 6 && ((dx + dz) % 7 + 7) % 7 === 0) return GLASS;   // Fenster
       if (dy === RB_DACH - 1) return GOLD;                          // goldener Kranz oben
       return SCHUTZ;
@@ -16942,6 +17074,8 @@ function riesenBlock(dx, dz, y) {
     if (aufEtage >= 1 && aufEtage < RB_ETAGE) {
       const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
       if (aufEtage === 1 && ox === 0 && oz === 6) return SIGN;   // 🪧 Schild mit dem Namen
+      // 🪧 und vor jeder Tür ein Schild: was ist nebenan?
+      if (aufEtage === 1 && rbTuerSchild(dx, dz) !== null) return SIGN;
       if (et === RB_ETAGEN - 1 && z.nr === 4) {                  // 👑 der Thronsaal
         if (aufEtage === 1) {
           if (ox === 0 && oz === -2) return THRON;
@@ -16969,7 +17103,7 @@ function riesenBlock(dx, dz, y) {
       return AIR;
     }
     if (aufMauer) {
-      if (dz === RB_MAUER && adx <= 3 && dy <= 6) return AIR;       // das Burgtor
+      // 🔒 Auch die Ringmauer hat kein Tor mehr - es gibt keinen Weg hinein.
       if (dy === RB_MAUER_H + 1) return (((dx + dz) % 2) + 2) % 2 === 0 ? SCHUTZ : AIR;  // Zinnen
       if (dy <= RB_MAUER_H) return SCHUTZ;
       return AIR;
@@ -17225,6 +17359,20 @@ function rbPortalTick(dt) {
   // Block hängengeblieben (zum Beispiel weil die Chunks gerade nicht geladen
   // waren), stünde das Portal für immer offen. Darum: in der Nähe des Rahmens
   // einmal pro Sekunde aufräumen.
+  // 🔒 NUR DURCH DAS PORTAL! Wer anders in die Riesenburg kommt - zum Beispiel
+  // über die Mauer geflogen -, landet gleich wieder daheim vor dem Rahmen.
+  // So bleibt das Portal wirklich der einzige Weg hinein.
+  if (inRiesenburg(player.x, player.z) &&
+      (Math.abs(player.x - RB_X) > RB_KERN || Math.abs(player.z - RB_Z) > RB_KERN)) {
+    const B = burgPos();
+    player.x = B.bx + RB_RAHMEN_X0 + 2.5; player.z = B.bz + RB_RAHMEN_Z + 2.5;
+    player.y = B.base + 2; player.vy = 0;
+    rbSperre = 2.5;
+    toast('🏰🔒 In die Riesenburg kommt man NUR durch das Portal – es gibt keinen ' +
+          'anderen Weg hinein! Du bist wieder bei deinem silbernen Rahmen. 🔮', 7000);
+    for (const f of [520,400,300]) blip(f,0.1);
+    return;
+  }
   rbPruefUhr -= dt;
   if (rbPruefUhr <= 0) {
     rbPruefUhr = 1;
@@ -17278,7 +17426,10 @@ function riesenStempeln(data, cx, cz) {
     const dx = x0 + lx2 - RB_X, dz = z0 + lz2 - RB_Z;
     if (Math.abs(dx) > RB_RAND || Math.abs(dz) > RB_RAND) continue;
     const gel = terrainHeight(RB_X + dx, RB_Z + dz);
-    for (let y = Math.min(gel, RB_Y) - 5; y <= RB_Y + RB_DACH + 10; y++) {
+    // über dem Keller muss viel tiefer gebaut werden als sonst
+    const unten = (Math.abs(dx) <= RB_KELLER_R && Math.abs(dz) <= RB_KELLER_R)
+                ? RB_Y - RB_KELLER_T - 2 : RB_Y;
+    for (let y = Math.min(gel, unten) - 5; y <= RB_Y + RB_DACH + 10; y++) {
       const b = riesenBlock(dx, dz, y);
       if (b !== null) data[bidx(lx2, y, lz2)] = b;
     }
@@ -17290,16 +17441,25 @@ function riesenStempeln(data, cx, cz) {
     for (let nr = 0; nr < 9; nr++) {
       const rx = nr % 3, rz = (nr / 3) | 0;
       const mx = [-30, 0, 30][rx], mz = [-30, 0, 30][rz];
-      const name = (et === RB_ETAGEN - 1 && nr === 4) ? '👑 DER THRONSAAL'
-                 : (et === 0 && nr === 4) ? '✨ DIE PORTAL-HALLE'
-                 : RB_ZIMMER[(et * 9 + nr) % RB_ZIMMER.length].name;
+      const name = rbZimmerName(et, nr);
       schild(mx, et * RB_ETAGE + 1, mz + 6, name + ' · Etage ' + (et + 1) + ' von ' +
              RB_ETAGEN + ' · Riesenburg 🏰');
+      // 🪧 die vier Tür-Schilder dieses Zimmers: Wohin geht es da hinaus?
+      for (const [sx, sz, nx, nz] of RB_TUER_SCHILD) {
+        const nx2 = rx + nx, nz2 = rz + nz;
+        if (nx2 < 0 || nx2 > 2 || nz2 < 0 || nz2 > 2) continue;
+        schild(mx + sx, et * RB_ETAGE + 1, mz + sz,
+               '🚪 Durch diese Tür: ' + rbZimmerName(et, nz2 * 3 + nx2));
+      }
     }
   schild(2, 1, 3, '🏠 DAS IST DEIN HEIMWEG! Dieses Portal hier bleibt IMMER offen – ' +
                   'geh einfach hinein, dann bist du wieder in deiner Burg. Das Portal ' +
                   'DAHEIM ist hinter dir zugefallen: dafür musst du deine vier Codes ' +
                   'noch einmal eingeben. 🔮');
+  schild(RB_K_TR_X - 1, -(RB_KELLER_T - 1), RB_K_TR_Z + RB_KELLER_T - 1,
+         '🕳️ DER KELLER DER RIESENBURG - hier unten liegen das GOLD-LAGER (Ecke ' +
+         'hinten rechts), die SCHATZKAMMER, die VORRATSKAMMER und deine geheime ' +
+         'SPIELHÖHLE! 🕹️');
   schild(0, 1, RB_KERN + 3, '🏰 DIE RIESENBURG VON KÖNIG JONAH - 36 Zimmer auf vier Etagen, ' +
                             'alles aus unzerstörbarem Schutz-Stein! Die Treppe nach oben ' +
                             'findest du in der Nordwest-Ecke. 🪜');
