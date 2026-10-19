@@ -672,6 +672,32 @@
   .senderRow:active { background:rgba(255,255,255,.35); }
   #radioClose { font-size:15px; font-weight:bold; padding:7px 20px; border-radius:8px; border:none;
     background:#4caf50; color:#fff; }
+  /* 📚 Bücherregal, Buch und 🎼 Lieder-Werkstatt */
+  #regalBox, #buchBox, #liedBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; align-items:center; gap:7px; background:rgba(34,24,16,.97);
+    padding:14px 18px; border-radius:14px; color:#fff; z-index:41; text-align:center;
+    max-height:88vh; overflow-y:auto; max-width:min(92vw, 420px); }
+  #liedBox { background:rgba(26,20,48,.97); }
+  #regalBox h3, #buchBox h3, #liedBox h3 { font-size:17px; margin:0; }
+  #buchSeite { background:rgba(255,248,230,.95); color:#241a10; font-size:15px; line-height:1.5;
+    padding:12px 14px; border-radius:9px; min-height:120px; width:min(86vw, 360px);
+    text-align:left; white-space:pre-wrap; }
+  .buchRow { font-size:15px; font-weight:bold; background:rgba(255,255,255,.14);
+    border:2px solid rgba(255,255,255,.3); border-radius:10px; padding:7px 12px;
+    min-width:240px; display:flex; justify-content:space-between; gap:8px; align-items:center; }
+  .buchRow:active { background:rgba(255,255,255,.34); }
+  .buchRow .weg { font-size:16px; opacity:.8; }
+  .buchBtnReihe { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  #regalBox button, #buchBox button, #liedBox button { font-size:14px; font-weight:bold;
+    padding:7px 13px; border-radius:8px; border:none; background:#6d4c33; color:#fff; }
+  #liedBox button { background:#4a3f7a; }
+  #regalZu, #buchZu, #liedZu { background:#4caf50; }
+  #buchNav { display:flex; align-items:center; gap:12px; font-size:15px; font-weight:bold; }
+  #liedNoten { background:rgba(255,255,255,.12); border-radius:9px; padding:8px 10px;
+    font-size:16px; letter-spacing:2px; min-height:24px; width:min(86vw, 360px);
+    word-break:break-all; }
+  #liedTasten { display:grid; grid-template-columns:repeat(6, 1fr); gap:5px; }
+  #liedTasten button { font-size:16px; padding:9px 0; background:#5d5095; min-width:46px; }
   #shopBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
     align-items:center; gap:6px; background:rgba(18,42,66,.95); padding:12px 16px; border-radius:14px;
     color:#fff; z-index:40; text-align:center;
@@ -1228,6 +1254,48 @@
   <button id="radioClose">Fertig</button>
 </div>
 
+<div class="hud" id="regalBox">
+  <h3>📚 Dein Bücherregal</h3>
+  <p id="regalInfo">Tipp ein Buch an, dann kannst du es lesen.</p>
+  <div id="regalListe"></div>
+  <div class="buchBtnReihe">
+    <button id="regalRein">📥 Buch hineinstellen</button>
+    <button id="regalNeu">✍️ Selber schreiben</button>
+  </div>
+  <button id="regalZu">Fertig</button>
+</div>
+
+<div class="hud" id="buchBox">
+  <h3 id="buchTitel">📖</h3>
+  <div id="buchSeite"></div>
+  <div id="buchNav">
+    <button id="buchZurueck">◀</button>
+    <span id="buchZahl">Seite 1</span>
+    <button id="buchVor">▶</button>
+  </div>
+  <div class="buchBtnReihe" id="buchEigen">
+    <button id="buchSchreiben">✍️ Diese Seite schreiben</button>
+    <button id="buchPlus">➕ Neue Seite</button>
+  </div>
+  <button id="buchZu">Buch zuklappen</button>
+</div>
+
+<div class="hud" id="liedBox">
+  <h3>🎼 Dein eigenes Lied</h3>
+  <p id="liedInfo">Tipp die Töne an – sie kommen hintereinander in dein Lied.</p>
+  <div id="liedNoten">– – –</div>
+  <div id="liedTasten"></div>
+  <div class="buchBtnReihe">
+    <button id="liedLang">Ton: kurz ♪</button>
+    <button id="liedWeg">⌫ zurück</button>
+    <button id="liedHoer">▶️ Anhören</button>
+  </div>
+  <div class="buchBtnReihe">
+    <button id="liedSpeichern">💾 Lied speichern</button>
+    <button id="liedZu">Fertig</button>
+  </div>
+</div>
+
 <div class="hud" id="shopBox">
   <h3>🏪 Laden</h3>
   <div id="shopGems">💶 0</div>
@@ -1393,7 +1461,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 275 &middot; 🏰🌍 DIE RIESENBURG IST JETZT EINE GANZ EIGENE WELT! Hinter dem Portal gibt es NICHTS von zu Hause – keine Dörfer, kein Kino, keine normale Burg, nur deine Riesenburg mit Wiesen und Wäldern ringsum. Und weil es eine eigene Welt ist, kommt man WIRKLICH nur durch das Portal hin und zurück. Die Tore der Riesenburg stehen dabei offen – drüben darfst du überall hin. 🔮</p>
+    Version 276 &middot; 📚🎼 BÜCHER UND EIGENE MUSIK! In Bücherregalen stehen jetzt echte Bücher zum Lesen – dünne mit drei Seiten und richtig dicke mit zwölf. Du kannst Bücher hineinstellen, herausnehmen und sogar SELBER welche schreiben (Titel und Seiten!). Und am Radio gibt es die Lieder-Werkstatt: Töne antippen, anhören, speichern – dein Lied läuft dann im Radio. 🎵</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1507,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 275;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 276;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1611,7 +1679,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SAFE=125,                         // 🔐 die Panzerwand von Jonahs großem Safe
       SAFE_TUER=126,                    // 🔐 die Safe-Tür (zu)
       SAFE_RAD=127,                     // 🔐 das Handrad mitten auf der Safe-Tür
-      SAFE_AUF=128;                     // 🔐 dieselbe Tür, nach außen aufgeklappt
+      SAFE_AUF=128,                     // 🔐 dieselbe Tür, nach außen aufgeklappt
+      BUCHREGAL=129;                    // 📚 das Bücherregal zum Lesen und Schreiben
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
 const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
@@ -1860,6 +1929,7 @@ const BLOCKS = {
     [0.30,0.46,0.99, 0.70,0.54,1.03, 27]] },
   // 🔐 DIE GROSSE TRESORTÜR vor dem Geldraum: dicker Panzerstahl mit Nieten.
   // Antippen = auf und zu. Kaputt geht sie nie.
+  [BUCHREGAL]:  { name:'Bücherregal 📚 (antippen = lesen und schreiben!)', tiles:[175,175,175], solid:true },
   [SAFE]:       { name:'Safe-Panzerwand 🔐 (unzerstörbar!)', tiles:[173,173,173], solid:true },
   [SAFE_TUER]:  { name:'Safe-Tür 🔐 (antippen = Codes eingeben!)', tiles:[174,174,174], solid:true },
   [SAFE_RAD]:   { name:'Safe-Handrad 🔐 (antippen = Codes eingeben!)', tiles:[166,166,166], solid:true },
@@ -2121,7 +2191,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, GOLDBARREN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, GOLDBARREN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, BUCHREGAL, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -5022,7 +5092,15 @@ function genChunkData(cx, cz, ohneEdits) {
         { P(sx,by+6,-20,S_); P(sx,by+7,-20,scr); }      // das Spielzimmer!
       P(0,by+6,-10,TRAMPOLIN);
       P(17,by+6,-18,HANTEL); P(20,by+6,-18,LAUFBAND); P(25,by+6,-14,TRAMPOLIN);   // Sportraum
-      for (const bx2 of [-28,-26,-24,-22,-20]) P(bx2,by+6,20,CABINET);   // die Bibliothek
+      // 📚 DIE BIBLIOTHEK: echte Bücherregale zum Lesen und Schreiben
+      for (const bx2 of [-28,-26,-24,-22,-20])
+        P(bx2, by+6, 20, (bx2 % 4 === 0) ? CABINET : BUCHREGAL);
+      P(-28,by+6,16,BUCHREGAL); P(-26,by+6,16,BUCHREGAL);
+      P(-27,by+6,14,SIGN);
+      const bibsig=(B.bx-27)+','+(by+6)+','+(B.bz+14);
+      if (!signTexts.has(bibsig)) signTexts.set(bibsig,
+        '📚 DEINE BIBLIOTHEK - tipp ein Bücherregal an! Darin stehen Bücher zum ' +
+        'Lesen (dünne und richtig dicke), und du kannst auch selber eins schreiben. ✍️');
       P(-24,by+6,12,TABLE); P(-24,by+6,13,CHAIR);
       P(-2,by+6,19,BED); P(2,by+6,19,BED); P(-8,by+6,20,CABINET);   // Kinderzimmer
       P(27,by+6,20,TOILET); P(25,by+6,20,SINK);
@@ -5717,6 +5795,10 @@ function baueSpielstand() {
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
       rbCodes,                          // 🔮 Jonahs vier eigene Codes
+      eigenBuecher,                     // 📖 seine selbst geschriebenen Bücher
+      regale: (() => { const o = {};    // 📚 was steht in welchem Regal?
+        for (const [k,v] of regalBuecher) o[k] = v; return o; })(),
+      eigenLieder,                      // 🎵 seine selbst gemachten Lieder
       safeCodes,                        // 🔐 seine sechs Safe-Codes
       safeAuf: safeOffen,               // 🔐 steht der große Safe offen?
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
@@ -5908,6 +5990,17 @@ function loadGame() {
     if (Array.isArray(s.rbCodes))                            // 🔮 die vier eigenen Codes
       for (let i = 0; i < rbCodes.length; i++)
         if (typeof s.rbCodes[i] === 'string') rbCodes[i] = s.rbCodes[i];
+    if (Array.isArray(s.eigenBuecher))                       // 📖 die eigenen Bücher
+      eigenBuecher = s.eigenBuecher.filter(b => b && typeof b.t === 'string' &&
+                                                Array.isArray(b.seiten));
+    if (s.regale && typeof s.regale === 'object')            // 📚 der Inhalt der Regale
+      for (const k in s.regale)
+        if (Array.isArray(s.regale[k])) regalBuecher.set(k, s.regale[k].slice());
+    if (Array.isArray(s.eigenLieder))                        // 🎵 die eigenen Lieder
+      eigenLieder = s.eigenLieder.filter(l => l && typeof l.melodie === 'string')
+                                 .map(l => ({ name: l.name || '🎵 Mein Lied', takt: l.takt || 0.3,
+                                              welle: l.welle || 'triangle', melodie: l.melodie,
+                                              bass: l.bass || 'q4 t4 q4 y4', eigen: true }));
     if (Array.isArray(s.safeCodes))                          // 🔐 die sechs Safe-Codes
       for (let i = 0; i < safeCodes.length; i++)
         if (typeof s.safeCodes[i] === 'string') safeCodes[i] = s.safeCodes[i];
@@ -5925,7 +6018,7 @@ function loadGame() {
     altesGoldWeg = s.ueberErde === true;
     tresorOffen = s.tresorAuf === true;              // 🔐 die große Tresortür
     if (typeof s.tresorCode === 'string') tresorCode = s.tresorCode;   // 🔑 der Code
-    if (Array.isArray(s.radio) && SENDER[s.radio[1]]) {   // 📻 der Sender läuft weiter
+    if (Array.isArray(s.radio) && senderAlle()[s.radio[1]]) {   // 📻 der Sender läuft weiter
       radioAn = s.radio[0]; radioStart(s.radio[1]);
     }
     if (typeof s.bowlBest==='number') bowlBest = s.bowlBest;
@@ -6595,6 +6688,17 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 6.8 && (Math.abs(dx) < 1.0 || Math.abs(dy) < 1.0)) return vary(246,206,70,14);
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
+  });
+  tile(175,(x,y)=>{                                                 // 📚 das Bücherregal
+    // Holzregal mit drei Brettern voller bunter Buchrücken
+    if (x<1 || x>14 || y<1 || y>14) return vary(96,66,34,8);        // Rahmen
+    if (y===5 || y===10) return vary(118,82,42,8);                  // die Bretter
+    const f = [[214,74,66],[240,176,52],[86,150,220],[108,190,110],[180,110,210],[230,230,235]];
+    const buch = f[(x*3 + (y<5?0:y<10?2:4)) % f.length];
+    const breit = (x + (y<5?1:y<10?2:0)) % 3 === 0;                 // mal dick, mal dünn
+    if (breit && (x%4)===1) return vary(70,52,34,6);                // ein Spalt dazwischen
+    const hell = (y%5===1) ? 26 : 0;                                // oben etwas heller
+    return vary(buch[0]+hell, buch[1]+hell, buch[2]+hell, 9);
   });
   tile(173,(x,y)=>{                                                 // 🔐 Safe-Panzerwand
     const dx = x-7.5, dy = y-7.5;
@@ -16957,7 +17061,9 @@ const RB_ZIMMER = [
       : (Math.abs(oz) === 4 && ox % 3 === 0 && Math.abs(ox) <= 6) ? CHEST
       : (ox === 0 && oz === 0) ? POKAL : null },
   { name: '📚 Bücherzimmer', deko: (ox, oz, h) =>
-      (h <= 2 && Math.abs(oz) === 5 && Math.abs(ox) <= 7) ? CABINET
+      // 📚 unten echte Bücherregale zum Antippen, darüber Schränke
+      (h === 1 && Math.abs(oz) === 5 && Math.abs(ox) <= 7) ? BUCHREGAL
+      : (h === 2 && Math.abs(oz) === 5 && Math.abs(ox) <= 7) ? CABINET
       : (h === 1 && ox === 0 && Math.abs(oz) <= 1) ? TABLE : null },
   { name: '🏋️ Trainingsraum', deko: (ox, oz, h) => h !== 1 ? null
       : (ox === -4 && oz === 0) ? HANTEL
@@ -22156,7 +22262,8 @@ function spielTon(hz, start, dauer, laut, welle) {
 }
 function radioStart(nr) {
   radioSender = nr;
-  const s = SENDER[nr];
+  const s = senderAlle()[nr];
+  if (!s) { radioAus(); return; }
   radioStimmen[0] = { noten: tonListe(s.melodie), i:0, zeit:0, hoch:1 };
   radioStimmen[1] = { noten: tonListe(s.bass),    i:0, zeit:0, hoch:0 };
   if (actx) { const t = actx.currentTime + 0.06; radioStimmen[0].zeit = t; radioStimmen[1].zeit = t; }
@@ -22177,7 +22284,8 @@ function radioTick(dt) {
   if (weg > 30) return;                 // zu weit weg: Musik pausiert leise
   if (!actx) return;
   if (actx.state === 'suspended') { try { actx.resume(); } catch(e) {} }
-  const s = SENDER[radioSender];
+  const s = senderAlle()[radioSender];
+  if (!s) { radioAus(); return; }
   const laut = Math.max(0, 1 - weg/30);
   const jetzt = actx.currentTime;
   for (const st of radioStimmen) {      // Melodie und Bass vorausplanen
@@ -22206,17 +22314,44 @@ function openRadio(x,y,z) {
   const hier = x+','+y+','+z;
   const liste = document.getElementById('senderListe');
   liste.innerHTML = '';
-  SENDER.forEach((s,i) => {
+  senderAlle().forEach((s,i) => {
     const el = document.createElement('div');
     el.className = 'senderRow' + (radioAn===hier && radioSender===i ? ' laeuft' : '');
-    el.textContent = (radioAn===hier && radioSender===i ? '▶️ ' : '🎵 ') + s.name;
+    const t = document.createElement('span');
+    t.textContent = (radioAn===hier && radioSender===i ? '▶️ ' : '🎵 ') + s.name;
+    el.appendChild(t);
     const w = () => { radioAus(); radioAn = hier; radioStart(i);
       toast('📻 '+s.name+' läuft! Geh näher ran, dann wird es lauter. 🎶', 3600);
       radioBox.style.display='none'; };
+    t.addEventListener('click', w);
+    t.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
+    if (s.eigen) {                      // 🗑️ eigene Lieder darf er auch wieder löschen
+      el.style.display = 'flex'; el.style.justifyContent = 'space-between'; el.style.gap = '8px';
+      const weg = document.createElement('span');
+      weg.textContent = '🗑️';
+      const wd = (e) => { e.preventDefault(); e.stopPropagation();
+        const nr = i - SENDER.length;
+        radioAus();
+        eigenLieder.splice(nr, 1);
+        scheduleSave(); blip(260,0.08);
+        toast('🗑️ Lied gelöscht.', 2400);
+        openRadio(x,y,z); };
+      weg.addEventListener('click', wd);
+      weg.addEventListener('touchstart', wd, {passive:false});
+      el.appendChild(weg);
+    }
+    liste.appendChild(el);
+  });
+  {                                     // 🎼 und ganz unten: selber Musik machen!
+    const el = document.createElement('div');
+    el.className = 'senderRow';
+    el.style.background = 'rgba(150,120,255,.3)';
+    el.textContent = '🎼 Eigenes Lied machen!';
+    const w = () => openLied();
     el.addEventListener('click', w);
     el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
     liste.appendChild(el);
-  });
+  }
   radioBox.style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
 }
@@ -22227,6 +22362,301 @@ for (const el of document.querySelectorAll('#radioBox .senderRow[data-sender="au
   el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
 }
 document.getElementById('radioClose').addEventListener('click', ()=>{ radioBox.style.display='none'; });
+
+// ============== 📚 BÜCHER: lesen, sammeln und selber schreiben ==============
+// Jonahs Wunsch: richtige Bücher, die man wirklich lesen kann - dünne und
+// dicke -, ein Regal zum Hineinstellen, und selber schreiben soll er auch
+// können. Die Bücher stehen in Regalen; jedes Regal merkt sich seine eigenen.
+const BUECHER = [
+  { t:'🐉 Der kleine Drache Fump', seiten:[
+    'Es war einmal ein kleiner Drache. Er hieß Fump, und er konnte alles, was Drachen können – nur eines nicht: Feuer spucken.\n\nWenn Fump es versuchte, kam nur ein winziges „Püff" heraus. Und eine kleine blaue Rauchwolke.',
+    'Die anderen Drachen lachten. „Ein Drache ohne Feuer!", riefen sie. Fump flog traurig in seine Höhle und zählte seine Steine. Er hatte 214 Steine. Das Zählen beruhigte ihn.',
+    'Eines Abends wurde ein Kind im Wald vom Regen überrascht. Es fror furchtbar.\n\nFump kam angeflogen, machte „Püff" – und die kleine blaue Wolke legte sich warm um das Kind wie eine Decke. Es war die wärmste Wolke der Welt.\n\nSeitdem heißt Fump „der Wolkendrache". Und das ist viel besser als Feuer.'] },
+  { t:'🦹 Warum Räuber Angst vor Kanonen haben', seiten:[
+    'Räuber sind eigentlich ziemliche Angsthasen. Das weiß nur keiner, weil sie so laut rufen.',
+    'Einmal schlich ein Räuber zu einer Burg. Vor dem Tor stand eine Kanone. Die Kanone sagte gar nichts – sie schaute nur.\n\nDer Räuber schaute zurück. Zehn Minuten lang.',
+    'Dann sagte der Räuber: „Ich wollte sowieso gerade gehen." Und rannte weg.\n\nDie Kanone hat nie geschossen. Sie musste nur dastehen.\n\n👉 Merke: Eine Wache, die man sieht, ist die beste Wache.'] },
+  { t:'⚔️ Ritter Jonah und das große Turnier', seiten:[
+    'Im Königreich wurde ein Turnier ausgerufen. Wer gewann, bekam einen goldenen Pokal – so groß wie ein Eimer.',
+    'Ritter Jonah hatte kein Pferd. Er hatte ein Schwein. Es hieß Rosa und war sehr schnell, wenn es Karotten roch.',
+    'Die erste Aufgabe: Wer reitet am schnellsten um die Burg? Jonah band eine Karotte an seinen Helm. Rosa raste los. Sie gewannen mit drei Längen Vorsprung.',
+    'Die zweite Aufgabe: Wer baut den höchsten Turm? Die anderen Ritter stapelten Steine. Jonah baute eine Treppe und trug die Steine hoch. Sein Turm war doppelt so hoch.',
+    'Die dritte Aufgabe war die schwerste: Wer macht den König zum Lachen?\n\nJonah sagte gar nichts. Er stellte nur Rosa vor den König. Rosa setzte sich hin und rülpste.\n\nDer König lachte, bis er vom Thron fiel.',
+    'Jonah bekam den Pokal. Rosa bekam einen Sack Karotten.\n\nBeide fanden, sie hätten den besseren Preis bekommen.'] },
+  { t:'💰 Das Geheimnis im Geldspeicher', seiten:[
+    'Tief unter der Erde liegt ein Raum voller Geld. So voll, dass man darin schwimmen kann.',
+    'Aber das ist nicht das Geheimnis. Das Geheimnis steht ganz unten in der Ecke, hinter dem Goldberg.',
+    'Dort steht eine kleine Kiste aus Holz. Keine Tresortür, kein Code, nichts. Einfach eine Kiste.',
+    'In der Kiste ist genau 1 Euro.\n\nEs ist der allererste Euro, den der Besitzer je verdient hat. Mit Mathe-Aufgaben.',
+    'Alle anderen Münzen im Speicher sind nur Kopien davon. Sie sind alle genau gleich viel wert: einen Euro.',
+    'Deshalb passt der Besitzer auf diesen einen besonders gut auf.\n\n👉 Merke: Das Wertvollste ist meistens das Erste.'] },
+  { t:'🚀 Die große Reise zum Mond', seiten:[
+    'Kapitel 1 – Der Plan\n\nEine Rakete zu bauen ist nicht schwer. Man braucht: Blech, Glas, einen Sitz und sehr viel Mut. Den Mut hat man meistens zuhause.',
+    'Kapitel 2 – Der Countdown\n\nZehn. Neun. Acht. Bei Sieben wird einem schlecht. Bei Sechs ist es zu spät zum Aussteigen. Bei Null hört man gar nichts mehr, weil es so laut ist.',
+    'Kapitel 3 – Oben\n\nDer Himmel wird schwarz, obwohl die Sonne scheint. Das ist der Moment, in dem man versteht, dass die Erde eine Kugel ist. Man sieht nämlich den Rand.',
+    'Kapitel 4 – Die Landung\n\nAuf dem Mond ist alles grau und sehr still. Der Staub fliegt nicht weg, er schwebt nur langsam zur Seite. Als hätte er alle Zeit der Welt.',
+    'Kapitel 5 – Springen\n\nAuf dem Mond kann man so hoch springen wie ein Haus. Das Beste daran ist nicht das Hochkommen. Es ist das langsame Runterfallen.',
+    'Kapitel 6 – Die Steine\n\nMondsteine sehen aus wie normale Steine. Aber sie kommen vom MOND. Das macht sie zum besten Mitbringsel der Welt.',
+    'Kapitel 7 – Die Erde\n\nVom Mond aus ist die Erde blau und klein genug, um sie mit dem Daumen zu verdecken. Alle Menschen, die man kennt, sind hinter dem Daumen.',
+    'Kapitel 8 – Nachts\n\nAuf dem Mond ist es nachts -170 Grad kalt. Das ist so kalt, dass man es gar nicht fühlen kann, weil man vorher schon ins Raumschiff geht.',
+    'Kapitel 9 – Der Rückflug\n\nDie Rückreise ist langweiliger als der Hinflug. Das ist gut so. Langweilige Rückflüge sind die besten Rückflüge.',
+    'Kapitel 10 – Zuhause\n\nWenn man wieder landet, ist alles genau so, wie man es verlassen hat.\n\nNur man selbst nicht.\n\n– ENDE –'] },
+  { t:'😂 Das dickste Witzebuch', seiten:[
+    'Witz 1\n\n„Papa, im Keller sind Gespenster!"\n\n„Quatsch, Gespenster gibt es nicht."\n\n„Sagen sie auch."',
+    'Witz 2\n\nTreffen sich zwei Blöcke. Sagt der eine: „Du siehst eckig aus."\n\nSagt der andere: „Du auch."\n\nDann haben sie sich nichts mehr zu sagen.',
+    'Witz 3\n\nWarum nehmen Räuber nie den Fahrstuhl?\n\nWeil da oben die Kanone wartet. Und Kanonen haben sehr viel Geduld.',
+    'Witz 4\n\n„Wie viel kostet dieser Goldbarren?"\n\n„Hundert Euro."\n\n„Und wenn ich zwei nehme?"\n\n„Zweihundert. Mathe ist leider unbestechlich."',
+    'Witz 5\n\nEin Schwein, ein Huhn und ein Zombie gehen in eine Burg.\n\nDas Schwein frisst die Karotten. Das Huhn legt ein Ei.\n\nDer Zombie wird von der Kanone besiegt. Wie immer.',
+    'Witz 6\n\n„Warum baust du eine Treppe aufs Dach?"\n\n„Damit ich oben rauskomme."\n\n„Und warum willst du oben raus?"\n\n„Weil da die Aussicht ist!"',
+    'Witz 7\n\nWas ist das Gegenteil von einem Tresor?\n\nEine offene Tür. Deshalb gibt es Codes.',
+    'Witz 8\n\n„Ich habe eine Billion Euro!"\n\n„Woher?"\n\n„Von Mathe-Aufgaben."\n\n„Dann rechne mal nach."\n\n„... es waren doch nur 1000."',
+    'Witz 9\n\nWarum singen Radios nie falsch?\n\nWeil sie die Töne vorher auswendig lernen. So wie du, wenn du dein eigenes Lied machst.',
+    'Witz 10\n\nWas sagt ein Buch zum anderen Buch im Regal?\n\n„Rutsch mal, ich bin dicker."',
+    'Witz 11\n\n„Wie kommt man in die Riesenburg?"\n\n„Durch das Portal."\n\n„Und sonst?"\n\n„Gar nicht. Das ist ja der Witz."',
+    'Witz 12\n\nDer allerbeste Witz steht auf der letzten Seite.\n\nDu hast ihn gerade gelesen.\n\n😄'] },
+];
+let eigenBuecher = [];                  // 📖 Jonahs selbst geschriebene Bücher
+const regalBuecher = new Map();         // "x,y,z" -> welche Bücher stehen in DIESEM Regal?
+function buchVon(id) {                  // ab 100 sind es Jonahs eigene
+  return id >= 100 ? eigenBuecher[id - 100] : BUECHER[id];
+}
+function buchDicke(b) {
+  const n = b.seiten.length;
+  return n <= 3 ? '📗 dünn' : n <= 7 ? '📘 mittel' : '📕 dick';
+}
+function regalInhalt(key) {
+  if (!regalBuecher.has(key)) {         // in einem neuen Regal stehen schon ein paar
+    const p = key.split(',').map(Number);
+    const n = Math.abs((p[0]*7 + p[2]*13 + p[1]) % BUECHER.length);
+    regalBuecher.set(key, [n, (n+2) % BUECHER.length, (n+4) % BUECHER.length]);
+  }
+  return regalBuecher.get(key);
+}
+let regalAuf = null;                    // welches Regal ist gerade offen?
+let buchAuf = null, buchSeiteNr = 0;    // welches Buch, welche Seite?
+function regalZeichnen() {
+  const liste = document.getElementById('regalListe');
+  liste.innerHTML = '';
+  const drin = regalInhalt(regalAuf);
+  document.getElementById('regalInfo').textContent = drin.length
+    ? 'Tipp ein Buch an, dann kannst du es lesen. 📖'
+    : 'Das Regal ist noch leer – stell ein Buch hinein oder schreib dir eins! ✍️';
+  drin.forEach((id, i) => {
+    const b = buchVon(id);
+    if (!b) return;
+    const el = document.createElement('div');
+    el.className = 'buchRow';
+    const t = document.createElement('span');
+    t.textContent = b.t + '  (' + buchDicke(b) + ', ' + b.seiten.length + ' Seiten)';
+    const weg = document.createElement('span');
+    weg.className = 'weg'; weg.textContent = '🗑️';
+    el.appendChild(t); el.appendChild(weg);
+    const lesen = (e) => { if (e) e.preventDefault(); buchOeffnen(id); };
+    t.addEventListener('click', lesen);
+    t.addEventListener('touchstart', lesen, {passive:false});
+    const raus = (e) => { e.preventDefault(); e.stopPropagation();
+      drin.splice(i,1); blip(300,0.06); regalZeichnen(); scheduleSave(); };
+    weg.addEventListener('click', raus);
+    weg.addEventListener('touchstart', raus, {passive:false});
+    liste.appendChild(el);
+  });
+}
+function openRegal(x, y, z) {
+  regalAuf = x+','+y+','+z;
+  regalZeichnen();
+  document.getElementById('regalBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(520,0.05); blip(660,0.05);
+}
+function buchZeichnen() {
+  const b = buchVon(buchAuf);
+  if (!b) return;
+  document.getElementById('buchTitel').textContent = b.t;
+  document.getElementById('buchSeite').textContent = b.seiten[buchSeiteNr] || '(leere Seite)';
+  document.getElementById('buchZahl').textContent =
+    'Seite ' + (buchSeiteNr+1) + ' von ' + b.seiten.length;
+  document.getElementById('buchEigen').style.display = buchAuf >= 100 ? 'flex' : 'none';
+}
+function buchOeffnen(id) {
+  buchAuf = id; buchSeiteNr = 0;
+  buchZeichnen();
+  document.getElementById('regalBox').style.display = 'none';
+  document.getElementById('buchBox').style.display = 'flex';
+  blip(440,0.05); blip(560,0.05);
+}
+function buchBlaettern(d) {
+  const b = buchVon(buchAuf);
+  if (!b) return;
+  const neu = buchSeiteNr + d;
+  if (neu < 0 || neu >= b.seiten.length) { blip(200,0.06); return; }
+  buchSeiteNr = neu; blip(520,0.04); buchZeichnen();
+}
+function buchNeuSchreiben() {
+  frageText('Wie soll dein Buch heißen?', '', (titel) => {
+    const t = (titel || '').trim() || 'Mein Buch';
+    eigenBuecher.push({ t: '✍️ ' + t, seiten: ['Hier fängt mein Buch an!'] });
+    const id = 100 + eigenBuecher.length - 1;
+    if (regalAuf) regalInhalt(regalAuf).push(id);
+    scheduleSave();
+    toast('✍️📖 „' + t + '" steht jetzt in deinem Regal! Schreib die Seiten voll. 📚', 5000);
+    buchOeffnen(id);
+  });
+}
+
+// die Knöpfe am Regal und im Buch
+{
+  const knopf = (id, w) => {
+    const el = document.getElementById(id);
+    el.addEventListener('click', w);
+    el.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
+  };
+  knopf('regalZu', () => { document.getElementById('regalBox').style.display='none'; blip(400,0.06); });
+  knopf('regalNeu', buchNeuSchreiben);
+  knopf('regalRein', () => {           // 📥 ein Buch aus der Sammlung hineinstellen
+    const liste = document.getElementById('regalListe');
+    const drin = regalInhalt(regalAuf);
+    liste.innerHTML = '';
+    document.getElementById('regalInfo').textContent =
+      'Welches Buch soll hinein? (Tipp es an)';
+    const alle = BUECHER.map((b,i) => [i,b]).concat(eigenBuecher.map((b,i) => [100+i, b]));
+    let frei = 0;
+    for (const [id, b] of alle) {
+      if (drin.includes(id)) continue;
+      frei++;
+      const el = document.createElement('div');
+      el.className = 'buchRow';
+      el.textContent = '📥 ' + b.t + '  (' + buchDicke(b) + ')';
+      const w = (e) => { if (e) e.preventDefault();
+        drin.push(id); blip(660,0.06); regalZeichnen(); scheduleSave();
+        toast('📚 „' + b.t + '" steht jetzt in diesem Regal!', 3200); };
+      el.addEventListener('click', w);
+      el.addEventListener('touchstart', w, {passive:false});
+      liste.appendChild(el);
+    }
+    if (!frei) {
+      document.getElementById('regalInfo').textContent =
+        'Alle Bücher stehen schon in diesem Regal! 📚 Schreib dir doch ein neues. ✍️';
+      regalZeichnen();
+    }
+  });
+  knopf('buchZu', () => {
+    document.getElementById('buchBox').style.display='none';
+    if (regalAuf) { regalZeichnen(); document.getElementById('regalBox').style.display='flex'; }
+    blip(400,0.06);
+  });
+  knopf('buchZurueck', () => buchBlaettern(-1));
+  knopf('buchVor', () => buchBlaettern(1));
+  knopf('buchSchreiben', () => {       // ✍️ diese Seite schreiben
+    const b = buchVon(buchAuf);
+    if (!b || buchAuf < 100) return;
+    frageText('Was soll auf Seite ' + (buchSeiteNr+1) + ' stehen?', b.seiten[buchSeiteNr], (t) => {
+      b.seiten[buchSeiteNr] = t || '';
+      scheduleSave(); blip(660,0.06);
+      document.getElementById('buchBox').style.display = 'flex';
+      buchZeichnen();
+    }, 240);                            // eine Buchseite darf richtig lang sein
+  });
+  knopf('buchPlus', () => {            // ➕ eine neue Seite hinten anhängen
+    const b = buchVon(buchAuf);
+    if (!b || buchAuf < 100) return;
+    if (b.seiten.length >= 20) { toast('📖 Dein Buch hat schon 20 Seiten – das ist richtig dick! 📕', 3500); return; }
+    b.seiten.push('');
+    buchSeiteNr = b.seiten.length - 1;
+    scheduleSave(); blip(700,0.06);
+    buchZeichnen();
+    toast('📖 Neue Seite ' + b.seiten.length + '! Tipp „✍️ Diese Seite schreiben" an.', 4000);
+  });
+}
+
+// ============== 🎼 JONAHS EIGENE MUSIK FÜRS RADIO ==========================
+// Jonah tippt die Töne nacheinander an, hört sie sich an und speichert sein
+// Lied. Danach steht es im Radio zwischen den anderen Sendern.
+const LIED_TASTEN = [
+  ['c','🟥'], ['d','🟧'], ['e','🟨'], ['f','🟩'], ['g','🟦'], ['a','🟪'],
+  ['h','🟫'], ['C','❤️'], ['D','🧡'], ['E','💛'], ['G','💙'], ['x','🤫'],
+];
+let eigenLieder = [];                   // 🎵 seine gespeicherten Lieder
+let liedNoten = '', liedLang = false;
+function senderAlle() { return SENDER.concat(eigenLieder); }
+function liedZeichnen() {
+  const feld = document.getElementById('liedNoten');
+  const n = liedNoten.trim().split(/\s+/).filter(Boolean);
+  feld.textContent = n.length
+    ? n.map(t => (LIED_TASTEN.find(k => k[0] === t[0]) || ['','?'])[1] + (t.length>1 ? '·' : '')).join(' ')
+    : '– – –';
+  document.getElementById('liedInfo').textContent = n.length
+    ? 'Dein Lied hat ' + n.length + ' Töne. ▶️ Anhören oder weiter tippen!'
+    : 'Tipp die Töne an – sie kommen hintereinander in dein Lied.';
+  document.getElementById('liedLang').textContent = liedLang ? 'Ton: LANG ♩' : 'Ton: kurz ♪';
+}
+function liedTastenBauen() {
+  const feld = document.getElementById('liedTasten');
+  if (feld.childElementCount) return;
+  for (const [ton, bild] of LIED_TASTEN) {
+    const b = document.createElement('button');
+    b.textContent = bild;
+    const w = (e) => { if (e) e.preventDefault();
+      if (liedNoten.trim().split(/\s+/).filter(Boolean).length >= 60) {
+        toast('🎼 Dein Lied ist schon richtig lang! Speicher es lieber. 💾', 3500); return; }
+      liedNoten += (liedNoten ? ' ' : '') + ton + (liedLang ? '2' : '');
+      if (actx && TON[ton]) spielTon(TON[ton], actx.currentTime + 0.01, liedLang ? 0.5 : 0.28, 0.09, 'triangle');
+      liedZeichnen();
+    };
+    b.addEventListener('click', w);
+    b.addEventListener('touchstart', w, {passive:false});
+    feld.appendChild(b);
+  }
+}
+function liedAnhoeren() {
+  const n = tonListe(liedNoten.trim() || 'x');
+  if (!actx || !n.length) return;
+  if (actx.state === 'suspended') { try { actx.resume(); } catch(e) {} }
+  let t = actx.currentTime + 0.08;
+  for (const [hz, schlaege] of n) {
+    const dauer = schlaege * 0.3;
+    spielTon(hz, t, dauer, 0.085, 'triangle');
+    t += dauer;
+  }
+  toast('🎵 So klingt dein Lied!', 2600);
+}
+function openLied() {
+  liedTastenBauen();
+  liedZeichnen();
+  document.getElementById('radioBox').style.display = 'none';
+  document.getElementById('liedBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(520,0.05); blip(660,0.05); blip(784,0.05);
+}
+{
+  const knopf = (id, w) => {
+    const el = document.getElementById(id);
+    el.addEventListener('click', w);
+    el.addEventListener('touchstart', e => { e.preventDefault(); w(); }, {passive:false});
+  };
+  knopf('liedLang', () => { liedLang = !liedLang; blip(liedLang?440:330,0.05); liedZeichnen(); });
+  knopf('liedWeg', () => {
+    const n = liedNoten.trim().split(/\s+/).filter(Boolean);
+    n.pop(); liedNoten = n.join(' ');
+    blip(260,0.05); liedZeichnen();
+  });
+  knopf('liedHoer', liedAnhoeren);
+  knopf('liedZu', () => { document.getElementById('liedBox').style.display='none'; blip(400,0.06); });
+  knopf('liedSpeichern', () => {
+    const n = liedNoten.trim().split(/\s+/).filter(Boolean);
+    if (n.length < 4) { toast('🎼 Dein Lied braucht mindestens 4 Töne – tipp noch ein paar! 🎵', 4000);
+      blip(200,0.1); return; }
+    frageText('Wie soll dein Lied heißen?', '', (name) => {
+      const titel = (name || '').trim() || ('Mein Lied ' + (eigenLieder.length + 1));
+      eigenLieder.push({ name: '🎵 ' + titel, takt: 0.3, welle: 'triangle',
+                         melodie: liedNoten.trim(), bass: 'q4 t4 q4 y4', eigen: true });
+      liedNoten = ''; liedZeichnen();
+      scheduleSave();
+      for (const f of [523,659,784,1047]) blip(f,0.08);
+      toast('🎵💾 „' + titel + '" ist gespeichert! Du findest es jetzt in deinem Radio. 📻', 6000);
+      document.getElementById('liedBox').style.display = 'none';
+    });
+  });
+}
 
 // ---------------------------- Wach-Kanonen 💣 -------------------------------
 // Jede aufgestellte Kanone hält Wache: Kommt ein Räuber oder ein Monster in die
@@ -22578,6 +23008,7 @@ const MAP_BLOCK_COL = {
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
   [SAFE]:'#5a6070', [SAFE_TUER]:'#7e8696', [SAFE_RAD]:'#f0c850', [SAFE_AUF]:'#7e8696',
+  [BUCHREGAL]:'#a06a3a',
   [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
   [GELDSAUGER]:'#8ab4d8', [SILBERRAHMEN]:'#c4ccda', [RBPORTAL]:'#a060e0',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
@@ -25386,6 +25817,7 @@ function doBreak(dir) {
   if (hit && hit.block === GOLDTAFEL) { tafelAntippen(); return; }
   if (hit && hit.block === GELDSAUGER) { openSauger(); return; }
   if (hit && hit.block === SILBERRAHMEN) { openRahmen(); return; }
+  if (hit && hit.block === BUCHREGAL) { openRegal(hit.x, hit.y, hit.z); return; }
   if (hit && (hit.block === SAFE_TUER || hit.block === SAFE_RAD || hit.block === SAFE_AUF)) {
     openSafe(); return;                 // 🔐 Tür antippen: Codes eingeben (oder zumachen)
   }
@@ -26433,6 +26865,17 @@ function openChat() {
   if (document.exitPointerLock) document.exitPointerLock();
   setTimeout(()=>chatInput.focus(), 60);
 }
+// ✍️ Allgemeine Text-Frage: dasselbe Eingabefeld wie beim Schild, aber mit
+// einer eigenen Antwort-Funktion (für Buch-Titel, Buchseiten und Lied-Namen).
+let textFrageCb = null;
+function frageText(frage, vorgabe, cb, maxLen) {
+  textFrageCb = cb;
+  chatInput.maxLength = maxLen || 60;   // Buchseiten dürfen viel länger sein!
+  chatInput.value = vorgabe || '';
+  chatInput.placeholder = frage;
+  document.getElementById('chatSend').textContent = '✍️ OK';
+  openChat();
+}
 function openSignEditor(key) {
   signTarget = key;
   chatInput.value = signTexts.get(key)||'';
@@ -26442,7 +26885,8 @@ function openSignEditor(key) {
   openChat();
 }
 function closeChat() {
-  chatOpen=false; signTarget=null; butlerTarget=null;
+  chatOpen=false; signTarget=null; butlerTarget=null; textFrageCb=null;
+  chatInput.maxLength = 60;
   chatBox.style.display='none'; chatInput.blur();
   chatInput.placeholder='Sag etwas...';
   document.getElementById('chatSend').textContent='Sagen';
@@ -26486,8 +26930,10 @@ function submitChat() {
   const msg=chatInput.value.trim();
   const target=signTarget;
   const butler=butlerTarget;
+  const frage=textFrageCb;
   chatInput.value='';
   closeChat();
+  if (frage) { frage(msg); return; }    // ✍️ Buch-Titel, Buchseite oder Lied-Name
   if (butler) {                          // 👑 ein Auftrag für einen Menschen!
     if (animals.includes(butler)) personAuftrag(butler, msg);
     return;

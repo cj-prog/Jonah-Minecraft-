@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- BÜCHER ZUM LESEN UND SELBER SCHREIBEN + EIGENE MUSIK (v276)! 📚🎼
+  📖 Es gibt jetzt echte Bücher: sechs Stück zum Lesen, dünne mit drei Seiten
+  („🐉 Der kleine Drache Fump") und richtig dicke mit zwölf („😂 Das dickste
+  Witzebuch", „🚀 Die große Reise zum Mond" mit zehn Kapiteln). Man blättert
+  mit ◀ und ▶ durch die Seiten.
+  📚 Dazu das neue BÜCHERREGAL: Es steht in der Bibliothek der Festung und im
+  Bücherzimmer der Riesenburg – und Jonah kann selbst welche aufstellen (es
+  liegt in der Bau-Leiste). In jedem Regal stehen schon ein paar Bücher; er
+  kann Bücher hineinstellen und wieder herausnehmen.
+  ✍️ Und er kann SELBER Bücher schreiben: Titel eingeben, Seiten füllen, neue
+  Seiten anhängen (bis zu 20). Seine Bücher stehen danach im Regal wie alle
+  anderen.
+  🎼 Am Radio gibt es jetzt die LIEDER-WERKSTATT: Töne antippen (zwölf Knöpfe,
+  kurz oder lang), anhören, löschen – und speichern. Das eigene Lied steht
+  danach im Radio zwischen den anderen Sendern und lässt sich dort auch wieder
+  löschen. Bücher, Regale und Lieder werden alle im Spielstand gespeichert.
 - DIE RIESENBURG IST EINE EIGENE WELT (v275)! 🏰🌍 Jonah hat erklärt, was er
   wirklich meinte: Hinter dem Portal soll eine ganz eigene Welt liegen – da,
   wo die Riesenburg steht, soll NICHTS von zu Hause sein. Genau so ist es
