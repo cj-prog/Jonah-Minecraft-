@@ -221,6 +221,23 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- ALLE VIER CODES GEHÖREN DIR (v270)! 🔐🔮 Jonah wollte es richtig schwer:
+  Am silbernen Rahmen bekommt er jetzt KEINE Codes mehr vorgesetzt – er denkt
+  sich alle vier selbst aus, genau wie bei der Tür zu seinem Geldspeicher:
+  🔢 einen Zahlen-Code (mindestens 3 Zahlen), 🖐️ ein Wisch-Muster (mindestens
+  4 Punkte), 🌈 eine Farben-Folge (mindestens 4 Farben) und 🔤 ein Zauberwort
+  (mindestens 3 Buchstaben). Beim ersten Mal legt er jeden Code fest – das
+  Spiel merkt ihn sich und sagt ihm nochmal genau, was er sich gemerkt hat.
+  Danach muss er jedes Mal GENAU diese vier Codes wieder eingeben, und beim
+  Eintippen sieht man nur Punkte ●●●, damit keiner mitlesen kann. Nach zwei
+  Fehlversuchen flüstert Johann ihm den richtigen Code zu – aussperren kann
+  er sich also nie. Alle vier Codes stehen im Spielstand und sind auch nach
+  dem Neuladen noch da.
+- EIN SPRUNGTURM IM POOL (v269)! 🤸🏊 Im Pool-Raum der Riesenburg steht jetzt
+  ein Sprungturm mit DREI Sprungbrettern in verschiedenen Höhen (3, 6 und 9
+  Blöcke über dem Boden). Eine Treppe führt ohne Springen ganz nach oben,
+  jedes Brett ragt über das Wasser – und hinter der obersten Stufe steht ein
+  Geländer, damit keiner nach hinten runterfällt. 🚧
 - LUXUS-RÄUME IN DER RIESENBURG (v268)! 🏊💎 Jonah wollte Luxus in seiner
   Riesenburg – zum Beispiel einen Raum mit Pool. Jetzt gibt es dort zwölf
   verschiedene Zimmer-Sorten, davon sieben Luxus-Räume:

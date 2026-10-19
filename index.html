@@ -1393,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 268 &middot; 🏊💎 LUXUS-RÄUME IN DER RIESENBURG! Jetzt gibt es dort einen Pool-Raum zum Schwimmen, ein Heimkino, eine Spielhalle, ein Süßigkeiten-Zimmer, einen Wintergarten mit Palmen, einen Gold-Saal und ein Luxus-Bad. ✨</p>
+    Version 270 &middot; 🔐 ALLE VIER CODES GEHÖREN JETZT DIR! Am silbernen Rahmen denkst du dir jeden Code selbst aus – Zahlen-Code, Wisch-Muster, Farben-Folge und Zauberwort – genau wie bei deiner Tresortür. Danach musst du sie jedes Mal eingeben. 🤸 Und im Pool steht ein Sprungturm mit drei Brettern. 🏊</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 268;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 270;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -4949,7 +4949,8 @@ function genChunkData(cx, cz, ohneEdits) {
       P(RB_RAHMEN_X0+7, by+1, RB_RAHMEN_Z, SIGN);
       const rbsig=(B.bx+RB_RAHMEN_X0+7)+','+(by+1)+','+(B.bz+RB_RAHMEN_Z);
       if (!signTexts.has(rbsig)) signTexts.set(rbsig,'🔮 DER SILBERNE RAHMEN - tipp ihn an! ' +
-        'Löse die vier Rätsel, dann wächst ein Portal darin, bis du hindurchpasst. ' +
+        'Denk dir vier eigene Codes aus - Zahlen, Wisch-Muster, Farben und ein ' +
+        'Zauberwort. Jedes Mal wächst das Portal ein Stück, bis du hindurchpasst. ' +
         'Dahinter liegt DIE RIESENBURG! 🏰 Aber Achtung: Sobald du durch bist, ' +
         'schließt es sich sofort wieder.');
       P(16,by+1,6,SIGN);                                // die Garage (Tor im Osten!)
@@ -5657,7 +5658,7 @@ function baueSpielstand() {
       radio: radioAn ? [radioAn, radioSender] : null,   // 📻 läuft gerade Musik?
       konto: kontoStand,                // 🏦 dein Erspartes auf der Bank
       rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
-      rbMuster: rbMusterCode,           // 🖐️ Jonahs eigenes Wisch-Muster
+      rbCodes,                          // 🔮 Jonahs vier eigene Codes
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
       ueberErde: altesGoldWeg,          //    (ab Version 252 steht alles über der Erde)
       tresorAuf: tresorOffen,           // 🔐 steht die große Tresortür offen?
@@ -5842,7 +5843,9 @@ function loadGame() {
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
     if (typeof s.rbStufe==='number') rbStufe = s.rbStufe;    // 🔮 Riesenburg-Rätsel
-    if (typeof s.rbMuster==='string') rbMusterCode = s.rbMuster;   // 🖐️ das Wisch-Muster
+    if (Array.isArray(s.rbCodes))                            // 🔮 die vier eigenen Codes
+      for (let i = 0; i < rbCodes.length; i++)
+        if (typeof s.rbCodes[i] === 'string') rbCodes[i] = s.rbCodes[i];
     // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
     const ausTresor = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
     if (ausTresor > 0) {
@@ -16757,6 +16760,10 @@ function inRiesenburg(x, z) {
 function rbEtage(dy) { return Math.floor((dy - 1) / RB_ETAGE); }
 // 🛏️ DIE 36 ZIMMER: jedes bekommt seine eigene Einrichtung. rx/rz sagen, in
 // welchem der drei mal drei Zimmer man steht, mx/mz ist dessen Mittelpunkt.
+// 🤸 Die drei Sprungbretter im Pool-Raum: [Höhe, Platz auf der Treppe].
+// Von jeder Stufe der Turmtreppe geht auf gleicher Höhe ein Brett über das
+// Wasser - unten ein kleines, dann ein mittleres, oben das hohe.
+const RB_SPRUNGBRETTER = [[3, -4], [6, -1], [9, 2]];
 // deko(ox, oz, h) sagt, was an dieser Stelle im Zimmer steht. ox/oz zählen vom
 // Zimmer-Mittelpunkt, h ist die Höhe über dem Zimmerboden (1 = ganz unten).
 const RB_ZIMMER = [
@@ -16778,11 +16785,22 @@ const RB_ZIMMER = [
       : (ox === 4 && oz === 0) ? TRAMPOLIN : null },
   // ---------- ab hier die LUXUS-ZIMMER 💎 ----------
   { name: '🏊 DER POOL-RAUM', deko: (ox, oz, h) => {
+      // 🤸 DER SPRUNGTURM: eine Treppe hoch und DREI Bretter in verschiedenen
+      // Höhen - ein niedriges, ein mittleres und ein ganz hohes.
+      for (const [bh, boz] of RB_SPRUNGBRETTER)
+        if (h === bh && oz === boz && ox >= -9 && ox <= -6) return SPRUNGTURM;
+      // Die Treppe endet beim obersten Brett (oz=2, Höhe 9). Eine Stufe höher
+      // wäre die Decke zu dicht über dem Kopf.
+      if (ox === -10 && oz === 3 && h >= 10 && h <= 11) return FENCE;   // Geländer oben
+      if (ox === -10 && oz >= -6 && oz <= 2) {              // die Treppe nach oben
+        if (h === oz + 7) return TREP_S;                    // die Stufe
+        if (h >= 1 && h < oz + 7) return SCHUTZ;            // der Unterbau
+        return AIR;
+      }
       const rand = Math.abs(ox) <= 7 && Math.abs(oz) <= 5;
       const becken = Math.abs(ox) <= 6 && Math.abs(oz) <= 4;
       if (h === 1 && becken) return WATER;                  // das Wasser
       if (h === 1 && rand) return GLASS;                    // der gekachelte Rand
-      if (h === 1 && ox === -9 && Math.abs(oz) <= 1) return SPRUNGTURM;   // Sprungbrett
       if (h === 1 && Math.abs(ox) === 9 && Math.abs(oz) === 4) return CHAIR;
       if (h === 1 && Math.abs(ox) === 10 && Math.abs(oz) === 4) return BLUME;
       return null; } },
@@ -16918,20 +16936,20 @@ function riesenBlock(dx, dz, y) {
       return AIR;                                 // das Portal schwebt frei darin
     }
     // 🛏️ DIE EINRICHTUNG der 36 Zimmer
-    if (aufEtage >= 1 && aufEtage <= 4) {
+    // bis fast unter die Decke - der Sprungturm im Pool ist neun Blöcke hoch!
+    if (aufEtage >= 1 && aufEtage < RB_ETAGE) {
       const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
       if (aufEtage === 1 && ox === 0 && oz === 6) return SIGN;   // 🪧 Schild mit dem Namen
-      // der Thronsaal: die Mitte der obersten Etage
-      if (et === RB_ETAGEN - 1 && z.nr === 4) {
-        if (aufEtage !== 1) return AIR;
-        if (ox === 0 && oz === -2) return THRON;
-        if (ox === -1 && oz === -3) return KRONE;
-        if (ox === 1 && oz === -3) return ZEPTER;
-        return null;
+      if (et === RB_ETAGEN - 1 && z.nr === 4) {                  // 👑 der Thronsaal
+        if (aufEtage === 1) {
+          if (ox === 0 && oz === -2) return THRON;
+          if (ox === -1 && oz === -3) return KRONE;
+          if (ox === 1 && oz === -3) return ZEPTER;
+        }
+      } else if (!(et === 0 && z.nr === 4)) {                    // ✨ Portal-Halle bleibt frei
+        const m = RB_ZIMMER[(et * 9 + z.nr) % RB_ZIMMER.length].deko(ox, oz, aufEtage);
+        if (m !== null) return m;
       }
-      if (et === 0 && z.nr === 4) return null;                   // die Portal-Halle bleibt frei
-      const m = RB_ZIMMER[(et * 9 + z.nr) % RB_ZIMMER.length].deko(ox, oz, aufEtage);
-      if (m !== null) return m;
     }
     if (aufEtage === 0 && et === RB_ETAGEN - 1) {
       const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
@@ -16971,23 +16989,30 @@ function riesenBlock(dx, dz, y) {
 // sich Jonah selbst ein Muster aus (mindestens vier Punkte), danach muss er
 // genau dieses wieder zeichnen.
 const MUSTER_N = 3;                     // 3x3 Punkte
-let rbMusterCode = '';                  // Jonahs eigenes Muster, z.B. "0,3,6,7"
-let musterZug = [], musterMalt = false, musterFalsch = 0;
+let musterZug = [], musterMalt = false;
+// Jedes Rätsel ist ein EIGENER Code, den Jonah sich selbst ausdenkt - genau wie
+// der Code an seiner Tresortür. Beim ersten Mal legt er ihn fest, danach muss er
+// ihn jedes Mal wieder eingeben.
 const RB_RAETSEL = [
-  { art:'zahlen', kopf:'1. DER ZAHLEN-CODE 🔢',
-    info:'Diese vier Zahlen sind durcheinander geraten. Tipp sie der Reihe nach ein – ' +
-         'von der KLEINSTEN zur GRÖSSTEN!',
-    zeigen:'7  3  9  1', loesung:'1379' },
-  { art:'muster', kopf:'2. DEIN WISCH-MUSTER 🖐️',
-    info:'', zeigen:'', loesung:'' },
-  { art:'farben', kopf:'3. DIE FARBEN-FOLGE 🌈',
-    info:'Hier ist eine Folge von Farben. Tipp sie RÜCKWÄRTS ein – also die letzte zuerst!',
-    zeigen:'🔴 🟡 🔵 🟢 🟡', loesung:'🟡🟢🔵🟡🔴' },
-  { art:'wort',   kopf:'4. DAS ZAUBERWORT 🔤',
-    info:'Die Buchstaben sind durcheinander. Wie heißt das Wort? (Tipp: so nennt man ' +
-         'das große Gebäude, in dem ein König wohnt.)',
-    zeigen:'G  R  U  B', loesung:'BURG' },
+  { art:'zahlen', kopf:'1. DEIN ZAHLEN-CODE 🔢', min:3, was:'Zahlen-Code',
+    neu:'Denk dir einen Zahlen-Code aus – <b>mindestens 3 Zahlen</b>. Genau diesen ' +
+        'Code brauchst du ab jetzt jedes Mal. <b>Merk ihn dir gut!</b>',
+    auf:'Tipp deinen geheimen Zahlen-Code ein.' },
+  { art:'muster', kopf:'2. DEIN WISCH-MUSTER 🖐️', min:4, was:'Wisch-Muster',
+    neu:'Denk dir ein eigenes Wisch-Muster aus! Fahr mit dem Finger über die Punkte – ' +
+        '<b>mindestens vier</b> müssen es sein. <b>Merk es dir gut!</b>',
+    auf:'Zeichne dein geheimes Wisch-Muster – genau so, wie du es dir ausgedacht hast.' },
+  { art:'farben', kopf:'3. DEINE FARBEN-FOLGE 🌈', min:4, was:'Farben-Folge',
+    neu:'Denk dir eine eigene Farben-Folge aus – <b>mindestens vier</b> Farben ' +
+        'nacheinander. Die brauchst du ab jetzt immer wieder!',
+    auf:'Tipp deine geheime Farben-Folge ein – in der richtigen Reihenfolge.' },
+  { art:'wort',   kopf:'4. DEIN ZAUBERWORT 🔤', min:3, was:'Zauberwort',
+    neu:'Denk dir ein eigenes Zauberwort aus – <b>mindestens 3 Buchstaben</b>. Zum ' +
+        'Beispiel deinen Namen oder etwas ganz Verrücktes. <b>Merk es dir gut!</b>',
+    auf:'Tipp dein geheimes Zauberwort ein.' },
 ];
+let rbCodes = ['', '', '', ''];         // Jonahs eigene Codes, einer je Rätsel
+let rbFalsch = [0, 0, 0, 0];            // wie oft war es schon daneben?
 let rbEingabe = '';
 function rbStufenReihe(fertig) {
   return RB_RAETSEL.map((r, i) => i < fertig ? '✅' : i === fertig ? '🔸' : '⬜').join(' ');
@@ -17051,22 +17076,19 @@ function rbZeichnen() {
   const r = RB_RAETSEL[rbStufe];
   document.getElementById('rbKopf').textContent = r.kopf;
   document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
-  document.getElementById('rbInfo').innerHTML = r.info;
+  // beim ersten Mal ausdenken, danach eingeben - und nach zwei Fehlversuchen
+  // flüstert Johann den Code zu, damit Jonah sich nie aussperrt
+  const istNeu = !rbCodes[rbStufe];
+  document.getElementById('rbInfo').innerHTML = (istNeu ? r.neu : r.auf) +
+    (!istNeu && rbFalsch[rbStufe] >= 2
+      ? '<br>🤵 Johann flüstert dir zu: dein ' + r.was + ' ist <b>' +
+        rbCodeText(rbStufe) + '</b>'
+      : '');
   const zeig = document.getElementById('rbZeigen');
   const feld = document.getElementById('rbFeld');
   feld.innerHTML = '';
   const mf = document.getElementById('rbMusterFeld');
   if (r.art === 'muster') {
-    const neu = !rbMusterCode;
-    document.getElementById('rbInfo').innerHTML = neu
-      ? 'Denk dir ein eigenes Wisch-Muster aus! Fahr mit dem Finger über die Punkte – ' +
-        '<b>mindestens vier</b> müssen es sein. Genau dieses Muster brauchst du ab jetzt ' +
-        'immer wieder. <b>Merk es dir gut!</b> 🖐️'
-      : 'Zeichne dein geheimes Wisch-Muster! Fahr mit dem Finger über die Punkte – ' +
-        'genau so, wie du es dir ausgedacht hast. 🖐️' +
-        (musterFalsch >= 2 ? '<br>🤵 Tipp von Johann: es sind ' +
-         rbMusterCode.split(',').length + ' Punkte, der erste ist Nummer ' +
-         (+rbMusterCode.split(',')[0] + 1) + ' (von oben links gezählt).' : '');
     zeig.textContent = musterZug.length ? '🖐️ ' + musterZug.length + ' Punkte' : '🖐️';
     mf.style.display = 'block';
     musterMalen();
@@ -17077,7 +17099,10 @@ function rbZeichnen() {
     return;
   }
   mf.style.display = 'none';
-  zeig.textContent = r.zeigen + (rbEingabe ? '   ➜   ' + rbEingabe : '');
+  // die Eingabe wird als Punkte gezeigt - mitlesen soll ja keiner können
+  zeig.textContent = rbEingabe
+    ? (istNeu ? rbEingabe : [...rbEingabe].map(() => '●').join(' '))
+    : '– – –';
   if (r.art === 'zahlen') {
     feld.style.gridTemplateColumns = 'repeat(5, 1fr)';
     for (const t of '1234567890'.split(''))
@@ -17108,57 +17133,64 @@ function openRahmen() {
   if (document.exitPointerLock) document.exitPointerLock();
   blip(520,0.05); blip(700,0.05); blip(900,0.05);
 }
+function rbEingabeJetzt() {             // was hat Jonah gerade eingegeben?
+  return RB_RAETSEL[rbStufe].art === 'muster' ? musterZug.join(',') : rbEingabe;
+}
+function rbLaenge() {                   // wie viele Zeichen/Punkte sind das?
+  const r = RB_RAETSEL[rbStufe];
+  return r.art === 'muster' ? musterZug.length : [...rbEingabe].length;
+}
+function rbCodeText(i) {                // so sieht der gespeicherte Code lesbar aus
+  return RB_RAETSEL[i].art === 'muster'
+    ? rbCodes[i].split(',').map(n => +n + 1).join(' → ')
+    : rbCodes[i];
+}
 function rbPruefen() {
   const r = RB_RAETSEL[rbStufe];
-  // 🖐️ beim Wisch-Muster: beim ersten Mal wird es festgelegt, danach geprüft
-  if (r.art === 'muster') {
-    if (!rbMusterCode) {
-      if (musterZug.length < 4) {
-        toast('🖐️ Dein Muster braucht mindestens vier Punkte – zieh noch ein Stück ' +
-              'weiter!', 4000);
-        blip(200,0.12); return false;
-      }
-      rbMusterCode = musterZug.join(',');
-      musterFalsch = 0;
-      toast('🖐️✅ Gemerkt! Das ist ab jetzt DEIN Wisch-Muster (' + musterZug.length +
-            ' Punkte). Merk es dir gut – du brauchst es jedes Mal wieder! 🤫', 9000);
-    } else if (musterZug.join(',') !== rbMusterCode) {
-      musterFalsch++;
-      musterZug = [];
-      toast('🖐️❌ Das war nicht dein Muster. Probier es nochmal!' +
-            (musterFalsch >= 2 ? ' (Johann gibt dir oben einen Tipp. 🤵)' : ''), 5000);
-      blip(220,0.14); blip(140,0.2);
-      rbZeichnen();
-      return false;
-    } else musterFalsch = 0;
-  }
-  const eingabe = r.art === 'muster' ? r.loesung : rbEingabe;
-  if (eingabe === r.loesung) {
-    rbStufe++;
-    rbEingabe = ''; musterZug = [];
-    document.getElementById('rbMusterFeld').style.display = 'none';
-    rbPortalSetzen();
-    rbFunken();
-    for (const f of [523,659,784,1047]) blip(f,0.09);
-    scheduleSave();
-    if (rbStufe >= RB_RAETSEL.length) {
-      document.getElementById('rbBox').style.display = 'none';
-      toast('🔮✨ ALLE VIER RÄTSEL GELÖST! Das Portal ist jetzt so groß, dass du ' +
-            'hindurchpasst. Geh hinein – DIE RIESENBURG wartet auf dich! 🏰', 9000);
-    } else {
-      document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
-      toast('🔮 RICHTIG! Das Portal wächst… noch ' + (RB_RAETSEL.length - rbStufe) +
-            ' Rätsel, dann passt du hindurch. ✨', 5000);
-      rbZeichnen();
+  const eingabe = rbEingabeJetzt();
+  let gemerkt = '';                     // die Nachricht „neuer Code gemerkt"
+  if (!rbCodes[rbStufe]) {              // ---- beim ERSTEN Mal: Code festlegen ----
+    if (rbLaenge() < r.min) {
+      toast('🔮 Dein ' + r.was + ' braucht mindestens ' + r.min +
+            (r.art === 'muster' ? ' Punkte' : ' Zeichen') + ' – mach noch ein bisschen ' +
+            'weiter!', 4500);
+      blip(200,0.12); return false;
     }
-    return true;
+    rbCodes[rbStufe] = eingabe;
+    rbFalsch[rbStufe] = 0;
+    // WICHTIG: das steht gleich mit in der Erfolgs-Nachricht - sonst wäre es nach
+    // einem Augenblick wieder weg und Jonah wüsste seinen neuen Code nicht mehr.
+    gemerkt = '🔮✅ GEMERKT! Dein ' + r.was + ' ist ab jetzt: ' + rbCodeText(rbStufe) +
+              ' – merk es dir gut, du brauchst es jedes Mal wieder! 🤫 ';
+  } else if (eingabe !== rbCodes[rbStufe]) {   // ---- danach: prüfen ----
+    rbFalsch[rbStufe]++;
+    rbEingabe = ''; musterZug = [];
+    toast('🔮❌ Das war nicht dein ' + r.was + '. Probier es nochmal!' +
+          (rbFalsch[rbStufe] >= 2 ? ' (Johann flüstert dir oben einen Tipp zu. 🤵)' : ''), 5500);
+    blip(220,0.14); blip(140,0.2);
+    rbZeichnen();
+    return false;
+  } else rbFalsch[rbStufe] = 0;
+  // ---- geschafft: das Portal wächst ----
+  rbStufe++;
+  rbEingabe = ''; musterZug = [];
+  document.getElementById('rbMusterFeld').style.display = 'none';
+  rbPortalSetzen();
+  rbFunken();
+  for (const f of [523,659,784,1047]) blip(f,0.09);
+  scheduleSave();
+  if (rbStufe >= RB_RAETSEL.length) {
+    document.getElementById('rbBox').style.display = 'none';
+    toast(gemerkt + '🔮✨ ALLE VIER CODES RICHTIG! Das Portal ist jetzt so groß, dass du ' +
+          'hindurchpasst. Geh hinein – DIE RIESENBURG wartet auf dich! 🏰',
+          gemerkt ? 14000 : 9000);
+  } else {
+    document.getElementById('rbStufenReihe').textContent = rbStufenReihe(rbStufe);
+    toast(gemerkt + '🔮 RICHTIG! Das Portal wächst… noch ' + (RB_RAETSEL.length - rbStufe) +
+          ' Codes, dann passt du hindurch. ✨', gemerkt ? 12000 : 5000);
+    rbZeichnen();
   }
-  rbEingabe = '';
-  toast('🔮❌ Das war noch nicht richtig. Schau nochmal genau hin und probier es ' +
-        'wieder – du schaffst das! 💪', 5000);
-  blip(220,0.14); blip(140,0.2);
-  rbZeichnen();
-  return false;
+  return true;
 }
 // ✨ Das Portal im Rahmen so setzen, wie viele Rätsel gelöst sind
 function rbPortalSetzen() {
