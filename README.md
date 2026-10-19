@@ -221,6 +221,19 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE RIESENBURG IST EINE EIGENE WELT (v275)! 🏰🌍 Jonah hat erklärt, was er
+  wirklich meinte: Hinter dem Portal soll eine ganz eigene Welt liegen – da,
+  wo die Riesenburg steht, soll NICHTS von zu Hause sein. Genau so ist es
+  jetzt: Die Riesenburg hat ihre eigene Welt bekommen (wie die Planeten und
+  Jonahs geheimer Jonah-Planet). Dort gibt es nur die Burg, Wiesen, Wälder und
+  einen Sternenhimmel – keine Dörfer, kein Kino, keine normale Burg, keine
+  Straßen, keine Räuber. In Jonahs normaler Welt wiederum ist von der
+  Riesenburg nichts mehr zu finden. Das Portal im silbernen Rahmen wechselt
+  beim Durchgehen die Welt, das Rück-Portal in der Portal-Halle bringt ihn
+  zurück – und weil es wirklich zwei Welten sind, kommt man NUR so hinüber:
+  kein Teleport, kein Flug, kein Weg. Die Tore der Riesenburg stehen dabei
+  offen, drüben darf Jonah überall hin. Damit sich niemand verläuft, steht im
+  🛸-Menü drüben immer „🔮 Zum Rück-Portal".
 - NUR DURCH DAS PORTAL ZUR RIESENBURG (v274)! 🏰🔮 Jonah hat erklärt, wie er
   es gemeint hatte: Die Tore sollen natürlich offen sein – aber HINKOMMEN soll
   man nur durch das Portal. Beides gibt es jetzt: Das Haupttor am Haus und das
