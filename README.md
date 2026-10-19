@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- PERSONAL, TÜR-SCHILDER UND EIN KELLER FÜR DIE RIESENBURG (v272)! 🏰🤵🕳️
+  Vier Wünsche von Jonah auf einmal:
+  🤵🔧 In der Riesenburg wohnen jetzt VIER Diener und VIER Hausmeister –
+  Ferdinand, Gustav, Marie, Konstantin, Rudi, Theo, Berta und Ottokar. Sie
+  bleiben immer dort (ihr Dienst-Zuhause ist die Riesenburg) und machen alles,
+  was Jonah ihnen sagt.
+  🪧 Vor JEDER Tür steht jetzt ein Schild – 96 Stück! Darauf steht, welches
+  Zimmer hinter der Tür liegt („🚪 Durch diese Tür: 🏊 DER POOL-RAUM").
+  🔒 Es gibt KEINEN Eingang mehr: weder ein Burgtor in der Ringmauer noch ein
+  Haupttor am Haus. Man kommt nur noch durch das Portal hinein. Wer es anders
+  versucht (zum Beispiel über die Mauer geflogen), steht sofort wieder daheim
+  vor seinem silbernen Rahmen.
+  🕳️ Und ganz unten gibt es jetzt einen riesigen KELLER (61×61 Blöcke, neun
+  Blöcke hoch). Eine Treppe in der Portal-Halle führt hinunter. Dort warten das
+  GOLD-LAGER 👑, die SCHATZKAMMER 💎, die VORRATSKAMMER 🍬 und Jonahs geheime
+  SPIELHÖHLE 🕹️ – mit Fackeln, Säulen und einem Schild an der Treppe.
 - DAS PORTAL FÄLLT WIRKLICH HINTER DIR ZU (v271)! 🔮🔒 Jonah hat gemeldet:
   „Das Portal hat sich nicht hinter mir geschlossen." Jetzt gibt es ein
   Sicherheitsnetz: Solange Jonah in der Nähe des silbernen Rahmens ist, schaut
