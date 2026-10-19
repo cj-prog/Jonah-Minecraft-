@@ -221,6 +221,22 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- LUXUS-RÄUME IN DER RIESENBURG (v268)! 🏊💎 Jonah wollte Luxus in seiner
+  Riesenburg – zum Beispiel einen Raum mit Pool. Jetzt gibt es dort zwölf
+  verschiedene Zimmer-Sorten, davon sieben Luxus-Räume:
+  🏊 DER POOL-RAUM: ein großes Wasserbecken mit gekacheltem Glasrand, einem
+  Sprungbrett und Liegestühlen mit Blumen.
+  🎬 DAS HEIMKINO: eine riesige Leinwand über drei Blöcke Höhe und drei Reihen
+  Kinosessel davor.
+  🕹️ DIE SPIELHALLE: sechs verschiedene Spielautomaten zum Zocken, Stühle davor
+  und ein Trampolin.
+  🍬 DAS SÜSSIGKEITEN-ZIMMER: Regale voller Bonbons, Zuckerstangen, Lutscher und
+  Schokolade – und ein Tisch zum Naschen.
+  🌴 DER WINTERGARTEN: vier Palmen, ein Teich mit Wiese drumherum und Blumen.
+  👑 DER GOLD-SAAL: ein goldenes Bodenmuster, Pokal, Kronen und ein Zepter.
+  🛁 DAS LUXUS-BAD: eine riesige Wanne zum Hineinsetzen, Toiletten und Waschbecken.
+  🚪 Nebenbei repariert: Die Türen zwischen den Zimmern saßen in den Zimmerecken.
+  Jetzt sind sie da, wo sie hingehören – in der Mitte jeder Wand.
 - DEIN EIGENES WISCH-MUSTER (v267)! 🖐️🔮 Jonah wollte das zweite Rätsel anders:
   kein Zeichen abmalen („sonst wäre es ja viel zu einfach“), sondern selbst eins
   zeichnen – wie das PIN-Muster auf dem Handy.
