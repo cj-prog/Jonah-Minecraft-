@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS PORTAL FÄLLT WIRKLICH HINTER DIR ZU (v271)! 🔮🔒 Jonah hat gemeldet:
+  „Das Portal hat sich nicht hinter mir geschlossen." Jetzt gibt es ein
+  Sicherheitsnetz: Solange Jonah in der Nähe des silbernen Rahmens ist, schaut
+  das Spiel jede Sekunde nach, ob das Portal auch wirklich genau so aussieht,
+  wie viele Codes gelöst sind – ein übriggebliebener Portal-Block wird sofort
+  weggeräumt. Und dass das Portal zugefallen ist, wird ab sofort SOFORT
+  gespeichert (vorher erst eine knappe Sekunde später – ging in der Zeit etwas
+  schief, stand es nach dem Neuladen wieder offen). Außerdem steht in der
+  Riesenburg jetzt ein Schild direkt neben der Ankunft: Das Portal DORT bleibt
+  mit Absicht immer offen – es ist Jonahs Heimweg. 🏠
 - ALLE VIER CODES GEHÖREN DIR (v270)! 🔐🔮 Jonah wollte es richtig schwer:
   Am silbernen Rahmen bekommt er jetzt KEINE Codes mehr vorgesetzt – er denkt
   sich alle vier selbst aus, genau wie bei der Tür zu seinem Geldspeicher:

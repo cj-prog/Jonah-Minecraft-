@@ -1393,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 270 &middot; 🔐 ALLE VIER CODES GEHÖREN JETZT DIR! Am silbernen Rahmen denkst du dir jeden Code selbst aus – Zahlen-Code, Wisch-Muster, Farben-Folge und Zauberwort – genau wie bei deiner Tresortür. Danach musst du sie jedes Mal eingeben. 🤸 Und im Pool steht ein Sprungturm mit drei Brettern. 🏊</p>
+    Version 271 &middot; 🔮🔒 DAS PORTAL FÄLLT JETZT WIRKLICH HINTER DIR ZU! Sollte doch einmal ein Portal-Block stehenbleiben, räumt das Spiel ihn von selbst weg – und in der Riesenburg steht jetzt ein Schild, das dir das Rück-Portal erklärt: DAS bleibt immer offen, es ist dein Heimweg. 🏠</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 270;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 271;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -16935,6 +16935,8 @@ function riesenBlock(dx, dz, y) {
       if ((dx === -1 || dx === 0) && (aufEtage === 2 || aufEtage === 3)) return RBPORTAL;
       return AIR;                                 // das Portal schwebt frei darin
     }
+    // 🪧 Gleich neben der Ankunft: welches Portal ist das hier eigentlich?
+    if (et === 0 && dx === 2 && dz === 3 && aufEtage === 1) return SIGN;
     // 🛏️ DIE EINRICHTUNG der 36 Zimmer
     // bis fast unter die Decke - der Sprungturm im Pool ist neun Blöcke hoch!
     if (aufEtage >= 1 && aufEtage < RB_ETAGE) {
@@ -17214,9 +17216,23 @@ function rbFunken() {
       tile:172, t:0.8 });
 }
 // 🚶 DURCH DAS PORTAL GEHEN: hin zur Riesenburg - und zurück
+let rbPruefUhr = 0;                             // jede Sekunde einmal nachschauen
 function rbPortalTick(dt) {
   if (rbSperre > 0) { rbSperre -= dt; return; }
   if (weltDim !== 0) return;
+  // 🔒 SICHERHEITSNETZ: Das Portal im silbernen Rahmen muss immer genau so
+  // aussehen, wie viele Codes gelöst sind. Wäre beim Durchgehen einmal ein
+  // Block hängengeblieben (zum Beispiel weil die Chunks gerade nicht geladen
+  // waren), stünde das Portal für immer offen. Darum: in der Nähe des Rahmens
+  // einmal pro Sekunde aufräumen.
+  rbPruefUhr -= dt;
+  if (rbPruefUhr <= 0) {
+    rbPruefUhr = 1;
+    const B = burgPos();
+    if (!inRiesenburg(player.x, player.z) &&
+        Math.abs(player.x - (B.bx + RB_RAHMEN_X0)) < 60 &&
+        Math.abs(player.z - (B.bz + RB_RAHMEN_Z)) < 60) rbPortalSetzen();
+  }
   // Das Portal schwebt über dem Boden - also auch auf Brust- und Kopfhöhe schauen
   const px = Math.floor(player.x), pz = Math.floor(player.z);
   let drin = false;
@@ -17239,12 +17255,15 @@ function rbPortalTick(dt) {
           'unzerstörbarem Stein. Hinter dir ist das Portal zugefallen – das hier bringt ' +
           'dich wieder nach Hause. 🔮', 10000);
   }
+  // SOFORT speichern - und zwar VOR allem Hübschen: Dass das Portal zugefallen
+  // ist, darf auf keinen Fall verloren gehen, sonst stünde es nach dem
+  // Neuladen wieder offen.
+  clearTimeout(saveTimer); saveGame();
   for (const f of [880,660,520,760,990]) blip(f,0.09);
   for (let i = 0; i < 24; i++)
     fireworks.push({ x: player.x+(Math.random()-0.5)*2, y: player.y+0.5+Math.random()*2,
       z: player.z+(Math.random()-0.5)*2, vx:(Math.random()-0.5)*3, vy:1+Math.random()*3,
       vz:(Math.random()-0.5)*3, tile:172, t:1 });
-  scheduleSave();
 }
 function riesenChunk(cx, cz) {
   riesenHoehe();
@@ -17277,6 +17296,10 @@ function riesenStempeln(data, cx, cz) {
       schild(mx, et * RB_ETAGE + 1, mz + 6, name + ' · Etage ' + (et + 1) + ' von ' +
              RB_ETAGEN + ' · Riesenburg 🏰');
     }
+  schild(2, 1, 3, '🏠 DAS IST DEIN HEIMWEG! Dieses Portal hier bleibt IMMER offen – ' +
+                  'geh einfach hinein, dann bist du wieder in deiner Burg. Das Portal ' +
+                  'DAHEIM ist hinter dir zugefallen: dafür musst du deine vier Codes ' +
+                  'noch einmal eingeben. 🔮');
   schild(0, 1, RB_KERN + 3, '🏰 DIE RIESENBURG VON KÖNIG JONAH - 36 Zimmer auf vier Etagen, ' +
                             'alles aus unzerstörbarem Schutz-Stein! Die Treppe nach oben ' +
                             'findest du in der Nordwest-Ecke. 🪜');
