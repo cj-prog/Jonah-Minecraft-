@@ -1393,7 +1393,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 267 &middot; 🖐️ DEIN EIGENES WISCH-MUSTER! Beim zweiten Rätsel denkst du dir jetzt selbst ein Muster aus – wie der PIN auf dem Handy. Und das Portal ist kleiner geworden: Der Rahmen ist unten offen, und das Portal schwebt frei darin. 🔮</p>
+    Version 268 &middot; 🏊💎 LUXUS-RÄUME IN DER RIESENBURG! Jetzt gibt es dort einen Pool-Raum zum Schwimmen, ein Heimkino, eine Spielhalle, ein Süßigkeiten-Zimmer, einen Wintergarten mit Palmen, einen Gold-Saal und ein Luxus-Bad. ✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1439,7 +1439,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 267;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 268;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -16757,19 +16757,83 @@ function inRiesenburg(x, z) {
 function rbEtage(dy) { return Math.floor((dy - 1) / RB_ETAGE); }
 // 🛏️ DIE 36 ZIMMER: jedes bekommt seine eigene Einrichtung. rx/rz sagen, in
 // welchem der drei mal drei Zimmer man steht, mx/mz ist dessen Mittelpunkt.
+// deko(ox, oz, h) sagt, was an dieser Stelle im Zimmer steht. ox/oz zählen vom
+// Zimmer-Mittelpunkt, h ist die Höhe über dem Zimmerboden (1 = ganz unten).
 const RB_ZIMMER = [
-  { name: '🛏️ Schlafsaal',     deko: (ox, oz) => (oz === -3 && ox % 4 === 0 && Math.abs(ox) <= 8) ? BED
-                                      : (oz === -3 && ((ox+1) % 4 === 0) && Math.abs(ox) <= 9) ? CHEST : null },
-  { name: '🍽️ Speisesaal',     deko: (ox, oz) => (Math.abs(ox) <= 3 && oz === 0) ? TABLE
-                                      : (Math.abs(ox) <= 4 && Math.abs(oz) === 1 && Math.abs(ox) <= 3) ? CHAIR : null },
-  { name: '💎 Schatzkammer',   deko: (ox, oz) => (Math.abs(oz) === 4 && ox % 3 === 0 && Math.abs(ox) <= 6) ? CHEST
-                                      : (ox === 0 && oz === 0) ? POKAL : null },
-  { name: '📚 Bücherzimmer',   deko: (ox, oz) => (Math.abs(oz) === 5 && Math.abs(ox) <= 7) ? CABINET : null },
-  { name: '🏋️ Trainingsraum',  deko: (ox, oz) => (ox === -4 && oz === 0) ? HANTEL
-                                      : (ox === 0 && oz === 0) ? LAUFBAND
-                                      : (ox === 4 && oz === 0) ? TRAMPOLIN : null },
-  { name: '🛁 Badezimmer',     deko: (ox, oz) => (oz === -4 && ox % 4 === 0 && Math.abs(ox) <= 4) ? TOILET
-                                      : (oz === -4 && ((ox+2) % 4 === 0) && Math.abs(ox) <= 6) ? SINK : null },
+  { name: '🛏️ Schlafsaal', deko: (ox, oz, h) => h !== 1 ? null
+      : (oz === -3 && ox % 4 === 0 && Math.abs(ox) <= 8) ? BED
+      : (oz === -3 && ((ox+1) % 4 === 0) && Math.abs(ox) <= 9) ? CHEST : null },
+  { name: '🍽️ Speisesaal', deko: (ox, oz, h) => h !== 1 ? null
+      : (Math.abs(ox) <= 3 && oz === 0) ? TABLE
+      : (Math.abs(ox) <= 3 && Math.abs(oz) === 1) ? CHAIR : null },
+  { name: '💎 Schatzkammer', deko: (ox, oz, h) => h !== 1 ? null
+      : (Math.abs(oz) === 4 && ox % 3 === 0 && Math.abs(ox) <= 6) ? CHEST
+      : (ox === 0 && oz === 0) ? POKAL : null },
+  { name: '📚 Bücherzimmer', deko: (ox, oz, h) =>
+      (h <= 2 && Math.abs(oz) === 5 && Math.abs(ox) <= 7) ? CABINET
+      : (h === 1 && ox === 0 && Math.abs(oz) <= 1) ? TABLE : null },
+  { name: '🏋️ Trainingsraum', deko: (ox, oz, h) => h !== 1 ? null
+      : (ox === -4 && oz === 0) ? HANTEL
+      : (ox === 0 && oz === 0) ? LAUFBAND
+      : (ox === 4 && oz === 0) ? TRAMPOLIN : null },
+  // ---------- ab hier die LUXUS-ZIMMER 💎 ----------
+  { name: '🏊 DER POOL-RAUM', deko: (ox, oz, h) => {
+      const rand = Math.abs(ox) <= 7 && Math.abs(oz) <= 5;
+      const becken = Math.abs(ox) <= 6 && Math.abs(oz) <= 4;
+      if (h === 1 && becken) return WATER;                  // das Wasser
+      if (h === 1 && rand) return GLASS;                    // der gekachelte Rand
+      if (h === 1 && ox === -9 && Math.abs(oz) <= 1) return SPRUNGTURM;   // Sprungbrett
+      if (h === 1 && Math.abs(ox) === 9 && Math.abs(oz) === 4) return CHAIR;
+      if (h === 1 && Math.abs(ox) === 10 && Math.abs(oz) === 4) return BLUME;
+      return null; } },
+  { name: '🎬 DAS HEIMKINO', deko: (ox, oz, h) => {
+      if (h <= 3 && oz === -7 && Math.abs(ox) <= 5)
+        return [SCREEN_BOWL, SCREEN_RACE, SCREEN_FROG][h-1];  // die große Leinwand
+      if (h === 1 && (oz === -2 || oz === 1 || oz === 4) && Math.abs(ox) <= 5) return CHAIR;
+      if (h === 1 && Math.abs(ox) === 7 && oz === -5) return TORCH;
+      return null; } },
+  { name: '🕹️ DIE SPIELHALLE', deko: (ox, oz, h) => {
+      if (h !== 1) return null;
+      const autom = [SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE,
+                     SCREEN_PONG, SCREEN_FROG];
+      if (oz === -5 && ox >= -5 && ox <= 5 && (ox + 5) % 2 === 0)
+        return autom[((ox + 5) / 2) % autom.length];
+      if (oz === -3 && ox >= -5 && ox <= 5 && (ox + 5) % 2 === 0) return CHAIR;
+      if (oz === 3 && Math.abs(ox) <= 2) return TRAMPOLIN;
+      return null; } },
+  { name: '🍬 DAS SÜSSIGKEITEN-ZIMMER', deko: (ox, oz, h) => {
+      const sued = [BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO];
+      if (h <= 3 && Math.abs(oz) === 6 && Math.abs(ox) <= 8)
+        return sued[(Math.abs(ox) + h) % sued.length];       // Regale voller Naschkram
+      if (h === 1 && Math.abs(ox) <= 2 && oz === 0) return TABLE;
+      if (h === 1 && Math.abs(ox) <= 2 && Math.abs(oz) === 1) return CHAIR;
+      return null; } },
+  { name: '🌴 DER WINTERGARTEN', deko: (ox, oz, h) => {
+      const baum = Math.abs(ox) === 6 && Math.abs(oz) === 6;
+      if (baum && h <= 3) return WOOD;                        // vier Palmen
+      if (h === 4 && Math.abs(Math.abs(ox) - 6) <= 1 && Math.abs(Math.abs(oz) - 6) <= 1) return LEAF;
+      if (h === 1 && Math.abs(ox) <= 3 && Math.abs(oz) <= 2) return WATER;   // der Teich
+      if (h === 1 && (Math.abs(ox) === 4 || Math.abs(oz) === 3) &&
+          Math.abs(ox) <= 4 && Math.abs(oz) <= 3) return GRASS;
+      if (h === 1 && Math.abs(ox) === 8 && Math.abs(oz) <= 4 && oz % 2 === 0) return BLUME;
+      return null; } },
+  { name: '👑 DER GOLD-SAAL', deko: (ox, oz, h) => {
+      if (h !== 1) return null;
+      // erst die Schätze - sonst würde das goldene Muster den Pokal überdecken
+      if (ox === 0 && oz === 0) return POKAL;
+      if (Math.abs(ox) === 5 && Math.abs(oz) === 5) return KRONE;
+      if (Math.abs(ox) === 8 && oz === 0) return ZEPTER;
+      if (Math.abs(ox) <= 6 && Math.abs(oz) <= 6 &&
+          (Math.abs(ox) + Math.abs(oz)) % 4 === 0) return GOLD;   // goldenes Muster
+      return null; } },
+  { name: '🛁 DAS LUXUS-BAD', deko: (ox, oz, h) => {
+      if (h !== 1) return null;
+      if (Math.abs(ox) <= 3 && Math.abs(oz) <= 2) return WATER;   // die große Wanne
+      if (Math.abs(ox) === 4 && Math.abs(oz) <= 3) return GLASS;
+      if (Math.abs(oz) === 3 && Math.abs(ox) <= 4) return GLASS;
+      if (oz === -6 && ox % 4 === 0 && Math.abs(ox) <= 4) return TOILET;
+      if (oz === -6 && ((ox+2) % 4 === 0) && Math.abs(ox) <= 6) return SINK;
+      return null; } },
 ];
 function rbZimmerNr(dx, dz) {           // 0..8 - welches Zimmer der Etage?
   const rx = dx < -RB_WAND ? 0 : dx > RB_WAND ? 2 : 1;
@@ -16832,7 +16896,11 @@ function riesenBlock(dx, dz, y) {
     // ZIMMERWÄNDE: drei mal drei Zimmer je Etage, mit Türen in der Mitte
     if (adx === RB_WAND || adz === RB_WAND) {
       const laengs = adx === RB_WAND ? dz : dx;
-      const tuer = Math.abs(((laengs % 30) + 30) % 30 - 15) <= 2;   // alle 30 eine Tür
+      // Die Türen gehören in die MITTE jeder Zimmerwand (also dort, wo ein
+      // Zimmer-Mittelpunkt liegt). Vorher lagen sie genau auf den Wand-Kreuzungen
+      // in den Zimmerecken - da kam man nur um die Ecke von Raum zu Raum.
+      const n = ((laengs % 30) + 30) % 30;
+      const tuer = Math.min(n, 30 - n) <= 2;       // 5 Blöcke breit, alle 30 Blöcke
       if (tuer && aufEtage <= 4) return AIR;
       if (aufEtage === 7 && ((laengs % 5) + 5) % 5 === 0) return GLASS;  // Innenfenster
       return SCHUTZ;
@@ -16850,19 +16918,19 @@ function riesenBlock(dx, dz, y) {
       return AIR;                                 // das Portal schwebt frei darin
     }
     // 🛏️ DIE EINRICHTUNG der 36 Zimmer
-    if (aufEtage === 1) {
+    if (aufEtage >= 1 && aufEtage <= 4) {
       const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
-      if (ox === 0 && oz === 6) return SIGN;        // 🪧 das Schild mit dem Zimmernamen
+      if (aufEtage === 1 && ox === 0 && oz === 6) return SIGN;   // 🪧 Schild mit dem Namen
       // der Thronsaal: die Mitte der obersten Etage
       if (et === RB_ETAGEN - 1 && z.nr === 4) {
+        if (aufEtage !== 1) return AIR;
         if (ox === 0 && oz === -2) return THRON;
-        if (Math.abs(ox) <= 2 && oz >= -3 && oz <= -1) return null;   // Podest unten drunter
         if (ox === -1 && oz === -3) return KRONE;
         if (ox === 1 && oz === -3) return ZEPTER;
         return null;
       }
-      if (et === 0 && z.nr === 4) return null;                        // die Portal-Halle bleibt frei
-      const m = RB_ZIMMER[(et * 9 + z.nr) % RB_ZIMMER.length].deko(ox, oz);
+      if (et === 0 && z.nr === 4) return null;                   // die Portal-Halle bleibt frei
+      const m = RB_ZIMMER[(et * 9 + z.nr) % RB_ZIMMER.length].deko(ox, oz, aufEtage);
       if (m !== null) return m;
     }
     if (aufEtage === 0 && et === RB_ETAGEN - 1) {
