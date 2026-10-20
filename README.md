@@ -221,6 +221,13 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- GARAGE IN DER RIESENBURG, EIGENE HEIMKINO-FILME UND DIENER, DIE WIRKLICH JEMANDEN HOLEN (v283)! 🅿️🎬👉 Fünf Wünsche von Jonah auf einmal:
+  **(1)** Im Hof der Riesenburg steht jetzt eine riesige GARAGE (25x25 Blöcke, 13 hoch, 11 Blöcke breites Tor, goldene Parkplätze, Fackeln an den Wänden) – und sobald Jonah durch das Portal kommt, stehen Riesen-Roboter, Jet, Hubschrauber, Mähdrescher, Drache, Limousine und Rakete automatisch darin; auf dem Heimweg parken sie wieder in der Garage zu Hause.
+  **(2)** Das Heimkino zeigt jetzt DREI eigene Filme, die es im echten Kino nicht gibt: „Das Geheimnis der Riesenburg“ 🏰, „Roboter gegen Mähdrescher“ 🤖 und „Gute Nacht, kleiner Stern“ 🌟.
+  **(3)** Die Diener verstehen endlich „hol den Hausmeister her“ – der Gerufene lässt alles liegen und kommt wirklich zu Jonah (auch Ritter, Polizist, Butler, Händler, Bankier, Kind, Hund oder Katze).
+  **(4)** Leere Bücherregale sehen jetzt auch nach dem Neuladen leer aus (eigene Block-Bilder für leer und voll, die sich beim Ein- und Ausräumen umstellen).
+  **(5)** Im Keller der Riesenburg stehen wieder Wände zwischen den vier Räumen – mit breiten Durchgängen in der Mitte.
+  **(6)** Außerdem gefunden und repariert: Auf einem quer gehaltenen Handy war der grüne „Spielen“-Knopf aus dem Bild gerutscht, weil der Neuigkeiten-Text immer länger wird. Der Text hat jetzt eine Höchsthöhe und scrollt selbst.
 - IM HEIMKINO DER RIESENBURG LÄUFT JETZT EIN FILM (v282)! 🎬🍿 Jonah hat
   gemeldet: „Da kann ich gar keine Filme gucken, weil die Leinwand nur aus
   diesen Spielen gemacht ist." Stimmte – die Leinwand bestand aus drei
