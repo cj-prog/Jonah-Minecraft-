@@ -1480,7 +1480,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 283 &middot; 🅿️🏰 DEINE GARAGE IN DER RIESENBURG + DREI EIGENE HEIMKINO-FILME! Sobald du in der Riesenburg bist, parken dein Riesen-Roboter, Jet, Hubschrauber, Mähdrescher, Drache, die Limousine und die Rakete GANZ ALLEIN in deiner neuen Garage im Hof (rechts am Weg zum Burgtor). Im Heimkino laufen jetzt DREI ganz andere Filme als im echten Kino. Deine Diener holen dir jetzt wirklich jemanden – sag einfach „hol den Hausmeister her!“. Leere Bücherregale sehen endlich auch leer aus, und im Keller stehen wieder Wände zwischen den vier Räumen. 🤖🎬</p>
+    Version 284 &middot; 🎥🔍 DEINE EIGENEN FILME SIND JETZT SCHARF! Du hattest recht: Die Kamera hat deine Filme viel zu klein aufgenommen (nur 224 Punkte breit) und auf der großen Leinwand wurde das Bild dann auf das Fünffache aufgeblasen – darum war alles verwaschen. Jetzt filmt die Kamera mit 640 Punkten, und im Heimkino wird genauso fein gerechnet wie im großen Kino. Alles, was du ab jetzt drehst, ist richtig scharf! (Deine alten Filme bleiben leider unscharf – die Bilder von damals kann man nicht mehr schärfer machen. Dreh sie einfach noch einmal neu! 🎬)</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1526,7 +1526,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 283;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 284;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7110,7 +7110,9 @@ addEventListener('resize', resize); resize();
 // Bild: die Leinwand neu anzulegen ist teuer.
 function scharfTick(dt) {
   let drin = false;
-  try { drin = imKino(); } catch(e) {}
+  // 🏠 Auch im Heimkino der Riesenburg wird fein gerechnet - sonst sieht die
+  // Leinwand dort treppig aus (das galt vorher nur fürs große Kino).
+  try { drin = imKino() || !!heimkinoLeinwand(); } catch(e) {}
   if (drin !== scharfKino) { scharfKino = drin; scharfLangsam = 0; resize(); }
   // Sicherung: wenn es im Kino wirklich ruckelt (mehr als 30 ms pro Bild über
   // eine ganze Sekunde), eine Stufe zurückschalten statt Jonah ruckeln lassen.
@@ -15721,7 +15723,14 @@ function kinoBreiteAmSchirm(L) {
 // ... und danach die Größe des Filmbildes wählen (nur wenn sie sich ändert -
 // den Malgrund neu anzulegen kostet Zeit).
 function kinoGroessePruefen(L) {
-  const noetig = kinoBreiteAmSchirm(L);
+  let noetig = kinoBreiteAmSchirm(L);
+  // 🎥 Ein eigener Film ist so fein, wie er aufgenommen wurde. Eine Leinwand,
+  // die VIEL größer ist, macht ihn kein bisschen schärfer - sie kostet nur
+  // Rechenzeit (jedes Bild muss zur Grafikkarte geschickt werden).
+  if (kinoFilm && kinoFilm.eigen) {
+    const q = (kinoFilm._letztes && kinoFilm._letztes.naturalWidth) || FILM_B;
+    noetig = Math.min(noetig, q * 1.6);
+  }
   let b = KINO_GROESSEN[KINO_GROESSEN.length - 1];
   for (const g of KINO_GROESSEN) if (g >= noetig) { b = g; break; }
   if (b === KINO_TEX_B) return false;
@@ -16495,9 +16504,19 @@ function kinoWahlZeigen() {
 // Außerdem liegen die Bilder dort als "Blob" (das rohe JPEG) und nicht als
 // Text - das spart nochmal ein Drittel. Erst nach einer halben Stunde macht
 // die Kamera von allein Schluss, damit nichts aus dem Ruder läuft.
-const FILM_B = 224, FILM_H = 126;        // so groß wird jedes Bild aufgenommen
+// 🔍 SCHARF! Jonah hat gemeldet: "Der Film, den ich selber gedreht habe,
+// ist ultra unscharf." Das stimmte: Jedes Bild war nur 224 Punkte breit und
+// wurde auf der Leinwand (über 1000 Punkte breit) auf das Fünffache
+// aufgeblasen. Jetzt wird mit 640 Punkten aufgenommen - und die Leinwand ist
+// nur noch wenig größer als das Bild selbst.
+const FILM_B = 640, FILM_H = 360;        // so groß wird jedes Bild aufgenommen
+const FILM_GUETE = 0.62;                 // wie fein das JPEG gepackt wird
 const FILM_PRO_BILD = 0.4;               // alle 0,4 Sekunden ein Bild (2,5 pro Sekunde)
 const FILM_MAX_MIN = 30;                 // nach einer halben Stunde ist Schluss
+// Scharfe Bilder brauchen mehr Platz. Damit ein sehr langer Film nicht den
+// ganzen Handy-Speicher auffrisst (und dabei Jonahs andere Filme verdrängt),
+// macht die Kamera auch dann Schluss, wenn der Film richtig groß geworden ist.
+const FILM_MAX_BYTES = 60 * 1024 * 1024;
 const FILM_MAX_BILDER = Math.round(FILM_MAX_MIN * 60 / FILM_PRO_BILD);
 const FILM_MAX = 6;                      // so viele eigene Filme passen ins Kino
 const FILM_KEY = 'jonahcraft_filme_v1';  // der alte, kleine Platz von v246
@@ -16506,10 +16525,13 @@ const FILM_FENSTER = 12;                 // so viele Bilder werden im Voraus ber
 const filmCanvas = document.createElement('canvas');
 filmCanvas.width = FILM_B; filmCanvas.height = FILM_H;
 const fg = filmCanvas.getContext('2d');
+fg.imageSmoothingEnabled = true;
+try { fg.imageSmoothingQuality = 'high'; } catch(e) {}   // sauber verkleinern
 let eigeneFilme = [];                    // alle Filme, die Jonah gedreht hat
 let filmDreht = false;                   // läuft die Kamera gerade?
 let filmPause = false;                   // ⏸ gerade angehalten?
 let filmBilder = [], filmT = 0, filmDauer = 0, filmLetzt = 0, filmOffen = 0;
+let filmBytes = 0;                       // wie groß ist der Film schon?
 let filmSpeicherOk = true;               // klappt die große Bilder-Kiste?
 
 // Aus Sekunden wird „14 Sek." oder „2:07 Min."
@@ -16524,8 +16546,14 @@ function filmFertigRechnen(f) {
   f.eigen = true; f.emoji = '🎥'; f.farbe = '#c03050';
   f.proBild = f.proBild || FILM_PRO_BILD;
   f.dauer = f.bilder.length * f.proBild;
+  // 🔍 Filme von FRÜHER wurden noch mit der groben Kamera gedreht (224 Punkte
+  // breit). Die bleiben leider unscharf - das kann man nachträglich nicht mehr
+  // reparieren. Darum steht es ehrlich in der Beschreibung.
+  const alt = !(f.breite >= 400);
   f.kurz = 'Dein eigener Film – ' + filmZeitText(f.dauer) + ' lang' +
-           (f.gedreht ? ', gedreht am ' + f.gedreht : '') + '. 🎥';
+           (f.gedreht ? ', gedreht am ' + f.gedreht : '') + '. 🎥' +
+           (alt ? ' (noch mit der alten, groben Kamera gedreht – neue Filme sind ' +
+                  'viel schärfer!)' : '');
 }
 
 // ---- Die große Bilder-Kiste (IndexedDB) ---------------------------------
@@ -16572,7 +16600,8 @@ function filmTextZuBlob(d) {
   } catch(e) { return null; }
 }
 function filmAlsDaten(f) {
-  return { id: f.id, titel: f.titel, bilder: f.bilder, proBild: f.proBild, gedreht: f.gedreht };
+  return { id: f.id, titel: f.titel, bilder: f.bilder, proBild: f.proBild,
+           gedreht: f.gedreht, breite: f.breite };
 }
 // Einen Film ablegen. Ist die Kiste voll, macht der älteste Film Platz.
 async function filmAblegen(f) {
@@ -16614,7 +16643,8 @@ async function filmLaden() {
     for (const r of (alle || [])) {
       if (!r || !Array.isArray(r.bilder) || !r.bilder.length) continue;
       const f = { id: r.id, titel: r.titel || 'Mein Film', bilder: r.bilder,
-                  proBild: r.proBild, gedreht: r.gedreht || '' };
+                  proBild: r.proBild, gedreht: r.gedreht || '',
+                  breite: r.breite };   // 🔍 wie scharf er gedreht wurde
       filmFertigRechnen(f); eigeneFilme.push(f);
     }
     eigeneFilme.sort((a, b) => String(a.id) < String(b.id) ? -1 : 1);
@@ -16632,7 +16662,8 @@ function filmAusKleinemFach() {
     for (const r of arr) {
       if (!r || !Array.isArray(r.bilder) || !r.bilder.length) continue;
       const f = { id: r.id || ('e' + Math.random()), titel: r.titel || 'Mein Film',
-                  bilder: r.bilder, proBild: r.proBild, gedreht: r.gedreht || '' };
+                  bilder: r.bilder, proBild: r.proBild, gedreht: r.gedreht || '',
+                  breite: r.breite };
       filmFertigRechnen(f); eigeneFilme.push(f);
     }
   } catch(e) {}
@@ -16648,7 +16679,8 @@ async function filmUmzug() {
     if (!bilder.length) continue;
     const f = { id: r.id || ('e' + Date.now() + Math.floor(Math.random()*1000)),
                 titel: r.titel || 'Mein Film', bilder,
-                proBild: r.proBild, gedreht: r.gedreht || '' };
+                proBild: r.proBild, gedreht: r.gedreht || '',
+                breite: r.breite };     // alte Filme von v246 haben keine Angabe
     filmFertigRechnen(f); eigeneFilme.push(f);
     try { await filmDbTun('readwrite', st => st.put(filmAlsDaten(f))); } catch(e) {}
   }
@@ -16670,7 +16702,7 @@ function filmRecTextSetzen() {
 function filmDrehStart() {
   if (filmDreht) return;
   filmDreht = true; filmPause = false;
-  filmBilder = []; filmT = FILM_PRO_BILD; filmDauer = 0; filmOffen = 0;
+  filmBilder = []; filmT = FILM_PRO_BILD; filmDauer = 0; filmOffen = 0; filmBytes = 0;
   filmLetzt = performance.now();
   document.getElementById('filmBox').style.display = 'none';
   document.getElementById('filmNameBox').style.display = 'none';
@@ -16712,12 +16744,17 @@ function filmDrehTick(dt) {
       // damit die Bilder garantiert in der richtigen Reihenfolge bleiben.
       const platz = filmBilder.length;
       filmBilder.push(null); filmOffen++;
-      filmCanvas.toBlob(b => { filmOffen--; if (b) filmBilder[platz] = b; }, 'image/jpeg', 0.45);
+      filmCanvas.toBlob(b => { filmOffen--;
+        if (b) { filmBilder[platz] = b; filmBytes += b.size; } }, 'image/jpeg', FILM_GUETE);
     } catch(e) {}
   }
   filmRecTextSetzen();
   if (filmBilder.length >= FILM_MAX_BILDER) {
     toast('🎥 Puh, eine halbe Stunde Film! Jetzt macht die Kamera Schluss. 🎬', 7000);
+    filmDrehStopp();
+  } else if (filmBytes > FILM_MAX_BYTES) {
+    toast('🎥 Was für ein langer Film! Mehr passt nicht in den Speicher deines ' +
+          'Handys - die Kamera macht jetzt Schluss. 🎬', 8000);
     filmDrehStopp();
   }
 }
@@ -16726,8 +16763,10 @@ async function filmDrehStopp() {
   filmDreht = false; filmPause = false;
   document.getElementById('filmRec').style.display = 'none';
   document.getElementById('filmBtn').classList.remove('on');
-  // die allerletzten Bilder sind vielleicht noch nicht ganz fertig gepackt
-  for (let i = 0; i < 60 && filmOffen > 0; i++) await new Promise(r => setTimeout(r, 25));
+  // Die allerletzten Bilder sind vielleicht noch nicht ganz fertig gepackt.
+  // Scharfe Bilder brauchen dafür länger als die alten kleinen - darum wartet
+  // die Kamera jetzt bis zu vier Sekunden, statt Bilder wegzuwerfen.
+  for (let i = 0; i < 160 && filmOffen > 0; i++) await new Promise(r => setTimeout(r, 25));
   filmBilder = filmBilder.filter(b => b);
   if (filmBilder.length < 3) {
     filmBilder = [];
@@ -16754,6 +16793,7 @@ async function filmSichern() {
   let titel = (inp.value || '').trim().slice(0, 40);
   if (!titel) titel = 'Mein Film ' + (eigeneFilme.length + 1);
   const f = { id: 'e' + Date.now(), titel, bilder: filmBilder, proBild: FILM_PRO_BILD,
+              breite: FILM_B,                      // 🔍 wie scharf aufgenommen wurde
               gedreht: new Date().toLocaleDateString('de-DE') };
   filmFertigRechnen(f);
   eigeneFilme.push(f);
