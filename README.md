@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE HAUSMEISTER IN DER RIESENBURG ARBEITEN (v281)! 🔧🏰 Jonah hat gemeldet,
+  dass die vier Hausmeister drüben gar nichts reparieren – und das stimmte:
+  Der Hausmeister-Dienst lief nur in Jonahs normaler Welt und auf dem
+  Königs-Planeten, in der Riesenburg-Welt stieg er sofort aus. Jetzt gilt
+  dort dasselbe wie daheim: Jedes Loch wird gemeldet, der nächste Hausmeister
+  läuft (oder fliegt mit dem Düsenrucksack) hin und flickt es wieder zu – und
+  patrouilliert danach brav im Burggelände. Beim Wechsel zwischen den Welten
+  wird die Schadens-Liste geleert, damit niemand Löcher in der falschen Welt
+  sucht.
 - DIE BÜCHERREGALE SIND JETZT LEER (v280)! 📚🗄️ Jonah wollte seine Regale
   selbst einräumen statt sie schon voll vorzufinden. Jedes Regal hat jetzt
   vier LEERE Fächer („Fach 1 (0 von 2)") mit je zwei freien Plätzen. Einen
