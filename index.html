@@ -1468,7 +1468,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 279 &middot; ✍️ BEIM SCHREIBEN STÖRT KEINE AUFGABE MEHR! Wenn du gerade ein Buch schreibst (oder ein Schild oder einen Lied-Namen), wartet die Mathe- oder Englisch-Aufgabe, bis du fertig bist. Und falls doch einmal etwas dazwischenkommt, ist dein angefangener Text beim nächsten Mal wieder da – du musst NIE von vorne anfangen. 📝</p>
+    Version 280 &middot; 📚 DEINE REGALE SIND JETZT LEER! Jedes Bücherregal hat vier leere Fächer – du räumst sie selbst ein: Fach antippen, Buch aussuchen (oder dein eigenes schreiben), fertig. In jedes Fach passen zwei Bücher. Auch die Regale, die schon in deiner Welt stehen, sind jetzt leer. ✍️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1514,7 +1514,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 279;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 280;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -5820,6 +5820,7 @@ function baueSpielstand() {
       regale: (() => { const o = {};    // 📚 was steht in welchem Regal?
         for (const [k,v] of regalBuecher) o[k] = v; return o; })(),
       eigenLieder,                      // 🎵 seine selbst gemachten Lieder
+      regaleLeer: true,                 // 📚 Regale fangen leer an (seit Version 280)
       safeCodes,                        // 🔐 seine sechs Safe-Codes
       safeAuf: safeOffen,               // 🔐 steht der große Safe offen?
       goldWeg: altesGoldWeg,            // 🧹 ist die alte Halle unter der Erde schon geräumt?
@@ -6017,6 +6018,10 @@ function loadGame() {
     if (s.regale && typeof s.regale === 'object')            // 📚 der Inhalt der Regale
       for (const k in s.regale)
         if (Array.isArray(s.regale[k])) regalBuecher.set(k, s.regale[k].slice());
+    if (!s.regaleLeer) {                // 📚 einmalig: die alte Vorbefüllung wieder raus
+      for (const [k, v] of [...regalBuecher])
+        if (JSON.stringify(v) === regalAlteVorgabe(k)) regalBuecher.delete(k);
+    }
     if (s.buchOrte && typeof s.buchOrte === 'object')        // 📖 die Bücher in der Welt
       for (const k in s.buchOrte)
         if (typeof s.buchOrte[k] === 'number') buchOrte.set(k, s.buchOrte[k]);
@@ -22494,13 +22499,18 @@ function buchInDieHand(id, woher) {
 // 📚 Jedes Regal ist zwei Blöcke hoch und hat VIER FÄCHER. In jedes Fach
 // passen genau ZWEI Bücher - mehr nicht, sonst fällt das Regal um. 😉
 const REGAL_FAECHER = 4, FACH_MAX = 2;
+// So sah ein frisches Regal FRÜHER aus (drei Bücher und ein leeres). Jonah
+// wollte seine Regale lieber selbst einräumen - diese Vorgabe erkennen wir
+// nur noch, um sie aus alten Spielständen herauszuräumen.
+function regalAlteVorgabe(key) {
+  const p = key.split(',').map(Number);
+  const n = Math.abs((p[0]*7 + p[2]*13 + p[1]) % BUECHER.length);
+  return JSON.stringify([[n, (n+2) % BUECHER.length],
+                         [(n+4) % BUECHER.length], [LEER_BUCH], []]);
+}
 function regalInhalt(key) {
-  if (!regalBuecher.has(key)) {         // in einem neuen Regal stehen schon ein paar
-    const p = key.split(',').map(Number);
-    const n = Math.abs((p[0]*7 + p[2]*13 + p[1]) % BUECHER.length);
-    regalBuecher.set(key, [[n, (n+2) % BUECHER.length],
-                           [(n+4) % BUECHER.length], [LEER_BUCH], []]);
-  }
+  if (!regalBuecher.has(key))           // ein neues Regal ist LEER - Jonah räumt es ein
+    regalBuecher.set(key, [[], [], [], []]);
   let v = regalBuecher.get(key);
   if (v.length && !Array.isArray(v[0])) {    // alte Spielstände: eine flache Liste
     const f = [];
@@ -22567,7 +22577,8 @@ function regalZeichnen() {
         'dann legst du es hinein. 📚'
       : voll
         ? 'Vier Fächer, in jedes passen zwei Bücher. Antippen = lesen, 📤 = herausnehmen.'
-        : 'Alle Fächer sind leer – leg ein Buch hinein oder schreib dir eins! ✍️';
+        : 'Noch ganz leer! Tipp ein Fach an und such dir ein Buch aus – oder ' +
+          'schreib dir selbst eins. ✍️';
   faecher.forEach((fach, nr) => {
     const kopf = document.createElement('div');
     kopf.className = 'fachKopf';
