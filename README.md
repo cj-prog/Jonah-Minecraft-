@@ -221,6 +221,18 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DAS RICHTIGE BÜCHERREGAL MIT FÄCHERN (v278)! 📚🗄️ Jonah hat es noch einmal
+  genau erklärt, und jetzt stimmt es: Das Bücherregal ist ZWEI BLÖCKE HOCH und
+  hat VIER FÄCHER – in jedes passen genau ZWEI Bücher, mehr nicht. Im Regal
+  sieht man jedes Fach einzeln („🗄️ Fach 2 (1 von 2)") mit seinen Büchern und
+  den freien Plätzen. Antippen = lesen, 📤 = herausnehmen (das Buch kommt in
+  Jonahs Hand), freien Platz antippen = ein Buch hineinlegen (das aus der Hand
+  oder eins aus der Sammlung). Mit „✍️ Selber schreiben" kommt ein neues
+  eigenes Buch ins erste freie Fach. Stellt Jonah ein Regal auf, wächst der
+  obere Teil automatisch mit – und wenn oben kein Platz ist, sagt das Spiel
+  Bescheid. Abbauen nimmt beide Teile weg, die Bücher warten im Regal-Platz.
+  (Dabei gefunden und repariert: Das Aufstellen stürzte ab, weil Luft keinen
+  Block-Eintrag hat.)
 - BÜCHER SIND JETZT BLÖCKE (v277)! 📖🧱 Jonah wollte es noch anders: ein Buch
   soll man aus dem Regal NEHMEN, hineinschreiben und dann hinstellen können –
   ins Regal zurück oder irgendwo anders hin. Genau so geht es jetzt:
