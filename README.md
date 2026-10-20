@@ -221,6 +221,16 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- BEIM SCHREIBEN STÖRT KEINE AUFGABE MEHR (v279)! ✍️🤫 Jonah hat gemeldet:
+  Mitten beim Buchschreiben kam eine Mathe- oder Englisch-Aufgabe, und danach
+  musste er von vorne anfangen. Zwei Dinge sorgen jetzt dafür, dass das nicht
+  mehr passiert: Solange das Eingabefeld offen ist (Buchseite, Buch-Titel,
+  Schild, Lied-Name), wird gar keine Aufgabe gestellt – sie wartet und kommt
+  gleich nach dem Schreiben (nach 12 Sekunden schaut das Spiel wieder nach,
+  und zwar bei derselben Sorte, die dran gewesen wäre). Und falls das Feld
+  doch einmal geschlossen wird, ohne dass Jonah auf OK getippt hat, merkt sich
+  das Spiel seinen angefangenen Text und legt ihn beim nächsten Mal wieder
+  hinein („✍️ Dein angefangener Text ist noch da").
 - DAS RICHTIGE BÜCHERREGAL MIT FÄCHERN (v278)! 📚🗄️ Jonah hat es noch einmal
   genau erklärt, und jetzt stimmt es: Das Bücherregal ist ZWEI BLÖCKE HOCH und
   hat VIER FÄCHER – in jedes passen genau ZWEI Bücher, mehr nicht. Im Regal
