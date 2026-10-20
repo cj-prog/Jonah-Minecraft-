@@ -1277,6 +1277,10 @@
     <button id="buchSchreiben">✍️ Diese Seite schreiben</button>
     <button id="buchPlus">➕ Neue Seite</button>
   </div>
+  <div class="buchBtnReihe" id="buchOrtReihe">
+    <button id="buchLeerStart">✍️ Hineinschreiben</button>
+    <button id="buchNehmen">📤 Buch mitnehmen</button>
+  </div>
   <button id="buchZu">Buch zuklappen</button>
 </div>
 
@@ -1461,7 +1465,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 276 &middot; 📚🎼 BÜCHER UND EIGENE MUSIK! In Bücherregalen stehen jetzt echte Bücher zum Lesen – dünne mit drei Seiten und richtig dicke mit zwölf. Du kannst Bücher hineinstellen, herausnehmen und sogar SELBER welche schreiben (Titel und Seiten!). Und am Radio gibt es die Lieder-Werkstatt: Töne antippen, anhören, speichern – dein Lied läuft dann im Radio. 🎵</p>
+    Version 277 &middot; 📖 BÜCHER SIND JETZT BLÖCKE! Du kannst ein Buch aus dem Regal HERAUSNEHMEN (📤), es irgendwo hinstellen – auf den Tisch, ans Bett, wohin du willst – und natürlich wieder ins Regal zurücktun. In jedem Regal liegt auch ein 📓 leeres Buch: herausnehmen, hinstellen, antippen, Titel ausdenken und Seite für Seite vollschreiben. Und das leere Buch gibt es auch in deiner Bau-Leiste. ✍️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1507,7 +1511,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 276;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 277;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1680,7 +1684,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SAFE_TUER=126,                    // 🔐 die Safe-Tür (zu)
       SAFE_RAD=127,                     // 🔐 das Handrad mitten auf der Safe-Tür
       SAFE_AUF=128,                     // 🔐 dieselbe Tür, nach außen aufgeklappt
-      BUCHREGAL=129;                    // 📚 das Bücherregal zum Lesen und Schreiben
+      BUCHREGAL=129,                    // 📚 das Bücherregal zum Lesen und Schreiben
+      BUCH=130;                         // 📖 ein einzelnes Buch zum Hinstellen
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
 const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
@@ -1930,6 +1935,11 @@ const BLOCKS = {
   // 🔐 DIE GROSSE TRESORTÜR vor dem Geldraum: dicker Panzerstahl mit Nieten.
   // Antippen = auf und zu. Kaputt geht sie nie.
   [BUCHREGAL]:  { name:'Bücherregal 📚 (antippen = lesen und schreiben!)', tiles:[175,175,175], solid:true },
+  [BUCH]:       { name:'Buch 📖 (hinstellen, lesen, selber schreiben!)', tiles:[176,176,176],
+    solid:true, model:[
+      [0.14,0,0.10, 0.86,0.17,0.90, 176],        // der Einband
+      [0.18,0.17,0.14, 0.82,0.21,0.86, 177],     // die Seiten oben drauf
+      [0.48,0.17,0.14, 0.52,0.22,0.86, 176]] },  // der Rücken in der Mitte
   [SAFE]:       { name:'Safe-Panzerwand 🔐 (unzerstörbar!)', tiles:[173,173,173], solid:true },
   [SAFE_TUER]:  { name:'Safe-Tür 🔐 (antippen = Codes eingeben!)', tiles:[174,174,174], solid:true },
   [SAFE_RAD]:   { name:'Safe-Handrad 🔐 (antippen = Codes eingeben!)', tiles:[166,166,166], solid:true },
@@ -2191,7 +2201,7 @@ const BLOCKS = {
     [0.3,0.9,0.42, 0.7,1.0,0.58, 56]] },                // hochgerollt: nur ein Nupsi oben
 };
 const DOOR_PARTS = [DOOR, DOOR_TOP, DOOR_OPEN, DOOR_TOP_OPEN];
-const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, GOLDBARREN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, BUCHREGAL, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
+const HOTBAR_ITEMS = [GRASS, DIRT, STONE, SAND, WOOD, LEAF, PLANK, BRICK, GLASS, DOOR, GATE, FENCE, GITTER, FAHRSTUHL, PORTAL, WOOL, BONBON, ZUCKERSTANGE, LUTSCHER, SCHOKO, GELD, MUENZEN, GOLDBARREN, KANONE, RADIO, BANK, RAKETE, STEUER, GOLD, STRASSE, KRONE, ZEPTER, THRON, SNOWMAN, WATER, LAVA, TNT, SCHUTZ, TABLE, CHAIR, BED, TORCH, CHEST, SIGN, CABINET, BUCHREGAL, BUCH, TOILET, SINK, PIC, HANTEL, LAUFBAND, TRAMPOLIN, SPRUNGTURM, RAIL, TREP_N, RUTSCHE_N, BLUME, SCREEN_BOWL, SCREEN_BREAK, SCREEN_RACE, SCREEN_SNAKE, SCREEN_PONG, SCREEN_INV, SCREEN_FROG, POKAL, RAUMLUKE, SURFBRETT, CARROT0, TOMATO0, WHEAT0];
 
 // ------------------------------ Zufall & Rauschen --------------------------
 let seed = (Math.random()*1e9)|0;
@@ -5796,6 +5806,9 @@ function baueSpielstand() {
       rbStufe,                          // 🔮 wie viele Riesenburg-Rätsel sind gelöst?
       rbCodes,                          // 🔮 Jonahs vier eigene Codes
       eigenBuecher,                     // 📖 seine selbst geschriebenen Bücher
+      buchOrte: (() => { const o = {};  // 📖 welches Buch liegt wo in der Welt?
+        for (const [k,v] of buchOrte) o[k] = v; return o; })(),
+      buchHand: buchInHand,             // 📖 trägt er gerade eins?
       regale: (() => { const o = {};    // 📚 was steht in welchem Regal?
         for (const [k,v] of regalBuecher) o[k] = v; return o; })(),
       eigenLieder,                      // 🎵 seine selbst gemachten Lieder
@@ -5996,6 +6009,10 @@ function loadGame() {
     if (s.regale && typeof s.regale === 'object')            // 📚 der Inhalt der Regale
       for (const k in s.regale)
         if (Array.isArray(s.regale[k])) regalBuecher.set(k, s.regale[k].slice());
+    if (s.buchOrte && typeof s.buchOrte === 'object')        // 📖 die Bücher in der Welt
+      for (const k in s.buchOrte)
+        if (typeof s.buchOrte[k] === 'number') buchOrte.set(k, s.buchOrte[k]);
+    buchInHand = typeof s.buchHand === 'number' ? s.buchHand : null;
     if (Array.isArray(s.eigenLieder))                        // 🎵 die eigenen Lieder
       eigenLieder = s.eigenLieder.filter(l => l && typeof l.melodie === 'string')
                                  .map(l => ({ name: l.name || '🎵 Mein Lied', takt: l.takt || 0.3,
@@ -6688,6 +6705,17 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 6.8 && (Math.abs(dx) < 1.0 || Math.abs(dy) < 1.0)) return vary(246,206,70,14);
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
+  });
+  tile(176,(x,y)=>{                                                 // 📖 der Buch-Einband
+    if (x<1 || x>14 || y<1 || y>14) return vary(96,34,28,6);        // dunkler Rand
+    // goldene Linien wie ein Titel auf dem Deckel
+    if (y>=4 && y<=5 && x>=4 && x<=11) return vary(238,200,80,10);
+    if (y>=8 && y<=8 && x>=5 && x<=10) return vary(238,200,80,10);
+    return vary(176,56,44,9);
+  });
+  tile(177,(x,y)=>{                                                 // 📖 die Buchseiten
+    if (y % 3 === 0) return vary(226,218,196,6);                    // die einzelnen Seiten
+    return vary(246,240,220,6);
   });
   tile(175,(x,y)=>{                                                 // 📚 das Bücherregal
     // Holzregal mit drei Brettern voller bunter Buchrücken
@@ -22417,45 +22445,99 @@ const BUECHER = [
 ];
 let eigenBuecher = [];                  // 📖 Jonahs selbst geschriebene Bücher
 const regalBuecher = new Map();         // "x,y,z" -> welche Bücher stehen in DIESEM Regal?
+const buchOrte = new Map();             // "x,y,z" -> welches Buch liegt HIER in der Welt?
+let buchInHand = null;                  // 📖 welches Buch trägt Jonah gerade?
+const LEER_BUCH = -1;                   // 📓 ein leeres Buch zum Selberschreiben
 function buchVon(id) {                  // ab 100 sind es Jonahs eigene
+  if (id === LEER_BUCH) return { t:'📓 Leeres Buch', leer:true, seiten:[
+    'Dieses Buch ist noch ganz leer.\n\nTipp unten „✍️ Hineinschreiben" an – dann ' +
+    'gehört es dir und du kannst Seite für Seite hineinschreiben!'] };
   return id >= 100 ? eigenBuecher[id - 100] : BUECHER[id];
 }
 function buchDicke(b) {
+  if (b.leer) return '📓 leer';
   const n = b.seiten.length;
   return n <= 3 ? '📗 dünn' : n <= 7 ? '📘 mittel' : '📕 dick';
+}
+// 📖 Ein Buch in die Hand nehmen: danach kann Jonah es irgendwo hinstellen
+// (es ist ja ein Block) oder zurück ins Regal tun.
+function buchInDieHand(id, woher) {
+  buchInHand = id;
+  const b = buchVon(id);
+  const slot = HOTBAR_ITEMS.indexOf(BUCH);
+  if (slot >= 0) { selSlot = slot;      // das Buch liegt jetzt in der Bau-Hand
+    document.querySelectorAll('.slot').forEach((el,k) => el.classList.toggle('sel', k===slot)); }
+  if (typeof placeMode !== 'undefined' && !placeMode) setMode(true);
+  blip(520,0.05); blip(700,0.06);
+  toast('📖 Du hast „' + b.t + '" in der Hand! Du bist jetzt im 🧱-Modus: Tipp irgendwo ' +
+        'hin, dann stellst du es dort ab. (Mit ⛏️ kannst du wieder lesen.) 📚', 7000);
+  scheduleSave();
 }
 function regalInhalt(key) {
   if (!regalBuecher.has(key)) {         // in einem neuen Regal stehen schon ein paar
     const p = key.split(',').map(Number);
     const n = Math.abs((p[0]*7 + p[2]*13 + p[1]) % BUECHER.length);
-    regalBuecher.set(key, [n, (n+2) % BUECHER.length, (n+4) % BUECHER.length]);
+    regalBuecher.set(key, [n, (n+2) % BUECHER.length, (n+4) % BUECHER.length, LEER_BUCH]);
   }
   return regalBuecher.get(key);
 }
+// 📖 Jonah stellt ein Buch hin: Entweder das, was er in der Hand hat - oder
+// ein brandneues leeres, das er gleich vollschreiben kann.
+function buchHingestellt(x, y, z) {
+  const key = x+','+y+','+z;
+  if (buchInHand !== null) {
+    buchOrte.set(key, buchInHand);
+    const b = buchVon(buchInHand);
+    toast('📖 „' + b.t + '" liegt jetzt hier. Tipp es an zum Lesen! 📚', 4500);
+    buchInHand = null;
+  } else {
+    buchOrte.set(key, LEER_BUCH);
+    toast('📓 Ein leeres Buch! Tipp es an – dann kannst du es vollschreiben. ✍️', 5000);
+  }
+  scheduleSave();
+}
+// 📖 ... und wieder aufheben (beim Abbauen oder über den Knopf im Buch)
+function buchAufheben(x, y, z) {
+  const key = x+','+y+','+z;
+  const id = buchOrte.has(key) ? buchOrte.get(key) : LEER_BUCH;
+  buchOrte.delete(key);
+  setBlock(x, y, z, AIR);
+  buchInDieHand(id, 'welt');
+}
 let regalAuf = null;                    // welches Regal ist gerade offen?
 let buchAuf = null, buchSeiteNr = 0;    // welches Buch, welche Seite?
+let buchOrt = null;                     // wo liegt es? {art:'regal'|'welt', key}
 function regalZeichnen() {
   const liste = document.getElementById('regalListe');
   liste.innerHTML = '';
   const drin = regalInhalt(regalAuf);
-  document.getElementById('regalInfo').textContent = drin.length
-    ? 'Tipp ein Buch an, dann kannst du es lesen. 📖'
-    : 'Das Regal ist noch leer – stell ein Buch hinein oder schreib dir eins! ✍️';
+  document.getElementById('regalInfo').textContent =
+    buchInHand !== null
+      ? 'Du hast „' + buchVon(buchInHand).t + '" in der Hand – tipp unten „📥 Buch ' +
+        'hineinstellen" an, dann steht es hier. 📚'
+      : drin.length
+        ? 'Tipp ein Buch an zum Lesen – oder 📤 zum Herausnehmen.'
+        : 'Das Regal ist noch leer – stell ein Buch hinein oder schreib dir eins! ✍️';
   drin.forEach((id, i) => {
     const b = buchVon(id);
     if (!b) return;
     const el = document.createElement('div');
     el.className = 'buchRow';
     const t = document.createElement('span');
-    t.textContent = b.t + '  (' + buchDicke(b) + ', ' + b.seiten.length + ' Seiten)';
+    t.textContent = b.t + (b.leer ? '  (📓 noch leer)'
+      : '  (' + buchDicke(b) + ', ' + b.seiten.length +
+        (b.seiten.length === 1 ? ' Seite)' : ' Seiten)'));
     const weg = document.createElement('span');
-    weg.className = 'weg'; weg.textContent = '🗑️';
+    weg.className = 'weg'; weg.textContent = '📤';
     el.appendChild(t); el.appendChild(weg);
-    const lesen = (e) => { if (e) e.preventDefault(); buchOeffnen(id); };
+    const lesen = (e) => { if (e) e.preventDefault(); buchOeffnen(id, 'regal'); };
     t.addEventListener('click', lesen);
     t.addEventListener('touchstart', lesen, {passive:false});
     const raus = (e) => { e.preventDefault(); e.stopPropagation();
-      drin.splice(i,1); blip(300,0.06); regalZeichnen(); scheduleSave(); };
+      drin.splice(i,1);                 // 📤 heraus damit - in Jonahs Hand!
+      buchInDieHand(id, 'regal');
+      regalZeichnen(); scheduleSave();
+      document.getElementById('regalBox').style.display = 'none'; };
     weg.addEventListener('click', raus);
     weg.addEventListener('touchstart', raus, {passive:false});
     liste.appendChild(el);
@@ -22476,13 +22558,42 @@ function buchZeichnen() {
   document.getElementById('buchZahl').textContent =
     'Seite ' + (buchSeiteNr+1) + ' von ' + b.seiten.length;
   document.getElementById('buchEigen').style.display = buchAuf >= 100 ? 'flex' : 'none';
+  // 📓 ein leeres Buch kann man beschriften, ein liegendes mitnehmen
+  const leer = buchAuf === LEER_BUCH;
+  document.getElementById('buchLeerStart').style.display = leer ? 'inline-block' : 'none';
+  document.getElementById('buchNehmen').style.display = buchOrt ? 'inline-block' : 'none';
+  document.getElementById('buchNehmen').textContent =
+    buchOrt && buchOrt.art === 'regal' ? '📤 Aus dem Regal nehmen' : '📤 Buch mitnehmen';
+  document.getElementById('buchOrtReihe').style.display = (leer || buchOrt) ? 'flex' : 'none';
 }
-function buchOeffnen(id) {
+function buchOeffnen(id, art, key) {
   buchAuf = id; buchSeiteNr = 0;
+  buchOrt = art ? { art, key: key || regalAuf } : null;
   buchZeichnen();
   document.getElementById('regalBox').style.display = 'none';
   document.getElementById('buchBox').style.display = 'flex';
   blip(440,0.05); blip(560,0.05);
+}
+// 📓 Aus einem leeren Buch wird Jonahs eigenes: Titel aussuchen, fertig.
+function buchLeerFuellen() {
+  frageText('Wie soll dein Buch heißen?', '', (titel) => {
+    const t = (titel || '').trim() || 'Mein Buch';
+    eigenBuecher.push({ t: '✍️ ' + t, seiten: ['Hier fängt mein Buch an!'] });
+    const id = 100 + eigenBuecher.length - 1;
+    // das leere Buch an seinem Platz durch das neue ersetzen
+    if (buchOrt && buchOrt.art === 'welt') buchOrte.set(buchOrt.key, id);
+    else if (buchOrt && buchOrt.art === 'regal') {
+      const drin = regalInhalt(buchOrt.key);
+      const i = drin.indexOf(LEER_BUCH);
+      if (i >= 0) drin[i] = id;
+    } else if (buchInHand === LEER_BUCH) buchInHand = id;
+    scheduleSave();
+    for (const f of [523,659,784]) blip(f,0.07);
+    toast('✍️📖 „' + t + '" gehört jetzt dir! Schreib die Seiten voll. 📚', 5000);
+    buchAuf = id; buchSeiteNr = 0;
+    document.getElementById('buchBox').style.display = 'flex';
+    buchZeichnen();
+  }, 40);
 }
 function buchBlaettern(d) {
   const b = buchVon(buchAuf);
@@ -22518,16 +22629,22 @@ function buchNeuSchreiben() {
     liste.innerHTML = '';
     document.getElementById('regalInfo').textContent =
       'Welches Buch soll hinein? (Tipp es an)';
-    const alle = BUECHER.map((b,i) => [i,b]).concat(eigenBuecher.map((b,i) => [100+i, b]));
+    const alle = [];
+    if (buchInHand !== null) alle.push([buchInHand, buchVon(buchInHand), true]);
+    alle.push([LEER_BUCH, buchVon(LEER_BUCH)]);
+    BUECHER.forEach((b,i) => alle.push([i,b]));
+    eigenBuecher.forEach((b,i) => alle.push([100+i, b]));
     let frei = 0;
-    for (const [id, b] of alle) {
-      if (drin.includes(id)) continue;
+    for (const [id, b, ausHand] of alle) {
+      if (!ausHand && id !== LEER_BUCH && drin.includes(id)) continue;
       frei++;
       const el = document.createElement('div');
       el.className = 'buchRow';
-      el.textContent = '📥 ' + b.t + '  (' + buchDicke(b) + ')';
+      el.textContent = (ausHand ? '🤲 ' : '📥 ') + b.t + '  (' + buchDicke(b) + ')';
       const w = (e) => { if (e) e.preventDefault();
-        drin.push(id); blip(660,0.06); regalZeichnen(); scheduleSave();
+        drin.push(id);
+        if (ausHand) buchInHand = null;  // aus der Hand ins Regal
+        blip(660,0.06); regalZeichnen(); scheduleSave();
         toast('📚 „' + b.t + '" steht jetzt in diesem Regal!', 3200); };
       el.addEventListener('click', w);
       el.addEventListener('touchstart', w, {passive:false});
@@ -22541,8 +22658,28 @@ function buchNeuSchreiben() {
   });
   knopf('buchZu', () => {
     document.getElementById('buchBox').style.display='none';
-    if (regalAuf) { regalZeichnen(); document.getElementById('regalBox').style.display='flex'; }
+    if (buchOrt && buchOrt.art === 'regal' && regalAuf) {
+      regalZeichnen(); document.getElementById('regalBox').style.display='flex';
+    }
+    buchOrt = null;
     blip(400,0.06);
+  });
+  knopf('buchLeerStart', buchLeerFuellen);
+  knopf('buchNehmen', () => {           // 📤 das Buch mitnehmen
+    const ort = buchOrt;
+    document.getElementById('buchBox').style.display = 'none';
+    if (!ort) return;
+    if (ort.art === 'welt') {
+      const p = ort.key.split(',').map(Number);
+      buchAufheben(p[0], p[1], p[2]);
+    } else {                            // aus dem Regal
+      const drin = regalInhalt(ort.key);
+      const i = drin.indexOf(buchAuf);
+      if (i >= 0) drin.splice(i,1);
+      buchInDieHand(buchAuf, 'regal');
+      scheduleSave();
+    }
+    buchOrt = null;
   });
   knopf('buchZurueck', () => buchBlaettern(-1));
   knopf('buchVor', () => buchBlaettern(1));
@@ -23008,7 +23145,7 @@ const MAP_BLOCK_COL = {
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
   [SAFE]:'#5a6070', [SAFE_TUER]:'#7e8696', [SAFE_RAD]:'#f0c850', [SAFE_AUF]:'#7e8696',
-  [BUCHREGAL]:'#a06a3a',
+  [BUCHREGAL]:'#a06a3a', [BUCH]:'#c44a3a',
   [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
   [GELDSAUGER]:'#8ab4d8', [SILBERRAHMEN]:'#c4ccda', [RBPORTAL]:'#a060e0',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
@@ -25818,6 +25955,13 @@ function doBreak(dir) {
   if (hit && hit.block === GELDSAUGER) { openSauger(); return; }
   if (hit && hit.block === SILBERRAHMEN) { openRahmen(); return; }
   if (hit && hit.block === BUCHREGAL) { openRegal(hit.x, hit.y, hit.z); return; }
+  if (hit && hit.block === BUCH) {      // 📖 ein liegendes Buch antippen = lesen
+    const key = hit.x+','+hit.y+','+hit.z;
+    if (!buchOrte.has(key)) buchOrte.set(key, LEER_BUCH);
+    regalAuf = null;
+    buchOeffnen(buchOrte.get(key), 'welt', key);
+    return;
+  }
   if (hit && (hit.block === SAFE_TUER || hit.block === SAFE_RAD || hit.block === SAFE_AUF)) {
     openSafe(); return;                 // 🔐 Tür antippen: Codes eingeben (oder zumachen)
   }
@@ -26461,6 +26605,7 @@ function doPlace(dir) {
     return;
   }
   setBlock(px,py,pz,b);
+  if (b === BUCH) buchHingestellt(px,py,pz);   // 📖 welches Buch liegt hier jetzt?
   missEvent('bau');                     // 📜 für die Baumeister-Mission
   challEvent('bau');                    // 🏆 und für die Baumeister-Challenge
   if (aufBauplatz(px, pz)) basisGebaut(b);   // 🏗️ und für die Alien-Basis

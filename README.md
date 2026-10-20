@@ -221,6 +221,21 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- BÜCHER SIND JETZT BLÖCKE (v277)! 📖🧱 Jonah wollte es noch anders: ein Buch
+  soll man aus dem Regal NEHMEN, hineinschreiben und dann hinstellen können –
+  ins Regal zurück oder irgendwo anders hin. Genau so geht es jetzt:
+  📤 Im Regal hat jedes Buch einen Herausnehmen-Knopf. Das Buch kommt dann in
+  Jonahs Hand (und gleich in die Bau-Leiste), und mit dem nächsten Tipp stellt
+  er es irgendwo ab – auf den Tisch, ans Bett, wohin er will.
+  📖 Ein liegendes Buch ist ein richtiger Block mit Einband, Seiten und Rücken.
+  Antippen = lesen; im Buch gibt es „📤 Buch mitnehmen", um es wieder
+  einzupacken.
+  📓 In jedem Regal liegt außerdem ein LEERES BUCH – und leere Bücher gibt es
+  auch in der Bau-Leiste. Hinstellen, antippen, „✍️ Hineinschreiben" wählen,
+  Titel ausdenken – und dann Seite für Seite vollschreiben.
+  📚 Hat er ein Buch in der Hand, bietet jedes Regal es zuerst zum
+  Hineinstellen an. Wo welches Buch liegt und was er gerade trägt, steht im
+  Spielstand.
 - BÜCHER ZUM LESEN UND SELBER SCHREIBEN + EIGENE MUSIK (v276)! 📚🎼
   📖 Es gibt jetzt echte Bücher: sechs Stück zum Lesen, dünne mit drei Seiten
   („🐉 Der kleine Drache Fump") und richtig dicke mit zwölf („😂 Das dickste
