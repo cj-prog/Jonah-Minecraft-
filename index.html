@@ -942,7 +942,11 @@
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
   #start h1 { font-size:44px; color:#fff; text-shadow:3px 3px 0 rgba(0,0,0,.3); letter-spacing:2px; }
-  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px; line-height:1.6; font-size:15px; }
+  /* Der Neuigkeiten-Text wird mit jeder Version laenger. Damit der gruene
+     Spielen-Knopf auf einem QUER gehaltenen Handy NIE aus dem Bild rutscht,
+     bekommt der Text eine Hoechsthoehe und darf selbst scrollen. */
+  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px; line-height:1.6; font-size:15px;
+    max-height:40vh; overflow-y:auto; flex:0 0 auto; }
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
     padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
   #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
@@ -951,6 +955,14 @@
   #saveRow button, #saveRow label { font-size:13px; color:#fff; background:rgba(0,0,0,.3);
     border:1px solid rgba(255,255,255,.5); border-radius:8px; padding:7px 12px; cursor:pointer; }
   #err { color:#b00; background:#fff; padding:8px 14px; border-radius:8px; display:none; }
+  /* Handy im QUERFORMAT: wenig Hoehe. Dann wird alles etwas kleiner, damit
+     der Spielen-Knopf (und die Ueberschrift) sicher ins Bild passen. */
+  @media (max-height: 540px) {
+    #start { gap:10px; padding:10px; }
+    #start h1 { font-size:30px; }
+    #start p { font-size:13px; line-height:1.45; max-height:30vh; }
+    #playBtn { font-size:19px; padding:10px 34px; }
+  }
 </style>
 </head>
 <body>
@@ -1468,7 +1480,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 282 &middot; 🎬 JETZT LÄUFT IM HEIMKINO WIRKLICH EIN FILM! Die Leinwand in den Heimkinos deiner Riesenburg war aus Spielautomaten-Bildschirmen gebaut – jetzt ist es eine echte Leinwand (12 Blöcke breit, 6 hoch). Tipp sie an oder setz dich in einen Kinosessel, dann kommt die Filmauswahl – auch deine selbst gedrehten Filme. 🍿</p>
+    Version 283 &middot; 🅿️🏰 DEINE GARAGE IN DER RIESENBURG + DREI EIGENE HEIMKINO-FILME! Sobald du in der Riesenburg bist, parken dein Riesen-Roboter, Jet, Hubschrauber, Mähdrescher, Drache, die Limousine und die Rakete GANZ ALLEIN in deiner neuen Garage im Hof (rechts am Weg zum Burgtor). Im Heimkino laufen jetzt DREI ganz andere Filme als im echten Kino. Deine Diener holen dir jetzt wirklich jemanden – sag einfach „hol den Hausmeister her!“. Leere Bücherregale sehen endlich auch leer aus, und im Keller stehen wieder Wände zwischen den vier Räumen. 🤖🎬</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1514,7 +1526,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 282;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 283;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1689,7 +1701,9 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       SAFE_AUF=128,                     // 🔐 dieselbe Tür, nach außen aufgeklappt
       BUCHREGAL=129,                    // 📚 das Bücherregal zum Lesen und Schreiben
       BUCH=130,                         // 📖 ein einzelnes Buch zum Hinstellen
-      BUCHREGAL_OBEN=131;               // 📚 der obere Teil des Bücherregals
+      BUCHREGAL_OBEN=131,               // 📚 der obere Teil des Bücherregals
+      BUCHREGAL_V=132,                  // 📚 dasselbe Regal, aber voller Bücher
+      BUCHREGAL_OBEN_V=133;             // 📚 (unten und oben)
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
 const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
@@ -1938,8 +1952,10 @@ const BLOCKS = {
     [0.30,0.46,0.99, 0.70,0.54,1.03, 27]] },
   // 🔐 DIE GROSSE TRESORTÜR vor dem Geldraum: dicker Panzerstahl mit Nieten.
   // Antippen = auf und zu. Kaputt geht sie nie.
-  [BUCHREGAL]:  { name:'Bücherregal 📚 (antippen = lesen und schreiben!)', tiles:[175,175,175], solid:true },
-  [BUCHREGAL_OBEN]: { name:'Bücherregal 📚 (oberes Fach)', tiles:[178,178,178], solid:true },
+  [BUCHREGAL]:  { name:'Bücherregal 📚 (antippen = einräumen und lesen!)', tiles:[179,179,179], solid:true },
+  [BUCHREGAL_OBEN]: { name:'Bücherregal 📚 (oberes Fach, leer)', tiles:[180,180,180], solid:true },
+  [BUCHREGAL_V]:    { name:'Bücherregal 📚 (voller Bücher!)', tiles:[175,175,175], solid:true },
+  [BUCHREGAL_OBEN_V]:{ name:'Bücherregal 📚 (oberes Fach, voll)', tiles:[178,178,178], solid:true },
   [BUCH]:       { name:'Buch 📖 (hinstellen, lesen, selber schreiben!)', tiles:[176,176,176],
     solid:true, model:[
       [0.14,0,0.10, 0.86,0.17,0.90, 176],        // der Einband
@@ -6719,6 +6735,19 @@ atlas.width = atlas.height = T*ATLAS_N;
     const h = 168 - r*3;
     return vary(h, h+4, h+14, 10);
   });
+  tile(179,(x,y)=>{                                                 // 📚 LEERES Regal unten
+    if (x<1 || x>14 || y<1 || y>14) return vary(96,66,34,8);        // Rahmen
+    if (y===5 || y===10) return vary(118,82,42,8);                  // die Bretter
+    const tiefe = (y===6 || y===11 || y===1) ? -18 : 0;             // Schatten unter dem Brett
+    return vary(58+tiefe, 42+tiefe, 24+tiefe, 7);                   // leeres, dunkles Fach
+  });
+  tile(180,(x,y)=>{                                                 // 📚 LEERES Regal oben
+    if (x<1 || x>14 || y<1 || y>14) return vary(96,66,34,8);        // Rahmen
+    if (y <= 2) return vary(130,92,48,8);                           // das Gesims oben
+    if (y===8) return vary(118,82,42,8);                            // das Brett in der Mitte
+    const tiefe = (y===3 || y===9) ? -18 : 0;
+    return vary(58+tiefe, 42+tiefe, 24+tiefe, 7);
+  });
   tile(178,(x,y)=>{                                                 // 📚 Regal, oberer Teil
     if (x<1 || x>14 || y<1 || y>14) return vary(96,66,34,8);        // Rahmen
     if (y <= 2) return vary(130,92,48,8);                           // das Gesims oben
@@ -8765,15 +8794,25 @@ const GARAGEN_NAME = { bagger:'Dein Mähdrescher', jet:'Dein Jet', heli:'Dein Hu
                        limo:'🚙 Deine Limousine' };
 const GARAGEN_TEXT = { roboter:'🤖🅿️ Dein Riesen-Roboter steht in der Garage - bei Jet, Heli, Mähdrescher und Drache!' };
 function parkeInGarage(a, dt) {
+  // 🏰 In der Riesenburg hat Jonah seine EIGENE Garage - also parken sie dort.
+  if (weltDim === RB_DIM) {
+    const rp = RB_GARAGEN_PLATZ[a.type];
+    if (!rp || !imRbHof()) { a.garage = false; return false; }
+    riesenHoehe();
+    return garageFahrt(a, dt, RB_X + rp[0] + 0.5, RB_Z + rp[1] + 0.5, RB_Y + 1.05);
+  }
   if (!imBurghof()) return false;       // erst hinter der Mauer fahren sie in die Garage
   const p = GARAGEN_PLATZ[a.type];
   if (!p) return false;
   const B = burgPos();
   if (Math.hypot(player.x-B.bx, player.z-B.bz) > 40) { a.garage=false; return false; }
-  const gx = B.bx+p[0]+0.5, gz = B.bz+p[1]+0.5;
+  return garageFahrt(a, dt, B.bx+p[0]+0.5, B.bz+p[1]+0.5, B.base+1.05);
+}
+// Der Weg in die Garage: hinrollen, einparken, stillstehen.
+function garageFahrt(a, dt, gx, gz, gy) {
   const d = Math.hypot(a.x-gx, a.z-gz);
   if (d < 1.2) {                        // angekommen: ordentlich einparken und stillstehen
-    a.x=gx; a.z=gz; a.y=B.base+1.05;
+    a.x=gx; a.z=gz; a.y=gy;
     a.vy=0; a.yaw=Math.PI/2; a.ferry=false; a.walking=false;
     if (!a.garage) {
       a.garage=true;
@@ -8787,7 +8826,7 @@ function parkeInGarage(a, dt) {
   const sp = a.type==='bagger' ? 8 : a.type==='roboter' ? 9 : 12;
   a.x += Math.sin(dir)*sp*dt;
   a.z += -Math.cos(dir)*sp*dt;
-  a.y += Math.max(-8*dt, Math.min(8*dt, (B.base+1.05) - a.y));
+  a.y += Math.max(-8*dt, Math.min(8*dt, gy - a.y));
   a.vy = 0;
   if (a.type==='bagger') { a.ph += dt*8; }
   if (a.type==='roboter') { a.walking = true; a.ph += dt*4.2; roboterStampf(a, dt); }
@@ -13783,6 +13822,53 @@ function butlerAuftrag(a, text) { return personAuftrag(a, text); }
 // 👑 EIN AUFTRAG FÜR EINEN MENSCHEN. Genau EIN Versteher für alle - der
 // Butler sagt nur "mein König" dazu, kann aber nichts anderes als die
 // anderen. So kann nie einer etwas verstehen, was der andere nicht kann.
+// 👉 WEN kann ein Diener für Jonah herholen? (Jonahs Wunsch: "Ich habe
+// einem Diener gesagt, dass er den Hausmeister herholen soll - und er hat
+// gesagt, dass er das nicht versteht.")
+const BUTLER_PERSONEN = [
+  { typen:['hausmeister'], woerter:['hausmeister','handwerker','mechaniker'],
+    txt:'den Hausmeister', kommt:'Er' },
+  { typen:['butler','alien'], woerter:['butler','diener','kellner'],
+    txt:'einen Butler', kommt:'Er' },
+  { typen:['knight'], woerter:['ritter','wache','soldat'],
+    txt:'einen Ritter', kommt:'Er' },
+  { typen:['polizist'], woerter:['polizist','polizei','wachmann'],
+    txt:'einen Polizisten', kommt:'Er' },
+  { typen:['bankier'], woerter:['bankier','banker'],
+    txt:'den Bankier', kommt:'Er' },
+  { typen:['trader'], woerter:['händler','haendler','kaufmann','verkäufer'],
+    txt:'den Händler', kommt:'Er' },
+  { typen:['kid'], woerter:['kind','mädchen','junge'],
+    txt:'ein Kind', kommt:'Es' },
+  { typen:['villager','kid','engfreund'], woerter:['dorfbewohner','bewohner','freund','jemand'],
+    txt:'jemanden', kommt:'Er' },
+  { typen:['dog','wolf'], woerter:['hund','wolf','welpe'],
+    txt:'deinen Hund', kommt:'Er' },
+  { typen:['cat'], woerter:['katze','kätzchen'],
+    txt:'deine Katze', kommt:'Sie' },
+];
+// Den Nächsten von dieser Sorte wirklich herbeirufen. Er lässt alles liegen
+// und kommt zu Jonah - und wenn er ganz weit weg ist, nimmt er die Abkürzung.
+function personHolen(a, p) {
+  let best = null, bd = 1e9;
+  for (const o of animals) {
+    if (o === a || o.fremd || !p.typen.includes(o.type)) continue;
+    const d = Math.hypot(o.x - player.x, o.z - player.z);
+    if (d < bd) { bd = d; best = o; }
+  }
+  if (!best) return null;
+  best.befehl = 'hierher'; best.warteX = undefined;
+  best.ziel = null; best.flug = false; best.pause = false; best.tanzT = 0;
+  best.job = null; best.bauPlan = null;
+  if (bd > 40) {                        // zu weit? Dann ist er schon fast da
+    best.x = player.x + (Math.random()*6 - 3);
+    best.z = player.z + (Math.random()*6 - 3);
+    best.y = player.y + 1; best.vy = 0;
+  }
+  sagen(best, 'Ich komme sofort, König Jonah! 👉', 4);
+  blip(700, 0.07); blip(880, 0.08);
+  return best;
+}
 function personAuftrag(a, text) {
   if (!text) return;
   const butler = a.type === 'butler';
@@ -13797,6 +13883,29 @@ function personAuftrag(a, text) {
   const fertig = (txt) => { sagen(a, txt, 4); toast(emoji+' '+wer+': „'+txt+'"', 4200);
                             blip(600,0.06); blip(760,0.08); };
   const BLOCKS_NAME = { PLANK, STONE, BRICK, GLASS, WOOL, DIRT, SAND, CHEST };
+
+  // 0) 👉 "HOL DEN HAUSMEISTER HER!" - das muss ganz vorne stehen, sonst
+  // würde "lass den Hausmeister kommen" als "komm mit" verstanden werden.
+  // Es gilt nur die Person, die NACH dem Hol-Wort steht: so holt der Diener
+  // bei "Diener, hol den Hausmeister!" auch wirklich den Hausmeister.
+  let holPos = 1e9;
+  for (const w of ['hol','ruf','bring','besorg','such'])
+    { const i = t.indexOf(w); if (i >= 0 && i < holPos) holPos = i; }
+  if (holPos < 1e9 && !hat('schick')) {
+    let person = null, pPos = 1e9;
+    for (const p of BUTLER_PERSONEN) for (const w of p.woerter) {
+      const i = t.indexOf(w);
+      if (i > holPos && i < pPos) { pPos = i; person = p; }
+    }
+    if (person) {
+      const wen = personHolen(a, person);
+      return fertig(wen
+        ? 'Zu Befehl! Ich rufe ' + person.txt + ' - ' + person.kommt +
+          ' kommt sofort zu Ihnen. 👉'
+        : 'Ich finde ' + person.txt + ' hier in der Nähe leider nicht, mein König. ' +
+          'Sagen Sie es mir noch einmal, wenn jemand da ist!');
+    }
+  }
 
   // 1) Zuerst die klaren Befehle, die kein Objekt brauchen
   // Zuerst das Wegschicken - sonst würde „geh wieder" als „mitgehen" gelten
@@ -13879,8 +13988,9 @@ function personAuftrag(a, text) {
 
   return fertig((butler ? 'Das habe ich nicht genau verstanden, mein König. Sagen Sie mir '
                         : 'Das habe ich nicht verstanden. Sag mir ') +
-    'erst, WAS ich tun soll: „bau …“, „hol …“, „grab ein Loch“, „mach Licht“, ' +
-    '„räum auf“, „komm mit“, „warte hier“ oder „erzähl einen Witz“.');
+    'erst, WAS ich tun soll: „bau …“, „hol …“, „hol den Hausmeister her“, ' +
+    '„grab ein Loch“, „mach Licht“, „räum auf“, „komm mit“, „warte hier“ ' +
+    'oder „erzähl einen Witz“.');
 }
 // Wie heißt dieses Material auf Deutsch? (für die Antwort des Butlers)
 function materialName(b) {
@@ -16012,6 +16122,230 @@ const KINO_FILME = [
 ];
 for (const f of KINO_FILME) f.dauer = f.szenen.reduce((n, sz) => n + sz.s, 0);
 
+// ---- 🏠🎬 DAS HEIMKINO-PROGRAMM ------------------------------------------
+// Jonahs Wunsch: "Ich möchte, dass in dem Heimkino andere Filme laufen als in
+// dem richtigen Kino." Diese drei Filme gibt es NUR in den Heimkinos seiner
+// Riesenburg - und dort laufen dafür die Kino-Filme nicht.
+// Erst noch ein paar Figuren, die nur hier mitspielen:
+function kRoboter(x, y, s, t) {         // 🤖 der Riesen-Roboter
+  const b = Math.sin(t * 6) * 3 * s;
+  kg.fillStyle = "#8a94a8";
+  kg.fillRect(x - 8*s + b, y - 16*s, 6*s, 16*s);       // Beine
+  kg.fillRect(x + 2*s - b, y - 16*s, 6*s, 16*s);
+  kg.fillStyle = "#b8c0d0";
+  kg.fillRect(x - 12*s, y - 40*s, 24*s, 25*s);         // Körper
+  kg.fillStyle = "#4a90d0";
+  kg.fillRect(x - 5*s, y - 34*s, 10*s, 8*s);           // Brust-Lampe
+  kg.fillStyle = "#8a94a8";
+  kg.fillRect(x - 18*s, y - 38*s, 6*s, 20*s);          // Arme
+  kg.fillRect(x + 12*s, y - 38*s, 6*s, 20*s);
+  kg.fillStyle = "#d8dee8";
+  kg.fillRect(x - 9*s, y - 56*s, 18*s, 15*s);          // Kopf
+  kg.fillStyle = "#ffe066";
+  kg.beginPath(); kg.arc(x - 4*s, y - 49*s, 2.6*s, 0, 6.2832); kg.fill();
+  kg.beginPath(); kg.arc(x + 4*s, y - 49*s, 2.6*s, 0, 6.2832); kg.fill();
+  kg.strokeStyle = "#8a94a8"; kg.lineWidth = 1.6*s;
+  kg.beginPath(); kg.moveTo(x, y - 56*s); kg.lineTo(x, y - 64*s); kg.stroke();
+  kg.fillStyle = "#e34b3c";
+  kg.beginPath(); kg.arc(x, y - 65*s, 2.2*s, 0, 6.2832); kg.fill();
+}
+function kMaeher(x, y, s, t) {          // 🚜 der Mähdrescher
+  kg.fillStyle = "#c8341f";
+  kg.fillRect(x - 20*s, y - 24*s, 34*s, 16*s);         // der große Körper
+  kg.fillStyle = "#1f6fb8";
+  kg.fillRect(x - 6*s, y - 36*s, 16*s, 13*s);          // die Kabine
+  kg.fillStyle = "#bfe8ff";
+  kg.fillRect(x - 3*s, y - 33*s, 10*s, 8*s);
+  kg.fillStyle = "#e8c44a";
+  kg.fillRect(x + 14*s, y - 20*s, 16*s, 10*s);         // das Schneidwerk
+  kg.strokeStyle = "#8a6a1a"; kg.lineWidth = 1.4*s;
+  for (let i = 0; i < 6; i++) {                        // die Haspel dreht sich
+    const w = t * 7 + i * 1.05;
+    kg.beginPath();
+    kg.moveTo(x + 22*s, y - 15*s);
+    kg.lineTo(x + 22*s + Math.cos(w)*7*s, y - 15*s + Math.sin(w)*7*s);
+    kg.stroke();
+  }
+  kg.fillStyle = "#222";
+  kg.beginPath(); kg.arc(x - 13*s, y - 6*s, 8*s, 0, 6.2832); kg.fill();   // Räder
+  kg.beginPath(); kg.arc(x + 9*s, y - 7*s, 5*s, 0, 6.2832); kg.fill();
+  kg.fillStyle = "#888";
+  kg.beginPath(); kg.arc(x - 13*s, y - 6*s, 3*s, 0, 6.2832); kg.fill();
+  kg.beginPath(); kg.arc(x + 9*s, y - 7*s, 2*s, 0, 6.2832); kg.fill();
+}
+function kStern(x, y, s, schlaeft) {    // ⭐ der kleine Stern mit Gesicht
+  kg.fillStyle = "#ffe066";
+  kg.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const w = -Math.PI/2 + i * Math.PI/5, rr = (i % 2) ? 7*s : 16*s;
+    const px = x + Math.cos(w)*rr, py = y + Math.sin(w)*rr;
+    if (i === 0) kg.moveTo(px, py); else kg.lineTo(px, py);
+  }
+  kg.closePath(); kg.fill();
+  kg.strokeStyle = "#444"; kg.lineWidth = 1.3*s;
+  if (schlaeft) {                                      // zwei zugemachte Augen
+    kg.beginPath(); kg.arc(x - 4*s, y - 2*s, 2.4*s, 0.3, 2.85); kg.stroke();
+    kg.beginPath(); kg.arc(x + 4*s, y - 2*s, 2.4*s, 0.3, 2.85); kg.stroke();
+  } else {
+    kg.fillStyle = "#444";
+    kg.beginPath(); kg.arc(x - 4*s, y - 1*s, 1.7*s, 0, 6.2832); kg.fill();
+    kg.beginPath(); kg.arc(x + 4*s, y - 1*s, 1.7*s, 0, 6.2832); kg.fill();
+  }
+  kg.strokeStyle = "#c8562a"; kg.lineWidth = 1.4*s;
+  kg.beginPath(); kg.arc(x, y + 3*s, 3*s, 0.25, 2.9); kg.stroke();
+}
+function kMond(x, y, s) {               // 🌕 der Mond
+  kg.fillStyle = "#fff3c0";
+  kg.beginPath(); kg.arc(x, y, 20*s, 0, 6.2832); kg.fill();
+  kg.fillStyle = "#ebdfa4";
+  for (const q of [[-6,-5,4],[5,4,5],[8,-8,3]]) {
+    kg.beginPath(); kg.arc(x + q[0]*s, y + q[1]*s, q[2]*s, 0, 6.2832); kg.fill();
+  }
+}
+function kNoten(x, y, t) {              // ♪ kleine Noten schweben hoch
+  kg.fillStyle = "#fff"; kg.textAlign = "center";
+  for (let i = 0; i < 4; i++) {
+    const h = (t * 60 + i * 22) % 80;
+    kg.globalAlpha = Math.max(0, 1 - h/80);
+    kg.font = "bold " + (14 + i*2) + "px sans-serif";
+    kg.fillText(i % 2 ? "♪" : "♫", x + Math.sin(h/9 + i)*12, y - h);
+  }
+  kg.globalAlpha = 1;
+}
+function kBurgRiss(y, farbe) {          // 🏰 die Riesenburg als Schattenriss
+  kg.fillStyle = farbe;
+  kg.fillRect(60, y - 46, 200, 46);                    // das Hauptgebäude
+  for (const tx of [52, 252]) kg.fillRect(tx, y - 68, 18, 68);   // zwei Türme
+  for (let i = 0; i < 14; i++) kg.fillRect(62 + i*15, y - 52, 9, 7);   // Zinnen
+  kg.fillStyle = "#ffd34a";
+  for (let i = 0; i < 6; i++) kg.fillRect(78 + i*30, y - 34, 9, 11);   // Fenster
+}
+const HEIM_FILME = [
+  { id:"rbgeheim", titel:"Das Geheimnis der Riesenburg", emoji:"🏰", dauer:0,
+    farbe:"#6a5acd", heim:true,
+    kurz:"Jonah hört im Keller seiner Riesenburg ein Klopfen - und findet dahinter " +
+         "einen kleinen Drachen, der Angst im Dunkeln hat.",
+    szenen:[
+      { s:4, text:"In der Riesenburg wohnte König Jonah - ganz allein.", ton:[392,330],
+        mal:(t)=>{ kHimmel("#3a3a7a","#a07ca8"); kBoden(136,"#3f7a4a");
+          kBurgRiss(136, "#5e5e7c"); kSterne(30, t);
+          kFigur(140 + t*24, 170, 1.8, "#f0c39a", "#ffd34a", t*12); } },
+      { s:4, text:"Tief im Keller hörte er ein Klopfen: klopf, klopf, klopf!", ton:[196,165,147],
+        mal:(t)=>{ kHimmel("#2a2434","#3c3348"); kBoden(152,"#4a4050");
+          kg.fillStyle="#3c3348";
+          for (let i=0;i<5;i++) kg.fillRect(20 + i*62, 56, 44, 96);   // Kellerpfeiler
+          kg.fillStyle="#2a2434";
+          for (let i=0;i<5;i++) kg.fillRect(20 + i*62, 56, 44, 7);
+          kFeuer(44, 112, 1.7, t*4);
+          kFigur(150, 170, 1.5, "#f0c39a", "#ffd34a", 0, Math.sin(t*12)*9); } },
+      { s:5, text:"Dahinter stand eine Tür aus Gold - und sie ging auf!", ton:[523,659,784],
+        mal:(t)=>{ kHimmel("#30283c","#453a52"); kBoden(152,"#4a4050");
+          kg.fillStyle="#ffd34a"; kg.fillRect(130, 86, 60, 66);        // die goldene Tür
+          kg.fillStyle="#2a2230"; kg.fillRect(134 + t*52, 90, 52 - t*50, 62);
+          kg.fillStyle="rgba(255,235,140,"+(0.25+t*0.5)+")";
+          kg.beginPath(); kg.arc(160, 120, 20 + t*60, 0, 6.2832); kg.fill();
+          kFigur(80, 170, 1.4, "#f0c39a", "#ffd34a", 0, -6); } },
+      { s:5, text:"Ein kleiner Drache saß darin. Er hatte Angst im Dunkeln.", ton:[247,220],
+        mal:(t)=>{ kHimmel("#2e2740","#44395a"); kBoden(152,"#4a4050");
+          kDrache(185, 112 + Math.sin(t*2)*3, 1.2, t*1.2, "#8a6ad0");
+          for (let i=0;i<3;i++){ const ty=(t*50 + i*20) % 48;         // Tränen
+            kg.fillStyle="#9fdcff";
+            kg.beginPath(); kg.arc(228, 92 + ty, 3, 0, 6.2832); kg.fill(); }
+          kFigur(80, 170, 1.4, "#f0c39a", "#ffd34a", 0, -7); } },
+      { s:5, text:"Jonah schenkte ihm eine Fackel. Jetzt sind sie Freunde!", ton:[523,659,880],
+        mal:(t)=>{ kHimmel("#3a3a6a","#8a7ab0"); kBoden(152,"#4a4050");
+          kFeuer(136, 120, 1.6, t*5);
+          kDrache(200, 106, 1.15, t*2, "#8a6ad0");
+          kFigur(85, 170, 1.4, "#f0c39a", "#ffd34a", 0, -8);
+          kg.fillStyle="#ffe066";
+          for (let i=0;i<10;i++){ const w=i/10*6.2832, r=(t*70)%70;
+            kg.globalAlpha = Math.max(0, 1 - r/70);
+            kg.beginPath(); kg.arc(160 + Math.cos(w)*r, 100 + Math.sin(w)*r, 2.6, 0, 6.2832); kg.fill(); }
+          kg.globalAlpha=1; } },
+    ] },
+  { id:"rennen", titel:"Roboter gegen Mähdrescher", emoji:"🤖", dauer:0,
+    farbe:"#2f6fb0", heim:true,
+    kurz:"Wer ist schneller - dein Riesen-Roboter oder dein Mähdrescher? " +
+         "Ein Wettrennen rund um die Riesenburg!",
+    szenen:[
+      { s:4, text:"Der Riesen-Roboter sagte: Ich bin der Allerschnellste!", ton:[330,392],
+        mal:(t)=>{ kHimmel("#6cbcee","#bfe2b4"); kBoden(132,"#5aa84f");
+          kBurgRiss(132, "#9aa2b8"); kSonne(285, 30, 15);
+          kRoboter(130, 168, 1.8, t*2); } },
+      { s:4, text:"Der Mähdrescher brummte: Von mir aus - wetten wir?", ton:[147,131],
+        mal:(t)=>{ kHimmel("#6cbcee","#bfe2b4"); kBoden(132,"#5aa84f");
+          kBurgRiss(132, "#9aa2b8");
+          kMaeher(205, 168, 2.0, t*2);
+          kRoboter(60, 168, 1.3, 0); } },
+      { s:5, text:"Drei - zwei - eins - LOS!", ton:[523,523,784],
+        mal:(t)=>{ kHimmel("#6cbcee","#c6e6b6"); kBoden(132,"#5aa84f");
+          kg.fillStyle="#fff";                                   // die Zielfahne
+          for (let i=0;i<8;i++) kg.fillRect(286 + (i%2)*8, 56 + i*8, 8, 8);
+          kg.fillStyle="#222"; kg.fillRect(284, 56, 3, 80);
+          kRoboter(20 + t*150, 168, 1.5, t*9);
+          kMaeher(130 + t*130, 174, 1.5, t*9);
+          kg.fillStyle="rgba(210,200,170,.6)";                   // Staubwolken
+          for (let i=0;i<6;i++){ kg.beginPath();
+            kg.arc(20 + t*140 - i*12, 164 + (i%2)*5, 7 - i*0.7, 0, 6.2832); kg.fill(); } } },
+      { s:4, text:"Mitten im Rennen ging dem Mähdrescher der Sprit aus. Pff!", ton:[196,147,110],
+        mal:(t)=>{ kHimmel("#6cbcee","#c6e6b6"); kBoden(132,"#5aa84f");
+          kMaeher(150, 172, 1.8, 0);
+          kg.fillStyle="rgba(90,90,90,"+(0.7 - t*0.4)+")";       // Rauchwölkchen
+          for (let i=0;i<5;i++){ kg.beginPath();
+            kg.arc(162, 106 - i*12 - t*16, 5 + i*1.2, 0, 6.2832); kg.fill(); }
+          kRoboter(258, 168, 1.5, t*4); } },
+      { s:5, text:"Da trug der Roboter ihn bis ans Ziel. Gewonnen - zusammen!", ton:[523,659,784,1047],
+        mal:(t)=>{ kHimmel("#6cbcee","#ffd9a0"); kBoden(132,"#5aa84f");
+          kg.fillStyle="#fff";
+          for (let i=0;i<8;i++) kg.fillRect(286 + (i%2)*8, 56 + i*8, 8, 8);
+          kg.fillStyle="#222"; kg.fillRect(284, 56, 3, 80);
+          kRoboter(110 + t*120, 170, 1.7, t*7);
+          kMaeher(110 + t*120, 96, 1.0, t*3);                    // huckepack!
+          kg.fillStyle="#ffe066";
+          for (let i=0;i<12;i++){ const w=i/12*6.2832, r=(t*60)%60;
+            kg.globalAlpha = Math.max(0, 1 - r/60);
+            kg.beginPath(); kg.arc(250 + Math.cos(w)*r, 50 + Math.sin(w)*r, 2.6, 0, 6.2832); kg.fill(); }
+          kg.globalAlpha=1; } },
+    ] },
+  { id:"gutenacht", titel:"Gute Nacht, kleiner Stern", emoji:"🌟", dauer:0,
+    farbe:"#232a5c", heim:true,
+    kurz:"Ein ganz ruhiger Film fürs Heimkino: ein kleiner Stern kann nicht " +
+         "einschlafen - bis der Mond ihm ein Lied summt.",
+    szenen:[
+      { s:4, text:"Über der Riesenburg wurde es Nacht.", ton:[262,196],
+        mal:(t)=>{ kHimmel("#141a3c","#3a2a58"); kSterne(60, t);
+          kBoden(150,"#1c2430"); kBurgRiss(150, "#2a3048");
+          kMond(280, 34, 0.8); } },
+      { s:4, text:"Ein kleiner Stern konnte nicht einschlafen.", ton:[330,294],
+        mal:(t)=>{ kHimmel("#141a3c","#3a2a58"); kSterne(60, t);
+          kBoden(150,"#1c2430"); kBurgRiss(150, "#2a3048");
+          kStern(160, 70 + Math.sin(t*5)*8, 1.4, false); } },
+      { s:5, text:"Da summte der Mond ihm ein Lied: summ, summ, summ …", ton:[262,330,392],
+        mal:(t)=>{ kHimmel("#141a3c","#3a2a58"); kSterne(60, t*0.6);
+          kBoden(150,"#1c2430");
+          kMond(90, 70, 1.4);
+          kNoten(140, 100, t);
+          kStern(220, 76 + Math.sin(t*3)*4, 1.3, false); } },
+      { s:4, text:"Der kleine Stern gähnte ganz tief: ha-a-a-ah …", ton:[247,196],
+        mal:(t)=>{ kHimmel("#121634","#32264e"); kSterne(50, t*0.4);
+          kBoden(150,"#1c2430");
+          kMond(90, 70, 1.2);
+          kStern(220, 80, 1.3 + t*0.15, t > 0.6); } },
+      { s:4, text:"Gute Nacht, kleiner Stern. Gute Nacht, König Jonah.", ton:[196,165,131],
+        mal:(t)=>{ kHimmel("#0e1228","#241c3c"); kSterne(40, t*0.3);
+          kBoden(150,"#161c28"); kBurgRiss(150, "#1e2436");
+          kMond(280, 34, 0.7);
+          kStern(160, 74, 1.3, true);
+          kg.fillStyle="rgba(255,255,255,"+(0.35 + t*0.3)+")";
+          kg.textAlign="center"; kg.font="bold 15px sans-serif";
+          kg.fillText("🌛  schlaf schön  🌛", 160, 36); } },
+    ] },
+];
+for (const f of HEIM_FILME) f.dauer = f.szenen.reduce((n, sz) => n + sz.s, 0);
+// Welches Programm läuft hier? Im echten Kino die Kino-Filme, im Heimkino
+// der Riesenburg die Heimkino-Filme.
+function filmProgramm() { return imKino() ? KINO_FILME : HEIM_FILME; }
+
 // ---- ▶️ Der Vorführer: Film starten, Bild für Bild malen, Untertitel -------
 let kinoFilm = null;                    // welcher Film läuft gerade?
 let kinoZeit = 0;                       // wie weit ist er?
@@ -16030,9 +16364,12 @@ function kinoStandbild() {
   kg.fillStyle = "rgba(0,0,0,.22)";
   for (let i = 0; i < 22; i++) kg.fillRect(i * 15 + (i % 2) * 4, 0, 6, KINO_HOCH);
   kg.fillStyle = "#ffe066"; kg.textAlign = "center";
-  kg.font = "bold 34px sans-serif"; kg.fillText("🎬 KINO", KINO_B/2, 82);
+  const heim = !imKino();
+  kg.font = "bold 34px sans-serif";
+  kg.fillText(heim ? "🏠 HEIMKINO" : "🎬 KINO", KINO_B/2, 82);
   kg.font = "bold 15px sans-serif"; kg.fillStyle = "#fff";
-  kg.fillText("Setz dich hin und such dir einen Film aus!", KINO_B/2, 116);
+  kg.fillText(heim ? "Hier laufen deine eigenen Heimkino-Filme!"
+                   : "Setz dich hin und such dir einen Film aus!", KINO_B/2, 116);
 }
 function kinoBildMalen() {
   if (!kinoFilm) { kinoStandbild(); return; }
@@ -16101,6 +16438,10 @@ function kinoTick(dt) {
 function kinoWahlZeigen() {
   const liste = document.getElementById("kinoListe");
   liste.innerHTML = "";
+  // 🏠🎬 Im Heimkino laufen ANDERE Filme als im echten Kino
+  const kopf = document.querySelector("#kinoWahl h3");
+  if (kopf) kopf.textContent = imKino() ? "🎬 Was möchtest du sehen?"
+                                        : "🏠🎬 Dein Heimkino - was möchtest du sehen?";
   // 🎥 Jonahs eigene Filme stehen ganz oben - der neueste zuerst
   for (const f of eigeneFilme.slice().reverse()) {
     const b = document.createElement("button");
@@ -16114,7 +16455,7 @@ function kinoWahlZeigen() {
     b.addEventListener("click", () => kinoStart(f));
     liste.appendChild(b);
   }
-  for (const f of KINO_FILME) {
+  for (const f of filmProgramm()) {
     const b = document.createElement("button");
     b.className = "kinoFilm";
     b.innerHTML = '<span class="kinoPlakat"></span><span><span class="kinoTitel"></span>' +
@@ -17022,6 +17363,14 @@ function rbKellerBlock(dx, dz, dy) {
   if (dy >= 0) return null;                           // oben gilt der normale Plan
   if (dy <= -RB_KELLER_T) return SCHUTZ;              // der Kellerboden (und sein Fundament)
   if (adx === RB_KELLER_R || adz === RB_KELLER_R) return SCHUTZ;   // die Wände
+  // 🧱 WÄNDE zwischen den vier Kellerräumen - mit breiten Durchgängen, damit
+  // man überall hinkommt. (Jonah: „da sind gar keine Wände zwischen den Räumen")
+  if ((dx === 0 || dz === 0) && !(dx === 0 && dz === 0)) {
+    const laengs = dx === 0 ? Math.abs(dz) : Math.abs(dx);
+    // Der Durchgang liegt in der MITTE jeder Wand - dort steht auch nichts im
+    // Weg (die Kellertreppe kommt bei dx = 8 herunter).
+    return (laengs >= 13 && laengs <= 16) ? AIR : SCHUTZ;   // Durchgang oder Wand
+  }
   // 🏛️ tragende Säulen, damit die Halle nicht leer wirkt
   if (adx <= 20 && adz <= 20 && adx % 10 === 0 && adz % 10 === 0 &&
       !(dx === 0 && dz === 0)) return SCHUTZ;
@@ -17260,6 +17609,93 @@ function rbZimmerNr(dx, dz) {           // 0..8 - welches Zimmer der Etage?
   return { rx, rz, nr: rz*3 + rx, mx: [-30, 0, 30][rx], mz: [-30, 0, 30][rz] };
 }
 // --- Was steht an dieser Stelle der Riesenburg? ---------------------------
+// ============== 🅿️ DIE GARAGE DER RIESENBURG ============================
+// Jonahs Wunsch: "Ich möchte, dass es in meiner Riesenburg auch eine Garage
+// gibt, wo meine Sachen automatisch hinfahren, wenn ich in der Riesenburg bin."
+// Sie steht im Hof gleich rechts neben dem Weg zum Burgtor - eine riesige
+// Halle mit einem 11 Blöcke breiten Tor, damit sogar der Riesen-Roboter und
+// die Rakete bequem hineinpassen.
+const GAR_X0 = 6, GAR_X1 = 30;          // von wo bis wo steht die Halle (dx)
+const GAR_Z0 = 52, GAR_Z1 = 76;         // ... und bei diesen dz
+const GAR_H = 14;                       // so hoch ist sie innen
+const GAR_TOR_Z = 64;                   // in der Mitte dieser Seite ist das Tor
+// Wo parkt was? (dx, dz in der Riesenburg-Welt)
+const RB_GARAGEN_PLATZ = { bagger:[12,57], jet:[19,57], raumschiff:[26,57],
+                           limo:[12,64],  roboter:[26,64],
+                           heli:[19,71],  dragon:[26,71] };
+function rbGarageBlock(dx, dz, dy) {
+  if (dx < GAR_X0 || dx > GAR_X1 || dz < GAR_Z0 || dz > GAR_Z1) return null;
+  if (dy < 0) return null;                        // darunter: normales Fundament
+  if (dy === 0) {                                 // der glatte Garagenboden
+    for (const k in RB_GARAGEN_PLATZ) {           // jeder Platz ist golden markiert
+      const p = RB_GARAGEN_PLATZ[k];
+      if (Math.abs(dx - p[0]) <= 1 && Math.abs(dz - p[1]) <= 1) return GOLD;
+    }
+    return STRASSE;
+  }
+  if (dy > GAR_H) return AIR;
+  if (dy === GAR_H) return SCHUTZ;                // das Dach
+  const rand = dx === GAR_X0 || dx === GAR_X1 || dz === GAR_Z0 || dz === GAR_Z1;
+  if (!rand) {
+    // 🪧 das Schild gleich neben dem Tor - innen rechts
+    if (dy === 1 && dx === GAR_X0 + 1 && dz === GAR_Z0 + 6) return SIGN;
+    // 🔥 Licht an den Innenwänden, damit man seine Fahrzeuge sieht
+    if (dy === 6 && (dx === GAR_X0 + 1 || dx === GAR_X1 - 1) &&
+        ((dz % 6) + 6) % 6 === 0) return TORCH;
+    return AIR;                                   // innen ist alles frei
+  }
+  // 🚪 DAS GROSSE TOR zeigt zum Weg (Westseite): 11 breit, 9 hoch
+  if (dx === GAR_X0 && Math.abs(dz - GAR_TOR_Z) <= 5 && dy <= 9) return AIR;
+  if (dy === 7 && ((dx + dz) % 5 + 5) % 5 === 0) return GLASS;   // Fensterband
+  if (dy === GAR_H - 1) return GOLD;              // goldener Kranz oben
+  return SCHUTZ;
+}
+// 🏰 Ist Jonah in der Riesenburg? Dann parken dort alle Fahrzeuge.
+function imRbHof() {
+  if (weltDim !== RB_DIM) return false;
+  riesenHoehe();
+  return Math.abs(player.x - RB_X) < RB_MAUER + 8 &&
+         Math.abs(player.z - RB_Z) < RB_MAUER + 8;
+}
+// 🅿️🏰 Alle Fahrzeuge SOFORT in die Garage der Riesenburg stellen -
+// das passiert in dem Moment, in dem Jonah durch das Portal kommt.
+function rbFahrzeugeInGarage() {
+  riesenHoehe();
+  let n = 0;
+  for (const a of animals) {
+    if (!MITREISER.has(a.type)) continue;
+    if (a === dragonRiding || a === heliRiding || a === jetRiding ||
+        a === baggerRiding || a === carRiding) continue;   // darauf sitzt Jonah ja!
+    const p = RB_GARAGEN_PLATZ[a.type] || [GAR_X0 + 13, GAR_TOR_Z];
+    const ax = RB_X + p[0], az = RB_Z + p[1];
+    for (let cx = (ax-8)>>4; cx <= (ax+8)>>4; cx++)
+      for (let cz = (az-8)>>4; cz <= (az+8)>>4; cz++) ensureData(cx, cz);
+    a.x = ax + 0.5; a.z = az + 0.5; a.y = RB_Y + 1.05;
+    a.vy = 0; a.yaw = Math.PI/2; a.garage = true;
+    a.ferry = false; a.flug = false; a.walking = false;
+    n++;
+  }
+  return n;
+}
+// 🅿️🏠 ... und auf dem Heimweg stehen sie wieder in der Garage zu Hause.
+function rbFahrzeugeHeim() {
+  const B = burgPos();
+  let n = 0;
+  for (const a of animals) {
+    if (!MITREISER.has(a.type)) continue;
+    if (a === dragonRiding || a === heliRiding || a === jetRiding ||
+        a === baggerRiding || a === carRiding) continue;
+    const p = GARAGEN_PLATZ[a.type] || [21, 13];
+    const ax = B.bx + p[0], az = B.bz + p[1];
+    for (let cx = (ax-8)>>4; cx <= (ax+8)>>4; cx++)
+      for (let cz = (az-8)>>4; cz <= (az+8)>>4; cz++) ensureData(cx, cz);
+    a.x = ax + 0.5; a.z = az + 0.5; a.y = B.base + 1.05;
+    a.vy = 0; a.yaw = Math.PI/2; a.garage = true;
+    a.ferry = false; a.flug = false; a.walking = false;
+    n++;
+  }
+  return n;
+}
 function riesenBlock(dx, dz, y) {
   riesenHoehe();
   const by = RB_Y, adx = Math.abs(dx), adz = Math.abs(dz);
@@ -17269,6 +17705,10 @@ function riesenBlock(dx, dz, y) {
   // 0) 🕳️ DER KELLER tief unten (und seine Treppe nach oben)
   const keller = rbKellerBlock(dx, dz, dy);
   if (keller !== null) return keller;
+
+  // 0b) 🅿️ DIE GARAGE im Hof: hier parken Roboter, Jet, Heli & Co.
+  const gar = rbGarageBlock(dx, dz, dy);
+  if (gar !== null) return gar;
 
   // 1) FUNDAMENT und BODEN
   if (dy < 0) return y >= Math.min(terrainHeight(RB_X + dx, RB_Z + dz), by) - 4 ? STONE : null;
@@ -17718,6 +18158,7 @@ function rbPortalTick(dt) {
     const B = burgPos();
     player.x = B.bx + RB_RAHMEN_X0 + 2.5; player.z = B.bz + RB_RAHMEN_Z + 2.5;
     player.y = B.base + 2; player.vy = 0;
+    rbFahrzeugeHeim();                            // 🅿️ wieder in die Garage daheim
     toast('✨🏠 Zurück in deiner Burg! Der silberne Rahmen steht gleich vor dir. 🔮', 6000);
   } else {                                         // ab in die Riesenburg-Welt!
     // WICHTIG: erst das Portal zumachen, solange die Burg-Chunks noch geladen
@@ -17726,6 +18167,7 @@ function rbPortalTick(dt) {
     weltWechsel(RB_DIM);                           // ➡️ hinüber in die andere Welt
     const [ax, ay, az] = riesenAnkunft();
     player.x = ax + 0.5; player.z = az + 0.5; player.y = ay; player.vy = 0;
+    rbFahrzeugeInGarage();                         // 🅿️ alles parkt in DEINER Garage
     toast('✨🏰 WUSCH! Du bist in DER RIESENBURG – einer ganz eigenen Welt! Hier gibt ' +
           'es sonst NICHTS von zu Hause: keine Dörfer, kein Kino, keine Burg. Hinter ' +
           'dir ist das Portal zugefallen – das Rück-Portal hier bringt dich wieder ' +
@@ -17788,6 +18230,10 @@ function riesenStempeln(data, cx, cz) {
          '🕳️ DER KELLER DER RIESENBURG - hier unten liegen das GOLD-LAGER (Ecke ' +
          'hinten rechts), die SCHATZKAMMER, die VORRATSKAMMER und deine geheime ' +
          'SPIELHÖHLE! 🕹️');
+  schild(GAR_X0 + 1, 1, GAR_Z0 + 6, '🅿️ DEINE GARAGE - hier parken dein RIESEN-ROBOTER, '+
+         'dein Jet, dein Hubschrauber, dein Mähdrescher, dein Drache, deine '+
+         'Limousine und deine Rakete. Sie fahren GANZ ALLEIN hierher, sobald du '+
+         'in der Riesenburg bist! 🤖✈️🚜');
   schild(0, 1, RB_KERN + 3, '🏰 DIE RIESENBURG VON KÖNIG JONAH - 36 Zimmer auf vier Etagen, ' +
                             'alles aus unzerstörbarem Schutz-Stein! Die Treppe nach oben ' +
                             'findest du in der Nordwest-Ecke. 🪜');
@@ -22535,6 +22981,8 @@ function buchInDieHand(id, woher) {
 // 📚 Jedes Regal ist zwei Blöcke hoch und hat VIER FÄCHER. In jedes Fach
 // passen genau ZWEI Bücher - mehr nicht, sonst fällt das Regal um. 😉
 const REGAL_FAECHER = 4, FACH_MAX = 2;
+const REGAL_TEILE = new Set([BUCHREGAL, BUCHREGAL_OBEN, BUCHREGAL_V, BUCHREGAL_OBEN_V]);
+const REGAL_OBEN  = new Set([BUCHREGAL_OBEN, BUCHREGAL_OBEN_V]);
 // So sah ein frisches Regal FRÜHER aus (drei Bücher und ein leeres). Jonah
 // wollte seine Regale lieber selbst einräumen - diese Vorgabe erkennen wir
 // nur noch, um sie aus alten Spielständen herauszuräumen.
@@ -22569,6 +23017,18 @@ function regalAufstellen(px, py, pz) {
         'Tipp es an! 📖', 5000);
   blip(330,0.06); blip(420,0.06);
   return true;
+}
+// 📚 Ein leeres Regal sieht auch LEER aus - sobald Bücher drin sind, füllt
+// es sich sichtbar. (Jonah: „Sie sahen immer noch voll aus.")
+function regalBildPruefen(key) {
+  const p = key.split(',').map(Number);
+  const voll = regalAlle(key).length > 0;
+  const unten = getBlock(p[0], p[1], p[2]);
+  const oben  = getBlock(p[0], p[1]+1, p[2]);
+  if (unten === BUCHREGAL || unten === BUCHREGAL_V)
+    setBlock(p[0], p[1], p[2], voll ? BUCHREGAL_V : BUCHREGAL);
+  if (oben === BUCHREGAL_OBEN || oben === BUCHREGAL_OBEN_V)
+    setBlock(p[0], p[1]+1, p[2], voll ? BUCHREGAL_OBEN_V : BUCHREGAL_OBEN);
 }
 function regalFrei(key) {               // in welchem Fach ist noch Platz?
   return regalInhalt(key).findIndex(f => f.length < FACH_MAX);
@@ -22605,6 +23065,7 @@ let buchOrt = null;                     // wo liegt es? {art:'regal'|'welt', key
 function regalZeichnen() {
   const liste = document.getElementById('regalListe');
   liste.innerHTML = '';
+  if (regalAuf) regalBildPruefen(regalAuf);
   const faecher = regalInhalt(regalAuf);
   const voll = regalAlle(regalAuf).length;
   document.getElementById('regalInfo').textContent =
@@ -22695,6 +23156,7 @@ function regalFachFuellen(nr) {
 }
 function openRegal(x, y, z) {
   regalAuf = x+','+y+','+z;
+  regalBildPruefen(regalAuf);           // 📚 voll oder leer? Das sieht man am Regal
   regalZeichnen();
   document.getElementById('regalBox').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
@@ -23268,7 +23730,8 @@ const MAP_BLOCK_COL = {
   [RT_FUESSE]:'#b6c0cc', [RT_AKKU]:'#ffd23c', [RWERK]:'#8a6a3c', [RCHIP]:'#2f8f52',
   [RLADE]:'#7ef0e6', [GSPEICHER]:'#f0c850', [TRESORTUER]:'#8a909e', [TRESORRAD]:'#f0c850',
   [SAFE]:'#5a6070', [SAFE_TUER]:'#7e8696', [SAFE_RAD]:'#f0c850', [SAFE_AUF]:'#7e8696',
-  [BUCHREGAL]:'#a06a3a', [BUCHREGAL_OBEN]:'#a06a3a', [BUCH]:'#c44a3a',
+  [BUCHREGAL]:'#8a5e34', [BUCHREGAL_OBEN]:'#8a5e34',
+  [BUCHREGAL_V]:'#a06a3a', [BUCHREGAL_OBEN_V]:'#a06a3a', [BUCH]:'#c44a3a',
   [GELDSCHUETTE]:'#f0c850', [GOLDBARREN]:'#eec43a', [GOLDTAFEL]:'#e0b83c',
   [GELDSAUGER]:'#8ab4d8', [SILBERRAHMEN]:'#c4ccda', [RBPORTAL]:'#a060e0',
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
@@ -26086,8 +26549,8 @@ function doBreak(dir) {
   if (hit && hit.block === GOLDTAFEL) { tafelAntippen(); return; }
   if (hit && hit.block === GELDSAUGER) { openSauger(); return; }
   if (hit && hit.block === SILBERRAHMEN) { openRahmen(); return; }
-  if (hit && (hit.block === BUCHREGAL || hit.block === BUCHREGAL_OBEN)) {
-    const uy = hit.block === BUCHREGAL_OBEN ? hit.y - 1 : hit.y;   // immer der untere Teil
+  if (hit && REGAL_TEILE.has(hit.block)) {
+    const uy = REGAL_OBEN.has(hit.block) ? hit.y - 1 : hit.y;      // immer der untere Teil
     openRegal(hit.x, uy, hit.z); return;
   }
   if (hit && hit.block === BUCH) {      // 📖 ein liegendes Buch antippen = lesen
@@ -26233,8 +26696,8 @@ function doBreak(dir) {
     blip(650,0.06); blip(750,0.06);
     return;
   }
-  if (hit.block===BUCHREGAL || hit.block===BUCHREGAL_OBEN) {   // 📚 Regal: beide Teile weg
-    const uy = hit.block===BUCHREGAL_OBEN ? hit.y-1 : hit.y;
+  if (REGAL_TEILE.has(hit.block)) {     // 📚 Regal: beide Teile weg
+    const uy = REGAL_OBEN.has(hit.block) ? hit.y-1 : hit.y;
     setBlock(hit.x,uy,hit.z,AIR);
     setBlock(hit.x,uy+1,hit.z,AIR);
     toast('📚 Regal abgebaut – deine Bücher warten hier, wenn du es wieder aufstellst.', 4000);
@@ -26755,7 +27218,7 @@ function doPlace(dir) {
     blip(330,0.06);
     return;
   }
-  if (b === BUCHREGAL) { regalAufstellen(px,py,pz); return; }   // 📚 immer zwei hoch
+  if (b === BUCHREGAL || b === BUCHREGAL_V) { regalAufstellen(px,py,pz); return; }
   setBlock(px,py,pz,b);
   if (b === BUCH) buchHingestellt(px,py,pz);   // 📖 welches Buch liegt hier jetzt?
   missEvent('bau');                     // 📜 für die Baumeister-Mission
