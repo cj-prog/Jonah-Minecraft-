@@ -1468,7 +1468,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 280 &middot; 📚 DEINE REGALE SIND JETZT LEER! Jedes Bücherregal hat vier leere Fächer – du räumst sie selbst ein: Fach antippen, Buch aussuchen (oder dein eigenes schreiben), fertig. In jedes Fach passen zwei Bücher. Auch die Regale, die schon in deiner Welt stehen, sind jetzt leer. ✍️</p>
+    Version 281 &middot; 🔧🏰 DIE HAUSMEISTER IN DER RIESENBURG ARBEITEN JETZT! Sie haben dort gar keinen Dienst gemacht – jetzt merken sie jedes Loch, laufen (oder fliegen) hin und flicken es wieder zu, genau wie daheim in deiner Festung. 🛠️</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1514,7 +1514,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 280;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 281;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -13151,7 +13151,9 @@ function knastLeeren(pol) {
 }
 function meldeSchaden(x, y, z) {
   if (keinSchaden || schadenListe.length > 60) return;
-  if (typeof _burg === 'undefined' || !imBurgGelaende(x, z)) return;
+  if (typeof _burg === 'undefined') return;
+  // 🏰 Auch in der Riesenburg haben die Hausmeister ihren Dienst!
+  if (!imBurgGelaende(x, z) && !inRiesenburg(x, z)) return;
   schadenListe.push([x,y,z]);
 }
 // Im Burggelände flickt der Hausmeister ALLES: Wände, Mauern - und auch
@@ -13160,7 +13162,7 @@ function schadenArt(x, y, z) {
   const art = _lochArt(x,y,z);
   if (!art) return null;
   if (art === 'bau') return 'bau';
-  return imBurgGelaende(x,z) ? 'erde' : null;
+  return (imBurgGelaende(x,z) || inRiesenburg(x,z)) ? 'erde' : null;
 }
 // Sucht ein fehlendes Stück in der Nähe. hoch/tief sagen, wie weit er nach oben
 // und unten schaut - der fliegende Hausmeister guckt viel weiter hinauf! 🔧✈️
@@ -13254,10 +13256,12 @@ function hausmeisterTick(a, dt) {
   }
   if (a.repT > 0) return;
   a.repT = 0.7;
-  if (weltDim !== 0 && weltDim !== 9) return;
+  // 🏰 Er arbeitet daheim (0), auf dem Königs-Planeten (9) UND in der
+  // Riesenburg-Welt (10) - dort wohnen ja vier Hausmeister!
+  if (weltDim !== 0 && weltDim !== 9 && weltDim !== RB_DIM) return;
   // 1) Gemeldete Schäden zuerst - egal wo im ganzen Burggelände sie sind!
   let versuche = 0;
-  while (weltDim === 0 && schadenListe.length && versuche++ < 12) {
+  while ((weltDim === 0 || weltDim === RB_DIM) && schadenListe.length && versuche++ < 12) {
     const [sx,sy,sz] = schadenListe.shift();
     if (schadenArt(sx,sy,sz)) {
       a.ziel = [sx,sy,sz]; a.wegT = 0;
@@ -13266,13 +13270,13 @@ function hausmeisterTick(a, dt) {
     }
   }
   // 2) Sonst schaut er selbst nach: erst um sich herum, dann bei Jonah
-  if (Math.hypot(player.x-B.hx, player.z-B.hz) > 90) return;
+  if (Math.hypot(player.x-B.hx, player.z-B.hz) > Math.max(90, B.r + 60)) return;
   // er schaut jetzt bis 16 Blöcke ÜBER sich - Dächer, hohe Wände, Türme!
   const loch = sucheLoch(Math.floor(a.x), Math.floor(a.y), Math.floor(a.z), 6, 16, 5) ||
                sucheLoch(Math.floor(player.x), Math.floor(player.y), Math.floor(player.z), 7, 16, 5);
   if (loch) { a.ziel = loch; a.wegT = 0; return; }
   // nichts kaputt: gemütlich patrouillieren - aber NIE aus der Mauer heraus!
-  const raus = weltDim === 9
+  const raus = (weltDim === 9 || weltDim === RB_DIM)
     ? Math.hypot(a.x-B.hx, a.z-B.hz) > B.r
     : (a.x < B.hx-59 || a.x > B.hx+61 || a.z < B.hz-31 || a.z > B.hz+31);
   if (raus || Math.hypot(a.x-a.heim[0], a.z-a.heim[2]) > 34) {
@@ -13994,6 +13998,7 @@ function weltWechsel(neu) {
   edits.clear();
   for (const [k,v] of editsLager[neu]) edits.set(k, v);
   weltDim = neu;
+  schadenListe.length = 0;                   // 🔧 Schäden gelten nur in IHRER Welt
   for (const ch of [...chunks.values()]) freeChunk(ch);   // alles neu zeichnen
   cropSet.clear(); snowSet.clear();
   fallende.length = 0; flowQ.length = 0; fallQ.length = 0;
