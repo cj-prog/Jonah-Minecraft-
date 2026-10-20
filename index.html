@@ -1468,7 +1468,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 281 &middot; 🔧🏰 DIE HAUSMEISTER IN DER RIESENBURG ARBEITEN JETZT! Sie haben dort gar keinen Dienst gemacht – jetzt merken sie jedes Loch, laufen (oder fliegen) hin und flicken es wieder zu, genau wie daheim in deiner Festung. 🛠️</p>
+    Version 282 &middot; 🎬 JETZT LÄUFT IM HEIMKINO WIRKLICH EIN FILM! Die Leinwand in den Heimkinos deiner Riesenburg war aus Spielautomaten-Bildschirmen gebaut – jetzt ist es eine echte Leinwand (12 Blöcke breit, 6 hoch). Tipp sie an oder setz dich in einen Kinosessel, dann kommt die Filmauswahl – auch deine selbst gedrehten Filme. 🍿</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1514,7 +1514,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 281;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 282;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -15601,15 +15601,17 @@ kinoCanvas.width = KINO_TEX_B; kinoCanvas.height = KINO_TEX_H;
 const kg = kinoCanvas.getContext("2d");
 kg.scale(KINO_SCHARF_X, KINO_SCHARF_Y);
 // Wie breit steht die Leinwand gerade auf dem Bildschirm?
-function kinoBreiteAmSchirm() {
-  const dz = Math.max(1, Math.abs(player.z - (KINO_Z + LW_Z + 1.12)));
+// Wie breit erscheint die Leinwand gerade auf dem Bildschirm? (L = welche
+// Leinwand: die im großen Kino oder die im Heimkino der Riesenburg)
+function kinoBreiteAmSchirm(L) {
+  const dz = Math.max(1, Math.abs(player.z - L.zp));
   const f = (canvas.height / 2) / Math.tan(FOV / 2);
-  return (LW_X1 - LW_X0 + 1) * f / dz;
+  return (L.x1 - L.x0) * f / dz;
 }
 // ... und danach die Größe des Filmbildes wählen (nur wenn sie sich ändert -
 // den Malgrund neu anzulegen kostet Zeit).
-function kinoGroessePruefen() {
-  const noetig = kinoBreiteAmSchirm();
+function kinoGroessePruefen(L) {
+  const noetig = kinoBreiteAmSchirm(L);
   let b = KINO_GROESSEN[KINO_GROESSEN.length - 1];
   for (const g of KINO_GROESSEN) if (g >= noetig) { b = g; break; }
   if (b === KINO_TEX_B) return false;
@@ -16084,7 +16086,7 @@ function kinoStopp() {
 function kinoTick(dt) {
   if (!kinoFilm) return;
   // Wer aus dem Kino rausläuft, für den hört der Film auf
-  if (!imKino()) { kinoStopp(); return; }
+  if (!imKino() && !heimkinoLeinwand()) { kinoStopp(); return; }
   if (kinoPause) return;
   kinoZeit += dt;
   if (kinoZeit >= kinoFilm.dauer) {     // Abspann
@@ -16451,13 +16453,13 @@ function filmListeZeigen() {
     const b = document.createElement('button'); b.className = 'filmName';
     b.textContent = '🎥 ' + f.titel + '  (' + filmZeitText(f.dauer) + ')';
     b.addEventListener('click', () => {
-      if (imKino()) {
+      if (imKino() || heimkinoLeinwand()) {
         document.getElementById('filmBox').style.display = 'none';
         document.getElementById('kinoWahl').style.display = 'none';
         kinoStart(f);
       } else {
-        toast('🎬 Deine Filme laufen im KINO! Nimm den 🛸-Teleport und fahr zum Kino – ' +
-              'dort tippst du die Leinwand an.', 6000);
+        toast('🎬 Deine Filme laufen im KINO – oder im Heimkino deiner Riesenburg! ' +
+              'Stell dich davor und tipp die Leinwand an.', 6000);
       }
     });
     const w = document.createElement('button'); w.className = 'filmWeg';
@@ -16558,20 +16560,25 @@ function kinoTexturSetzen(neu) {
 }
 let kinoBildZeit = -1;                  // wann wurde zuletzt neu gemalt?
 function drawKinoLeinwand() {
-  if (!imKino()) return;
+  // 🎬 Entweder das große Kino - oder das Heimkino in der Riesenburg
+  const L = imKino()
+    ? { x0: KINO_X + LW_X0, x1: KINO_X + LW_X1 + 1, yb: LW_Y0, yt: LW_Y1 + 1,
+        zp: KINO_Z + LW_Z + 1.12 }
+    : heimkinoLeinwand();
+  if (!L) return;
   const jetzt = performance.now();
   // beim Platzwechsel sofort neu malen, sonst 30-mal in der Sekunde
-  const neu = kinoGroessePruefen() || jetzt - kinoBildZeit >= 33;
+  const neu = kinoGroessePruefen(L) || jetzt - kinoBildZeit >= 33;
   if (neu) { kinoBildMalen(); kinoBildZeit = jetzt; }
   kinoTexturSetzen(neu);
   gl.uniform1f(loc.uAlpha, 1);
-  // Die Leinwand hängt an der Wand bei lz = LW_Z und schaut nach +Z
-  const x0 = KINO_X + LW_X0, x1 = KINO_X + LW_X1 + 1;
-  const yb = LW_Y0, yt = LW_Y1 + 1;
+  // Die Leinwand hängt an der Wand und schaut nach +Z
+  const x0 = L.x0, x1 = L.x1;
+  const yb = L.yb, yt = L.yt;
   // 0.12 vor der Wand - bei nur 0.02 kämpfen Leinwand und Wand um dieselbe
   // Tiefe (Z-Fighting) und das Bild bekommt graue Streifen. Die gemalten
   // Bilder im Spiel halten aus demselben Grund 0.115 Abstand.
-  const zp = KINO_Z + LW_Z + 1.12;
+  const zp = L.zp;
   const h = kinoFilm ? 1.35 : 1.0;      // ein laufender Film leuchtet
   const a = [x1,yb,zp,1,1,h, x0,yb,zp,0,1,h, x0,yt,zp,0,0,h,
              x1,yb,zp,1,1,h, x0,yt,zp,0,0,h, x1,yt,zp,1,0,h];
@@ -17147,8 +17154,9 @@ const RB_ZIMMER = [
       if (h === 1 && Math.abs(ox) === 10 && Math.abs(oz) === 4) return BLUME;
       return null; } },
   { name: '🎬 DAS HEIMKINO', deko: (ox, oz, h) => {
-      if (h <= 3 && oz === -7 && Math.abs(ox) <= 5)
-        return [SCREEN_BOWL, SCREEN_RACE, SCREEN_FROG][h-1];  // die große Leinwand
+      // 🎬 Eine RICHTIGE Leinwand (12 Blöcke breit, 6 hoch) - antippen und
+      // einen Film aussuchen, genau wie im großen Kino!
+      if (h >= 1 && h <= HK_HOCH && oz === HK_OZ && ox >= -6 && ox <= 5) return WOOL;
       if (h === 1 && (oz === -2 || oz === 1 || oz === 4) && Math.abs(ox) <= 5) return CHAIR;
       if (h === 1 && Math.abs(ox) === 7 && oz === -5) return TORCH;
       return null; } },
@@ -17222,6 +17230,29 @@ function rbTuerSchild(dx, dz) {
     return rz * 3 + rx;
   }
   return null;
+}
+// 🎬 DAS HEIMKINO IN DER RIESENBURG: Die Leinwand hängt an der Wand bei
+// oz = -7 und ist 12 Blöcke breit und 6 hoch - also genau im Kino-Format.
+const HK_OZ = -7, HK_HOCH = 6;
+// Steht Jonah gerade in einem Heimkino? Dann sagt das hier, wo dort die
+// Leinwand hängt (und sonst null).
+function heimkinoLeinwand() {
+  if (weltDim !== RB_DIM) return null;
+  riesenHoehe();
+  const dx = player.x - RB_X, dz = player.z - RB_Z, dy = player.y - RB_Y;
+  if (Math.abs(dx) > RB_KERN || Math.abs(dz) > RB_KERN) return null;
+  const et = Math.floor((dy - 0.5) / RB_ETAGE);
+  if (et < 0 || et >= RB_ETAGEN) return null;
+  if (et === RB_ETAGEN - 1) { /* oben ist der Thronsaal mit dabei */ }
+  const z = rbZimmerNr(Math.floor(dx), Math.floor(dz));
+  if ((et === RB_ETAGEN - 1 && z.nr === 4) || (et === 0 && z.nr === 4)) return null;
+  const zimmer = RB_ZIMMER[(et * 9 + z.nr) % RB_ZIMMER.length];
+  if (!zimmer || zimmer.name !== '🎬 DAS HEIMKINO') return null;
+  const by = RB_Y + et * RB_ETAGE;
+  return { x0: RB_X + z.mx - 6, x1: RB_X + z.mx + 6,
+           yb: by + 1, yt: by + 1 + HK_HOCH,
+           zp: RB_Z + z.mz + HK_OZ + 1.12,
+           wz: RB_Z + z.mz + HK_OZ, y0: by + 1, y1: by + HK_HOCH };
 }
 function rbZimmerNr(dx, dz) {           // 0..8 - welches Zimmer der Etage?
   const rx = dx < -RB_WAND ? 0 : dx > RB_WAND ? 2 : 1;
@@ -26525,7 +26556,7 @@ function doPlace(dir) {
       toast('🚽 Plumps! Und danach: Spülung – Rauschhh! 🌀', 2800);
       blip(600,0.08); blip(400,0.12); blip(250,0.2); blip(180,0.25);
     } else {
-      if (imKino()) {                   // 🎬 im Kino gibt es gleich die Filmauswahl
+      if (imKino() || heimkinoLeinwand()) {   // 🎬 Kino und Heimkino: Filmauswahl
         blip(392,0.08); blip(523,0.1);
         if (!kinoFilm) kinoWahlZeigen();
       } else {
@@ -26539,6 +26570,14 @@ function doPlace(dir) {
       hit.z === KINO_Z + LW_Z && hit.y >= LW_Y0 && hit.y <= LW_Y1) {
     if (kinoFilm) kinoStopp(); else kinoWahlZeigen();
     return;
+  }
+  if (hit.block===WOOL) {               // 🎬 ... und die Leinwand im Heimkino
+    const HK = heimkinoLeinwand();
+    if (HK && hit.z === HK.wz && hit.y >= HK.y0 && hit.y <= HK.y1 &&
+        hit.x >= HK.x0 && hit.x < HK.x1) {
+      if (kinoFilm) kinoStopp(); else kinoWahlZeigen();
+      return;
+    }
   }
   if (hit.block===SINK) {               // Hände waschen!
     toast('🧼 Platsch, platsch – Hände gewaschen! Blitzeblank! ✨', 2500);

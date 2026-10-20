@@ -221,6 +221,15 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- IM HEIMKINO DER RIESENBURG LÄUFT JETZT EIN FILM (v282)! 🎬🍿 Jonah hat
+  gemeldet: „Da kann ich gar keine Filme gucken, weil die Leinwand nur aus
+  diesen Spielen gemacht ist." Stimmte – die Leinwand bestand aus drei
+  Spielautomaten-Bildschirmen. Jetzt hängt dort eine echte Leinwand (12
+  Blöcke breit, 6 hoch, genau im Kino-Format). Antippen oder sich in einen
+  Kinosessel setzen öffnet die Filmauswahl, der Film läuft auf der Leinwand
+  wie im großen Kino – auch Jonahs selbst gedrehte Filme. Die Bildgröße
+  richtet sich jetzt nach der Leinwand, vor der man gerade steht (vorher
+  rechnete sie immer mit dem großen Kino).
 - DIE HAUSMEISTER IN DER RIESENBURG ARBEITEN (v281)! 🔧🏰 Jonah hat gemeldet,
   dass die vier Hausmeister drüben gar nichts reparieren – und das stimmte:
   Der Hausmeister-Dienst lief nur in Jonahs normaler Welt und auf dem
