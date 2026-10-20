@@ -221,6 +221,14 @@ Leertaste springen · Tasten 1–8 Block wählen
   aufgeregt hüpfend eine Runde mit Piep-Geräuschen („Gleich knacke
   ich den Rekord! 🏆") – und manche Wanderer nehmen extra Kurs auf
   die Spielhalle. Außerdem suchen sich alle viel öfter etwas zu tun
+- DIE BÜCHERREGALE SIND JETZT LEER (v280)! 📚🗄️ Jonah wollte seine Regale
+  selbst einräumen statt sie schon voll vorzufinden. Jedes Regal hat jetzt
+  vier LEERE Fächer („Fach 1 (0 von 2)") mit je zwei freien Plätzen. Einen
+  freien Platz antippen → aussuchen, welches Buch hinein soll (alle sechs
+  Bücher und ein 📓 leeres zum Selberschreiben). Auch die Regale, die schon
+  in Jonahs Welt standen, werden beim Laden einmalig leer geräumt – aber nur
+  die, die noch genau die alte Vorbefüllung hatten; selbst eingeräumte Regale
+  bleiben, wie sie sind.
 - BEIM SCHREIBEN STÖRT KEINE AUFGABE MEHR (v279)! ✍️🤫 Jonah hat gemeldet:
   Mitten beim Buchschreiben kam eine Mathe- oder Englisch-Aufgabe, und danach
   musste er von vorne anfangen. Zwei Dinge sorgen jetzt dafür, dass das nicht
