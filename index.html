@@ -1468,7 +1468,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 278 &middot; 📚 DAS RICHTIGE BÜCHERREGAL! Es ist jetzt zwei Blöcke hoch und hat VIER FÄCHER – in jedes passen genau zwei Bücher. Du kannst Bücher in jedes Fach hineinlegen, wieder herausnehmen, die Bücher lesen, die schon drinstehen, und dir mit „✍️ Selber schreiben" eigene Bücher machen. Und Bücher sind weiter Blöcke: mitnehmen und überall hinstellen. 📖</p>
+    Version 279 &middot; ✍️ BEIM SCHREIBEN STÖRT KEINE AUFGABE MEHR! Wenn du gerade ein Buch schreibst (oder ein Schild oder einen Lied-Namen), wartet die Mathe- oder Englisch-Aufgabe, bis du fertig bist. Und falls doch einmal etwas dazwischenkommt, ist dein angefangener Text beim nächsten Mal wieder da – du musst NIE von vorne anfangen. 📝</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1514,7 +1514,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 278;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 279;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -24889,6 +24889,9 @@ function matheWaehlen() {
 }
 function matheStellen() {
   if (mathePause || !started) return;
+  // ✍️ Wenn Jonah gerade schreibt (Buch, Schild, Lied-Name), wartet die
+  // Aufgabe höflich - sonst wäre sein Text weg.
+  if (chatOpen) return;
   matheJetzt = matheWaehlen();
   matheEingabe = ''; matheVersuch = 0;
   mathePause = true;
@@ -25128,6 +25131,7 @@ function vokWaehlen() {
 }
 function vokabelStellen() {
   if (mathePause || !started) return;
+  if (chatOpen) return;                        // ✍️ erst zu Ende schreiben lassen
   vokJetzt = vokWaehlen();
   vokVersuch = 0; vokGeloest = false;
   mathePause = true;                    // die Welt hält an - wie beim Rechnen
@@ -25255,7 +25259,12 @@ function matheTick(dt) {
   if (matheZeit <= 0) {
     lernDran = 1 - lernDran;
     if (lernDran === 1) vokabelStellen(); else matheStellen();
-    if (!mathePause) matheZeit = matheAbstand();   // konnte nicht gestellt werden
+    if (!mathePause) {
+      // ✍️ Schreibt Jonah gerade? Dann kommt die Aufgabe gleich nach dem
+      // Schreiben - und zwar dieselbe Sorte, die jetzt dran gewesen wäre.
+      if (chatOpen) { matheZeit = 12; lernDran = 1 - lernDran; }
+      else matheZeit = matheAbstand();             // konnte nicht gestellt werden
+    }
   }
 }
 let lernDran = 0;                       // 0 = als Nächstes Rechnen, 1 = Englisch
@@ -27101,9 +27110,19 @@ function openChat() {
 // ✍️ Allgemeine Text-Frage: dasselbe Eingabefeld wie beim Schild, aber mit
 // einer eigenen Antwort-Funktion (für Buch-Titel, Buchseiten und Lied-Namen).
 let textFrageCb = null;
+// ✍️ Angefangene Texte gehen nie verloren: Wird das Eingabefeld geschlossen,
+// ohne dass Jonah auf OK getippt hat, merkt sich das Spiel den Entwurf und
+// legt ihn beim nächsten Mal wieder hinein.
+let textFrageEntwurf = { frage: null, text: '' };
 function frageText(frage, vorgabe, cb, maxLen) {
   textFrageCb = cb;
   chatInput.maxLength = maxLen || 60;   // Buchseiten dürfen viel länger sein!
+  if (textFrageEntwurf.frage === frage && textFrageEntwurf.text &&
+      !(vorgabe || '').trim()) {
+    vorgabe = textFrageEntwurf.text;    // der angefangene Text ist wieder da!
+    toast('✍️ Dein angefangener Text ist noch da – schreib einfach weiter. 📝', 4000);
+  }
+  textFrageEntwurf = { frage: null, text: '' };
   chatInput.value = vorgabe || '';
   chatInput.placeholder = frage;
   document.getElementById('chatSend').textContent = '✍️ OK';
@@ -27118,6 +27137,9 @@ function openSignEditor(key) {
   openChat();
 }
 function closeChat() {
+  // ✍️ einen angefangenen Text nicht wegwerfen, sondern merken
+  if (textFrageCb && chatInput.value.trim())
+    textFrageEntwurf = { frage: chatInput.placeholder, text: chatInput.value };
   chatOpen=false; signTarget=null; butlerTarget=null; textFrageCb=null;
   chatInput.maxLength = 60;
   chatBox.style.display='none'; chatInput.blur();
@@ -27166,6 +27188,7 @@ function submitChat() {
   const frage=textFrageCb;
   chatInput.value='';
   closeChat();
+  textFrageEntwurf = { frage: null, text: '' };   // abgeschickt = kein Entwurf mehr
   if (frage) { frage(msg); return; }    // ✍️ Buch-Titel, Buchseite oder Lied-Name
   if (butler) {                          // 👑 ein Auftrag für einen Menschen!
     if (animals.includes(butler)) personAuftrag(butler, msg);
