@@ -322,6 +322,49 @@
   #filmBtn { right:calc(562px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top));
     width:40px; height:40px; font-size:20px; }
   #filmBtn.on { background:rgba(255,70,80,.6); }
+
+  /* 🌈 DER WELTEN-BAUKASTEN: Jonah stellt sich seine eigene Welt zusammen
+     und schaltet oben im Bild zwischen den Welten hin und her. */
+  #weltBtn { right:calc(612px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top));
+    width:40px; height:40px; font-size:20px; }
+  #weltBtn.on { background:rgba(255,205,90,.55); }
+  #weltWahl { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; gap:10px; background:rgba(12,10,28,.97); padding:14px;
+    border-radius:18px; color:#fff; z-index:60; width:min(94vw,430px);
+    max-height:92vh; overflow-y:auto; border:3px solid #7ec8ff; }
+  #weltWahl h3 { font-size:19px; margin:0; text-align:center; }
+  #weltListe { display:flex; flex-direction:column; gap:9px; }
+  .weltKnopf { display:flex; align-items:center; gap:12px; width:100%;
+    background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.06));
+    border:3px solid rgba(255,255,255,.28); border-radius:16px; padding:11px;
+    color:#fff; text-align:left; cursor:pointer; }
+  .weltKnopf.hier { border-color:#8fe6a0; background:rgba(120,220,140,.22); }
+  .weltBild { font-size:34px; width:60px; height:60px; flex:none; border-radius:14px;
+    display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.32); }
+  .weltName { font-size:17px; font-weight:bold; display:block; }
+  .weltUnter { font-size:11.5px; opacity:.82; display:block; margin-top:3px; line-height:1.35; }
+  #weltWahlZu { font-size:15px; font-weight:bold; padding:9px; border-radius:10px;
+    border:none; background:#5a6a80; color:#fff; cursor:pointer; }
+  #weltBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; gap:9px; background:rgba(10,14,30,.98); padding:13px;
+    border-radius:18px; color:#fff; z-index:61; width:min(96vw,520px);
+    max-height:92vh; overflow-y:auto; border:3px solid #ffd34a; }
+  #weltBox h3 { font-size:19px; margin:0; text-align:center; }
+  #weltHinweis { font-size:11.5px; opacity:.85; text-align:center; line-height:1.45; }
+  #weltNameInput { font-size:15px; padding:8px 10px; border-radius:10px;
+    border:2px solid rgba(255,255,255,.35); background:rgba(255,255,255,.1);
+    color:#fff; text-align:center; }
+  #weltFragen { display:flex; flex-direction:column; gap:9px; }
+  .jwFrage { display:flex; flex-direction:column; gap:5px; }
+  .jwFrage > b { font-size:13.5px; }
+  .jwChips { display:flex; flex-wrap:wrap; gap:6px; }
+  .jwChip { font-size:13px; padding:7px 11px; border-radius:11px; cursor:pointer;
+    background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.2); color:#fff; }
+  .jwChip.sel { background:rgba(120,220,140,.45); border-color:#8fe6a0; font-weight:bold; }
+  #weltFertigBtn { font-size:17px; font-weight:bold; padding:12px; border-radius:12px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+  #weltAbbruch { font-size:14px; padding:8px; border-radius:10px; border:none;
+    background:#5a6a80; color:#fff; cursor:pointer; }
   #filmBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; align-items:center; gap:8px; background:rgba(18,10,24,.97);
     padding:12px 13px; border-radius:16px; color:#fff; z-index:62; text-align:center;
@@ -1035,6 +1078,21 @@
   <button id="kinoZu">✔ Doch nicht</button>
 </div>
 <div class="hud btn" id="filmBtn" title="Eigenen Film drehen">🎥</div>
+<div class="hud btn" id="weltBtn" title="Zwischen deinen Welten umschalten">🌈</div>
+<div class="hud" id="weltWahl">
+  <h3>🌍 In welche Welt möchtest du?</h3>
+  <div id="weltListe"></div>
+  <button id="weltWahlZu">✖ Doch nicht</button>
+</div>
+<div class="hud" id="weltBox">
+  <h3>🌈 BAU DIR DEINE EIGENE WELT!</h3>
+  <p id="weltHinweis">Stell alles ein, wie du es haben willst - und drück dann auf FERTIG.
+     Ändern kannst du es später immer wieder!</p>
+  <input id="weltNameInput" maxlength="24" placeholder="Wie soll deine Welt heißen?">
+  <div id="weltFragen"></div>
+  <button id="weltFertigBtn">✅ FERTIG – so soll meine Welt werden!</button>
+  <button id="weltAbbruch">✖ Abbrechen</button>
+</div>
 <div class="hud" id="filmRec">
   <i id="filmPunkt"></i><span id="filmRecText">Aufnahme läuft …</span>
   <button id="filmRecPause">⏸ Pause</button>
@@ -1480,7 +1538,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 284 &middot; 🎥🔍 DEINE EIGENEN FILME SIND JETZT SCHARF! Du hattest recht: Die Kamera hat deine Filme viel zu klein aufgenommen (nur 224 Punkte breit) und auf der großen Leinwand wurde das Bild dann auf das Fünffache aufgeblasen – darum war alles verwaschen. Jetzt filmt die Kamera mit 640 Punkten, und im Heimkino wird genauso fein gerechnet wie im großen Kino. Alles, was du ab jetzt drehst, ist richtig scharf! (Deine alten Filme bleiben leider unscharf – die Bilder von damals kann man nicht mehr schärfer machen. Dreh sie einfach noch einmal neu! 🎬)</p>
+    Version 285 &middot; 🌈🛠️ BAU DIR DEINE EIGENE WELT! Oben im Bild gibt es jetzt den 🌈-Knopf. Tipp ihn an, dann kannst du zwischen der NORMALEN WELT und DEINER EIGENEN WELT hin- und herschalten. Vorher stellst du im Baukasten alles ein, was deine Welt haben soll: Boden (Gras, Sand, Schnee, Stein, Gold oder bunt), flaches Land, Hügel, hohe Berge oder Inseln, wie viel Wasser, wie viele Bäume, Tag oder Nacht, Wetter, wie hoch du springst, welche Tiere dort leben – und ob es Blumen, Schatztruhen, Gold, Lava und Leuchtkristalle gibt. Dann drückst du auf FERTIG. Ändern kannst du alles später trotzdem noch, und was du gebaut hast, bleibt dabei stehen! ✨</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1526,7 +1584,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 284;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 285;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3059,7 +3117,117 @@ const PLANET = [null, null,
     schwer:1, basis:46, hub:7, erdGross:0, erdWink:0, erdHoch:0, sterne:260,
     kachel:114, flug:0, km:0, eigen:true,
     gruss:'DIE WELT HINTER DEM PORTAL! 🏰 Hier gibt es nur deine Riesenburg - sonst nichts. Zurück kommst du durch das Rück-Portal in der Portal-Halle.' },
+  // 🌈 JONAHS SELBST GEBAUTE WELT. Wie sie aussieht, bestimmt ER im
+  // Welten-Baukasten - die Werte hier werden von jwPlanAnwenden() überschrieben.
+  { name:'🌈 Meine Welt', boden:GRASS, tief:DIRT, himmel:[0.42,0.68,0.94],
+    schwer:1, basis:46, hub:11, erdGross:0, erdWink:0, erdHoch:0, sterne:0,
+    kachel:114, flug:0, km:0, eigen:true,
+    gruss:'DEINE EIGENE WELT! 🌈 Genau so, wie du sie dir ausgedacht hast.' },
 ];
+// ============== 🌈 JONAHS EIGENE WELT: DER WELTEN-BAUKASTEN ===============
+// Jonahs Wunsch: "Ich möchte noch eine andere Welt, aber die will ich SELBER
+// konstruieren: wie der Boden sein soll, was für Tiere es gibt und alles
+// Mögliche. Dann drücke ich auf FERTIG - und ändern kann ich sie trotzdem noch."
+const JW_DIM = 11;                      // die Nummer seiner Welt
+const JW_BASIS = 46;                    // so hoch liegt dort ungefähr der Boden
+// Alles, was Jonah einstellen kann:
+const JW_BODEN = {
+  gras:   { txt:'🌿 Gras',   oben:GRASS, unten:DIRT  },
+  sand:   { txt:'🏖️ Sand',   oben:SAND,  unten:SAND  },
+  schnee: { txt:'❄️ Schnee', oben:WOOL,  unten:GLASS, eis:true },
+  stein:  { txt:'🪨 Stein',  oben:STONE, unten:STONE },
+  gold:   { txt:'🪙 Gold',   oben:GOLD,  unten:STONE },
+  bunt:   { txt:'🌈 Bunt',   oben:WOOL,  unten:BRICK, bunt:true },
+};
+const JW_GELAENDE = {
+  flach:  { txt:'🟩 Platt wie ein Brett', hub:1  },
+  huegel: { txt:'🏞️ Hügel',            hub:11 },
+  berge:  { txt:'⛰️ Hohe Berge',        hub:36 },
+  inseln: { txt:'🏝️ Inseln',          hub:18, inseln:true },
+};
+const JW_WASSER = {
+  keins: { txt:'🚫 Kein Wasser' },
+  seen:  { txt:'💧 Seen' },
+  ozean: { txt:'🌊 Ganz viel' },
+};
+// Wie hoch das Wasser steht, kann man nicht einfach festlegen: in den Bergen
+// liegt das Land ganz anders als auf flachem Boden. Darum wird die Gegend
+// einmal abgetastet - und das Wasser so hoch gestellt, dass ungefähr ein
+// Fünftel (Seen) bzw. gut die Hälfte (ganz viel Wasser) unter Wasser liegt.
+const JW_SEE_ANTEIL = { seen: 0.20, ozean: 0.56 };
+const jwSeeCache = {};
+const JW_BAEUME = {
+  keine:     { txt:'🚫 Keine',      p:0,     hoch:0 },
+  wenige:    { txt:'🌱 Ein paar',   p:0.012, hoch:4 },
+  viele:     { txt:'🌳 Viele',      p:0.042, hoch:5 },
+  dschungel: { txt:'🌴 Dschungel',  p:0.11,  hoch:8 },
+};
+const JW_HIMMEL = {
+  tag:   { txt:'☀️ Heller Tag', farbe:[0.42,0.68,0.94], sterne:0,   licht:1.0  },
+  abend: { txt:'🌇 Abendrot',   farbe:[0.52,0.26,0.16], sterne:60,  licht:0.70 },
+  nacht: { txt:'🌙 Nacht',      farbe:[0.04,0.05,0.13], sterne:300, licht:0.42 },
+};
+const JW_WETTER = {
+  sonne:  { txt:'☀️ Sonne',  w:'clear' },
+  regen:  { txt:'🌧️ Regen',  w:'rain'  },
+  schnee: { txt:'❄️ Schnee', w:'snow'  },
+};
+const JW_SCHWER = {
+  leicht: { txt:'🪶 Mond-Sprünge', v:0.35 },
+  normal: { txt:'🚶 Normal',       v:1    },
+  schwer: { txt:'🪨 Schwer',       v:1.35 },
+};
+const JW_TIERE = [
+  { id:'pig',    txt:'🐷 Schweine' }, { id:'cow',   txt:'🐮 Kühe' },
+  { id:'sheep',  txt:'🐑 Schafe'   }, { id:'horse', txt:'🐴 Pferde' },
+  { id:'dog',    txt:'🐶 Hunde'    }, { id:'cat',   txt:'🐱 Katzen' },
+  { id:'bird',   txt:'🐦 Vögel'    }, { id:'fish',  txt:'🐟 Fische' },
+  { id:'zombie', txt:'🧟 Zombies'  }, { id:'riese', txt:'👹 Riesen' },
+];
+const JW_EXTRAS = [
+  { id:'blumen',   txt:'🌸 Blumen'          },
+  { id:'schaetze', txt:'💎 Schatztruhen'    },
+  { id:'goldadern',txt:'🪙 Gold im Boden'   },
+  { id:'lava',     txt:'🔥 Lava'            },
+  { id:'kristalle',txt:'🕯️ Leuchtkristalle' },
+];
+// Jonahs aktuelle Einstellungen (und ob er schon auf FERTIG gedrückt hat)
+const JW_VORGABE = { name:'Meine Welt', boden:'gras', gelaende:'huegel', wasser:'seen',
+                     baeume:'wenige', himmel:'tag', wetter:'sonne', schwer:'normal',
+                     tiere:['pig','cow','sheep'], extras:['blumen','schaetze'] };
+let weltPlan = JSON.parse(JSON.stringify(JW_VORGABE));
+let weltFertig = false;                 // schon einmal gebaut?
+const weltHeimOrt = {};                 // wo Jonah in welcher Welt zuletzt stand
+function jwHat(id) { return (weltPlan.extras || []).includes(id); }
+function jwBoden()   { return JW_BODEN[weltPlan.boden]       || JW_BODEN.gras; }
+function jwGelaende(){ return JW_GELAENDE[weltPlan.gelaende] || JW_GELAENDE.huegel; }
+function jwBaeume()  { return JW_BAEUME[weltPlan.baeume]     || JW_BAEUME.wenige; }
+function jwHimmel()  { return JW_HIMMEL[weltPlan.himmel]     || JW_HIMMEL.tag; }
+function jwWetter()  { return (JW_WETTER[weltPlan.wetter]    || JW_WETTER.sonne).w; }
+// Wie hoch steht das Wasser? (null = gar keins)
+function jwSee() {
+  if (weltPlan.wasser === 'keins' || !JW_WASSER[weltPlan.wasser]) return null;
+  const key = weltPlan.gelaende + '/' + weltPlan.wasser;
+  if (jwSeeCache[key] !== undefined) return jwSeeCache[key];
+  const hoehen = [];
+  for (let x = -288; x <= 288; x += 12)
+    for (let z = -288; z <= 288; z += 12) hoehen.push(planetHoehe(x, z, JW_DIM));
+  hoehen.sort((a, b) => a - b);
+  const anteil = JW_SEE_ANTEIL[weltPlan.wasser] || JW_SEE_ANTEIL.seen;
+  return (jwSeeCache[key] = hoehen[Math.floor(hoehen.length * anteil)]);
+}
+// Die Einstellungen in die Welt-Beschreibung übertragen. Das muss IMMER
+// passieren, bevor ein Stück dieser Welt gebaut oder gezeichnet wird.
+function jwPlanAnwenden() {
+  const P = PLANET[JW_DIM], B = jwBoden(), G = jwGelaende(), H = jwHimmel();
+  P.name   = '🌈 ' + (weltPlan.name || 'Meine Welt');
+  P.boden  = B.oben;  P.tief = B.unten;
+  P.himmel = H.farbe; P.sterne = H.sterne;
+  P.basis  = JW_BASIS; P.hub = G.hub;
+  P.schwer = (JW_SCHWER[weltPlan.schwer] || JW_SCHWER.normal).v;
+  P.gruss  = 'DEINE EIGENE WELT! 🌈 ' + (weltPlan.name || 'Meine Welt') +
+             ' - genau so, wie du sie dir ausgedacht hast.';
+}
 const KO_Y = 48;                        // so hoch liegt die Ebene, auf der das Schloss steht
 // 🛸 Wo liegt der UFO-Parkplatz der Aliens? Auf jedem Planeten an derselben
 // Stelle, weit genug weg vom Raketen-Parkplatz (der ist bei 0,0) - und auf
@@ -3099,6 +3267,20 @@ function planetHoehe(x, z, dim) {
   if (dim===8) {                        // 🟡 Venus: Krater-Kessel voller Lava
     const k = vnoise(x*0.03+21, z*0.03-13, 8080);
     if (k > 0.62) y -= (k-0.62)*52;
+  }
+  if (dim===JW_DIM) {                   // 🌈 JONAHS WELT: so, wie er es eingestellt hat
+    const G = jwGelaende();
+    // (vnoise geht von -1 bis +1 - danach richten sich die Grenzen hier)
+    if (G.inseln) {                     // 🏝️ steile Inseln mit flachem Meeresboden
+      const ins = vnoise(x*0.011+13, z*0.011-29, 3131);
+      y -= Math.max(0, Math.min(1, (0.12 - ins) * 2.5)) * 26;
+    }
+    if (G.hub <= 2) {                   // 🟩 platt wie ein Brett ...
+      y = JW_BASIS;
+      const senke = vnoise(x*0.02+5, z*0.02-9, 2525);     // ... mit flachen Mulden,
+      if (senke > 0.25) y -= 1 + Math.round((senke-0.25)*6);     // damit Seen hineinpassen
+      else if (senke < -0.35) y += 1 + Math.round((-0.35-senke)*4);   // und flache Hügelchen
+    }
   }
   if (dim===9) {                        // 👑 Jonah-Planet: sanfte Hügel, aber das Schloss
     const weit = Math.max(Math.abs(x), Math.abs(z));   // steht auf einer ganz flachen Ebene
@@ -3927,6 +4109,35 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
         else if (r < 0.06) setz(lx,h+1,lz,BLUME);        // Blumenwiesen
         else if (r > 0.9975) setz(lx,h+1,lz,TORCH);      // ein paar Lichter
       }
+    } else if (dim===JW_DIM) {          // 🌈 JONAHS EIGENE WELT
+      const B = jwBoden(), BA = jwBaeume(), see = jwSee();
+      // 🌈 Ein bunter Boden: die obersten Schichten werden gestreift
+      if (B.bunt) for (let y=h-3; y<=h; y++)
+        setz(lx, y, lz, [WOOL, BRICK, GLASS, SAND][((y%4)+4)%4]);
+      // 💧 WASSER: alles unter dem Wasserspiegel läuft voll
+      if (see !== null) for (let y=h+1; y<=see; y++) setz(lx, y, lz, WATER);
+      const trocken = see === null || h > see;
+      if (B.eis) {                      // ❄️ Schnee-Welt: oben liegt Schnee
+        if (trocken && r < 0.6) setz(lx, h+1, lz, SNOW);
+        if (!trocken) for (let y=h+1; y<=see; y++) setz(lx, y, lz, GLASS);   // zugefrorene Seen
+      }
+      if (trocken) {
+        if (BA.p > 0 && r < BA.p) {     // 🌳 Bäume
+          const hoch = BA.hoch + Math.floor(hash2(wx,wz,7711)*3);
+          for (let y=h+1; y<=h+hoch; y++) setz(lx, y, lz, WOOD);
+          for (let y=h+hoch-1; y<=h+hoch+1; y++) setz(lx, y, lz, LEAF);
+        }
+        else if (jwHat('blumen')    && r < BA.p + 0.055) setz(lx, h+1, lz, BLUME);
+        else if (jwHat('schaetze')  && r < BA.p + 0.062) setz(lx, h+1, lz, CHEST);
+        else if (jwHat('kristalle') && r > 0.996)        setz(lx, h+1, lz, TORCH);
+        else if (jwHat('goldadern') && r > 0.986 && r < 0.994) setz(lx, h+1, lz, GOLD);
+      }
+      if (jwHat('lava')) {              // 🔥 glühende Lava-Kessel
+        const kessel = vnoise(wx*0.028+71, wz*0.028-37, 7373);
+        if (kessel > 0.72) { setz(lx,h,lz,LAVA); setz(lx,h-1,lz,LAVA); }
+      }
+      if (jwHat('goldadern') && hash2(wx, wz*7, 4650) < 0.02)   // 🪙 Gold im Berg
+        setz(lx, Math.max(CH_MIN+3, h-4-Math.floor(hash2(wx,wz,4651)*12)), lz, GOLD);
     } else if (dim===8) {               // 🟡 VENUS: glühende Lava-Seen und Schwefel-Felsen
       const kessel = vnoise(wx*0.03+21, wz*0.03-13, 8080);
       if (kessel > 0.68) { setz(lx,h,lz,LAVA); setz(lx,h-1,lz,LAVA); }  // Lava im Kessel
@@ -3947,7 +4158,7 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
   // 🛸 DER UFO-PARKPLATZ DER ALIENS: ein großer Platz aus dunklen Metall-
   // platten mit vier leuchtenden Landekreisen. Hier stellen die Aliens ihre
   // Untertassen ab - und Jonah darf sich eine ausleihen!
-  if (dim>=2 && dim!==RB_DIM) {       // 🏰 in der Riesenburg-Welt gibt es keine Aliens
+  if (dim>=2 && dim!==RB_DIM && dim!==JW_DIM) {   // 🏰🌈 hier wohnen keine Aliens
     const UP = ufoPark(dim);
     if (Math.abs(x0-UP.x)<=48 && Math.abs(z0-UP.z)<=48) {
       const uy = planetHoehe(UP.x, UP.z, dim);
@@ -5836,6 +6047,9 @@ function baueSpielstand() {
       regale: (() => { const o = {};    // 📚 was steht in welchem Regal?
         for (const [k,v] of regalBuecher) o[k] = v; return o; })(),
       eigenLieder,                      // 🎵 seine selbst gemachten Lieder
+      weltPlan,                         // 🌈 wie seine eigene Welt aussehen soll
+      weltFertig: weltFertig ? 1 : 0,   // 🌈 hat er schon auf FERTIG gedrückt?
+      weltHeim: weltHeimOrt,            // 🌈 wo er in welcher Welt zuletzt stand
       regaleLeer: true,                 // 📚 Regale fangen leer an (seit Version 280)
       safeCodes,                        // 🔐 seine sechs Safe-Codes
       safeAuf: safeOffen,               // 🔐 steht der große Safe offen?
@@ -6047,6 +6261,29 @@ function loadGame() {
                                  .map(l => ({ name: l.name || '🎵 Mein Lied', takt: l.takt || 0.3,
                                               welle: l.welle || 'triangle', melodie: l.melodie,
                                               bass: l.bass || 'q4 t4 q4 y4', eigen: true }));
+    if (s.weltPlan && typeof s.weltPlan === 'object') {       // 🌈 seine eigene Welt
+      const p = Object.assign(JSON.parse(JSON.stringify(JW_VORGABE)), s.weltPlan);
+      if (typeof p.name !== 'string' || !p.name.trim()) p.name = 'Meine Welt';
+      p.name = p.name.slice(0, 24);
+      if (!JW_BODEN[p.boden])       p.boden    = JW_VORGABE.boden;
+      if (!JW_GELAENDE[p.gelaende]) p.gelaende = JW_VORGABE.gelaende;
+      if (!JW_WASSER[p.wasser])     p.wasser   = JW_VORGABE.wasser;
+      if (!JW_BAEUME[p.baeume])     p.baeume   = JW_VORGABE.baeume;
+      if (!JW_HIMMEL[p.himmel])     p.himmel   = JW_VORGABE.himmel;
+      if (!JW_WETTER[p.wetter])     p.wetter   = JW_VORGABE.wetter;
+      if (!JW_SCHWER[p.schwer])     p.schwer   = JW_VORGABE.schwer;
+      p.tiere  = Array.isArray(p.tiere)  ? p.tiere.filter(t => JW_TIERE.some(x => x.id === t)) : [];
+      p.extras = Array.isArray(p.extras) ? p.extras.filter(e => JW_EXTRAS.some(x => x.id === e)) : [];
+      weltPlan = p;
+    }
+    weltFertig = !!s.weltFertig;
+    if (s.weltHeim && typeof s.weltHeim === 'object')        // 🌈 seine Plätze in beiden Welten
+      for (const d in s.weltHeim) {
+        const o = s.weltHeim[d];
+        if (o && typeof o.x === 'number' && typeof o.y === 'number' && typeof o.z === 'number')
+          weltHeimOrt[d] = { x:o.x, y:o.y, z:o.z };
+      }
+    jwPlanAnwenden();
     if (Array.isArray(s.safeCodes))                          // 🔐 die sechs Safe-Codes
       for (let i = 0; i < safeCodes.length; i++)
         if (typeof s.safeCodes[i] === 'string') safeCodes[i] = s.safeCodes[i];
@@ -8413,8 +8650,49 @@ function hofstaatTick() {
   [[-4,-27],[4,-27],[-4,4],[4,4]].forEach(([x,z],i) => setz('knight', RITTER[i], x, z));
   [[-9,-12],[9,-12],[-6,-20],[6,-20],[-9,10],[9,10]].forEach(([x,z],i) => setz('villager', VOLK[i], x, z));
 }
+// 🌈 In Jonahs eigener Welt leben GENAU die Tiere, die er ausgesucht hat.
+const JW_RIESEN_NAMEN = ['Grimm','Knorx','Brummbär','Donnerfaust','Steinbeißer','Wackelzahn'];
+function jwSpawnTick() {
+  const liste = weltPlan.tiere || [];
+  if (!liste.length) return;
+  const laufen = liste.filter(t => t !== 'bird' && t !== 'fish');
+  if (laufen.length &&
+      countType(a => !a.tame && a.type !== 'bird' && a.type !== 'fish') < 14) {
+    const typ = laufen[Math.floor(Math.random() * laufen.length)];
+    const ang = Math.random()*Math.PI*2, d = 16 + Math.random()*30;
+    const x = Math.floor(player.x + Math.cos(ang)*d);
+    const z = Math.floor(player.z + Math.sin(ang)*d);
+    const see = jwSee();
+    if (see === null || planetHoehe(x, z, JW_DIM) > see) {   // nicht ins Wasser stellen
+      const extra = typ === 'zombie' ? { hp:2 }
+                  : typ === 'riese'  ? { hp:15, hx:x+0.5, hz:z+0.5,
+                      name: JW_RIESEN_NAMEN[Math.floor(Math.random()*JW_RIESEN_NAMEN.length)] }
+                  : undefined;
+      if (typ !== 'riese' || countType(a => a.type === 'riese') < 2) spawnMob(typ, x, z, extra);
+    }
+  }
+  if (liste.includes('bird') && countType(a => a.type === 'bird') < 5) spawnBird(14, 40);
+  if (liste.includes('fish') && countType(a => a.type === 'fish') < 6) jwFischSpawn();
+}
+function jwFischSpawn() {               // 🐟 Fische schwimmen in SEINEM Wasser
+  const see = jwSee();
+  if (see === null) return;
+  for (let i = 0; i < 10; i++) {
+    const ang = Math.random()*Math.PI*2, d = 10 + Math.random()*35;
+    const x = player.x + Math.cos(ang)*d, z = player.z + Math.sin(ang)*d;
+    const h = planetHoehe(Math.floor(x), Math.floor(z), JW_DIM);
+    if (h >= see - 1) continue;                   // hier ist kein tiefes Wasser
+    const y = h + 1.5 + Math.random()*(see - h - 1.5);
+    if (getBlock(Math.floor(x), Math.floor(y), Math.floor(z)) !== WATER) continue;
+    animals.push({ type:'fish', x, y, z, col: Math.random()<0.5 ? 38 : 39,
+      yaw:0, t:0, ph:Math.random()*6, vy:0, kx:0, kz:0, hp:1,
+      walking:false, onGround:false });
+    return;
+  }
+}
 function spawnTick() {
   alienHeimatHolen();                   // 👽 wohnt hier ein Alien-Freund von dir?
+  if (weltDim === JW_DIM) { jwSpawnTick(); return; }   // 🌈 seine eigene Welt
   // 🚀 Auf den Planeten ist es still: dort gibt es keine Tiere, Dorfleute oder Monster
   if (weltDim === RB_DIM) {             // 🏰 in der Riesenburg-Welt nur ihr Personal
     riesenPersonalTick();               // 🤵🔧 vier Diener und vier Hausmeister
@@ -14038,9 +14316,10 @@ function butlerFlicken() {              // wie der Hausmeister, nur auf Zuruf
 // Erde, Wunderwelt und die vier Planeten - jede Welt merkt sich ihre Änderungen
 // 11 Welten: 0 Erde, 1 Wunderwelt, 2-8 die Planeten, 9 Jonahs geheimer Planet 👑,
 // 10 die Riesenburg-Welt hinter dem Portal 🏰
-const editsLager = Array.from({length:11}, ()=>new Map());
-const portalHeim = new Array(10).fill(null);   // wo Jonah in jeder Welt zuletzt stand
-const raketeOrt  = new Array(10).fill(null);   // 🚀 wo in jeder Welt seine Rakete steht
+// 12 Welten: dazu kommt 11 = 🌈 Jonahs selbst gebaute Welt
+const editsLager = Array.from({length:12}, ()=>new Map());
+const portalHeim = new Array(12).fill(null);   // wo Jonah in jeder Welt zuletzt stand
+const raketeOrt  = new Array(12).fill(null);   // 🚀 wo in jeder Welt seine Rakete steht
 let portalT = 0, portalKuehl = 0;
 // 🚀 DIESE GEFÄHRTE REISEN IMMER MIT - egal auf welchen Planeten es geht!
 const MITREISER = new Set(['jet','heli','dragon','bagger','roboter','limo','raumschiff']);   // Schiffe bleiben auf der Erde
@@ -22066,7 +22345,9 @@ function teleportZiele() {
   if (weltDim === 9) ziele.push(['👑 Mein Königsschloss', 0, 14]);
   // die bekannten Orte der Umgebung - immer der nächstgelegene pro Sorte
   const beste = new Map();
-  for (const m of (weltDim === 1 ? [] : collectMarks(px, pz, 300))) {   // Wunderwelt: keine Orte
+  // ✨ Wunderwelt und 🌈 Jonahs eigene Welt: dort gibt es keine Orte aus seiner
+  // normalen Welt - die Dörfer und Burgen stehen ja nur drüben.
+  for (const m of ((weltDim === 1 || weltDim === JW_DIM) ? [] : collectMarks(px, pz, 300))) {
     if (!TP_NAME[m.e]) continue;
     const d = Math.hypot(m.x-px, m.z-pz);
     const alt = beste.get(m.e);
@@ -24169,7 +24450,11 @@ function updateWeather(dt, now) {
   }
   if (lightning) { lightning.t -= dt; if (lightning.t<=0) lightning = null; }
   weatherT -= dt;
-  if (weatherT <= 0) {
+  if (weltDim === JW_DIM) {             // 🌈 hier bestimmt Jonah das Wetter
+    const w = jwWetter();
+    if (weather !== w) setWeather(w);
+    weatherT = 60;
+  } else if (weatherT <= 0) {
     if (weather === 'clear') {
       const r = Math.random();
       setWeather(r<0.5 ? 'clear' : r<0.8 ? 'rain' : 'snow');
@@ -28098,6 +28383,9 @@ function frame(now) {
   roboLadeTick(dt);                     // 🔌 lädt der Roboter zu Hause auf?
   try { speicherTick(dt); } catch(e) {}  // 💰 wächst gerade der Goldberg im Speicher?
   chipBtnEl.style.display = roboGebaut ? 'flex' : 'none';   // 💾 Chip-Knopf
+  // 🌈 Der Welten-Knopf steht nur in der normalen und in Jonahs eigener Welt
+  weltBtnEl.style.display = (weltDim === 0 || weltDim === JW_DIM) ? 'flex' : 'none';
+  weltBtnEl.classList.toggle('on', weltDim === JW_DIM);
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
   try { halleTick(dt); } catch(e) {}     // 🏟️ ist Jonah gerade in der Halle?
@@ -28180,6 +28468,8 @@ function frame(now) {
   const daySpd = DAY_SPEED*0.55;
   dayTime = (dayTime + dt*daySpd) % 1;
   let L = light01();
+  // 🌈 In Jonahs eigener Welt bestimmt ER, ob Tag, Abend oder Nacht ist
+  if (weltDim === JW_DIM) L = jwHimmel().licht;
   if (flashT > 0) { flashT -= dt; L = Math.min(1.5, L + 0.9); }   // ⚡ Blitz erhellt alles!
   const lf = (L-0.34)/0.66;
   const wf = weather==='rain' ? 0.62 : weather==='snow' ? 0.88 : 1;
@@ -28705,6 +28995,211 @@ document.getElementById('filmNameWeg').addEventListener('click', ()=>{
 document.getElementById('filmClose').addEventListener('click', ()=>{
   document.getElementById('filmBox').style.display = 'none'; blip(400,0.06); });
 filmLaden();                            // 🎥 die Filme von früher wieder einsammeln
+
+// ============== 🌈 DER WELTEN-BAUKASTEN: die Bedienung ==================
+// Oben im Bild sitzt der 🌈-Knopf. Er zeigt beide Welten als große Knopf-
+// Bilder: die normale Welt und Jonahs eigene. Und den Baukasten, in dem er
+// einstellt, wie seine Welt aussehen soll.
+const JW_FRAGEN = [
+  { key:'boden',    titel:'🪨 Woraus ist der Boden?',      opt:JW_BODEN },
+  { key:'gelaende', titel:'🏞️ Wie soll das Land sein?',     opt:JW_GELAENDE },
+  { key:'wasser',   titel:'💧 Wie viel Wasser?',           opt:JW_WASSER },
+  { key:'baeume',   titel:'🌳 Wie viele Bäume?',           opt:JW_BAEUME },
+  { key:'himmel',   titel:'☀️ Tag, Abend oder Nacht?',      opt:JW_HIMMEL },
+  { key:'wetter',   titel:'🌧️ Welches Wetter?',           opt:JW_WETTER },
+  { key:'schwer',   titel:'🪶 Wie hoch springst du?',       opt:JW_SCHWER },
+];
+// Eine kurze Beschreibung der Welt für den Auswahl-Knopf
+function jwBeschreibung() {
+  const tiere = (weltPlan.tiere || [])
+    .map(id => (JW_TIERE.find(t => t.id === id) || { txt:'' }).txt.split(' ')[0]).join('');
+  return [jwBoden().txt, jwGelaende().txt,
+          (JW_WASSER[weltPlan.wasser] || JW_WASSER.seen).txt,
+          jwBaeume().txt, jwHimmel().txt].join(' · ') + (tiere ? '  ' + tiere : '');
+}
+function weltWahlZu() { document.getElementById('weltWahl').style.display = 'none'; }
+function weltWahlZeigen() {
+  if (weltDim !== 0 && weltDim !== JW_DIM) {
+    toast('🌈 Zwischen den Welten umschalten geht nur in deiner normalen Welt ' +
+          'und in deiner eigenen Welt!', 4500);
+    blip(250, 0.1); return;
+  }
+  jwPlanAnwenden();
+  const liste = document.getElementById('weltListe');
+  liste.innerHTML = '';
+  const knopf = (bild, name, unter, hier, fn) => {
+    const b = document.createElement('button');
+    b.className = 'weltKnopf' + (hier ? ' hier' : '');
+    b.innerHTML = '<span class="weltBild"></span><span><span class="weltName"></span>' +
+                  '<span class="weltUnter"></span></span>';
+    b.querySelector('.weltBild').textContent = bild;
+    b.querySelector('.weltName').textContent = name;
+    b.querySelector('.weltUnter').textContent = unter;
+    b.addEventListener('click', fn);
+    liste.appendChild(b);
+  };
+  knopf('🌍', 'Die normale Welt',
+        weltDim === 0 ? '✔ Hier bist du gerade.'
+                      : 'Deine Burg, die Dörfer, das Kino, der Geldspeicher – alles wie immer.',
+        weltDim === 0, () => { weltWahlZu(); weltHin(0); });
+  if (weltFertig) {
+    knopf('🌈', weltPlan.name || 'Meine Welt',
+          weltDim === JW_DIM ? '✔ Hier bist du gerade.' : jwBeschreibung(),
+          weltDim === JW_DIM, () => { weltWahlZu(); weltHin(JW_DIM); });
+    knopf('🛠️', 'Meine Welt umbauen',
+          'Boden, Berge, Wasser, Bäume, Tiere, Tag und Nacht – alles kannst du ändern. ' +
+          'Deine gebauten Sachen bleiben stehen!',
+          false, () => { weltWahlZu(); weltBauenOeffnen(); });
+  } else {
+    knopf('🛠️', 'Meine eigene Welt bauen!',
+          'Du hast noch keine eigene Welt. Stell dir eine zusammen – Boden, Berge, ' +
+          'Wasser, Tiere und alles Mögliche!',
+          false, () => { weltWahlZu(); weltBauenOeffnen(); });
+  }
+  document.getElementById('weltWahl').style.display = 'flex';
+  blip(700, 0.05); blip(900, 0.06);
+}
+// 🚶 Hinüber in die andere Welt
+function weltHin(ziel) {
+  if (weltDim === ziel) { toast('Da bist du doch schon! 🙂', 2500); return; }
+  if (ziel === JW_DIM && !weltFertig) { weltBauenOeffnen(); return; }
+  if (weltDim !== 0 && weltDim !== JW_DIM) {
+    toast('🌈 Das geht nur zwischen deiner normalen Welt und deiner eigenen Welt!', 4000);
+    return;
+  }
+  jwPlanAnwenden();
+  weltHeimOrt[weltDim] = { x: player.x, y: player.y, z: player.z };
+  weltWechsel(ziel);
+  const o = weltHeimOrt[ziel];
+  if (o) { player.x = o.x; player.y = o.y; player.z = o.z; }
+  else { player.x = 0.5; player.z = 0.5; player.y = JW_BASIS + 2; }
+  player.vx = player.vy = player.vz = 0;
+  weltPlatzSuchen(!o);
+  clearTimeout(saveTimer); saveGame();
+  for (const f of [700, 900, 1100]) blip(f, 0.08);
+  for (let i = 0; i < 18; i++)
+    fireworks.push({ x: player.x+(Math.random()-0.5)*2, y: player.y+0.5+Math.random()*2,
+      z: player.z+(Math.random()-0.5)*2, vx:(Math.random()-0.5)*3, vy:1+Math.random()*3,
+      vz:(Math.random()-0.5)*3, tile:172, t:1 });
+  toast(ziel === JW_DIM
+    ? '🌈 WUSCH! Du bist in DEINER WELT: „' + (weltPlan.name || 'Meine Welt') +
+      '". Mit dem 🌈-Knopf oben kommst du jederzeit wieder zurück!'
+    : '🌍 Zurück in deiner normalen Welt! Mit dem 🌈-Knopf oben geht es wieder ' +
+      'hinüber in deine eigene Welt.', 7000);
+}
+// Einen guten Platz zum Stehen suchen: nicht im Berg, nicht im Wasser
+function weltPlatzSuchen(neu) {
+  const px = Math.floor(player.x), pz = Math.floor(player.z);
+  for (let cx = (px-32)>>4; cx <= (px+32)>>4; cx++)
+    for (let cz = (pz-32)>>4; cz <= (pz+32)>>4; cz++) ensureData(cx, cz);
+  if (!neu && !collideBox(player.x, player.y, player.z, P_HALF, P_HEIGHT)) return true;
+  const see = weltDim === JW_DIM ? jwSee() : null;
+  const plaetze = [[0,0]];
+  for (let r = 3; r <= 60; r += 3)
+    for (const [dx,dz] of [[r,0],[-r,0],[0,r],[0,-r],[r,r],[-r,-r],[r,-r],[-r,r]])
+      plaetze.push([dx,dz]);
+  for (const [dx,dz] of plaetze) {
+    const x = px+dx, z = pz+dz, h = terrainHeight(x, z);
+    if (see !== null && h <= see) continue;                  // mitten im Wasser: nein danke
+    const unten = getBlock(x, h, z);
+    if (unten === LAVA || unten === WATER || unten === AIR) continue;
+    if (getBlock(x, h+1, z) !== AIR || getBlock(x, h+2, z) !== AIR) continue;
+    player.x = x+0.5; player.z = z+0.5; player.y = h+1.2;
+    return true;
+  }
+  player.y = terrainHeight(px, pz) + 1.2;                    // Notfall: einfach obendrauf
+  return false;
+}
+// 🛠️ Der Baukasten
+function weltBauenOeffnen() {
+  jwPlanAnwenden();
+  document.getElementById('weltNameInput').value = weltPlan.name || '';
+  document.getElementById('weltHinweis').textContent = weltFertig
+    ? 'Ändere, was du möchtest – und drück dann auf FERTIG. Alles, was du in deiner ' +
+      'Welt gebaut hast, bleibt dabei stehen!'
+    : 'Stell alles so ein, wie du es haben willst – und drück dann auf FERTIG. ' +
+      'Ändern kannst du später trotzdem noch alles!';
+  document.getElementById('weltFertigBtn').textContent = weltFertig
+    ? '✅ FERTIG – so soll meine Welt jetzt sein!'
+    : '✅ FERTIG – so soll meine Welt werden!';
+  weltFragenZeichnen();
+  document.getElementById('weltBox').style.display = 'flex';
+  blip(600, 0.06); blip(820, 0.07);
+}
+function weltFragenZeichnen() {
+  const w = document.getElementById('weltFragen');
+  w.innerHTML = '';
+  const zeile = (titel) => {
+    const d = document.createElement('div');
+    d.className = 'jwFrage';
+    const b = document.createElement('b'); b.textContent = titel; d.appendChild(b);
+    const c = document.createElement('div'); c.className = 'jwChips'; d.appendChild(c);
+    w.appendChild(d);
+    return c;
+  };
+  const chip = (txt, an, fn) => {
+    const b = document.createElement('button');
+    b.className = 'jwChip' + (an ? ' sel' : '');
+    b.textContent = txt;
+    b.addEventListener('click', () => { fn(); weltFragenZeichnen(); blip(760, 0.04); });
+    return b;
+  };
+  for (const f of JW_FRAGEN) {
+    const c = zeile(f.titel);
+    for (const k in f.opt)
+      c.appendChild(chip(f.opt[k].txt, weltPlan[f.key] === k, () => { weltPlan[f.key] = k; }));
+  }
+  const tc = zeile('🐾 Welche Tiere sollen hier leben? (so viele du willst)');
+  for (const t of JW_TIERE)
+    tc.appendChild(chip(t.txt, (weltPlan.tiere||[]).includes(t.id), () => {
+      const i = weltPlan.tiere.indexOf(t.id);
+      if (i >= 0) weltPlan.tiere.splice(i, 1); else weltPlan.tiere.push(t.id);
+    }));
+  const ec = zeile('✨ Was soll es sonst noch geben?');
+  for (const e of JW_EXTRAS)
+    ec.appendChild(chip(e.txt, (weltPlan.extras||[]).includes(e.id), () => {
+      const i = weltPlan.extras.indexOf(e.id);
+      if (i >= 0) weltPlan.extras.splice(i, 1); else weltPlan.extras.push(e.id);
+    }));
+}
+function weltBauenFertig() {
+  const nm = (document.getElementById('weltNameInput').value || '').trim().slice(0, 24);
+  weltPlan.name = nm || 'Meine Welt';
+  const zumErstenMal = !weltFertig;
+  weltFertig = true;
+  jwPlanAnwenden();
+  document.getElementById('weltBox').style.display = 'none';
+  for (const f of [523, 659, 784, 1047]) blip(f, 0.1);
+  if (weltDim === JW_DIM) {             // schon drin: die Welt noch einmal bauen
+    jwNeuZeichnen();
+    toast('🌈 Fertig! Deine Welt ist umgebaut: ' + jwBeschreibung() +
+          '. Alles, was du gebaut hast, steht noch genau da. ✨', 8000);
+    clearTimeout(saveTimer); saveGame();
+  } else {
+    weltHin(JW_DIM);
+    if (zumErstenMal)
+      toast('🌈🎉 DEINE EIGENE WELT IST FERTIG: „' + weltPlan.name +
+            '"! Bau hier, was du willst. Mit dem 🌈-Knopf oben schaltest du ' +
+            'zwischen deinen Welten hin und her – und umbauen kannst du sie jederzeit!', 11000);
+  }
+}
+function jwNeuZeichnen() {              // die Welt nach einer Änderung neu bauen
+  for (const ch of [...chunks.values()]) freeChunk(ch);
+  cropSet.clear(); snowSet.clear();
+  fallende.length = 0; flowQ.length = 0; fallQ.length = 0;
+  weltPlatzSuchen(false);
+  player.vx = player.vy = player.vz = 0;
+}
+const weltBtnEl = document.getElementById('weltBtn');
+weltBtnEl.addEventListener('touchstart', e => { e.preventDefault(); weltWahlZeigen(); }, {passive:false});
+weltBtnEl.addEventListener('mousedown',  e => { e.preventDefault(); weltWahlZeigen(); });
+document.getElementById('weltWahlZu').addEventListener('click', () => { weltWahlZu(); blip(300,0.06); });
+document.getElementById('weltFertigBtn').addEventListener('click', weltBauenFertig);
+document.getElementById('weltAbbruch').addEventListener('click', () => {
+  document.getElementById('weltBox').style.display = 'none'; blip(300, 0.06); });
+document.getElementById('weltNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); weltBauenFertig(); } });
+jwPlanAnwenden();
 document.getElementById('kannClose').addEventListener('click', ()=>{
   document.getElementById('kannBox').style.display = 'none'; blip(400,0.06);
 });
