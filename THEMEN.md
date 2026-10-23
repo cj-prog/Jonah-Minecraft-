@@ -56,8 +56,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 284 (20.10.), danach
-  weitere Commits · Nächster Schritt: Regeln von Session 1 übernehmen (angefragt 23.10.).
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 287 (23.10.,
+  Wunsch-Zettel und „wie groß, wie viele?") · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.4
   („Freund bleibt, bis man Tschüss sagt") · **geparkt:** Session startet weiterhin nicht, auch
