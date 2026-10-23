@@ -601,7 +601,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 - DER GELDSPEICHER STEHT JETZT ÜBER DER ERDE (v252)! 💰🏛️ Jonah: „Mir ist
   eingefallen, dass ich den Geldspeicher doch über der Erde haben möchte – so
   wie bei Dagobert Duck. Nur dass vorne nicht DD draufsteht, sondern JJ für
-  Jonah Jürgens."
+  Jonah J."
   🏛️ DAS BAUWERK: ein RIESIGER Würfel mitten in der Landschaft, 43×43 Blöcke
   groß und über 30 hoch, komplett aus unzerstörbarem Schutz-Stein. Oben eine
   goldene Krone, an den vier Ecken Türmchen mit goldener Spitze, rundherum eine
