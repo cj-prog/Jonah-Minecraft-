@@ -60,8 +60,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   weitere Commits · Nächster Schritt: Regeln von Session 1 übernehmen (angefragt 23.10.).
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.4
-  („Freund bleibt, bis man Tschüss sagt") · Startfehler vom 23.10. (Branch `main` fehlte) ist
-  behoben (23.10-3), noch nicht durch einen Neustart bestätigt.
+  („Freund bleibt, bis man Tschüss sagt") · **geparkt:** Session startet weiterhin nicht, auch
+  nach dem Anlegen von `main` (23.10-3). Die Fehlermeldung ist noch die von 16:16 UTC und als
+  „nicht behebbar" markiert – die Session versucht offenbar keinen neuen Start. Laut Christian
+  nicht dringend. Möglicher Weg später: neue Session für die Englisch-App, vom Manager gestartet.
 
 ## Erledigt
 
