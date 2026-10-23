@@ -20,6 +20,20 @@ Start: „du bist der Session-Manager" in einer Cloud-Session dieses Repos. Regi
 - Entwickler-Sessions: Cloud-Sessions dieser Repos, Titel „<Nr> <Thema>".
 - Branches: `thema-<nr>-<kurz>`. Cloud-Sessions bekommen von sich aus einen `claude/…`-Branch
   zugeteilt; der Startauftrag nennt deshalb den Themen-Branch ausdrücklich.
+- Beide Repos haben zusätzlich einen Branch `main` (angelegt 23.10.). Er ist nur der Startpunkt
+  der Sessions 1 und 2, die beim Start `main` laden. Nicht löschen.
+
+## Zusammenarbeit (ersetzt im Skill „So arbeiten Manager und Entwickler zusammen")
+
+Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum (Entscheidung 23.10-1):
+- Manager-Session: „Session Manager für Jonah's Kiste", `session_01J8Ww7nwXLTSSsk88A7M4mx`.
+- Der Manager startet Entwickler-Sessions selbst (`create_session` mit Repo, Titel „<Nr> <Thema>",
+  Branch `thema-<nr>-<kurz>` als `outcome_branch`) und gibt den Startauftrag als erste Nachricht.
+  Jonah muss nichts kopieren.
+- Entwickler-Sessions melden sich per `send_message` beim Manager (bei Start, Fragen, Blockern,
+  fertig) und schreiben dasselbe als Nachweis in `meldungen/<nr>.md` in ihrem Branch.
+- Antworten auf Fragen schickt der Manager per `send_message` an die Session.
+- Fallback, wenn Nachrichten nicht ankommen: der Weg aus dem Skill (Jonah kopiert, `meldungen/`).
 
 ## Veröffentlichung
 
@@ -32,11 +46,9 @@ Start: „du bist der Session-Manager" in einer Cloud-Session dieses Repos. Regi
 
 ## Budget
 
-- 5 € pro Tag, alle Sessions zusammen.
-- Kosten einer Session liest der Manager mit `get_session` ab (`usage.cost_usd`, in US-Dollar).
-  Zur Sicherheit gilt 5 $ als Grenze (1 $ ist weniger wert als 1 €).
-- `cost_usd` zählt seit Beginn der Session. Die Tageskosten sind darum der Unterschied zum
-  Stand vom Vortag; der Manager notiert dafür jeden Tag die Stände im Register.
+- 5 € pro Tag, alle Sessions zusammen – **für weitere Tools und Dienste** (z. B. bezahlte
+  Schnittstellen, Hosting, Abos). Die Kosten der Claude-Sessions selbst zählen nicht, sie laufen
+  über Christians Claude-Abo.
 
 ## Konten
 
@@ -47,4 +59,7 @@ Start: „du bist der Session-Manager" in einer Cloud-Session dieses Repos. Regi
 ## Sonderregeln
 
 - Kein Hauptmanager. Keine Meldungen an andere Bereiche.
+- Session 1 („1 Jonahcraft") darf weiter direkt auf dem Hauptzweig arbeiten, solange nur sie an
+  JonahCraft baut (Entscheidung 23.10-2). Sobald eine zweite Session am Spiel baut, gilt für
+  alle wieder: eigener Branch, Merge nach Jonahs OK.
 - Weitere Regeln: kommen von Session 1 („1 Jonahcraft"), angefragt am 23.10.

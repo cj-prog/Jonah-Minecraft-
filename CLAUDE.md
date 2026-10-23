@@ -14,8 +14,9 @@ Dieses Repo wird von einem Session-Manager geführt. Chef ist Jonah.
   den Skill befolgen.
 - **Sonst bist du eine Entwickler-Session:** beim Start im Skill die Abschnitte
   „Befugnisrahmen" und „Entwickler-Sessions" sowie `SESSION-MANAGER.md` lesen.
-  `THEMEN.md` nur lesen. Nur im eigenen Branch arbeiten, nie direkt auf den Hauptzweig.
-  Stand, Fragen und „fertig" in `meldungen/<nr>.md` melden.
+  `THEMEN.md` nur lesen. Nur im eigenen Branch arbeiten, nie direkt auf den Hauptzweig
+  (Ausnahme: Session „1 Jonahcraft", siehe `SESSION-MANAGER.md`). Stand, Fragen und „fertig"
+  per Nachricht an den Manager und in `meldungen/<nr>.md` melden.
 
 ## 🛠️ Regeln fürs Spiel
 
