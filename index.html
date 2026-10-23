@@ -365,6 +365,48 @@
     border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
   #weltAbbruch { font-size:14px; padding:8px; border-radius:10px; border:none;
     background:#5a6a80; color:#fff; cursor:pointer; }
+  /* ✍️ Zu jeder Frage darf Jonah auch selber hinschreiben, wie er es will */
+  .jwText { font-size:12.5px; padding:6px 9px; border-radius:9px; color:#fff;
+    border:2px solid rgba(255,255,255,.22); background:rgba(255,255,255,.07); }
+  .jwText::placeholder { color:rgba(255,255,255,.45); }
+  .jwVerstanden { font-size:11px; color:#9fe8b0; min-height:13px; }
+  .jwVerstanden.nix { color:#ffbe8a; }
+  /* 🎨 Die gemalten Wesen */
+  #weltWesen { display:flex; flex-direction:column; gap:6px; }
+  .jwWesenZeile { display:flex; align-items:center; gap:9px;
+    background:rgba(255,255,255,.08); border-radius:11px; padding:6px 8px; }
+  .jwWesenBild { width:46px; height:46px; flex:none; border-radius:8px;
+    background:#1b2030; image-rendering:pixelated; }
+  .jwWesenText { flex:1 1 auto; font-size:12px; line-height:1.35; }
+  .jwWesenText b { font-size:13.5px; }
+  .jwWesenWeg { font-size:15px; padding:5px 9px; border-radius:9px; border:none;
+    background:rgba(230,80,80,.5); color:#fff; cursor:pointer; }
+  #weltWesenNeu { font-size:14px; font-weight:bold; padding:9px; border-radius:11px;
+    border:none; background:#8a5cd8; color:#fff; cursor:pointer; }
+  #wesenBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
+    flex-direction:column; align-items:center; gap:8px; background:rgba(14,10,30,.98);
+    padding:13px; border-radius:18px; color:#fff; z-index:63; width:min(96vw,420px);
+    max-height:94vh; overflow-y:auto; border:3px solid #c08aff; }
+  #wesenBox h3 { font-size:18px; margin:0; text-align:center; }
+  #wesenHinweis { font-size:11.5px; opacity:.85; text-align:center; line-height:1.4; }
+  #wesenCanvas { width:min(74vw,240px); height:min(74vw,240px); background:#fff;
+    border-radius:10px; touch-action:none; image-rendering:pixelated; }
+  #wesenPal { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; }
+  #wesenPal .palBtn { width:26px; height:26px; border-radius:7px;
+    border:2px solid rgba(255,255,255,.4); cursor:pointer; }
+  #wesenPal .palBtn.sel { border:3px solid #fff; transform:scale(1.15); }
+  #wesenMassTxt { font-size:11.5px; color:#9fe8b0; min-height:14px; text-align:center; }
+  #wesenName, #wesenKann, #wesenGross, #wesenAnzahl {
+    width:100%; font-size:14px; padding:8px 10px; border-radius:10px;
+    border:2px solid rgba(255,255,255,.3); background:rgba(255,255,255,.1);
+    color:#fff; text-align:center; }
+  #wesenKannTxt { font-size:11.5px; color:#9fe8b0; min-height:14px; text-align:center; }
+  .wesenReihe { display:flex; gap:7px; width:100%; }
+  .wesenReihe button { flex:1 1 auto; font-size:14px; font-weight:bold; padding:9px;
+    border-radius:10px; border:none; color:#fff; cursor:pointer; }
+  #wesenFertig { background:#2e9e4a; }
+  #wesenLeer { background:#5a6a80; flex:0 0 auto !important; }
+  #wesenZu { background:#8a4a4a; flex:0 0 auto !important; }
   #filmBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; align-items:center; gap:8px; background:rgba(18,10,24,.97);
     padding:12px 13px; border-radius:16px; color:#fff; z-index:62; text-align:center;
@@ -1084,12 +1126,40 @@
   <div id="weltListe"></div>
   <button id="weltWahlZu">✖ Doch nicht</button>
 </div>
+<div class="hud" id="wesenBox">
+  <h3>🎨 MAL DIR EIN WESEN!</h3>
+  <p id="wesenHinweis">Mal etwas auf das Feld – und schreib dann hin, was es alles
+     können soll. Danach lebt es in deiner Welt!</p>
+  <canvas id="wesenCanvas" width="240" height="240"></canvas>
+  <div id="wesenPal"></div>
+  <input id="wesenName" maxlength="20" placeholder="Wie heißt es?">
+  <input id="wesenKann" maxlength="90" placeholder="Was kann es? z. B. fliegen, hüpfen, leuchten">
+  <div id="wesenKannTxt"></div>
+  <input id="wesenGross" maxlength="40" placeholder="Wie groß? z. B. 3 Blöcke, riesig, winzig">
+  <input id="wesenAnzahl" maxlength="40" placeholder="Wie viele? z. B. 5, ganz viele, nur eins">
+  <div id="wesenMassTxt"></div>
+  <div class="wesenReihe">
+    <button id="wesenLeer">🧽</button>
+    <button id="wesenFertig">✅ Fertig – ab in die Welt!</button>
+    <button id="wesenZu">✖</button>
+  </div>
+</div>
 <div class="hud" id="weltBox">
   <h3>🌈 BAU DIR DEINE EIGENE WELT!</h3>
   <p id="weltHinweis">Stell alles ein, wie du es haben willst - und drück dann auf FERTIG.
      Ändern kannst du es später immer wieder!</p>
   <input id="weltNameInput" maxlength="24" placeholder="Wie soll deine Welt heißen?">
+  <div class="jwFrage" id="weltWunschFrage">
+    <b>✍️ Was soll es in deiner Welt geben? Schreib es einfach hin!</b>
+    <input id="weltWunsch" class="jwText" maxlength="90"
+           placeholder="z. B. „Ich möchte Türme aus Gold im Norden"">
+    <div id="weltWunschTxt" class="jwVerstanden"></div>
+  </div>
   <div id="weltFragen"></div>
+  <div class="jwFrage"><b>🎨 Deine selbst gemalten Wesen</b>
+    <div id="weltWesen"></div>
+    <button id="weltWesenNeu">🖌️ Neues Wesen malen!</button>
+  </div>
   <button id="weltFertigBtn">✅ FERTIG – so soll meine Welt werden!</button>
   <button id="weltAbbruch">✖ Abbrechen</button>
 </div>
@@ -1538,7 +1608,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 285 &middot; 🌈🛠️ BAU DIR DEINE EIGENE WELT! Oben im Bild gibt es jetzt den 🌈-Knopf. Tipp ihn an, dann kannst du zwischen der NORMALEN WELT und DEINER EIGENEN WELT hin- und herschalten. Vorher stellst du im Baukasten alles ein, was deine Welt haben soll: Boden (Gras, Sand, Schnee, Stein, Gold oder bunt), flaches Land, Hügel, hohe Berge oder Inseln, wie viel Wasser, wie viele Bäume, Tag oder Nacht, Wetter, wie hoch du springst, welche Tiere dort leben – und ob es Blumen, Schatztruhen, Gold, Lava und Leuchtkristalle gibt. Dann drückst du auf FERTIG. Ändern kannst du alles später trotzdem noch, und was du gebaut hast, bleibt dabei stehen! ✨</p>
+    Version 287 &middot; ✍️🏗️ DER WUNSCH-ZETTEL – UND WIE GROß UND WIE VIELE! Ganz oben im Welten-Baukasten gibt es jetzt ein großes Feld: schreib einfach hin, was es in deiner Welt geben soll – „Ich möchte Türme aus Gold im Norden", „Häuser aus Holz", „Pyramiden", „Statuen", „Pilze", „Seen", „Fackeln", „Blumen", „Schatztruhen". Dann steht es wirklich überall in deiner Welt herum! Und bei deinen gemalten Wesen kannst du jetzt auch hinschreiben, WIE GROß sie sein sollen („3 Blöcke", „riesig", „winzig") und WIE VIELE es davon geben soll („5", „ganz viele", „nur eins"). Dazu können sie jetzt noch mehr: zaubern 🪄, Blumen pflanzen 🌸, reden 💬, schlafen 😴 und unsichtbar werden 👻!</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1584,7 +1654,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 285;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 287;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3191,10 +3261,182 @@ const JW_EXTRAS = [
   { id:'lava',     txt:'🔥 Lava'            },
   { id:'kristalle',txt:'🕯️ Leuchtkristalle' },
 ];
+// ✍️ SELBER HINSCHREIBEN: Zu jeder Frage darf Jonah auch einfach aufschreiben,
+// WIE und WO er es haben möchte - "die Berge aus Gold im Norden", "nur wenige
+// Bäume im Westen", "Wasser im Süden". Das hier versteht das Spiel davon:
+const JW_STOFFE = [
+  { w:['gold','golden'],                           b:GOLD,  t:'aus Gold 🪙' },
+  { w:['ziegel','backstein'],                      b:BRICK, t:'aus Ziegeln 🧱' },
+  { w:['baumstamm','holz','brett'],                b:WOOD,  t:'aus Holz 🪵' },
+  { w:['kristall','diamant','glas','eis'],         b:GLASS, t:'aus Kristall 💎' },
+  { w:['wolle','stoff','teppich'],                 b:WOOL,  t:'aus Wolle 🧶' },
+  { w:['wüste','wueste','sand'],                   b:SAND,  t:'aus Sand 🏖️' },
+  { w:['schnee'],                                  b:SNOW,  t:'aus Schnee ❄️' },
+  { w:['erde','dreck'],                            b:DIRT,  t:'aus Erde 🟫' },
+  { w:['wiese','gras'],                            b:GRASS, t:'aus Gras 🌿' },
+  { w:['lava','feuer'],                            b:LAVA,  t:'aus Lava 🔥' },
+  { w:['bonbon','süßigkeit','suessigkeit','zucker','schoko'], b:BONBON, t:'aus Bonbons 🍬' },
+  { w:['blätter','blaetter','laub'],                b:LEAF,  t:'aus Blättern 🍃' },
+  { w:['stein','fels'],                            b:STONE, t:'aus Stein 🪨' },
+];
+const JW_ORTE = [
+  { w:['im norden','norden','nord'],                        o:'norden', t:'im Norden ⬆️' },
+  { w:['im süden','süden','im sueden','sueden','süd'],      o:'sueden', t:'im Süden ⬇️' },
+  { w:['im osten','osten','rechts'],                        o:'osten',  t:'im Osten ➡️' },
+  { w:['im westen','westen','links'],                       o:'westen', t:'im Westen ⬅️' },
+  { w:['in der mitte','mitte','bei mir','hier'],            o:'mitte',  t:'in der Mitte 🎯' },
+  { w:['weit weg','ganz draußen','am rand','rand','fern'],  o:'rand',   t:'weit draußen 🧭' },
+  { w:['auf den bergen','auf dem berg','oben','hoch oben'], o:'hoch',   t:'oben auf den Bergen ⛰️' },
+  { w:['im tal','in den tälern','unten','ganz unten'],      o:'tief',   t:'unten in den Tälern 🏞️' },
+  { w:['überall','ueberall'],                               o:'ueberall', t:'überall 🌍' },
+];
+// 🏗️ Was Jonah sich sonst noch in seine Welt wünschen kann
+const JW_BAUTEN = [
+  { w:['türme','tuerme','turm','säulen','saeulen','säule','saeule'], art:'turm',     t:'Türme 🗼' },
+  { w:['häuser','haeuser','haus','hütte','huetten','hütten'],        art:'haus',     t:'Häuser 🏠' },
+  { w:['pyramiden','pyramide'],                                    art:'pyramide', t:'Pyramiden 🔺' },
+  { w:['statuen','statue','figuren'],                              art:'statue',   t:'Statuen 🗿' },
+  { w:['pilze','pilz'],                                            art:'pilz',     t:'Pilze 🍄' },
+  { w:['seen','see','teich','teiche','tuempel'],                   art:'see',      t:'Seen 💧' },
+  { w:['fackeln','fackel','laternen','laterne','lichter'],         art:'fackel',   t:'Fackeln 🔥' },
+  { w:['blumen','blume'],                                          art:'blume',    t:'Blumen 🌸' },
+  { w:['truhen','truhe','schätze','schaetze','schatz'],             art:'truhe',    t:'Schatztruhen 💎' },
+];
+const JW_ZAHLWORT = { 'ein':1, 'eins':1, 'eine':1, 'einen':1, 'zwei':2, 'drei':3, 'vier':4,
+  'fünf':5, 'fuenf':5, 'sechs':6, 'sieben':7, 'acht':8, 'neun':9, 'zehn':10, 'elf':11,
+  'zwölf':12, 'zwoelf':12, 'zwanzig':20, 'dutzend':12 };
+// ✏️ "3 Blöcke groß", "riesig", "winzig" - wie groß soll das Wesen sein?
+function jwGroesseLesen(text) {
+  const t = (text || '').toLowerCase();
+  if (!t.trim()) return null;
+  const zahl = t.match(/(\d+(?:[.,]\d+)?)\s*(blöcke|bloecke|block|meter|m\b)?/);
+  if (zahl && (zahl[2] || /groß|gross|hoch|klein|breit/.test(t))) {
+    const m = Math.max(0.3, Math.min(10, parseFloat(zahl[1].replace(',', '.'))));
+    return { gr: m / 1.6, txt: m + ' Blöcke groß' };     // 1.6 Blöcke ist die Normalgröße
+  }
+  for (const w of JW_ZAHLWORT_GROSS)
+    if (t.includes(w[0])) return { gr: w[1], txt: w[2] };
+  return null;
+}
+const JW_ZAHLWORT_GROSS = [
+  ['riesengroß', 3.4, 'riesengroß 🦣'], ['riesig', 3.4, 'riesengroß 🦣'],
+  ['haushoch', 4.5, 'haushoch 🏠'], ['turmhoch', 6, 'turmhoch 🗼'],
+  ['winzig', 0.35, 'winzig klein 🐜'], ['ganz klein', 0.35, 'winzig klein 🐜'],
+  ['mini', 0.4, 'ganz klein 🐜'], ['klein', 0.55, 'klein 🐭'],
+  ['groß', 2, 'groß 🐘'], ['gross', 2, 'groß 🐘'],
+  ['normal', 1, 'normal groß'],
+];
+// ✏️ "5 Stück", "ganz viele", "nur eins" - wie viele soll es davon geben?
+function jwAnzahlLesen(text) {
+  const t = (text || '').toLowerCase();
+  if (!t.trim()) return null;
+  const zahl = t.match(/(\d+)/);
+  if (zahl) {
+    const n = Math.max(1, Math.min(20, parseInt(zahl[1], 10)));
+    return { n, txt: n + ' Stück' };
+  }
+  for (const w in JW_ZAHLWORT)
+    if (t.includes(w)) return { n: Math.min(20, JW_ZAHLWORT[w]), txt: JW_ZAHLWORT[w] + ' Stück' };
+  if (/ganz viele|sehr viele|ganz viel/.test(t)) return { n: 12, txt: 'ganz viele' };
+  if (/viele|viel/.test(t))   return { n: 7, txt: 'viele' };
+  if (/wenige|wenig|kaum/.test(t)) return { n: 2, txt: 'nur wenige' };
+  if (/nur eins|nur eines|einzig|allein/.test(t)) return { n: 1, txt: 'nur eins' };
+  return null;
+}
+const JW_MENGEN = [
+  { w:['ganz viele','sehr viele','viele','ganz viel','viel'], m:2.6, t:'ganz viele' },
+  { w:['nur wenige','wenige','wenig','kaum','ein paar','selten'], m:0.35, t:'nur wenige' },
+  { w:['gar keine','gar nichts','keine','kein','nichts'], m:0, t:'gar keine' },
+];
+const JW_HOEHEN = [
+  { w:['riesig','ganz hoch','sehr hoch','höher','hoeher','hoch','hohe','hohen','hoher',
+       'gebirge','berge','berg','groß','gross','turmhoch'], h:2.4, t:'viel höher' },
+  { w:['ganz flach','flache','flachen','flacher','flach','platt','eben','niedrig','klein'],
+    h:0.3, t:'ganz flach' },
+];
+// Das längste passende Wort gewinnt („ganz viele" schlägt „viele")
+function jwFinde(liste, t) {
+  let best = null, bl = 0;
+  for (const e of liste) for (const w of e.w)
+    if (t.includes(w) && w.length > bl) { bl = w.length; best = e; }
+  return best;
+}
+function jwTextLesen(text) {
+  const t = (text || '').toLowerCase();
+  if (!t.trim()) return null;
+  const stoff = jwFinde(JW_STOFFE, t), ort = jwFinde(JW_ORTE, t);
+  const menge = jwFinde(JW_MENGEN, t), hoch = jwFinde(JW_HOEHEN, t);
+  const tiere = JW_TIERE.filter(x => t.includes(x.txt.split(' ')[1].toLowerCase().slice(0, 5)));
+  const bauten = JW_BAUTEN.filter(x => x.w.some(w => t.includes(w)));
+  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length) return { leer:true };
+  return {
+    block: stoff ? stoff.b : null, ort: ort ? ort.o : null,
+    menge: menge ? menge.m : null,  hoch: hoch ? hoch.h : null,
+    tiere: tiere.map(x => x.id),
+    bauten: bauten.map(x => x.art),
+    txt: [bauten.length ? bauten.map(x => x.t).join(', ') : null,
+          stoff && stoff.t, ort && ort.t, menge && menge.t, hoch && hoch.t,
+          tiere.length ? tiere.map(x => x.txt).join(', ') : null].filter(x => x).join(' · '),
+  };
+}
+// Gilt eine Regel an dieser Stelle? (h = Bodenhöhe, nur für oben/unten nötig)
+function jwInZone(ort, x, z, h) {
+  if (!ort || ort === 'ueberall') return true;
+  const weit = Math.max(Math.abs(x), Math.abs(z));
+  if (ort === 'norden') return z < -30;
+  if (ort === 'sueden') return z > 30;
+  if (ort === 'osten')  return x > 30;
+  if (ort === 'westen') return x < -30;
+  if (ort === 'mitte')  return weit < 70;
+  if (ort === 'rand')   return weit > 150;
+  if (ort === 'hoch')   return h === undefined || h >= JW_BASIS + 6;
+  if (ort === 'tief')   return h === undefined || h <= JW_BASIS - 2;
+  return true;
+}
+// Alle Regeln einmal ausrechnen (nicht bei jedem einzelnen Block!)
+let jwRegeln = {};
+function jwRegel(key) { return jwRegeln[key] || null; }
+// ============== 🎨 JONAHS GEMALTE WESEN ================================
+// Jonahs Wunsch: "Ich kann was malen auf das Feld und danach kann ich noch
+// eingeben, was das alles können soll." Genau so geht es: malen, aufschreiben,
+// fertig - und schon lebt es in seiner Welt.
+const JW_WESEN_MAX = 8;                 // so viele Wesen passen hinein
+const jwWesenTex = {};                  // Nummer -> Bild-Textur für die Grafikkarte
+const JW_KANN = [
+  { id:'fliegen',  w:['flieg','schweb','flatter'],              t:'✈️ fliegen' },
+  { id:'huepfen',  w:['hüpf','huepf','spring','höpf'],          t:'🦘 hüpfen' },
+  { id:'schnell',  w:['schnell','renn','flitz','rase','sause'], t:'💨 schnell sein' },
+  { id:'langsam',  w:['langsam','gemütlich','gemuetlich','lahm'], t:'🐌 langsam sein' },
+  { id:'folgen',   w:['folg','lieb','nett','freund','mitkommen','hinterher','brav'], t:'❤️ dir folgen' },
+  { id:'jagen',    w:['böse','boese','jag','angreif','gefährlich','gefaehrlich','beiß','beiss','fang','wild'], t:'😈 dich jagen' },
+  { id:'feuer',    w:['feuer','spuck','brenn','flamm'],         t:'🔥 Feuer spucken' },
+  { id:'leuchten', w:['leucht','glitzer','funkel','glüh','gluh','strahl'], t:'✨ leuchten' },
+  { id:'gross',    w:['riesig','riese','groß','gross','mächtig'],  t:'🦣 riesengroß sein' },
+  { id:'klein',    w:['klein','winzig','mini','zwerg'],         t:'🐜 ganz klein sein' },
+  { id:'tanzen',   w:['tanz','dreh','wirbel'],                  t:'💃 tanzen' },
+  { id:'singen',   w:['sing','musik','pfeif','töne','toene','brumm'], t:'🎵 singen' },
+  { id:'schwimmen',w:['schwimm','tauch'],                       t:'🏊 schwimmen' },
+  { id:'zaubern',  w:['zauber','blitz','magie','hex'],          t:'🪄 zaubern' },
+  { id:'blumen',   w:['blume','pflanz','wachsen lassen','gärtner'], t:'🌸 Blumen pflanzen' },
+  { id:'reden',    w:['red','sprech','quatsch','erzähl','erzaehl','ruf'], t:'💬 reden' },
+  { id:'schlafen', w:['schlaf','faul','müde','muede','dös','does'],   t:'😴 schlafen' },
+  { id:'unsichtbar',w:['unsichtbar','verschwind','durchsichtig'], t:'👻 unsichtbar werden' },
+];
+// Was ein Wesen so sagt, wenn es reden kann
+const JW_WESEN_SPRUECHE = ['Hallo Jonah!', 'Ich bin dein Wesen!', 'Guck mal, was ich kann!',
+  'Hier bin ich!', 'Toll hast du mich gemalt!', 'Komm mit!', 'Was machen wir heute?'];
+function jwKannLesen(text) {
+  const t = (text || '').toLowerCase();
+  const f = {}, txt = [];
+  for (const k of JW_KANN)
+    if (k.w.some(w => t.includes(w))) { f[k.id] = true; txt.push(k.t); }
+  return { f, txt };
+}
 // Jonahs aktuelle Einstellungen (und ob er schon auf FERTIG gedrückt hat)
 const JW_VORGABE = { name:'Meine Welt', boden:'gras', gelaende:'huegel', wasser:'seen',
                      baeume:'wenige', himmel:'tag', wetter:'sonne', schwer:'normal',
-                     tiere:['pig','cow','sheep'], extras:['blumen','schaetze'] };
+                     tiere:['pig','cow','sheep'], extras:['blumen','schaetze'],
+                     text:{}, wesen:[] };
 let weltPlan = JSON.parse(JSON.stringify(JW_VORGABE));
 let weltFertig = false;                 // schon einmal gebaut?
 const weltHeimOrt = {};                 // wo Jonah in welcher Welt zuletzt stand
@@ -3227,6 +3469,20 @@ function jwPlanAnwenden() {
   P.schwer = (JW_SCHWER[weltPlan.schwer] || JW_SCHWER.normal).v;
   P.gruss  = 'DEINE EIGENE WELT! 🌈 ' + (weltPlan.name || 'Meine Welt') +
              ' - genau so, wie du sie dir ausgedacht hast.';
+  jwRegeln = {};                        // ✍️ seine eigenen Sätze einmal verstehen
+  for (const k in (weltPlan.text || {})) {
+    const r = jwTextLesen(weltPlan.text[k]);
+    if (r && !r.leer) jwRegeln[k] = r;
+  }
+  // ✍️ Schreibt er „Nacht" oder „Regen" ins Feld, wird auch der Knopf umgestellt
+  for (const [key, tab] of [['himmel', JW_HIMMEL], ['wetter', JW_WETTER], ['schwer', JW_SCHWER]]) {
+    const t = ((weltPlan.text || {})[key] || '').toLowerCase();
+    if (!t.trim()) continue;
+    for (const k in tab) if (t.includes(k)) { weltPlan[key] = k; break; }
+    if (key === 'schwer' && /mond|leicht|schweb/.test(t)) weltPlan.schwer = 'leicht';
+  }
+  for (const k in jwSeeCache) delete jwSeeCache[k];   // 💧 Wasserhöhe neu ausrechnen
+  for (const k in jwWesenTex) { gl.deleteTexture(jwWesenTex[k]); delete jwWesenTex[k]; }
 }
 const KO_Y = 48;                        // so hoch liegt die Ebene, auf der das Schloss steht
 // 🛸 Wo liegt der UFO-Parkplatz der Aliens? Auf jedem Planeten an derselben
@@ -3280,6 +3536,14 @@ function planetHoehe(x, z, dim) {
       const senke = vnoise(x*0.02+5, z*0.02-9, 2525);     // ... mit flachen Mulden,
       if (senke > 0.25) y -= 1 + Math.round((senke-0.25)*6);     // damit Seen hineinpassen
       else if (senke < -0.35) y += 1 + Math.round((-0.35-senke)*4);   // und flache Hügelchen
+    }
+    // ✍️ „die Berge im Norden ganz hoch": Jonahs eigener Satz zum Gelände.
+    // Bei „hoch" wachsen nur die Berge nach oben (die Täler bleiben, wo sie sind),
+    // bei „flach" wird alles plattgedrückt.
+    const RG = jwRegel('gelaende');
+    if (RG && RG.hoch && jwInZone(RG.ort, x, z)) {
+      const d = y - JW_BASIS;
+      y = JW_BASIS + (d > 0 || RG.hoch < 1 ? d * RG.hoch : d);
     }
   }
   if (dim===9) {                        // 👑 Jonah-Planet: sanfte Hügel, aber das Schloss
@@ -4019,6 +4283,91 @@ function bauKoenigreich(put, x0, z0) {
   put(3, by+1, -47, SIGN, false);
   if (!signTexts.has(s2)) signTexts.set(s2, '🚀 Landeplatz - willkommen daheim, König Jonah!');
 }
+// ✍️🏗️ JONAHS WUNSCH-ZETTEL: "Ich möchte, dass es in meiner Welt Türme
+// aus Gold gibt" - genau solche Sachen baut das hier überall hin.
+function jwBauwerk(put, art, bx, by, bz, block, gx, gz) {
+  const zufall = (n) => hash2(gx, gz, 9200 + n);
+  if (art === 'turm') {
+    const hoch = 7 + Math.floor(zufall(1) * 11);
+    for (let y = 0; y <= hoch; y++)
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++)
+        if (y === hoch || Math.abs(dx) === 1 || Math.abs(dz) === 1)
+          put(bx+dx, by+y, bz+dz, block);
+    put(bx, by + hoch + 1, bz, TORCH);          // Licht auf der Spitze
+  } else if (art === 'haus') {
+    const r = 3;
+    for (let dx = -r; dx <= r; dx++) for (let dz = -r; dz <= r; dz++) {
+      put(bx+dx, by, bz+dz, block);
+      for (let y = 1; y <= 4; y++) {
+        const rand = Math.abs(dx) === r || Math.abs(dz) === r;
+        if (rand) put(bx+dx, by+y, bz+dz,
+                      (y === 2 && (((dx+dz) % 3) + 3) % 3 === 0) ? GLASS : block);
+        else put(bx+dx, by+y, bz+dz, AIR);      // innen hohl
+      }
+      put(bx+dx, by+5, bz+dz, block);           // Dach
+    }
+    put(bx, by+1, bz-r, AIR); put(bx, by+2, bz-r, AIR);     // die Tür
+    put(bx, by+4, bz, TORCH);                                // Licht drinnen
+  } else if (art === 'pyramide') {
+    const s2 = 4 + Math.floor(zufall(2) * 5);
+    for (let y = 0; y <= s2; y++)
+      for (let dx = -(s2-y); dx <= s2-y; dx++) for (let dz = -(s2-y); dz <= s2-y; dz++)
+        put(bx+dx, by+y, bz+dz, block);
+  } else if (art === 'statue') {
+    for (let y = 0; y <= 5; y++) put(bx, by+y, bz, block);   // Körper
+    put(bx-1, by+4, bz, block); put(bx+1, by+4, bz, block);  // Arme
+    put(bx, by+6, bz, block);                                // Kopf
+    put(bx-1, by, bz, block);  put(bx+1, by, bz, block);     // Füße
+  } else if (art === 'pilz') {
+    const st = 2 + Math.floor(zufall(3) * 3);
+    for (let y = 0; y <= st; y++) put(bx, by+y, bz, PLANK);
+    for (let dx = -2; dx <= 2; dx++) for (let dz = -2; dz <= 2; dz++)
+      if (Math.abs(dx) + Math.abs(dz) <= 3) put(bx+dx, by+st+1, bz+dz, block);
+  } else if (art === 'see') {
+    for (let dx = -4; dx <= 4; dx++) for (let dz = -4; dz <= 4; dz++) {
+      const d = Math.hypot(dx, dz);
+      if (d > 4) continue;
+      const tief = Math.max(1, Math.round(3 - d*0.6));
+      for (let y = 1; y <= 5; y++) put(bx+dx, by+y, bz+dz, AIR);
+      for (let y = 0; y > -tief; y--) put(bx+dx, by+y, bz+dz, WATER);
+      put(bx+dx, by-tief, bz+dz, block);        // der Boden des Sees
+    }
+  } else if (art === 'fackel') {
+    for (let y = 0; y <= 2; y++) put(bx, by+y, bz, block);
+    put(bx, by+3, bz, TORCH);
+  } else if (art === 'blume') {
+    for (let dx = -3; dx <= 3; dx++) for (let dz = -3; dz <= 3; dz++)
+      if (hash2(bx+dx, bz+dz, 9300) < 0.55) put(bx+dx, by+1, bz+dz, BLUME);
+  } else if (art === 'truhe') {
+    put(bx, by+1, bz, CHEST);
+    for (const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]) put(bx+dx, by+1, bz+dz, block);
+  }
+}
+function jwBautenStempeln(data, cx, cz) {
+  const R = jwRegel('wunsch');
+  if (!R || !R.bauten || !R.bauten.length) return;
+  const x0 = cx*CS, z0 = cz*CS;
+  const put = (wx, wy, wz, b) => {
+    const lx = wx - x0, lz = wz - z0;
+    if (lx < 0 || lx >= CS || lz < 0 || lz >= CS || wy <= CH_MIN || wy >= CH) return;
+    data[bidx(lx, wy, lz)] = b;
+  };
+  const ZELLE = 26;                     // alle 26 Blöcke ein möglicher Bauplatz
+  const dichte = Math.max(0.06, Math.min(1, 0.34 * (R.menge === null ? 1 : R.menge)));
+  const block = R.block === null ? STONE : R.block;
+  const see = jwSee();
+  for (let gz = Math.floor((z0-14)/ZELLE); gz <= Math.floor((z0+CS+14)/ZELLE); gz++)
+    for (let gx = Math.floor((x0-14)/ZELLE); gx <= Math.floor((x0+CS+14)/ZELLE); gx++) {
+      if (hash2(gx, gz, 9100) > dichte) continue;
+      const bx = gx*ZELLE + 5 + Math.floor(hash2(gx,gz,9101) * (ZELLE-10));
+      const bz = gz*ZELLE + 5 + Math.floor(hash2(gx,gz,9102) * (ZELLE-10));
+      const by = planetHoehe(bx, bz, JW_DIM);
+      if (!jwInZone(R.ort, bx, bz, by)) continue;
+      const art = R.bauten[Math.floor(hash2(gx,gz,9103) * R.bauten.length)];
+      if (see !== null && by <= see && art !== 'see') continue;   // nicht ins Wasser bauen
+      jwBauwerk(put, art, bx, by, bz, block, gx, gz);
+    }
+}
 function genPlanetChunk(cx, cz, ohneEdits, dim) {
   const P = PLANET[dim] || PLANET[2];
   const data = new Uint8Array(CS*CS*CH_TOT);
@@ -4110,11 +4459,21 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
         else if (r > 0.9975) setz(lx,h+1,lz,TORCH);      // ein paar Lichter
       }
     } else if (dim===JW_DIM) {          // 🌈 JONAHS EIGENE WELT
-      const B = jwBoden(), BA = jwBaeume(), see = jwSee();
+      const B = jwBoden(), BA = jwBaeume();
+      let see = jwSee();
+      // ✍️ SEINE EIGENEN SÄTZE: Boden, Wasser und Bäume wie aufgeschrieben
+      const RB = jwRegel('boden'), RW = jwRegel('wasser'), RT = jwRegel('baeume');
+      const RE = jwRegel('extras');
       // 🌈 Ein bunter Boden: die obersten Schichten werden gestreift
       if (B.bunt) for (let y=h-3; y<=h; y++)
         setz(lx, y, lz, [WOOL, BRICK, GLASS, SAND][((y%4)+4)%4]);
+      // ✍️ „der Boden aus Gold im Norden"
+      if (RB && RB.block !== null && jwInZone(RB.ort, wx, wz, h))
+        for (let y=h-2; y<=h; y++) setz(lx, y, lz, RB.block);
       // 💧 WASSER: alles unter dem Wasserspiegel läuft voll
+      // ✍️ „Wasser nur im Süden" - dann steht es auch nur dort
+      if (RW && RW.ort && !jwInZone(RW.ort, wx, wz, h)) see = null;
+      if (RW && RW.menge === 0) see = null;
       if (see !== null) for (let y=h+1; y<=see; y++) setz(lx, y, lz, WATER);
       const trocken = see === null || h > see;
       if (B.eis) {                      // ❄️ Schnee-Welt: oben liegt Schnee
@@ -4122,14 +4481,28 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
         if (!trocken) for (let y=h+1; y<=see; y++) setz(lx, y, lz, GLASS);   // zugefrorene Seen
       }
       if (trocken) {
-        if (BA.p > 0 && r < BA.p) {     // 🌳 Bäume
-          const hoch = BA.hoch + Math.floor(hash2(wx,wz,7711)*3);
-          for (let y=h+1; y<=h+hoch; y++) setz(lx, y, lz, WOOD);
-          for (let y=h+hoch-1; y<=h+hoch+1; y++) setz(lx, y, lz, LEAF);
+        // ✍️ „ganz viele Bäume aus Gold im Westen"
+        let bp = BA.p, bStamm = WOOD, bLaub = LEAF, bHoch = BA.hoch;
+        if (RT) {
+          if (RT.menge !== null) bp = (bp || 0.02) * RT.menge;
+          if (RT.ort && !jwInZone(RT.ort, wx, wz, h)) bp = 0;
+          if (RT.block !== null) { bStamm = RT.block; bLaub = RT.block; }
+          if (RT.hoch) bHoch = Math.max(2, Math.round(bHoch * RT.hoch));
         }
-        else if (jwHat('blumen')    && r < BA.p + 0.055) setz(lx, h+1, lz, BLUME);
-        else if (jwHat('schaetze')  && r < BA.p + 0.062) setz(lx, h+1, lz, CHEST);
-        else if (jwHat('kristalle') && r > 0.996)        setz(lx, h+1, lz, TORCH);
+        let ep = 1;                     // ✍️ wie viele Extras es geben soll
+        if (RE) {
+          if (RE.menge !== null) ep = RE.menge;
+          if (RE.ort && !jwInZone(RE.ort, wx, wz, h)) ep = 0;
+        }
+        if (bp > 0 && r < bp) {         // 🌳 Bäume
+          const hoch = bHoch + Math.floor(hash2(wx,wz,7711)*3);
+          for (let y=h+1; y<=h+hoch; y++) setz(lx, y, lz, bStamm);
+          for (let y=h+hoch-1; y<=h+hoch+1; y++) setz(lx, y, lz, bLaub);
+        }
+        else if (jwHat('blumen')    && r < bp + 0.055*ep) setz(lx, h+1, lz,
+                 (RE && RE.block !== null) ? RE.block : BLUME);
+        else if (jwHat('schaetze')  && r < bp + 0.062*ep) setz(lx, h+1, lz, CHEST);
+        else if (jwHat('kristalle') && r > 1 - 0.004*ep)  setz(lx, h+1, lz, TORCH);
         else if (jwHat('goldadern') && r > 0.986 && r < 0.994) setz(lx, h+1, lz, GOLD);
       }
       if (jwHat('lava')) {              // 🔥 glühende Lava-Kessel
@@ -4248,6 +4621,8 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
   }
   // 🏰 DIE RIESENBURG: Sie steht in ihrer eigenen Welt - und NUR dort.
   if (dim === RB_DIM && riesenChunk(cx, cz)) riesenStempeln(data, cx, cz);
+  // ✍️🏗️ ... und in Jonahs Welt das, was er sich gewünscht hat
+  if (dim === JW_DIM) try { jwBautenStempeln(data, cx, cz); } catch(e) {}
   const e = ohneEdits ? null : edits.get(ckey(cx,cz));
   if (e) for (const [i,v] of e) data[i] = v;
   return data;
@@ -6274,6 +6649,26 @@ function loadGame() {
       if (!JW_SCHWER[p.schwer])     p.schwer   = JW_VORGABE.schwer;
       p.tiere  = Array.isArray(p.tiere)  ? p.tiere.filter(t => JW_TIERE.some(x => x.id === t)) : [];
       p.extras = Array.isArray(p.extras) ? p.extras.filter(e => JW_EXTRAS.some(x => x.id === e)) : [];
+      // ✍️ seine eigenen Sätze zu jeder Frage
+      const txt = {};
+      if (p.text && typeof p.text === 'object')
+        for (const k in p.text) if (typeof p.text[k] === 'string') txt[k] = p.text[k].slice(0, 70);
+      p.text = txt;
+      // 🎨 und seine gemalten Wesen
+      p.wesen = (Array.isArray(p.wesen) ? p.wesen : [])
+        .filter(w => w && typeof w.bild === 'string' && w.bild.length === PN*PN)
+        .slice(0, JW_WESEN_MAX)
+        .map(w => {
+          const gr2 = jwGroesseLesen(w.gross || ''), an2 = jwAnzahlLesen(w.wieviele || '');
+          const f2 = jwKannLesen(w.kann || '').f;
+          return { name: String(w.name || 'Mein Wesen').slice(0, 20), bild: w.bild,
+                   kann: String(w.kann || '').slice(0, 90),
+                   gross: String(w.gross || '').slice(0, 40),
+                   wieviele: String(w.wieviele || '').slice(0, 40), f: f2,
+                   gr: gr2 ? gr2.gr : (typeof w.gr === 'number' ? w.gr
+                        : (f2.gross ? 2 : f2.klein ? 0.55 : 1)),
+                   n: an2 ? an2.n : (typeof w.n === 'number' ? Math.max(1, Math.min(20, w.n)) : 2) };
+        });
       weltPlan = p;
     }
     weltFertig = !!s.weltFertig;
@@ -8009,6 +8404,8 @@ const ANIMAL_KIND = {
   ufo:      { speed:0,   half:1.6,  height:1.6,  tile:152, face:153 },   // 🛸 ihre Untertasse
   // 🤖 Jonahs kleiner, selbstgebauter Roboter - gut einen Block hoch
   mini:     { speed:3.2, half:0.3,  height:1.1,  tile:158, face:159 },
+  // 🎨 ein von Jonah gemaltes Wesen (es wird als sein Bild gezeichnet)
+  wesen:    { speed:2.3, half:0.34, height:1.4,  tile:0,   face:0 },
 };
 // 🦊 Die englischen Freunde als Figuren in der Welt: welches Fell, welches
 // Gesicht und welches Erkennungszeichen auf dem Kopf?
@@ -8653,17 +9050,23 @@ function hofstaatTick() {
 // 🌈 In Jonahs eigener Welt leben GENAU die Tiere, die er ausgesucht hat.
 const JW_RIESEN_NAMEN = ['Grimm','Knorx','Brummbär','Donnerfaust','Steinbeißer','Wackelzahn'];
 function jwSpawnTick() {
-  const liste = weltPlan.tiere || [];
+  jwWesenSpawn();                       // 🎨 zuerst seine selbst gemalten Wesen
+  const RT = jwRegel('tiere');          // ✍️ „ganz viele Kühe im Osten"
+  let liste = (weltPlan.tiere || []).slice();
+  if (RT && RT.tiere.length) for (const t of RT.tiere) if (!liste.includes(t)) liste.push(t);
+  if (RT && RT.menge === 0) liste = [];
   if (!liste.length) return;
   const laufen = liste.filter(t => t !== 'bird' && t !== 'fish');
+  const grenze = Math.round(14 * (RT && RT.menge !== null ? Math.max(0.3, RT.menge) : 1));
   if (laufen.length &&
-      countType(a => !a.tame && a.type !== 'bird' && a.type !== 'fish') < 14) {
+      countType(a => !a.tame && a.type !== 'bird' && a.type !== 'fish' && a.type !== 'wesen') < grenze) {
     const typ = laufen[Math.floor(Math.random() * laufen.length)];
     const ang = Math.random()*Math.PI*2, d = 16 + Math.random()*30;
     const x = Math.floor(player.x + Math.cos(ang)*d);
     const z = Math.floor(player.z + Math.sin(ang)*d);
     const see = jwSee();
-    if (see === null || planetHoehe(x, z, JW_DIM) > see) {   // nicht ins Wasser stellen
+    if ((see === null || planetHoehe(x, z, JW_DIM) > see) &&
+        (!RT || !RT.ort || jwInZone(RT.ort, x, z, planetHoehe(x, z, JW_DIM)))) {
       const extra = typ === 'zombie' ? { hp:2 }
                   : typ === 'riese'  ? { hp:15, hx:x+0.5, hz:z+0.5,
                       name: JW_RIESEN_NAMEN[Math.floor(Math.random()*JW_RIESEN_NAMEN.length)] }
@@ -8673,6 +9076,96 @@ function jwSpawnTick() {
   }
   if (liste.includes('bird') && countType(a => a.type === 'bird') < 5) spawnBird(14, 40);
   if (liste.includes('fish') && countType(a => a.type === 'fish') < 6) jwFischSpawn();
+}
+// 🎨 Von jedem gemalten Wesen laufen immer zwei in der Nähe herum
+function jwWesenSpawn() {
+  const wesen = weltPlan.wesen || [];
+  for (let i = 0; i < wesen.length; i++) {
+    const wieViele = Math.max(1, Math.min(20, wesen[i].n || 2));
+    if (countType(a => a.type === 'wesen' && a.wIdx === i) >= wieViele) continue;
+    if (countType(a => a.type === 'wesen') >= 30) break;     // nicht übertreiben
+    const f = wesen[i].f || {};
+    const ang = Math.random()*Math.PI*2, d = 12 + Math.random()*22;
+    const x = Math.floor(player.x + Math.cos(ang)*d);
+    const z = Math.floor(player.z + Math.sin(ang)*d);
+    const h = terrainHeight(x, z);
+    const see = jwSee();
+    if (see !== null && h <= see && !f.schwimmen && !f.fliegen) continue;
+    const ch = getChunk(x>>4, z>>4);
+    if (!ch || !ch.data) continue;
+    animals.push({ type:'wesen', wIdx:i, x:x+0.5, y:h+1, z:z+0.5,
+      gr: wesen[i].gr || (f.gross ? 2 : f.klein ? 0.55 : 1),
+      yaw:Math.random()*6.3, vy:0, kx:0, kz:0, hp:4,
+      walking:false, t:9, ph:0, onGround:false, zielT:0 });
+  }
+}
+// Was ein Wesen so treibt - genau das, was Jonah hingeschrieben hat
+function jwWesenTick(a, dt) {
+  const d = (weltPlan.wesen || [])[a.wIdx];
+  if (!d) { a.hp = 0; return; }
+  const f = d.f || {};
+  const dp = Math.hypot(player.x - a.x, player.z - a.z);
+  a.t = 9;
+  const spd = f.schnell ? 4.4 : f.langsam ? 1.0 : 2.3;
+  if (f.folgen || f.jagen) {            // ❤️ hinterher! oder 😈 hinter DIR her!
+    if (dp > 50) { a.x = player.x + (Math.random()*10-5); a.z = player.z + (Math.random()*10-5);
+                   a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1; }
+    else if (dp > (f.jagen ? 1.4 : 3)) {
+      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+      a.walking = true; a.spd = spd;
+    } else { a.walking = false; a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z)); }
+  } else {                              // sonst streift es einfach herum
+    a.zielT -= dt;
+    if (a.zielT <= 0) {
+      a.zielT = 2 + Math.random()*4;
+      a.yaw = Math.random()*Math.PI*2;
+      a.walking = Math.random() < 0.72; a.spd = spd;
+    }
+  }
+  if (f.schlafen) {                                            // 😴 es schläft lieber
+    a.walking = false;
+    if (Math.random() < dt*0.25 && dp < 22) sagen(a, 'Zzz … 😴', 3);
+  }
+  if (f.tanzen) { a.yaw += dt*5.5; a.walking = false; }        // 💃
+  if (f.fliegen) {                                             // ✈️
+    const ziel = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 6
+               + Math.sin(performance.now()*0.0012 + a.wIdx*2)*2.5;
+    a.flug = true; a.steig = Math.max(-5, Math.min(5, (ziel - a.y) * 2.2));
+  } else {
+    a.flug = false;
+    if (f.huepfen && a.onGround && Math.random() < dt*2.6) a.vy = 6.6;   // 🦘
+  }
+  if (f.feuer && Math.random() < dt*3 && dp < 30)              // 🔥
+    fireworks.push({ x:a.x + Math.sin(a.yaw)*0.6, y:a.y + 0.8*(a.gr||1), z:a.z - Math.cos(a.yaw)*0.6,
+      vx:Math.sin(a.yaw)*4, vy:0.6, vz:-Math.cos(a.yaw)*4,
+      tile:[27,72,82][Math.floor(Math.random()*3)], t:0.5 });
+  if (f.leuchten && Math.random() < dt*4 && dp < 30)           // ✨
+    fireworks.push({ x:a.x+(Math.random()-0.5), y:a.y+0.6+Math.random(), z:a.z+(Math.random()-0.5),
+      vx:0, vy:0.5, vz:0, tile:172, t:0.5 });
+  if (f.singen && dp < 20 && Math.random() < dt*0.7)           // 🎵
+    blip(420 + Math.random()*540, 0.06);
+  if (f.zaubern && dp < 30 && Math.random() < dt*0.6) {        // 🪄 Zauber-Funken
+    for (let i = 0; i < 9; i++) {
+      const w = Math.random()*Math.PI*2;
+      fireworks.push({ x:a.x, y:a.y + 0.9*(a.gr||1), z:a.z,
+        vx:Math.cos(w)*3, vy:1.6+Math.random()*2, vz:Math.sin(w)*3,
+        tile:[172,120,94][i%3], t:0.7 });
+    }
+    if (dp < 20) { blip(900, 0.05); blip(1250, 0.06); }
+  }
+  if (f.blumen && a.onGround && Math.random() < dt*0.8) {      // 🌸 pflanzt Blumen
+    const bx = Math.floor(a.x), bz = Math.floor(a.z), by = Math.floor(a.y);
+    if (getBlock(bx, by, bz) === AIR && isSolid(bx, by-1, bz) &&
+        getBlock(bx, by-1, bz) !== BLUME) setBlock(bx, by, bz, BLUME);
+  }
+  if (f.unsichtbar) {                                          // 👻 mal da, mal weg
+    a.sicht = 0.55 + 0.45 * Math.sin(performance.now()*0.0013 + a.wIdx*3);
+    if (a.sicht < 0.12) a.sicht = 0.12;
+  } else a.sicht = 1;
+  const redeT = f.reden ? 0.35 : 0.05;
+  if (dp < 24 && Math.random() < dt*redeT)
+    sagen(a, f.reden ? JW_WESEN_SPRUECHE[Math.floor(Math.random()*JW_WESEN_SPRUECHE.length)]
+                     : (d.name || 'Hallo!'), 3);
 }
 function jwFischSpawn() {               // 🐟 Fische schwimmen in SEINEM Wasser
   const see = jwSee();
@@ -9519,6 +10012,7 @@ function updateAnimals(dt) {
       }
     }
 
+    if (a.type==='wesen') jwWesenTick(a, dt);             // 🎨 Jonahs gemaltes Wesen
     if (a.type==='hausmeister') hausmeisterTick(a, dt);   // 🔧 flickt, was kaputt ist
     if (a.type==='butler') butlerTick(a, dt);             // 🤵 macht, was Jonah sagt
     if (a.type==='alien') {                                // 👽 neugierig oder Diener?
@@ -10008,6 +10502,7 @@ function drawAnimals() {
     pushBox(arr,a, 0,1.63,0, 0.44,0.44,0.44, 22, 21);    // Kopf
   }
   for (const a of animals) {
+    if (a.type==='wesen') continue;     // 🎨 gemalte Wesen werden als Bild gezeichnet
     const k=ANIMAL_KIND[a.type];
     const sw=a.walking ? Math.sin(a.ph)*0.14 : 0;
     if (a.type==='pig') {
@@ -11228,6 +11723,55 @@ function makePaintTexture(key) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   paintTexs[key]=tx;
+}
+// 🎨 Jonahs Zeichnung wird zur Textur: Weiß bleibt durchsichtig, damit das
+// Wesen wirklich wie seine Figur aussieht und nicht wie ein weißer Kasten.
+function jwWesenTextur(i) {
+  const d = (weltPlan.wesen || [])[i];
+  if (!d || !d.bild) return false;
+  const c = document.createElement('canvas'); c.width = PN; c.height = PN;
+  const g = c.getContext('2d');
+  for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
+    const v = parseInt(d.bild[y*PN+x], 16) || 0;
+    if (!v) continue;                   // 0 = weiß = durchsichtig
+    g.fillStyle = PAINT_COLS[v];
+    g.fillRect(x, y, 1, 1);
+  }
+  const tx = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tx);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  jwWesenTex[i] = tx;
+  return true;
+}
+// Jedes Wesen ist eine Tafel, die sich immer zu Jonah dreht - so sieht er
+// seine Zeichnung von allen Seiten richtig herum.
+function drawJwWesen() {
+  if (weltDim !== JW_DIM) return;
+  let erstes = true;
+  for (const a of animals) {
+    if (a.type !== 'wesen') continue;
+    if (Math.hypot(a.x-player.x, a.z-player.z) > 60) continue;
+    if (!jwWesenTex[a.wIdx] && !jwWesenTextur(a.wIdx)) continue;
+    erstes = false;
+    gl.uniform1f(loc.uAlpha, a.sicht === undefined ? 1 : a.sicht);   // 👻 unsichtbar?
+    gl.bindTexture(gl.TEXTURE_2D, jwWesenTex[a.wIdx]);
+    const gr = a.gr || 1, br = 0.8*gr, ho = 1.6*gr;
+    const dx = player.x - a.x, dz = player.z - a.z;
+    const L = Math.hypot(dx, dz) || 1;
+    const rx = -dz/L*br, rz = dx/L*br;          // quer zur Blickrichtung
+    const y0 = a.y + 0.05, y1 = a.y + ho;
+    const A = [a.x-rx,y0,a.z-rz, 0,1,1,  a.x+rx,y0,a.z+rz, 1,1,1,  a.x+rx,y1,a.z+rz, 1,0,1,
+               a.x-rx,y0,a.z-rz, 0,1,1,  a.x+rx,y1,a.z+rz, 1,0,1,  a.x-rx,y1,a.z-rz, 0,0,1];
+    gl.bindBuffer(gl.ARRAY_BUFFER, signBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(A), gl.DYNAMIC_DRAW);
+    setAttribs();
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+  if (!erstes) { gl.uniform1f(loc.uAlpha, 1); gl.bindTexture(gl.TEXTURE_2D, tex); }
 }
 function removePainting(x,y,z) {
   const key=x+','+y+','+z;
@@ -28589,6 +29133,7 @@ function frame(now) {
   drawSignTexts();
   try { drawGoldTafel(); } catch(e) {}   // 🏛️ die goldene Tafel im Geldspeicher
   drawPaintings();
+  try { drawJwWesen(); } catch(e) {}        // 🎨 Jonahs gemalte Wesen
   try { drawKinoLeinwand(); } catch(e) {}   // 🎬 läuft gerade ein Film?
   gl.uniform1f(loc.uAlpha,0.62);
   for (let i=vis.length-1;i>=0;i--) {
@@ -29001,13 +29546,20 @@ filmLaden();                            // 🎥 die Filme von früher wieder ein
 // Bilder: die normale Welt und Jonahs eigene. Und den Baukasten, in dem er
 // einstellt, wie seine Welt aussehen soll.
 const JW_FRAGEN = [
-  { key:'boden',    titel:'🪨 Woraus ist der Boden?',      opt:JW_BODEN },
-  { key:'gelaende', titel:'🏞️ Wie soll das Land sein?',     opt:JW_GELAENDE },
-  { key:'wasser',   titel:'💧 Wie viel Wasser?',           opt:JW_WASSER },
-  { key:'baeume',   titel:'🌳 Wie viele Bäume?',           opt:JW_BAEUME },
-  { key:'himmel',   titel:'☀️ Tag, Abend oder Nacht?',      opt:JW_HIMMEL },
-  { key:'wetter',   titel:'🌧️ Welches Wetter?',           opt:JW_WETTER },
-  { key:'schwer',   titel:'🪶 Wie hoch springst du?',       opt:JW_SCHWER },
+  { key:'boden',    titel:'🪨 Woraus ist der Boden?',      opt:JW_BODEN,
+    platz:'✍️ oder schreib selber: „aus Gold im Norden"' },
+  { key:'gelaende', titel:'🏞️ Wie soll das Land sein?',     opt:JW_GELAENDE,
+    platz:'✍️ oder schreib selber: „ganz hohe Berge im Osten"' },
+  { key:'wasser',   titel:'💧 Wie viel Wasser?',           opt:JW_WASSER,
+    platz:'✍️ oder schreib selber: „nur im Süden"' },
+  { key:'baeume',   titel:'🌳 Wie viele Bäume?',           opt:JW_BAEUME,
+    platz:'✍️ oder schreib selber: „ganz viele Bäume aus Bonbons"' },
+  { key:'himmel',   titel:'☀️ Tag, Abend oder Nacht?',      opt:JW_HIMMEL,
+    platz:'✍️ oder schreib selber dazu, wie es sein soll' },
+  { key:'wetter',   titel:'🌧️ Welches Wetter?',           opt:JW_WETTER,
+    platz:'✍️ oder schreib selber dazu, wie es sein soll' },
+  { key:'schwer',   titel:'🪶 Wie hoch springst du?',       opt:JW_SCHWER,
+    platz:'✍️ oder schreib selber dazu, wie es sein soll' },
 ];
 // Eine kurze Beschreibung der Welt für den Auswahl-Knopf
 function jwBeschreibung() {
@@ -29122,9 +29674,30 @@ function weltBauenOeffnen() {
   document.getElementById('weltFertigBtn').textContent = weltFertig
     ? '✅ FERTIG – so soll meine Welt jetzt sein!'
     : '✅ FERTIG – so soll meine Welt werden!';
+  const wu = document.getElementById('weltWunsch');
+  wu.value = (weltPlan.text || {}).wunsch || '';
+  weltWunschPruefen();
   weltFragenZeichnen();
   document.getElementById('weltBox').style.display = 'flex';
   blip(600, 0.06); blip(820, 0.07);
+}
+// ✍️ Der große Wunsch-Zettel: "Ich möchte Türme aus Gold im Norden"
+function weltWunschPruefen() {
+  const inp = document.getElementById('weltWunsch');
+  const sagt = document.getElementById('weltWunschTxt');
+  if (!weltPlan.text) weltPlan.text = {};
+  weltPlan.text.wunsch = inp.value;
+  const r = jwTextLesen(inp.value);
+  if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; return; }
+  if (r.leer || !r.txt) {
+    sagt.textContent = '❓ Das habe ich nicht verstanden. Ich kann: Türme, Häuser, ' +
+      'Pyramiden, Statuen, Pilze, Seen, Fackeln, Blumen und Schatztruhen – aus Gold, ' +
+      'Stein, Holz, Kristall, Bonbons … und zum Beispiel „im Norden" oder „überall".';
+    sagt.className = 'jwVerstanden nix';
+  } else {
+    sagt.textContent = '✅ Verstanden: ' + r.txt;
+    sagt.className = 'jwVerstanden';
+  }
 }
 function weltFragenZeichnen() {
   const w = document.getElementById('weltFragen');
@@ -29144,10 +29717,38 @@ function weltFragenZeichnen() {
     b.addEventListener('click', () => { fn(); weltFragenZeichnen(); blip(760, 0.04); });
     return b;
   };
+  // ✍️ Unter jeder Frage darf Jonah auch selber hinschreiben, wie er es will
+  const textFeld = (key, platzhalter) => {
+    const d = w.lastElementChild;       // die gerade gebaute Frage
+    const inp = document.createElement('input');
+    inp.className = 'jwText'; inp.maxLength = 70;
+    inp.placeholder = platzhalter;
+    inp.value = (weltPlan.text || {})[key] || '';
+    const sagt = document.createElement('div');
+    sagt.className = 'jwVerstanden';
+    const pruefe = () => {
+      if (!weltPlan.text) weltPlan.text = {};
+      weltPlan.text[key] = inp.value;
+      const r = jwTextLesen(inp.value);
+      if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; }
+      else if (r.leer || !r.txt) {
+        sagt.textContent = '❓ Das habe ich nicht verstanden – probier z. B. ' +
+                           '„aus Gold im Norden" oder „ganz viele".';
+        sagt.className = 'jwVerstanden nix';
+      } else {
+        sagt.textContent = '✅ Verstanden: ' + r.txt;
+        sagt.className = 'jwVerstanden';
+      }
+    };
+    inp.addEventListener('input', pruefe);
+    pruefe();
+    d.appendChild(inp); d.appendChild(sagt);
+  };
   for (const f of JW_FRAGEN) {
     const c = zeile(f.titel);
     for (const k in f.opt)
       c.appendChild(chip(f.opt[k].txt, weltPlan[f.key] === k, () => { weltPlan[f.key] = k; }));
+    textFeld(f.key, f.platz);
   }
   const tc = zeile('🐾 Welche Tiere sollen hier leben? (so viele du willst)');
   for (const t of JW_TIERE)
@@ -29155,12 +29756,65 @@ function weltFragenZeichnen() {
       const i = weltPlan.tiere.indexOf(t.id);
       if (i >= 0) weltPlan.tiere.splice(i, 1); else weltPlan.tiere.push(t.id);
     }));
+  textFeld('tiere', '✍️ oder schreib selber: „ganz viele Kühe im Osten"');
   const ec = zeile('✨ Was soll es sonst noch geben?');
   for (const e of JW_EXTRAS)
     ec.appendChild(chip(e.txt, (weltPlan.extras||[]).includes(e.id), () => {
       const i = weltPlan.extras.indexOf(e.id);
       if (i >= 0) weltPlan.extras.splice(i, 1); else weltPlan.extras.push(e.id);
     }));
+  textFeld('extras', '✍️ oder schreib selber: „ganz viele Schatztruhen in der Mitte"');
+  jwWesenListe();
+}
+// 🎨 Die Liste seiner gemalten Wesen im Baukasten
+function jwWesenListe() {
+  const box = document.getElementById('weltWesen');
+  if (!box) return;
+  box.innerHTML = '';
+  const wesen = weltPlan.wesen || [];
+  if (!wesen.length) {
+    const p = document.createElement('div');
+    p.className = 'jwWesenText';
+    p.style.opacity = '.75';
+    p.textContent = 'Noch keine. Mal dir eins – alles, was du malst, lebt dann in deiner Welt!';
+    box.appendChild(p);
+  }
+  wesen.forEach((d, i) => {
+    const z = document.createElement('div');
+    z.className = 'jwWesenZeile';
+    const c = document.createElement('canvas');
+    c.className = 'jwWesenBild'; c.width = PN; c.height = PN;
+    const g = c.getContext('2d');
+    for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
+      const v = parseInt(d.bild[y*PN+x], 16) || 0;
+      if (!v) continue;
+      g.fillStyle = PAINT_COLS[v]; g.fillRect(x, y, 1, 1);
+    }
+    const t = document.createElement('div');
+    t.className = 'jwWesenText';
+    const kann = jwKannLesen(d.kann).txt;
+    t.innerHTML = '<b></b><br><span></span>';
+    t.querySelector('b').textContent = d.name || 'Namenloses Wesen';
+    const mass = [];
+    const gTxt = jwGroesseLesen(d.gross || ''), aTxt = jwAnzahlLesen(d.wieviele || '');
+    if (gTxt) mass.push('📏 ' + gTxt.txt);
+    if (aTxt) mass.push('🔢 ' + aTxt.txt);
+    t.querySelector('span').textContent =
+      (kann.length ? kann.join(' · ') : 'steht einfach herum 🗿') +
+      (mass.length ? '  —  ' + mass.join(' · ') : '');
+    const weg = document.createElement('button');
+    weg.className = 'jwWesenWeg'; weg.textContent = '🗑️';
+    weg.addEventListener('click', () => {
+      weltPlan.wesen.splice(i, 1);
+      for (const a of animals) if (a.type === 'wesen') a.hp = -1;
+      for (let j = animals.length-1; j >= 0; j--)
+        if (animals[j].type === 'wesen') animals.splice(j, 1);
+      for (const k in jwWesenTex) { gl.deleteTexture(jwWesenTex[k]); delete jwWesenTex[k]; }
+      jwWesenListe(); blip(250, 0.1);
+    });
+    z.appendChild(c); z.appendChild(t); z.appendChild(weg);
+    box.appendChild(z);
+  });
 }
 function weltBauenFertig() {
   const nm = (document.getElementById('weltNameInput').value || '').trim().slice(0, 24);
@@ -29190,6 +29844,133 @@ function jwNeuZeichnen() {              // die Welt nach einer Änderung neu bau
   weltPlatzSuchen(false);
   player.vx = player.vy = player.vz = 0;
 }
+// ============== 🎨 DAS MAL-FELD FÜR EIGENE WESEN ======================
+// Dasselbe 12x12-Feld wie bei den Bildern an der Wand - nur dass das hier
+// Gemalte danach in Jonahs Welt herumläuft.
+const wCan = document.getElementById('wesenCanvas');
+const wCtx = wCan.getContext('2d');
+const WCELL = 240 / PN;
+let wesenDaten = null, wesenFarbe = 2, wesenNr = -1;
+function wesenMalen() {
+  for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
+    wCtx.fillStyle = PAINT_COLS[parseInt(wesenDaten[y*PN+x], 16) || 0];
+    wCtx.fillRect(x*WCELL, y*WCELL, WCELL, WCELL);
+  }
+  wCtx.strokeStyle = 'rgba(0,0,0,0.12)';
+  for (let i=1; i<PN; i++) {
+    wCtx.beginPath(); wCtx.moveTo(i*WCELL, 0); wCtx.lineTo(i*WCELL, 240); wCtx.stroke();
+    wCtx.beginPath(); wCtx.moveTo(0, i*WCELL); wCtx.lineTo(240, i*WCELL); wCtx.stroke();
+  }
+}
+function wesenPunkt(clientX, clientY) {
+  const r = wCan.getBoundingClientRect();
+  const x = Math.floor((clientX - r.left) / r.width * PN);
+  const y = Math.floor((clientY - r.top) / r.height * PN);
+  if (x < 0 || x >= PN || y < 0 || y >= PN) return;
+  wesenDaten[y*PN + x] = wesenFarbe.toString(16);
+  wesenMalen();
+}
+wCan.addEventListener('mousedown', e => { e.preventDefault(); wesenPunkt(e.clientX, e.clientY);
+  const mv = ev => wesenPunkt(ev.clientX, ev.clientY);
+  const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+  window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); });
+wCan.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0];
+  wesenPunkt(t.clientX, t.clientY); }, {passive:false});
+wCan.addEventListener('touchmove', e => { e.preventDefault(); const t = e.touches[0];
+  wesenPunkt(t.clientX, t.clientY); }, {passive:false});
+PAINT_COLS.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.className = 'palBtn' + (i === wesenFarbe ? ' sel' : '');
+  b.style.background = c;
+  const nimm = () => { wesenFarbe = i;
+    document.querySelectorAll('#wesenPal .palBtn').forEach((x, k) => x.classList.toggle('sel', k === i)); };
+  b.addEventListener('click', nimm);
+  b.addEventListener('touchstart', e => { e.preventDefault(); nimm(); }, {passive:false});
+  document.getElementById('wesenPal').appendChild(b);
+});
+function wesenOeffnen(nr) {
+  wesenNr = (nr === undefined) ? -1 : nr;
+  const d = wesenNr >= 0 ? weltPlan.wesen[wesenNr] : null;
+  wesenDaten = (d ? d.bild : '0'.repeat(PN*PN)).split('');
+  document.getElementById('wesenName').value = d ? (d.name || '') : '';
+  document.getElementById('wesenKann').value = d ? (d.kann || '') : '';
+  document.getElementById('wesenGross').value = d ? (d.gross || '') : '';
+  document.getElementById('wesenAnzahl').value = d ? (d.wieviele || '') : '';
+  wesenKannZeigen();
+  wesenMalen();
+  document.getElementById('wesenBox').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(620, 0.06); blip(820, 0.07);
+}
+function wesenKannZeigen() {
+  const txt = jwKannLesen(document.getElementById('wesenKann').value).txt;
+  const el = document.getElementById('wesenKannTxt');
+  el.textContent = txt.length
+    ? '✅ Es kann: ' + txt.join(' · ')
+    : 'Schreib hin, was es kann – z. B. fliegen, hüpfen, leuchten, dir folgen, ' +
+      'dich jagen, Feuer spucken, zaubern, Blumen pflanzen, tanzen, singen, reden, ' +
+      'schlafen oder unsichtbar werden.';
+  el.className = txt.length ? '' : 'nix';
+  wesenMassZeigen();
+}
+// ✏️ Wie groß und wie viele? (Jonahs Wunsch - er schreibt es einfach hin)
+function wesenMassZeigen() {
+  const g = jwGroesseLesen(document.getElementById('wesenGross').value);
+  const a = jwAnzahlLesen(document.getElementById('wesenAnzahl').value);
+  const teile = [];
+  if (g) teile.push('📏 ' + g.txt);
+  else if (document.getElementById('wesenGross').value.trim()) teile.push('❓ Größe nicht verstanden');
+  if (a) teile.push('🔢 ' + a.txt);
+  else if (document.getElementById('wesenAnzahl').value.trim()) teile.push('❓ Anzahl nicht verstanden');
+  document.getElementById('wesenMassTxt').textContent = teile.length
+    ? '✅ ' + teile.join(' · ')
+    : 'Ohne Angabe ist es normal groß und es gibt zwei davon.';
+}
+function wesenSichern() {
+  const bild = wesenDaten.join('');
+  if (/^0+$/.test(bild)) {
+    toast('🎨 Da ist noch nichts gemalt! Mal erst etwas auf das Feld. ✏️', 4000);
+    blip(250, 0.12); return;
+  }
+  const name = (document.getElementById('wesenName').value || '').trim().slice(0, 20);
+  const kann = (document.getElementById('wesenKann').value || '').trim().slice(0, 90);
+  const gross = (document.getElementById('wesenGross').value || '').trim().slice(0, 40);
+  const wieviele = (document.getElementById('wesenAnzahl').value || '').trim().slice(0, 40);
+  const g = jwGroesseLesen(gross), an = jwAnzahlLesen(wieviele);
+  const f = jwKannLesen(kann).f;
+  const d = { name: name || 'Mein Wesen', bild, kann, f, gross, wieviele,
+              gr: g ? g.gr : (f.gross ? 2 : f.klein ? 0.55 : 1),
+              n:  an ? an.n : 2 };
+  if (!Array.isArray(weltPlan.wesen)) weltPlan.wesen = [];
+  if (wesenNr >= 0) weltPlan.wesen[wesenNr] = d;
+  else if (weltPlan.wesen.length >= JW_WESEN_MAX) {
+    toast('🎨 Mehr als ' + JW_WESEN_MAX + ' Wesen passen nicht hinein – wirf erst ' +
+          'eins weg (🗑️), dann geht es wieder!', 5000);
+    blip(250, 0.12); return;
+  } else weltPlan.wesen.push(d);
+  for (const k in jwWesenTex) { gl.deleteTexture(jwWesenTex[k]); delete jwWesenTex[k]; }
+  for (let j = animals.length-1; j >= 0; j--)
+    if (animals[j].type === 'wesen') animals.splice(j, 1);
+  document.getElementById('wesenBox').style.display = 'none';
+  jwWesenListe();
+  clearTimeout(saveTimer); saveGame();
+  const kannTxt = jwKannLesen(kann).txt;
+  toast('🎨🎉 „' + d.name + '" lebt jetzt in deiner Welt!' +
+        (kannTxt.length ? ' Es kann: ' + kannTxt.join(', ') + '.' : ' Es steht einfach herum.') +
+        ' Es ist ' + (g ? g.txt : 'normal groß') + ', und es gibt ' +
+        (an ? an.txt : '2 Stück') + ' davon.', 8000);
+  for (const f of [523, 659, 784, 1047]) blip(f, 0.09);
+}
+document.getElementById('weltWesenNeu').addEventListener('click', () => wesenOeffnen());
+document.getElementById('wesenFertig').addEventListener('click', wesenSichern);
+document.getElementById('wesenKann').addEventListener('input', wesenKannZeigen);
+document.getElementById('wesenGross').addEventListener('input', wesenMassZeigen);
+document.getElementById('wesenAnzahl').addEventListener('input', wesenMassZeigen);
+document.getElementById('weltWunsch').addEventListener('input', weltWunschPruefen);
+document.getElementById('wesenLeer').addEventListener('click', () => {
+  wesenDaten = '0'.repeat(PN*PN).split(''); wesenMalen(); blip(300, 0.07); });
+document.getElementById('wesenZu').addEventListener('click', () => {
+  document.getElementById('wesenBox').style.display = 'none'; blip(300, 0.06); });
 const weltBtnEl = document.getElementById('weltBtn');
 weltBtnEl.addEventListener('touchstart', e => { e.preventDefault(); weltWahlZeigen(); }, {passive:false});
 weltBtnEl.addEventListener('mousedown',  e => { e.preventDefault(); weltWahlZeigen(); });
