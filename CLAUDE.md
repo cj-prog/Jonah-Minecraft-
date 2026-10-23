@@ -25,7 +25,11 @@ Dieses Repo wird von einem Session-Manager geführt. Chef ist Jonah.
 - Jede neue Version: `GAME_VERSION` in `index.html` um **+1** erhöhen.
 - Commit-Nachrichten auf Deutsch, Format: `vNNN: Kurzer Satz, was neu ist`, darunter eine
   Erklärung (was Jonah wollte/gemeldet hat, was geändert wurde, wie getestet wurde).
-- Neue Funktionen kurz und kindgerecht in der `README.md` unter „Was das Spiel kann" ergänzen.
+- Neue Funktionen als deutschen Stichpunkt oben in die Liste „Was das Spiel kann" der
+  `README.md` setzen.
+- Die ganze Arbeitsweise je Wunsch (Test, Screenshots, Version, Antwort an Jonah,
+  Deploy-Prüfung) steht in `SESSION-MANAGER.md` unter „Sonderregeln".
+- Keine persönlichen Daten ins Repo (kein Nachname, kein Alter, keine E-Mail) – es ist öffentlich.
 - Texte im Spiel: Deutsch, kindgerecht, gern mit Emojis.
 - Testen mit Playwright/Chromium (vorinstalliert). Test-Skripte gehören ins Scratchpad, nicht
   ins Repository. Screenshots anschauen, bevor gepusht wird.

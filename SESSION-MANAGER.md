@@ -62,4 +62,20 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
 - Session 1 („1 Jonahcraft") darf weiter direkt auf dem Hauptzweig arbeiten, solange nur sie an
   JonahCraft baut (Entscheidung 23.10-2). Sobald eine zweite Session am Spiel baut, gilt für
   alle wieder: eigener Branch, Merge nach Jonahs OK.
-- Weitere Regeln: kommen von Session 1 („1 Jonahcraft"), angefragt am 23.10.
+- Arbeitsweise von Session 1 bei JonahCraft (am 23.10. aus ihrem Verlauf übernommen, gilt für
+  jede Session, die am Spiel baut):
+  1. Antworten an Jonah: Deutsch, kurz, kindgerecht, begeistert, mit Emojis, Jonah mit „du"
+     ansprechen.
+  2. Je Wunsch: in `index.html` umsetzen (Texte und Code-Kommentare auf Deutsch).
+  3. Einen Playwright-Test im Scratchpad schreiben, der die Funktion wirklich ausprobiert.
+  4. Screenshots machen und selbst anschauen – seltsame Testergebnisse oder Bilder sind fast
+     immer echte Fehler, ihnen nachgehen.
+  5. Version auf dem Startbildschirm **und** `GAME_VERSION` erhöhen.
+  6. Einen deutschen Stichpunkt oben in die Liste „Was das Spiel kann" der `README.md` setzen.
+  7. Committen und pushen, keine Pull Requests (Session 1: direkt auf den Hauptzweig, 23.10-2).
+  8. Jonah die Screenshots schicken; die Antwort endet mit
+     „Lade die Seite neu — Version N muss dastehen!"
+  9. Nach ca. 10 Minuten still prüfen, ob GitHub Pages die Version veröffentlicht hat; bei
+     Erfolg nur eine kurze Zeile.
+- Keine persönlichen Daten in Repo, Commits oder README: kein Nachname, kein Alter, keine
+  E-Mail-Adresse, keine Adresse oder Schule (Repo und Spiel-Seite sind öffentlich).
