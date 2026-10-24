@@ -1620,7 +1620,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 288 &middot; 🌈🔝 JETZT FINDEST DU DEN REGENBOGEN-KNOPF! Jonah hat gemeldet: „Den Knopf zum Welten-Wechseln habe ich gar nicht." Stimmte – auf einem hochkant gehaltenen Handy lagen die letzten sechs Knöpfe oben (🔧 👕 🎈 🎥 🌈 ↪️) einfach außerhalb vom Bild. Jetzt rutschen die Knöpfe automatisch in eine zweite Zeile, wenn sie nicht nebeneinander passen – und werden ein bisschen kleiner, wenn es eng wird. Beim ersten Mal blinkt der 🌈-Knopf extra, damit du ihn gleich siehst. Dazu alles aus Version 287: der Wunsch-Zettel („Ich möchte Türme aus Gold im Norden"), und bei deinen gemalten Wesen „wie groß" und „wie viele".</p>
+    Version 289 &middot; 🔔🤵 IN JEDEM ZIMMER EINE DIENER-GLOCKE! In deiner Riesen-Festung und in deiner Riesenburg hängt jetzt in JEDEM Zimmer eine goldene Glocke. Tipp sie an – sie bimmelt, und genau EIN Diener macht sich sofort auf den Weg zu dir (nicht alle auf einmal!). Er sagt „Sie haben geläutet, König Jonah?" und wartet dann bei dir auf deinen Auftrag. Läutest du nochmal, während er schon unterwegs ist, kommt kein zweiter – er sagt dir nur, dass er gleich da ist. Dazu aus Version 288: die Knopf-Reihe oben rutscht in eine zweite Zeile, wenn sie nicht nebeneinander passt.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1666,7 +1666,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 288;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 289;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1843,7 +1843,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       BUCH=130,                         // 📖 ein einzelnes Buch zum Hinstellen
       BUCHREGAL_OBEN=131,               // 📚 der obere Teil des Bücherregals
       BUCHREGAL_V=132,                  // 📚 dasselbe Regal, aber voller Bücher
-      BUCHREGAL_OBEN_V=133;             // 📚 (unten und oben)
+      BUCHREGAL_OBEN_V=133,             // 📚 (unten und oben)
+      GLOCKE=134;                       // 🔔 die Diener-Glocke in jedem Burgzimmer
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
 const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
@@ -2225,6 +2226,18 @@ const BLOCKS = {
     [0.2,0.55,0.42, 0.3,0.8,0.58, 30, 1.4],             // Henkel links
     [0.7,0.55,0.42, 0.8,0.8,0.58, 30, 1.4],             // Henkel rechts
     [0.34,0.85,0.34, 0.66,0.93,0.66, 27, 1.6]] },       // Funkel-Krone oben
+  // 🔔 DIE DIENER-GLOCKE: In jedem Zimmer von Jonahs Festung und seiner
+  // Riesenburg hängt eine goldene Glocke an einem Gestell. Einmal antippen -
+  // sie bimmelt, und GENAU EIN Diener macht sich auf den Weg zu ihm.
+  [GLOCKE]: { name:'Diener-Glocke 🔔 (antippen = ein Diener kommt!)',
+    tiles:[115,115,115], solid:false, model:[
+    [0.06,0.00,0.40, 0.20,0.92,0.60, 5],                // linker Pfosten
+    [0.80,0.00,0.40, 0.94,0.92,0.60, 5],                // rechter Pfosten
+    [0.06,0.92,0.42, 0.94,1.00,0.58, 5],                // Querbalken oben
+    [0.46,0.84,0.46, 0.54,0.92,0.54, 55],               // die Öse
+    [0.28,0.42,0.28, 0.72,0.84,0.72, 115, 1.5],         // die goldene Glocke
+    [0.22,0.34,0.22, 0.78,0.46,0.78, 115, 1.4],         // ihr breiter Rand
+    [0.45,0.26,0.45, 0.55,0.36,0.55, 55]] },            // der Klöppel
   // 🚩 DIE FAHNE aus der Halle: antippen und mitnehmen!
   [FAHNE]: { name:'Fahne 🚩 (antippen = mitnehmen!)', tiles:[25,25,25], solid:false, model:[
     [0.44,0,0.44, 0.56,1.0,0.56, 3, 0.9],               // der Mast
@@ -5629,6 +5642,13 @@ function genChunkData(cx, cz, ohneEdits) {
         schild(12,-11,NO);  schild(14,-11,NM);    // Nord-Ost-Tür
         schild(-14,14,SM);  schild(-12,14,SW);    // Süd-West-Tür
         schild(12,14,SO);   schild(14,14,SM);     // Süd-Ost-Tür
+
+        // 🔔 UND IN JEDEM ZIMMER EINE DIENER-GLOCKE - gleich neben der Tür
+        // zum Flur. Jonahs Wunsch: antippen, es bimmelt, und ein Diener kommt.
+        // (Im Südost-Zimmer hängt sie hinten an der Wand: davor ist ab der
+        // 2. Etage der offene Schacht der Garagen-Halle mit seinem Geländer.)
+        for (const [gx3, gz3] of [[-19,-5],[-2,-5],[16,-5],[-19,5],[-2,5],[16,21]])
+          P(gx3, f0, gz3, GLOCKE);
       });
       // 6) Treppen aus Schutz-Stufen: Etage 2 (West), Etage 3 (Ost), DACH (West)
       for (const dx of [-26,-25,-24]) for (const dz of [-2,-1]) P(dx,by+5,dz,AIR);   // Deckenloch West
@@ -14418,6 +14438,24 @@ function butlerTick(a, dt) {
     if (a.onGround) { a.vy = 5.2; if (Math.random()<0.4) blip(400+Math.random()*400,0.05); }
     return;
   }
+  if (a.befehl === 'hierher') {         // 🔔 geläutet (oder gerufen): er kommt
+    if (a.glocke > 0) a.glocke -= dt;
+    if (dp > 2.4) {
+      a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
+      a.walking = true; a.spd = 3.6; a.t = 9;
+      // Hängt er irgendwo fest und ist weit weg? Dann nimmt er die Abkürzung.
+      if (a.glocke > 0 && a.glocke < 18 && dp > 24) {
+        a.x = player.x + (Math.random()*4 - 2);
+        a.z = player.z + (Math.random()*4 - 2);
+        a.y = player.y + 1; a.vy = 0;
+      }
+    } else {
+      a.befehl = 'warten'; a.walking = false; a.glocke = 0; a.warteX = undefined;
+      sagen(a, 'Sie haben geläutet, König Jonah? Was darf ich tun? 🤵', 4);
+      blip(700, 0.07); blip(880, 0.08);
+    }
+    return;
+  }
   if (a.befehl==='folgen') {
     a.t = 9; a.spd = 0;
     if (dp > 28) {                      // abgehängt? Er nimmt die Abkürzung
@@ -14705,6 +14743,60 @@ function personHolen(a, p) {
   sagen(best, 'Ich komme sofort, König Jonah! 👉', 4);
   blip(700, 0.07); blip(880, 0.08);
   return best;
+}
+// ============== 🔔 DIE DIENER-GLOCKE IN JEDEM ZIMMER ===================
+// Jonahs Wunsch: "Ich möchte in meinen Burgen in jedem Zimmer so eine
+// Glocke haben. Wenn ich die Glocke antippe, dann bimmelt sie - und dann
+// kommt automatisch ein Butler. Aber nur EIN Butler, nicht alle auf einmal."
+const GLOCKE_NAMEN = ['Diener Alfred', 'Diener Sebastian', 'Dienerin Emma',
+                      'Diener Vincent', 'Dienerin Charlotte'];
+function glockeBimmeln() {              // bim - bam - bim
+  blip(1320, 0.13);
+  setTimeout(() => blip(990, 0.12), 230);
+  setTimeout(() => blip(1320, 0.09), 470);
+}
+function glockeDienerSuchen() {         // der nächste Diener in dieser Welt
+  let best = null, bd = 1e9;
+  for (const a of animals) {
+    if (a.type !== 'butler' || a.fremd) continue;
+    const d = Math.hypot(a.x - player.x, a.z - player.z);
+    if (d < bd) { bd = d; best = a; }
+  }
+  return best ? { a: best, d: bd } : null;
+}
+function glockeNeuerDiener() {          // gar keiner da? Dann kommt einer angelaufen
+  const a = { type: 'butler', friend: 3,
+    name: GLOCKE_NAMEN[Math.floor(Math.random() * GLOCKE_NAMEN.length)],
+    x: player.x + (Math.random()*4 - 2), y: player.y + 1,
+    z: player.z + (Math.random()*4 - 2),
+    yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:5,
+    walking:false, t:2, ph:0, onGround:false };
+  animals.push(a);
+  return a;
+}
+function glockeLaeuten() {
+  glockeBimmeln();
+  // 🤵 Ist schon einer unterwegs? Dann kommt KEIN zweiter dazu.
+  const schon = animals.find(a => a.type === 'butler' && a.glocke > 0);
+  if (schon) {
+    sagen(schon, 'Ich bin schon unterwegs zu Ihnen, König Jonah! 🏃', 3);
+    toast('🔔 Bim-bam! ' + (schon.name || 'Dein Diener') +
+          ' ist schon unterwegs zu dir! 🤵', 3400);
+    return schon;
+  }
+  const naechster = glockeDienerSuchen();
+  const a = naechster ? naechster.a : glockeNeuerDiener();
+  a.befehl = 'hierher'; a.warteX = undefined; a.glocke = 30;
+  a.ziel = null; a.flug = false; a.pause = false; a.tanzT = 0;
+  a.job = null; a.bauPlan = null;
+  if (naechster && naechster.d > 40) {  // ganz weit weg? Dann ist er schon fast da
+    a.x = player.x + (Math.random()*6 - 3);
+    a.z = player.z + (Math.random()*6 - 3);
+    a.y = player.y + 1; a.vy = 0;
+  }
+  sagen(a, 'Sie haben geläutet? Ich komme sofort! 🤵', 4);
+  toast('🔔 Bim-bam! ' + (a.name || 'Ein Diener') + ' kommt zu dir! 🤵', 3400);
+  return a;
 }
 function personAuftrag(a, text) {
   if (!text) return;
@@ -18663,6 +18755,8 @@ function riesenBlock(dx, dz, y) {
     if (aufEtage >= 1 && aufEtage < RB_ETAGE) {
       const z = rbZimmerNr(dx, dz), ox = dx - z.mx, oz = dz - z.mz;
       if (aufEtage === 1 && ox === 0 && oz === 6) return SIGN;   // 🪧 Schild mit dem Namen
+      // 🔔 die Diener-Glocke - in JEDEM Zimmer, gleich neben dem Schild
+      if (aufEtage === 1 && ox === 3 && oz === 6) return GLOCKE;
       // 🪧 und vor jeder Tür ein Schild: was ist nebenan?
       if (aufEtage === 1 && rbTuerSchild(dx, dz) !== null) return SIGN;
       if (et === RB_ETAGEN - 1 && z.nr === 4) {                  // 👑 der Thronsaal
@@ -24615,6 +24709,7 @@ const MAP_BLOCK_COL = {
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
+  [GLOCKE]:'#f0c83c',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -27781,6 +27876,10 @@ function doPlace(dir) {
   }
   if (hit.block===FAHNE) {                // 🚩 die Fahne aus der Halle mitnehmen!
     halleFahneNehmen(hit.x, hit.y, hit.z);
+    return;
+  }
+  if (hit.block===GLOCKE) {               // 🔔 die Diener-Glocke läuten
+    glockeLaeuten();
     return;
   }
   if (hit.block===HOLOKNOPF) {            // 🔴 der Startknopf an der Hallenwand
