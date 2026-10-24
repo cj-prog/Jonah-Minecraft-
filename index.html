@@ -382,14 +382,27 @@
   .jwChip { font-size:13px; padding:7px 11px; border-radius:11px; cursor:pointer;
     background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.2); color:#fff; }
   .jwChip.sel { background:rgba(120,220,140,.45); border-color:#8fe6a0; font-weight:bold; }
+  /* 🟢 Der FERTIG-Knopf klebt unten fest - so sieht Jonah IMMER, wo er
+     bestätigt, auch wenn er mitten in der langen Liste ist. */
   #weltFertigBtn { font-size:17px; font-weight:bold; padding:12px; border-radius:12px;
-    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer;
+    position:sticky; bottom:0; z-index:2; box-shadow:0 -6px 14px rgba(10,14,30,.95); }
   #weltAbbruch { font-size:14px; padding:8px; border-radius:10px; border:none;
     background:#5a6a80; color:#fff; cursor:pointer; }
   /* ✍️ Zu jeder Frage darf Jonah auch selber hinschreiben, wie er es will */
+  .jwTextZeile { display:flex; gap:6px; align-items:stretch; }
   .jwText { font-size:12.5px; padding:6px 9px; border-radius:9px; color:#fff;
-    border:2px solid rgba(255,255,255,.22); background:rgba(255,255,255,.07); }
+    border:2px solid rgba(255,255,255,.22); background:rgba(255,255,255,.07);
+    flex:1 1 auto; min-width:0; }
   .jwText::placeholder { color:rgba(255,255,255,.45); }
+  /* ✔ der Übernehmen-Knopf neben jedem Schreibfeld */
+  .jwOk { flex:none; font-size:14px; font-weight:bold; padding:6px 12px; border-radius:9px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+  .jwVerstanden.frisch { animation:jwFrisch 1.4s ease-out; }
+  @keyframes jwFrisch {
+    0%   { background:rgba(120,220,140,.55); transform:scale(1.04); }
+    100% { background:transparent; transform:scale(1); }
+  }
   .jwVerstanden { font-size:11px; color:#9fe8b0; min-height:13px; }
   .jwVerstanden.nix { color:#ffbe8a; }
   /* 🎨 Die gemalten Wesen */
@@ -1173,8 +1186,11 @@
   <input id="weltNameInput" maxlength="24" placeholder="Wie soll deine Welt heißen?">
   <div class="jwFrage" id="weltWunschFrage">
     <b>✍️ Was soll es in deiner Welt geben? Schreib es einfach hin!</b>
-    <input id="weltWunsch" class="jwText" maxlength="90"
+    <div class="jwTextZeile">
+      <input id="weltWunsch" class="jwText" maxlength="200"
            placeholder="z. B. „Ich möchte Türme aus Gold im Norden"">
+      <button id="weltWunschOk" class="jwOk">✔</button>
+    </div>
     <div id="weltWunschTxt" class="jwVerstanden"></div>
   </div>
   <div id="weltFragen"></div>
@@ -1634,7 +1650,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 290 &middot; 🌈🔁 DER 🌈-KNOPF IST JETZT ÜBERALL DA! Jonah hat gemeldet, dass er den Knopf immer noch nicht sieht – und ich habe den Grund gefunden: In der Riesenburg, auf dem Mond und in allen anderen Welten war er absichtlich versteckt. Jetzt steht er IMMER oben im Bild, und du kommst von überall nach Hause oder in deine eigene Welt. Außerdem: Dein Handy hat nach einem Update manchmal noch die alte Version aus seinem Speicher geholt. Jetzt wird die Seite immer frisch geholt – und wenn eine neue Version da ist, kommt unten ein grüner Knopf „🔁 Jetzt holen!". Dazu aus Version 289: in jedem Zimmer deiner Burgen hängt eine 🔔 Diener-Glocke.</p>
+    Version 291 &middot; 🥞✔ BODEN AUS MEHREREN SCHICHTEN – UND EIN ✔-KNOPF! Jonah wollte beim Boden hinschreiben: „Die erste Schicht soll aus Gold sein, die zweite aus Sand, die dritte aus Schnee, die vierte aus Gras." Genau das geht jetzt – die erste Schicht ist die oberste, auf der du läufst. Außerdem: Neben jedem Schreibfeld steht jetzt ein grüner ✔-Knopf. Tipp ihn an (oder drück Enter) – dann steht groß da, was angekommen ist, und die Tastatur geht zu. In die Felder passen jetzt viel längere Sätze (200 statt 70 Buchstaben!), und der große FERTIG-Knopf klebt immer unten am Rand, damit du ihn nie suchen musst.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1680,7 +1696,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 290;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 291;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3400,6 +3416,52 @@ function jwFinde(liste, t) {
     if (t.includes(w) && w.length > bl) { bl = w.length; best = e; }
   return best;
 }
+// 🥞 „DIE ERSTE SCHICHT AUS GOLD, DIE ZWEITE AUS SAND ..."
+// Jonahs Wunsch beim Boden-Feld. Die ERSTE Schicht ist die oberste (die, auf
+// der er läuft), darunter kommen der Reihe nach die anderen.
+const JW_ORDNUNG = [
+  ['oberst', 1], ['erst', 1], ['zweit', 2], ['dritt', 3], ['viert', 4], ['fünft', 5],
+  ['fuenft', 5], ['sechst', 6], ['siebent', 7], ['siebt', 7], ['acht', 8], ['neunt', 9],
+  ['zehnt', 10],
+];
+const JW_SCHICHT_RE =
+  /(oberste|unterste|erste|zweite|dritte|vierte|fünfte|fuenfte|sechste|siebente|siebte|achte|neunte|zehnte|\d+)[a-zäöüß]*\.?\s*(?:dicke\s+|dünne\s+|duenne\s+)?(schicht|lage|ebene)/g;
+function jwSchichtenLesen(t) {
+  if (!/schicht|lage|ebene/.test(t)) return null;
+  JW_SCHICHT_RE.lastIndex = 0;
+  const treffer = [];
+  let m;
+  while ((m = JW_SCHICHT_RE.exec(t)) !== null) {
+    const wort = m[1];
+    let nr = null;
+    if (/^\d+$/.test(wort)) nr = +wort;
+    else if (wort.startsWith('unterst')) nr = -1;          // „die unterste" = die letzte
+    else for (const [stamm, n] of JW_ORDNUNG)
+      if (wort.startsWith(stamm)) { nr = n; break; }
+    if (nr !== null) treffer.push({ nr, i: m.index });
+  }
+  if (!treffer.length) return null;
+  const schichten = [];
+  treffer.forEach((tr, k) => {
+    const bis = k + 1 < treffer.length ? treffer[k + 1].i : t.length;
+    const stoff = jwFinde(JW_STOFFE, t.slice(tr.i, bis));
+    if (!stoff) return;
+    const nr = tr.nr === -1 ? treffer.length : tr.nr;      // „unterste" = die letzte
+    if (nr >= 1 && nr <= 10) schichten[nr - 1] = stoff.b;
+  });
+  const wieviele = schichten.filter(x => x != null).length;
+  if (!wieviele) return null;
+  // Lücken (z. B. nur „dritte Schicht aus Gold") bleiben leer - dort bleibt
+  // der normale Boden stehen.
+  for (let i = 0; i < schichten.length; i++) if (schichten[i] === undefined) schichten[i] = null;
+  return schichten;
+}
+function jwSchichtenText(schichten) {
+  const namen = {};
+  for (const st of JW_STOFFE) if (!(st.b in namen)) namen[st.b] = st.t.replace('aus ', '');
+  return schichten.map((b, i) => b == null ? null :
+    (i + 1) + '. Schicht ' + (namen[b] || '?')).filter(x => x).join(' · ');
+}
 function jwTextLesen(text) {
   const t = (text || '').toLowerCase();
   if (!t.trim()) return null;
@@ -3407,14 +3469,18 @@ function jwTextLesen(text) {
   const menge = jwFinde(JW_MENGEN, t), hoch = jwFinde(JW_HOEHEN, t);
   const tiere = JW_TIERE.filter(x => t.includes(x.txt.split(' ')[1].toLowerCase().slice(0, 5)));
   const bauten = JW_BAUTEN.filter(x => x.w.some(w => t.includes(w)));
-  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length) return { leer:true };
+  const schichten = jwSchichtenLesen(t);          // 🥞 „erste Schicht aus Gold ..."
+  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length && !schichten)
+    return { leer:true };
   return {
     block: stoff ? stoff.b : null, ort: ort ? ort.o : null,
     menge: menge ? menge.m : null,  hoch: hoch ? hoch.h : null,
     tiere: tiere.map(x => x.id),
     bauten: bauten.map(x => x.art),
-    txt: [bauten.length ? bauten.map(x => x.t).join(', ') : null,
-          stoff && stoff.t, ort && ort.t, menge && menge.t, hoch && hoch.t,
+    schichten,
+    txt: [schichten ? jwSchichtenText(schichten) : null,
+          bauten.length ? bauten.map(x => x.t).join(', ') : null,
+          schichten ? null : (stoff && stoff.t), ort && ort.t, menge && menge.t, hoch && hoch.t,
           tiere.length ? tiere.map(x => x.txt).join(', ') : null].filter(x => x).join(' · '),
   };
 }
@@ -4506,9 +4572,18 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
       // 🌈 Ein bunter Boden: die obersten Schichten werden gestreift
       if (B.bunt) for (let y=h-3; y<=h; y++)
         setz(lx, y, lz, [WOOL, BRICK, GLASS, SAND][((y%4)+4)%4]);
-      // ✍️ „der Boden aus Gold im Norden"
-      if (RB && RB.block !== null && jwInZone(RB.ort, wx, wz, h))
-        for (let y=h-2; y<=h; y++) setz(lx, y, lz, RB.block);
+      // ✍️ „der Boden aus Gold im Norden" - und 🥞 „erste Schicht aus Gold,
+      // zweite Schicht aus Sand, dritte aus Schnee, vierte aus Gras"
+      if (RB && jwInZone(RB.ort, wx, wz, h)) {
+        // ❄️ Schnee ist eigentlich nur eine dünne Auflage - IM Boden nehmen wir
+        // dafür weiße Wolle, sonst wäre die Schicht voller Löcher.
+        const fest = (bl) => bl === SNOW ? WOOL : bl;
+        if (RB.schichten) {
+          for (let i = 0; i < RB.schichten.length; i++)
+            if (RB.schichten[i] != null) setz(lx, h - i, lz, fest(RB.schichten[i]));
+        } else if (RB.block !== null)
+          for (let y=h-2; y<=h; y++) setz(lx, y, lz, fest(RB.block));
+      }
       // 💧 WASSER: alles unter dem Wasserspiegel läuft voll
       // ✍️ „Wasser nur im Süden" - dann steht es auch nur dort
       if (RW && RW.ort && !jwInZone(RW.ort, wx, wz, h)) see = null;
@@ -6698,7 +6773,7 @@ function loadGame() {
       // ✍️ seine eigenen Sätze zu jeder Frage
       const txt = {};
       if (p.text && typeof p.text === 'object')
-        for (const k in p.text) if (typeof p.text[k] === 'string') txt[k] = p.text[k].slice(0, 70);
+        for (const k in p.text) if (typeof p.text[k] === 'string') txt[k] = p.text[k].slice(0, 200);
       p.text = txt;
       // 🎨 und seine gemalten Wesen
       p.wesen = (Array.isArray(p.wesen) ? p.wesen : [])
@@ -29693,7 +29768,7 @@ filmLaden();                            // 🎥 die Filme von früher wieder ein
 // einstellt, wie seine Welt aussehen soll.
 const JW_FRAGEN = [
   { key:'boden',    titel:'🪨 Woraus ist der Boden?',      opt:JW_BODEN,
-    platz:'✍️ oder schreib selber: „aus Gold im Norden"' },
+    platz:'✍️ z. B. „aus Gold im Norden" oder „erste Schicht aus Gold, zweite aus Sand"' },
   { key:'gelaende', titel:'🏞️ Wie soll das Land sein?',     opt:JW_GELAENDE,
     platz:'✍️ oder schreib selber: „ganz hohe Berge im Osten"' },
   { key:'wasser',   titel:'💧 Wie viel Wasser?',           opt:JW_WASSER,
@@ -29877,29 +29952,51 @@ function weltFragenZeichnen() {
   // ✍️ Unter jeder Frage darf Jonah auch selber hinschreiben, wie er es will
   const textFeld = (key, platzhalter) => {
     const d = w.lastElementChild;       // die gerade gebaute Frage
+    const zeile2 = document.createElement('div');
+    zeile2.className = 'jwTextZeile';
     const inp = document.createElement('input');
-    inp.className = 'jwText'; inp.maxLength = 70;
+    inp.className = 'jwText'; inp.maxLength = 200;   // 📏 Platz für lange Sätze!
     inp.placeholder = platzhalter;
     inp.value = (weltPlan.text || {})[key] || '';
+    const okBtn = document.createElement('button');  // ✔ zum Bestätigen
+    okBtn.className = 'jwOk'; okBtn.textContent = '✔';
+    okBtn.title = 'Übernehmen';
     const sagt = document.createElement('div');
     sagt.className = 'jwVerstanden';
     const pruefe = () => {
       if (!weltPlan.text) weltPlan.text = {};
       weltPlan.text[key] = inp.value;
       const r = jwTextLesen(inp.value);
-      if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; }
-      else if (r.leer || !r.txt) {
-        sagt.textContent = '❓ Das habe ich nicht verstanden – probier z. B. ' +
-                           '„aus Gold im Norden" oder „ganz viele".';
+      if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; return null; }
+      if (r.leer || !r.txt) {
+        sagt.textContent = '❓ Das habe ich nicht verstanden – probier zum Beispiel ' +
+                           '„aus Gold im Norden", „ganz viele" oder ' +
+                           '„erste Schicht aus Gold, zweite Schicht aus Sand".';
         sagt.className = 'jwVerstanden nix';
-      } else {
-        sagt.textContent = '✅ Verstanden: ' + r.txt;
-        sagt.className = 'jwVerstanden';
+        return null;
+      }
+      sagt.textContent = '✅ Verstanden: ' + r.txt;
+      sagt.className = 'jwVerstanden';
+      return r;
+    };
+    // ✔ ANTIPPEN ODER ENTER: Tastatur zu - und es steht groß da, was angekommen
+    // ist. (Jonah: "Ich kann es ja nirgendwo bestätigen.")
+    const bestaetige = () => {
+      const r = pruefe();
+      inp.blur();
+      sagt.classList.remove('frisch'); void sagt.offsetWidth; sagt.classList.add('frisch');
+      if (r) { toast('✅ Übernommen: ' + r.txt, 4000); blip(760, 0.06); blip(980, 0.07); }
+      else if (inp.value.trim()) {
+        toast('❓ Das habe ich nicht verstanden: „' + inp.value + '"', 4000); blip(250, 0.08);
       }
     };
     inp.addEventListener('input', pruefe);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); bestaetige(); } });
+    okBtn.addEventListener('click', bestaetige);
     pruefe();
-    d.appendChild(inp); d.appendChild(sagt);
+    zeile2.appendChild(inp); zeile2.appendChild(okBtn);
+    d.appendChild(zeile2); d.appendChild(sagt);
   };
   for (const f of JW_FRAGEN) {
     const c = zeile(f.titel);
@@ -30124,6 +30221,20 @@ document.getElementById('wesenKann').addEventListener('input', wesenKannZeigen);
 document.getElementById('wesenGross').addEventListener('input', wesenMassZeigen);
 document.getElementById('wesenAnzahl').addEventListener('input', wesenMassZeigen);
 document.getElementById('weltWunsch').addEventListener('input', weltWunschPruefen);
+// ✔ Auch der Wunsch-Zettel wird richtig bestätigt
+function weltWunschOk() {
+  const inp = document.getElementById('weltWunsch'), sagt = document.getElementById('weltWunschTxt');
+  weltWunschPruefen();
+  inp.blur();
+  sagt.classList.remove('frisch'); void sagt.offsetWidth; sagt.classList.add('frisch');
+  const r = jwTextLesen(inp.value);
+  if (r && !r.leer && r.txt) { toast('✅ Übernommen: ' + r.txt, 4000); blip(760,0.06); blip(980,0.07); }
+  else if (inp.value.trim()) { toast('❓ Das habe ich nicht verstanden: „' + inp.value + '"', 4000);
+                               blip(250, 0.08); }
+}
+document.getElementById('weltWunschOk').addEventListener('click', weltWunschOk);
+document.getElementById('weltWunsch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); weltWunschOk(); } });
 document.getElementById('wesenLeer').addEventListener('click', () => {
   wesenDaten = '0'.repeat(PN*PN).split(''); wesenMalen(); blip(300, 0.07); });
 document.getElementById('wesenZu').addEventListener('click', () => {
