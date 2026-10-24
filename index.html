@@ -328,6 +328,17 @@
   #weltBtn { right:calc(612px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top));
     width:40px; height:40px; font-size:20px; }
   #weltBtn.on { background:rgba(255,205,90,.55); }
+  /* 🌈 der Wegweiser zum Knopf: eine kleine Sprechblase direkt darunter */
+  #weltTipp { display:none; z-index:50; max-width:min(62vw,250px); font-size:14px;
+    font-weight:bold; color:#fff; background:rgba(20,16,44,.95); padding:9px 12px;
+    border-radius:14px; border:3px solid #ffd45a; line-height:1.3;
+    box-shadow:0 4px 16px rgba(0,0,0,.45); }
+  /* 🌈 blinkt einmal, damit Jonah den Knopf überhaupt findet */
+  #weltBtn.blink { animation:weltBlink 1s ease-in-out infinite; }
+  @keyframes weltBlink {
+    0%,100% { box-shadow:0 0 0 0 rgba(255,220,90,0); transform:scale(1); }
+    50%     { box-shadow:0 0 0 9px rgba(255,220,90,.55); transform:scale(1.14); }
+  }
   #weltWahl { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; gap:10px; background:rgba(12,10,28,.97); padding:14px;
     border-radius:18px; color:#fff; z-index:60; width:min(94vw,430px);
@@ -1121,6 +1132,7 @@
 </div>
 <div class="hud btn" id="filmBtn" title="Eigenen Film drehen">🎥</div>
 <div class="hud btn" id="weltBtn" title="Zwischen deinen Welten umschalten">🌈</div>
+<div class="hud" id="weltTipp">⬆️ Hier ist dein 🌈-Knopf! Tipp ihn an – dann baust du dir deine ganz eigene Welt!</div>
 <div class="hud" id="weltWahl">
   <h3>🌍 In welche Welt möchtest du?</h3>
   <div id="weltListe"></div>
@@ -1608,7 +1620,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 287 &middot; ✍️🏗️ DER WUNSCH-ZETTEL – UND WIE GROß UND WIE VIELE! Ganz oben im Welten-Baukasten gibt es jetzt ein großes Feld: schreib einfach hin, was es in deiner Welt geben soll – „Ich möchte Türme aus Gold im Norden", „Häuser aus Holz", „Pyramiden", „Statuen", „Pilze", „Seen", „Fackeln", „Blumen", „Schatztruhen". Dann steht es wirklich überall in deiner Welt herum! Und bei deinen gemalten Wesen kannst du jetzt auch hinschreiben, WIE GROß sie sein sollen („3 Blöcke", „riesig", „winzig") und WIE VIELE es davon geben soll („5", „ganz viele", „nur eins"). Dazu können sie jetzt noch mehr: zaubern 🪄, Blumen pflanzen 🌸, reden 💬, schlafen 😴 und unsichtbar werden 👻!</p>
+    Version 288 &middot; 🌈🔝 JETZT FINDEST DU DEN REGENBOGEN-KNOPF! Jonah hat gemeldet: „Den Knopf zum Welten-Wechseln habe ich gar nicht." Stimmte – auf einem hochkant gehaltenen Handy lagen die letzten sechs Knöpfe oben (🔧 👕 🎈 🎥 🌈 ↪️) einfach außerhalb vom Bild. Jetzt rutschen die Knöpfe automatisch in eine zweite Zeile, wenn sie nicht nebeneinander passen – und werden ein bisschen kleiner, wenn es eng wird. Beim ersten Mal blinkt der 🌈-Knopf extra, damit du ihn gleich siehst. Dazu alles aus Version 287: der Wunsch-Zettel („Ich möchte Türme aus Gold im Norden"), und bei deinen gemalten Wesen „wie groß" und „wie viele".</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1654,7 +1666,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 287;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 288;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -11841,6 +11853,7 @@ function updateFoodHUD() {
     el.textContent='💶 '+euroText(money); el.style.display = money>0 ? 'flex':'none'; }
   { const el=document.getElementById('foodAn');     // 👨‍🚀 der Anzug ist an
     if (el) { el.textContent='👨‍🚀 AN'; el.style.display = hatAnzug ? 'flex' : 'none'; } }
+  try { kopfKnoepfePruefen(); } catch(e) {}   // 🔝 Knöpfe nachrücken lassen
 }
 function eatFood(kind) {
   if (kind==='c' && carrots>0) {
@@ -28928,7 +28941,11 @@ function frame(now) {
   try { speicherTick(dt); } catch(e) {}  // 💰 wächst gerade der Goldberg im Speicher?
   chipBtnEl.style.display = roboGebaut ? 'flex' : 'none';   // 💾 Chip-Knopf
   // 🌈 Der Welten-Knopf steht nur in der normalen und in Jonahs eigener Welt
-  weltBtnEl.style.display = (weltDim === 0 || weltDim === JW_DIM) ? 'flex' : 'none';
+  const weltBtnDa = (weltDim === 0 || weltDim === JW_DIM) ? 'flex' : 'none';
+  if (weltBtnEl.style.display !== weltBtnDa) {
+    weltBtnEl.style.display = weltBtnDa;
+    kopfKnoepfeOrdnen();                // ... und die Knopf-Reihe neu ordnen
+  }
   weltBtnEl.classList.toggle('on', weltDim === JW_DIM);
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
@@ -29224,6 +29241,8 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   document.getElementById('start').style.display='none';
   started=true;
   portalKuehl = 3;                      // beim Start nicht sofort ins Portal gesaugt werden
+  kopfKnoepfeOrdnen();                  // 🔝 die Knopf-Reihe passend auf den Bildschirm legen
+  weltTippZeigen();                     // 🌈 zeigt einmal, wo der Welten-Knopf steht
   updateFoodHUD();
   missAnzeige();
   schlachtKnopf();                      // ⚔️ wartet die große Schlacht schon?
@@ -29972,8 +29991,14 @@ document.getElementById('wesenLeer').addEventListener('click', () => {
 document.getElementById('wesenZu').addEventListener('click', () => {
   document.getElementById('wesenBox').style.display = 'none'; blip(300, 0.06); });
 const weltBtnEl = document.getElementById('weltBtn');
-weltBtnEl.addEventListener('touchstart', e => { e.preventDefault(); weltWahlZeigen(); }, {passive:false});
-weltBtnEl.addEventListener('mousedown',  e => { e.preventDefault(); weltWahlZeigen(); });
+weltBtnEl.addEventListener('touchstart', e => { e.preventDefault(); weltBtnTipp(); }, {passive:false});
+weltBtnEl.addEventListener('mousedown',  e => { e.preventDefault(); weltBtnTipp(); });
+function weltBtnTipp() {                // 🌈 angetippt: Auswahl zeigen, Hinweis abhaken
+  weltBtnEl.classList.remove('blink');
+  document.getElementById('weltTipp').style.display = 'none';
+  weltTippFertig();
+  weltWahlZeigen();
+}
 document.getElementById('weltWahlZu').addEventListener('click', () => { weltWahlZu(); blip(300,0.06); });
 document.getElementById('weltFertigBtn').addEventListener('click', weltBauenFertig);
 document.getElementById('weltAbbruch').addEventListener('click', () => {
@@ -29981,6 +30006,89 @@ document.getElementById('weltAbbruch').addEventListener('click', () => {
 document.getElementById('weltNameInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); weltBauenFertig(); } });
 jwPlanAnwenden();
+// ============== 🔝 DIE KNOPF-REIHE GANZ OBEN RECHTS ====================
+// Jonah hat gemeldet: "Den neuen Knopf zum Welten-Wechseln habe ich gar
+// nicht." Stimmte - und zwar nicht nur den: Die Reihe stand mit festen
+// Abständen am rechten Rand und war 652 Punkte breit. Auf einem Handy im
+// Hochformat (390 Punkte breit) lagen die letzten SECHS Knöpfe - 🔧 👕 🎈
+// 🎥 🌈 und ↪️ - einfach außerhalb des Bildes. Jetzt rechnet das Spiel
+// selbst aus, wie viele Knöpfe nebeneinander passen: der Rest kommt in
+// die nächste Zeile darunter, und wenn es eng wird, werden sie etwas
+// kleiner. Was sonst oben links anfängt, rutscht genauso weit nach unten.
+const KOPF_KNOEPFE = ['fsBtn','resetBtn','chatBtn','navBtn','mpBtn','mapBtn','selfieBtn',
+                      'rotBtn','repBtn','lookBtn','schwebBtn','filmBtn','weltBtn'];
+const KOPF_MASSE = [[40,50,''], [36,44,'17px'], [32,39,'15px']];   // Größe, Abstand, Schrift
+// 🥕 Oben links stehen Karotten, Geld und Co. - so breit wie die Anzeige
+// gerade ist, so viel Platz lassen die Knöpfe frei (höchstens die halbe
+// Breite, sonst bliebe für die Knöpfe nichts mehr übrig).
+function kopfFreiLinks() {
+  const fb = document.getElementById('foodBar');
+  const breit = fb ? fb.getBoundingClientRect().width : 0;
+  return Math.min(Math.max(86, breit + 14), innerWidth * 0.45);
+}
+let kopfFreiMerk = -1;
+function kopfKnoepfeOrdnen() {
+  const knoepfe = KOPF_KNOEPFE.map(id => document.getElementById(id))
+                              .filter(e => e && e.style.display !== 'none');
+  if (!knoepfe.length) return;
+  kopfFreiMerk = kopfFreiLinks();
+  const platz = Math.max(140, innerWidth - kopfFreiMerk);
+  let best = null;                      // so wenige Zeilen wie möglich, Knöpfe so groß wie möglich
+  for (const [gr, abst, schrift] of KOPF_MASSE) {
+    const proReihe = Math.max(1, Math.floor((platz - 12 - gr) / abst) + 1);
+    const reihen = Math.ceil(knoepfe.length / proReihe);
+    if (!best || reihen < best.reihen) best = { gr, abst, schrift, proReihe, reihen };
+  }
+  knoepfe.forEach((e, i) => {
+    const reihe = Math.floor(i / best.proReihe), spalte = i % best.proReihe;
+    e.style.right = 'calc(' + (12 + spalte*best.abst) + 'px + env(safe-area-inset-right))';
+    e.style.top   = 'calc(' + (12 + reihe *best.abst) + 'px + env(safe-area-inset-top))';
+    e.style.width = e.style.height = (best.gr === 40 ? '' : best.gr + 'px');
+    e.style.fontSize = best.schrift;
+  });
+  const unten = 12 + (best.reihen-1)*best.abst + best.gr;   // hier hört die Knopf-Reihe auf
+  const schieb = (id, plus) => { const e = document.getElementById(id);
+    if (e) e.style.top = 'calc(' + (unten + plus) + 'px + env(safe-area-inset-top))'; };
+  schieb('missBox', 0);                 // 📜 der Aufgaben-Kasten
+  schieb('superBox', 4);                // 💥 die Super-Anzeige
+  schieb('filmRec', 8);                 // 🔴 das Aufnahme-Lämpchen
+  try { weltTippStellen(); } catch(e) {}     // 🌈 die Sprechblase mitziehen
+}
+// Wird die Anzeige oben links breiter (neues Essen, Geld), rücken die
+// Knöpfe nach - aber nur dann, nicht bei jedem Bild.
+function kopfKnoepfePruefen() {
+  if (Math.abs(kopfFreiLinks() - kopfFreiMerk) > 1) kopfKnoepfeOrdnen();
+}
+addEventListener('resize', kopfKnoepfeOrdnen);
+addEventListener('orientationchange', kopfKnoepfeOrdnen);
+kopfKnoepfeOrdnen();
+// 🌈 Einmal zeigen, wo der Knopf für die eigene Welt steht - solange Jonah
+// ihn noch nie benutzt hat. Danach kommt der Hinweis nie wieder.
+const WELT_TIPP_KEY = 'jonahcraft_tipp_welt';
+function weltTippFertig() { try { localStorage.setItem(WELT_TIPP_KEY, '1'); } catch(e) {} }
+function weltTippZeigen() {
+  let schon = false;
+  try { schon = localStorage.getItem(WELT_TIPP_KEY) === '1'; } catch(e) {}
+  if (schon) return;
+  setTimeout(() => {
+    if (!started || weltDim !== 0) return;
+    weltBtnEl.classList.add('blink');
+    const t = document.getElementById('weltTipp');
+    t.style.display = 'block';
+    weltTippStellen();
+    setTimeout(() => { weltBtnEl.classList.remove('blink'); t.style.display = 'none'; }, 16000);
+  }, 6000);
+}
+// Die Sprechblase hängt immer genau unter dem 🌈-Knopf - auch wenn das
+// Handy gedreht wird und die Knopf-Reihe neu gelegt wird.
+function weltTippStellen() {
+  const t = document.getElementById('weltTipp');
+  if (!t || t.style.display === 'none') return;
+  const k = weltBtnEl.getBoundingClientRect(), b = t.getBoundingClientRect();
+  const links = Math.max(8, Math.min(innerWidth - b.width - 8, k.left + k.width/2 - b.width/2));
+  t.style.left = links + 'px';
+  t.style.top = (k.bottom + 8) + 'px';
+}
 document.getElementById('kannClose').addEventListener('click', ()=>{
   document.getElementById('kannBox').style.display = 'none'; blip(400,0.06);
 });
