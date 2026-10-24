@@ -328,6 +328,14 @@
   #weltBtn { right:calc(612px + env(safe-area-inset-right)); top:calc(12px + env(safe-area-inset-top));
     width:40px; height:40px; font-size:20px; }
   #weltBtn.on { background:rgba(255,205,90,.55); }
+  /* 🆕 der Update-Balken: er steht unten in der Mitte, bis Jonah ihn antippt */
+  #updateBox { display:none; z-index:70; left:50%; transform:translateX(-50%);
+    bottom:calc(120px + env(safe-area-inset-bottom)); align-items:center; gap:10px;
+    background:rgba(20,16,44,.96); border:3px solid #7ee87e; border-radius:16px;
+    padding:9px 12px; color:#fff; font-size:15px; font-weight:bold;
+    box-shadow:0 4px 16px rgba(0,0,0,.45); max-width:94vw; }
+  #updateJetzt { font-size:15px; font-weight:bold; padding:8px 14px; border-radius:10px;
+    border:none; background:#3faa4a; color:#fff; cursor:pointer; flex:none; }
   /* 🌈 der Wegweiser zum Knopf: eine kleine Sprechblase direkt darunter */
   #weltTipp { display:none; z-index:50; max-width:min(62vw,250px); font-size:14px;
     font-weight:bold; color:#fff; background:rgba(20,16,44,.95); padding:9px 12px;
@@ -345,6 +353,8 @@
     max-height:92vh; overflow-y:auto; border:3px solid #7ec8ff; }
   #weltWahl h3 { font-size:19px; margin:0; text-align:center; }
   #weltListe { display:flex; flex-direction:column; gap:9px; }
+  .weltJetzt { font-size:13.5px; font-weight:bold; color:#ffe08a; text-align:center;
+    background:rgba(255,220,120,.14); border-radius:10px; padding:7px 9px; }
   .weltKnopf { display:flex; align-items:center; gap:12px; width:100%;
     background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.06));
     border:3px solid rgba(255,255,255,.28); border-radius:16px; padding:11px;
@@ -1268,6 +1278,10 @@
 <div class="hud" id="joyKnob"></div>
 <div class="hud" id="bubbles"></div>
 <div class="hud" id="jubel"><h1>🎉 VERSION 100! 🎉</h1><p></p></div>
+<div class="hud" id="updateBox">
+  <span id="updateText">🆕 Eine neue Version ist fertig!</span>
+  <button id="updateJetzt">🔁 Jetzt holen!</button>
+</div>
 <div class="hud" id="toast"></div>
 <div class="hud" id="waterFx"></div>
 <div class="hud" id="lavaFx"></div>
@@ -1620,7 +1634,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 289 &middot; 🔔🤵 IN JEDEM ZIMMER EINE DIENER-GLOCKE! In deiner Riesen-Festung und in deiner Riesenburg hängt jetzt in JEDEM Zimmer eine goldene Glocke. Tipp sie an – sie bimmelt, und genau EIN Diener macht sich sofort auf den Weg zu dir (nicht alle auf einmal!). Er sagt „Sie haben geläutet, König Jonah?" und wartet dann bei dir auf deinen Auftrag. Läutest du nochmal, während er schon unterwegs ist, kommt kein zweiter – er sagt dir nur, dass er gleich da ist. Dazu aus Version 288: die Knopf-Reihe oben rutscht in eine zweite Zeile, wenn sie nicht nebeneinander passt.</p>
+    Version 290 &middot; 🌈🔁 DER 🌈-KNOPF IST JETZT ÜBERALL DA! Jonah hat gemeldet, dass er den Knopf immer noch nicht sieht – und ich habe den Grund gefunden: In der Riesenburg, auf dem Mond und in allen anderen Welten war er absichtlich versteckt. Jetzt steht er IMMER oben im Bild, und du kommst von überall nach Hause oder in deine eigene Welt. Außerdem: Dein Handy hat nach einem Update manchmal noch die alte Version aus seinem Speicher geholt. Jetzt wird die Seite immer frisch geholt – und wenn eine neue Version da ist, kommt unten ein grüner Knopf „🔁 Jetzt holen!". Dazu aus Version 289: in jedem Zimmer deiner Burgen hängt eine 🔔 Diener-Glocke.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1666,7 +1680,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 289;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 290;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -29039,12 +29053,10 @@ function frame(now) {
   roboLadeTick(dt);                     // 🔌 lädt der Roboter zu Hause auf?
   try { speicherTick(dt); } catch(e) {}  // 💰 wächst gerade der Goldberg im Speicher?
   chipBtnEl.style.display = roboGebaut ? 'flex' : 'none';   // 💾 Chip-Knopf
-  // 🌈 Der Welten-Knopf steht nur in der normalen und in Jonahs eigener Welt
-  const weltBtnDa = (weltDim === 0 || weltDim === JW_DIM) ? 'flex' : 'none';
-  if (weltBtnEl.style.display !== weltBtnDa) {
-    weltBtnEl.style.display = weltBtnDa;
-    kopfKnoepfeOrdnen();                // ... und die Knopf-Reihe neu ordnen
-  }
+  // 🌈 Der Welten-Knopf steht in JEDER Welt. (Jonah hat gemeldet: "Ich sehe
+  // den Knopf immer noch nicht." Kein Wunder - er war in der Riesenburg, und
+  // dort war der Knopf früher versteckt. Jetzt kommt man von überall nach
+  // Hause und in seine eigene Welt.)
   weltBtnEl.classList.toggle('on', weltDim === JW_DIM);
   try { schlachtTick(dt); } catch(e) {}  // ⚔️ läuft gerade DIE GROSSE SCHLACHT?
   try { raubTick(dt); } catch(e) {}      // 🚐 überfällt gerade eine Bande die Bank?
@@ -29290,30 +29302,46 @@ if ('serviceWorker' in navigator &&
 //  - Direkt nach dem Laden: gibt es online schon eine neuere Version?
 //    Dann einmal automatisch neu laden (frisch vom Server, ohne Cache).
 //  - Danach alle 60 Sekunden nachschauen und Bescheid sagen.
+// 🔁 Neu laden, OHNE dass der Browser die alte Seite aus seinem Speicher
+// holt: dafür hängen wir die Versionsnummer an die Adresse. (Genau daran ist
+// es gescheitert - Jonah hatte nach dem Update immer noch die alte Version.)
+function frischLaden(nr) {
+  const ziel = location.pathname + '?v=' + nr + location.hash;
+  location.replace(ziel);
+}
 if (location.protocol === 'http:' || location.protocol === 'https:') {
   let updateGemeldet = 0;
   const pruefeUpdate = async (sofort) => {
     try {
-      const r = await fetch(location.href, {cache:'no-store'});
+      const r = await fetch(location.pathname + '?frisch=' + Date.now(), {cache:'no-store'});
       if (!r.ok) return;
       const m = (await r.text()).match(/GAME_VERSION = (\d+)/);
       if (!m) return;
       const online = +m[1];
       if (online > GAME_VERSION) {
-        if (sofort && !sessionStorage.getItem('upTry')) {
-          sessionStorage.setItem('upTry', '1');   // nur EIN automatischer Neustart
-          location.reload();
+        const versuche = +(sessionStorage.getItem('upTry') || 0);
+        if (sofort && versuche < 2) {             // höchstens zwei automatische Neustarts
+          sessionStorage.setItem('upTry', String(versuche + 1));
+          frischLaden(online);
           return;
         }
-        if (online !== updateGemeldet) {
-          updateGemeldet = online;
-          toast('🆕 Version '+online+' ist fertig! Schließe die Seite ganz und öffne sie neu.', 8000);
+        if (online !== updateGemeldet) {          // klappt es nicht von allein:
+          updateGemeldet = online;                // ein dicker Knopf zum Antippen
+          const box = document.getElementById('updateBox');
+          document.getElementById('updateText').textContent =
+            '🆕 Version ' + online + ' ist fertig!';
+          box.style.display = 'flex';
         }
       } else {
         sessionStorage.removeItem('upTry');       // alles aktuell -> Neustart-Sperre lösen
+        document.getElementById('updateBox').style.display = 'none';
       }
     } catch(e) {}
   };
+  document.getElementById('updateJetzt').addEventListener('click', () => {
+    sessionStorage.removeItem('upTry');
+    frischLaden(updateGemeldet || (GAME_VERSION + 1));
+  });
   setTimeout(()=>pruefeUpdate(true), 4000);
   setInterval(()=>pruefeUpdate(false), 60000);
 }
@@ -29688,15 +29716,27 @@ function jwBeschreibung() {
           jwBaeume().txt, jwHimmel().txt].join(' · ') + (tiere ? '  ' + tiere : '');
 }
 function weltWahlZu() { document.getElementById('weltWahl').style.display = 'none'; }
+// 📍 Wie heißt die Welt, in der Jonah gerade steht?
+function weltJetztName() {
+  if (weltDim === 0) return '🌍 der normalen Welt';
+  if (weltDim === JW_DIM) return '🌈 ' + (weltPlan.name || 'deiner eigenen Welt');
+  if (weltDim === RB_DIM) return '🏰 deiner Riesenburg';
+  if (weltDim === 1) return '✨ der Wunderwelt';
+  const P = PLANET[weltDim];
+  return P && P.name ? P.name : 'einer anderen Welt';
+}
 function weltWahlZeigen() {
-  if (weltDim !== 0 && weltDim !== JW_DIM) {
-    toast('🌈 Zwischen den Welten umschalten geht nur in deiner normalen Welt ' +
-          'und in deiner eigenen Welt!', 4500);
-    blip(250, 0.1); return;
-  }
   jwPlanAnwenden();
   const liste = document.getElementById('weltListe');
   liste.innerHTML = '';
+  // Steht er gerade woanders (Riesenburg, Mond, Wunderwelt ...)? Dann sagt
+  // ihm die Auswahl das - und bringt ihn trotzdem überallhin.
+  if (weltDim !== 0 && weltDim !== JW_DIM) {
+    const d = document.createElement('div');
+    d.className = 'weltJetzt';
+    d.textContent = '📍 Du bist gerade in ' + weltJetztName() + '.';
+    liste.appendChild(d);
+  }
   const knopf = (bild, name, unter, hier, fn) => {
     const b = document.createElement('button');
     b.className = 'weltKnopf' + (hier ? ' hier' : '');
@@ -29733,15 +29773,14 @@ function weltWahlZeigen() {
 function weltHin(ziel) {
   if (weltDim === ziel) { toast('Da bist du doch schon! 🙂', 2500); return; }
   if (ziel === JW_DIM && !weltFertig) { weltBauenOeffnen(); return; }
-  if (weltDim !== 0 && weltDim !== JW_DIM) {
-    toast('🌈 Das geht nur zwischen deiner normalen Welt und deiner eigenen Welt!', 4000);
-    return;
-  }
   jwPlanAnwenden();
   weltHeimOrt[weltDim] = { x: player.x, y: player.y, z: player.z };
   weltWechsel(ziel);
-  const o = weltHeimOrt[ziel];
+  // Wo war er in der Zielwelt zuletzt? Sonst: wo er ins Portal gestiegen ist -
+  // und wenn auch das nicht bekannt ist, am Anfangsplatz der Welt.
+  const o = weltHeimOrt[ziel] || (portalHeim && portalHeim[ziel]) || null;
   if (o) { player.x = o.x; player.y = o.y; player.z = o.z; }
+  else if (ziel === 0) spawn();
   else { player.x = 0.5; player.z = 0.5; player.y = JW_BASIS + 2; }
   player.vx = player.vy = player.vz = 0;
   weltPlatzSuchen(!o);
@@ -30170,7 +30209,7 @@ function weltTippZeigen() {
   try { schon = localStorage.getItem(WELT_TIPP_KEY) === '1'; } catch(e) {}
   if (schon) return;
   setTimeout(() => {
-    if (!started || weltDim !== 0) return;
+    if (!started) return;
     weltBtnEl.classList.add('blink');
     const t = document.getElementById('weltTipp');
     t.style.display = 'block';
