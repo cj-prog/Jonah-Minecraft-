@@ -1203,8 +1203,8 @@
       <input id="wesenName" maxlength="20" placeholder="Wie heißt es?">
       <input id="wesenKann" maxlength="90" placeholder="Was kann es? z. B. fliegen, hüpfen, leuchten">
       <div id="wesenKannTxt"></div>
-      <input id="wesenGross" maxlength="40" placeholder="Wie groß? z. B. 3 Blöcke, riesig, winzig">
-      <input id="wesenAnzahl" maxlength="40" placeholder="Wie viele? z. B. 5, ganz viele, nur eins">
+      <input id="wesenGross" maxlength="60" placeholder="Wie groß? z. B. 5 Blöcke hoch, 15 Blöcke lang, riesig">
+      <input id="wesenAnzahl" maxlength="40" placeholder="Wie viele? z. B. 50, ganz viele, nur eins">
       <div id="wesenMassTxt"></div>
     </div>
   </div>
@@ -1690,7 +1690,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 292 &middot; 🎨💾 VIEL GRÖSSERES MAL-FELD – UND NICHTS GEHT MEHR VERLOREN! Jonah hat gemeldet: „Das Malfeld ist viel zu klein" – stimmt! Es ist jetzt fast doppelt so groß: hochkant nimmt es fast die ganze Breite, und quer steht es links neben den Schreibfeldern, so hoch wie der ganze Kasten. Und: Jonah hatte ein Wesen gemalt, dann kam „neue Version ist fertig", er hat darauf gedrückt – und musste alles neu malen. Nie wieder! Jeder Pinselstrich wird sofort gemerkt. Nach einem Neustart kommt unten der Knopf „✏️ Weitermalen" – und dein Bild ist genau so da, wie du es verlassen hast.</p>
+    Version 293 &middot; 👾📏🔢 MONSTER JAGEN, LANG UND HOCH, UND 50 STÜCK! Jonah hat drei Sachen gemeldet, die das Spiel falsch verstanden hat. (1) „Es soll Monster jagen" hieß vorher „es soll DICH jagen" – jetzt sucht sich dein Wesen wirklich Zombies, Riesen, Räuber und Schleime und geht auf sie los! (2) „15 Blöcke lang und 5 Blöcke hoch" wurde zu „10 Blöcke groß" – jetzt zählen Länge und Höhe getrennt, und es gehen bis zu 30 Blöcke. (3) „50 Stück" wurden nur 20 – jetzt sind bis zu 60 Stück von einer Sorte erlaubt.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1736,7 +1736,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 292;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 293;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3401,16 +3401,33 @@ const JW_ZAHLWORT = { 'ein':1, 'eins':1, 'eine':1, 'einen':1, 'zwei':2, 'drei':3
   'fünf':5, 'fuenf':5, 'sechs':6, 'sieben':7, 'acht':8, 'neun':9, 'zehn':10, 'elf':11,
   'zwölf':12, 'zwoelf':12, 'zwanzig':20, 'dutzend':12 };
 // ✏️ "3 Blöcke groß", "riesig", "winzig" - wie groß soll das Wesen sein?
+// 📏 „15 Blöcke lang und 5 Blöcke hoch" - Länge und Höhe zählen getrennt!
+// (Jonah: "Ich habe eingegeben, es soll 15 Blöcke lang und 5 Blöcke hoch sein.
+// Was stand da dann? Zehn Blöcke groß.")
+const JW_GROESSE_MAX = 30;              // mehr als 30 Blöcke geht nicht
 function jwGroesseLesen(text) {
   const t = (text || '').toLowerCase();
   if (!t.trim()) return null;
-  const zahl = t.match(/(\d+(?:[.,]\d+)?)\s*(blöcke|bloecke|block|meter|m\b)?/);
-  if (zahl && (zahl[2] || /groß|gross|hoch|klein|breit/.test(t))) {
-    const m = Math.max(0.3, Math.min(10, parseFloat(zahl[1].replace(',', '.'))));
-    return { gr: m / 1.6, txt: m + ' Blöcke groß' };     // 1.6 Blöcke ist die Normalgröße
+  let hoch = null, breit = null;
+  for (const teil of t.split(/\bund\b|,|;|\+|\bsowie\b/)) {
+    const zahl = teil.match(/(\d+(?:[.,]\d+)?)\s*(blöcke|bloecke|block|meter|m\b)?/);
+    if (!zahl) continue;
+    const istBreit = /lang|breit|dick|weit/.test(teil);
+    const istHoch  = /hoch|hoh|groß|gross|größe|groesse/.test(teil);
+    if (!zahl[2] && !istBreit && !istHoch) continue;     // nackte Zahl ohne Wort
+    const m = Math.max(0.3, Math.min(JW_GROESSE_MAX, parseFloat(zahl[1].replace(',', '.'))));
+    if (istBreit && !istHoch) breit = m;
+    else hoch = m;                                       // „3 Blöcke groß" heißt: so HOCH
+  }
+  if (hoch !== null || breit !== null) {
+    const gr  = hoch  !== null ? hoch / 1.6 : 1;         // 1.6 Blöcke ist die Normalhöhe
+    const grB = breit !== null ? breit / 0.8 : gr;       // 0.8 Blöcke ist die Normalbreite
+    const txt = [breit !== null ? breit + ' Blöcke lang' : null,
+                 hoch  !== null ? hoch  + ' Blöcke hoch' : null].filter(x => x).join(' · ');
+    return { gr, grB, txt };
   }
   for (const w of JW_ZAHLWORT_GROSS)
-    if (t.includes(w[0])) return { gr: w[1], txt: w[2] };
+    if (t.includes(w[0])) return { gr: w[1], grB: w[1], txt: w[2] };
   return null;
 }
 const JW_ZAHLWORT_GROSS = [
@@ -3426,12 +3443,13 @@ function jwAnzahlLesen(text) {
   const t = (text || '').toLowerCase();
   if (!t.trim()) return null;
   const zahl = t.match(/(\d+)/);
-  if (zahl) {
-    const n = Math.max(1, Math.min(20, parseInt(zahl[1], 10)));
+  if (zahl) {                           // 🔢 bis zu 60 Stück - Jonah wollte 50!
+    const n = Math.max(1, Math.min(JW_WESEN_MAX_N, parseInt(zahl[1], 10)));
     return { n, txt: n + ' Stück' };
   }
   for (const w in JW_ZAHLWORT)
-    if (t.includes(w)) return { n: Math.min(20, JW_ZAHLWORT[w]), txt: JW_ZAHLWORT[w] + ' Stück' };
+    if (t.includes(w)) return { n: Math.min(JW_WESEN_MAX_N, JW_ZAHLWORT[w]),
+                                txt: JW_ZAHLWORT[w] + ' Stück' };
   if (/ganz viele|sehr viele|ganz viel/.test(t)) return { n: 12, txt: 'ganz viele' };
   if (/viele|viel/.test(t))   return { n: 7, txt: 'viele' };
   if (/wenige|wenig|kaum/.test(t)) return { n: 2, txt: 'nur wenige' };
@@ -3545,7 +3563,9 @@ function jwRegel(key) { return jwRegeln[key] || null; }
 // Jonahs Wunsch: "Ich kann was malen auf das Feld und danach kann ich noch
 // eingeben, was das alles können soll." Genau so geht es: malen, aufschreiben,
 // fertig - und schon lebt es in seiner Welt.
-const JW_WESEN_MAX = 8;                 // so viele Wesen passen hinein
+const JW_WESEN_MAX = 8;                 // so viele verschiedene Wesen passen hinein
+const JW_WESEN_MAX_N = 60;              // so viele Stück darf es von EINER Sorte geben
+const JW_WESEN_GESAMT = 120;            // und so viele insgesamt
 const jwWesenTex = {};                  // Nummer -> Bild-Textur für die Grafikkarte
 const JW_KANN = [
   { id:'fliegen',  w:['flieg','schweb','flatter'],              t:'✈️ fliegen' },
@@ -3570,11 +3590,23 @@ const JW_KANN = [
 // Was ein Wesen so sagt, wenn es reden kann
 const JW_WESEN_SPRUECHE = ['Hallo Jonah!', 'Ich bin dein Wesen!', 'Guck mal, was ich kann!',
   'Hier bin ich!', 'Toll hast du mich gemalt!', 'Komm mit!', 'Was machen wir heute?'];
+// 👾 Wen soll es jagen? (Jonah: "Ich habe eingegeben, es soll Monster jagen
+// können. Und was stand da dann? Es soll mich jagen.")
+const JW_MONSTER_W = ['monster','zombie','gegner','feind','skelett','spinne','riese',
+                      'räuber','raeuber','schleim','slime','bösewicht','boesewicht'];
 function jwKannLesen(text) {
   const t = (text || '').toLowerCase();
   const f = {}, txt = [];
   for (const k of JW_KANN)
     if (k.w.some(w => t.includes(w))) { f[k.id] = true; txt.push(k.t); }
+  // Steht ein Monster im Satz, dann jagt es MONSTER - und ganz sicher nicht Jonah!
+  if (f.jagen && JW_MONSTER_W.some(w => t.includes(w))) {
+    delete f.jagen; f.monster = true;
+    const alt = (JW_KANN.find(k => k.id === 'jagen') || {}).t;
+    const i = txt.indexOf(alt);
+    if (i >= 0) txt.splice(i, 1, '👾 Monster jagen');
+    else txt.push('👾 Monster jagen');
+  }
   return { f, txt };
 }
 // Jonahs aktuelle Einstellungen (und ob er schon auf FERTIG gedrückt hat)
@@ -6824,11 +6856,16 @@ function loadGame() {
           const f2 = jwKannLesen(w.kann || '').f;
           return { name: String(w.name || 'Mein Wesen').slice(0, 20), bild: w.bild,
                    kann: String(w.kann || '').slice(0, 90),
-                   gross: String(w.gross || '').slice(0, 40),
+                   gross: String(w.gross || '').slice(0, 60),
                    wieviele: String(w.wieviele || '').slice(0, 40), f: f2,
                    gr: gr2 ? gr2.gr : (typeof w.gr === 'number' ? w.gr
                         : (f2.gross ? 2 : f2.klein ? 0.55 : 1)),
-                   n: an2 ? an2.n : (typeof w.n === 'number' ? Math.max(1, Math.min(20, w.n)) : 2) };
+                   grB: gr2 ? (gr2.grB !== undefined ? gr2.grB : gr2.gr)
+                        : (typeof w.grB === 'number' ? w.grB
+                        : (typeof w.gr === 'number' ? w.gr
+                        : (f2.gross ? 2 : f2.klein ? 0.55 : 1))),
+                   n: an2 ? an2.n : (typeof w.n === 'number'
+                        ? Math.max(1, Math.min(JW_WESEN_MAX_N, w.n)) : 2) };
         });
       weltPlan = p;
     }
@@ -9242,9 +9279,9 @@ function jwSpawnTick() {
 function jwWesenSpawn() {
   const wesen = weltPlan.wesen || [];
   for (let i = 0; i < wesen.length; i++) {
-    const wieViele = Math.max(1, Math.min(20, wesen[i].n || 2));
+    const wieViele = Math.max(1, Math.min(JW_WESEN_MAX_N, wesen[i].n || 2));
     if (countType(a => a.type === 'wesen' && a.wIdx === i) >= wieViele) continue;
-    if (countType(a => a.type === 'wesen') >= 30) break;     // nicht übertreiben
+    if (countType(a => a.type === 'wesen') >= JW_WESEN_GESAMT) break;
     const f = wesen[i].f || {};
     const ang = Math.random()*Math.PI*2, d = 12 + Math.random()*22;
     const x = Math.floor(player.x + Math.cos(ang)*d);
@@ -9256,10 +9293,13 @@ function jwWesenSpawn() {
     if (!ch || !ch.data) continue;
     animals.push({ type:'wesen', wIdx:i, x:x+0.5, y:h+1, z:z+0.5,
       gr: wesen[i].gr || (f.gross ? 2 : f.klein ? 0.55 : 1),
+      grB: wesen[i].grB || wesen[i].gr || (f.gross ? 2 : f.klein ? 0.55 : 1),
       yaw:Math.random()*6.3, vy:0, kx:0, kz:0, hp:4,
       walking:false, t:9, ph:0, onGround:false, zielT:0 });
   }
 }
+// 👾 Auf diese hier geht ein Wesen los, das Monster jagen soll
+const JW_WESEN_BEUTE = new Set(['zombie', 'slime', 'boss', 'riese', 'raeuber']);
 // Was ein Wesen so treibt - genau das, was Jonah hingeschrieben hat
 function jwWesenTick(a, dt) {
   const d = (weltPlan.wesen || [])[a.wIdx];
@@ -9268,7 +9308,28 @@ function jwWesenTick(a, dt) {
   const dp = Math.hypot(player.x - a.x, player.z - a.z);
   a.t = 9;
   const spd = f.schnell ? 4.4 : f.langsam ? 1.0 : 2.3;
-  if (f.folgen || f.jagen) {            // ❤️ hinterher! oder 😈 hinter DIR her!
+  // 👾 MONSTER JAGEN: Es sucht sich das nächste Monster und geht darauf los.
+  let beute = null, bd = 30;
+  if (f.monster) for (const o of animals) {
+    if (!JW_WESEN_BEUTE.has(o.type)) continue;
+    const d2 = Math.hypot(o.x - a.x, o.z - a.z);
+    if (d2 < bd) { bd = d2; beute = o; }
+  }
+  if (beute) {
+    a.yaw = Math.atan2(beute.x - a.x, -(beute.z - a.z));
+    if (bd > 1.3 + 0.4*(a.gr||1)) { a.walking = true; a.spd = spd * 1.25; }
+    else {
+      a.walking = false;
+      a.schlagT = (a.schlagT || 0) - dt;
+      if (a.schlagT <= 0) {                      // zuschlagen!
+        a.schlagT = 0.7;
+        const L = Math.hypot(beute.x - a.x, beute.z - a.z) || 1;
+        if (dp < 30) { blip(210, 0.09); blip(150, 0.07); }
+        slimeDamage(beute, 1 + Math.round(a.gr || 1),
+                    [(beute.x - a.x)/L, 0, (beute.z - a.z)/L]);
+      }
+    }
+  } else if (f.folgen || f.jagen) {     // ❤️ hinterher! oder 😈 hinter DIR her!
     if (dp > 50) { a.x = player.x + (Math.random()*10-5); a.z = player.z + (Math.random()*10-5);
                    a.y = terrainHeight(Math.floor(a.x), Math.floor(a.z)) + 1; }
     else if (dp > (f.jagen ? 1.4 : 3)) {
@@ -11920,7 +11981,7 @@ function drawJwWesen() {
     erstes = false;
     gl.uniform1f(loc.uAlpha, a.sicht === undefined ? 1 : a.sicht);   // 👻 unsichtbar?
     gl.bindTexture(gl.TEXTURE_2D, jwWesenTex[a.wIdx]);
-    const gr = a.gr || 1, br = 0.8*gr, ho = 1.6*gr;
+    const gr = a.gr || 1, br = 0.8*(a.grB || gr), ho = 1.6*gr;
     const dx = player.x - a.x, dz = player.z - a.z;
     const L = Math.hypot(dx, dz) || 1;
     const rx = -dz/L*br, rz = dx/L*br;          // quer zur Blickrichtung
@@ -30255,7 +30316,7 @@ function wesenKannZeigen() {
   el.textContent = txt.length
     ? '✅ Es kann: ' + txt.join(' · ')
     : 'Schreib hin, was es kann – z. B. fliegen, hüpfen, leuchten, dir folgen, ' +
-      'dich jagen, Feuer spucken, zaubern, Blumen pflanzen, tanzen, singen, reden, ' +
+      'MONSTER JAGEN, Feuer spucken, zaubern, Blumen pflanzen, tanzen, singen, reden, ' +
       'schlafen oder unsichtbar werden.';
   el.className = txt.length ? '' : 'nix';
   wesenMassZeigen();
@@ -30281,13 +30342,15 @@ function wesenSichern() {
   }
   const name = (document.getElementById('wesenName').value || '').trim().slice(0, 20);
   const kann = (document.getElementById('wesenKann').value || '').trim().slice(0, 90);
-  const gross = (document.getElementById('wesenGross').value || '').trim().slice(0, 40);
+  const gross = (document.getElementById('wesenGross').value || '').trim().slice(0, 60);
   const wieviele = (document.getElementById('wesenAnzahl').value || '').trim().slice(0, 40);
   const g = jwGroesseLesen(gross), an = jwAnzahlLesen(wieviele);
   const f = jwKannLesen(kann).f;
+  const grund = f.gross ? 2 : f.klein ? 0.55 : 1;
   const d = { name: name || 'Mein Wesen', bild, kann, f, gross, wieviele,
-              gr: g ? g.gr : (f.gross ? 2 : f.klein ? 0.55 : 1),
-              n:  an ? an.n : 2 };
+              gr:  g ? g.gr  : grund,
+              grB: g ? (g.grB !== undefined ? g.grB : g.gr) : grund,
+              n:   an ? an.n : 2 };
   if (!Array.isArray(weltPlan.wesen)) weltPlan.wesen = [];
   if (wesenNr >= 0) weltPlan.wesen[wesenNr] = d;
   else if (weltPlan.wesen.length >= JW_WESEN_MAX) {
