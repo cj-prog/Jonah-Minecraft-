@@ -33,8 +33,8 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   Stand auf die neue Geschichte zurückzusetzen.
 - 31.10 – nach Ermessen – Thema 3 (Fehlerbehebung Englisch-Stand) an Session 1 gegeben, ohne
   Jonah zu fragen: kleine Fehlerbehebung, kein neues Ziel. Rückweg: Session 1 stoppen.
-- 31.10 – Christian – Jonah spricht nur noch mit dem Manager; der Manager gibt Wünsche an
-  Session 1 und 2 weiter, sie melden per Nachricht zurück. Steht im Delta unter „Zusammenarbeit".
+- 31.10 – Christian – Jonah wählt frei: Wünsche an den Manager (der gibt sie an Session 1 und 2
+  weiter) oder direkt in die Session; die Sessions melden dem Manager jeweils zurück. Steht im Delta unter „Zusammenarbeit".
 - 23.10 – nach Ermessen – Der Behelf `session-manager/` (STAND, WUENSCHE, LOG) aus der
   Einrichtung ist ersetzt durch `SESSION-MANAGER.md`, `THEMEN.md` und `meldungen/`; `CLAUDE.md`
   verweist auf die neuen Regeln. Rückweg: Commit zurückdrehen.

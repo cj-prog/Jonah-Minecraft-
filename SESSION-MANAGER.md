@@ -34,13 +34,14 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   fertig) und schreiben dasselbe als Nachweis in `meldungen/<nr>.md` in ihrem Branch.
 - Antworten auf Fragen schickt der Manager per `send_message` an die Session.
 - Fallback, wenn Nachrichten nicht ankommen: der Weg aus dem Skill (Jonah kopiert, `meldungen/`).
-- **Jonah spricht nur mit dem Manager** (Christian, 31.10.): Wünsche für JonahCraft und die
-  Englisch-App sagt Jonah dem Manager. Der Manager gibt sie per `send_message` an Session 1
+- **Jonah wählt frei** (Christian, 31.10.): Jonah (oder Christian) kann Wünsche dem Manager sagen
+  oder direkt in Session 1 / Session 2 schreiben – beides ist richtig. Sagt er sie dem Manager,
+  gibt der Manager sie per `send_message` an Session 1
   („1 Jonahcraft") bzw. Session 2 („2 Englisch-Lern-App") weiter. Die Session baut, testet und
   meldet per `send_message` an den Manager zurück: was fertig ist, welche Version, was Jonah
   ausprobieren soll, offene Fragen. Der Manager erklärt es Jonah in einfachen Worten.
-- Schreibt Jonah doch einmal direkt in eine Session, arbeitet sie den Wunsch ab und meldet
-  danach kurz an den Manager, damit das Register stimmt.
+- Schreibt Jonah direkt in eine Session, arbeitet sie den Wunsch ab, antwortet ihm direkt und
+  meldet danach kurz an den Manager, damit das Register stimmt.
 
 ## Veröffentlichung
 
