@@ -1690,7 +1690,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 293 &middot; 👾📏🔢 MONSTER JAGEN, LANG UND HOCH, UND 50 STÜCK! Jonah hat drei Sachen gemeldet, die das Spiel falsch verstanden hat. (1) „Es soll Monster jagen" hieß vorher „es soll DICH jagen" – jetzt sucht sich dein Wesen wirklich Zombies, Riesen, Räuber und Schleime und geht auf sie los! (2) „15 Blöcke lang und 5 Blöcke hoch" wurde zu „10 Blöcke groß" – jetzt zählen Länge und Höhe getrennt, und es gehen bis zu 30 Blöcke. (3) „50 Stück" wurden nur 20 – jetzt sind bis zu 60 Stück von einer Sorte erlaubt.</p>
+    Version 294 &middot; 🛟📱 DEINE STICKER IN DER ENGLISCH-APP SIND JETZT SICHER! In der Englisch-App waren plötzlich alle Sticker weg. Schuld war JonahCraft: Wenn das Spiel den gemeinsamen Stand mal nicht lesen konnte, hat es beim nächsten Speichern einfach ALLES überschrieben – Sticker, gelernte Wörter und Chats. Das kann jetzt nicht mehr passieren: Klappt das Lesen nicht, schreibt das Spiel gar nichts mehr zurück, und beim Speichern ändert es nur noch genau die Felder, die es selbst anfasst. Alles andere bleibt stehen.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1736,7 +1736,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 293;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 294;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -15423,12 +15423,58 @@ const FREUNDE = [
 function freundVon(id) { return FREUNDE.find(f => f.id === id) || FREUNDE[0]; }
 
 // ---- der gemeinsame Speicher --------------------------------------------
+// 🛟 VORSICHT MIT DEM GEMEINSAMEN SPEICHER!
+// Jonah hat in der Englisch-App einmal alle Sticker verloren. Schuld war
+// genau diese Stelle: Konnte das Spiel den Stand nicht lesen (kaputter Text
+// im Speicher), gab engLaden() einfach ein leeres {} zurück - und das nächste
+// engSpeichern() hat dieses leere {} über ALLES drübergeschrieben: Sticker,
+// gelernte Wörter, Chats, alles weg. Jetzt gilt:
+//   1. Scheitert das Lesen, wird NICHTS zurückgeschrieben.
+//   2. Gespeichert werden nur die Felder, die das Spiel wirklich geändert hat.
+//      Alles andere (stickers, learned, und auch Felder, die das Spiel gar
+//      nicht kennt) bleibt genau so stehen, wie es ist - auch wenn die
+//      Englisch-App zwischendurch etwas dazugeschrieben hat.
+//   3. Die Sicherungskopie der Englisch-App ("fredapp1_schatz") fassen wir
+//      überhaupt nicht an.
+function engRoh() {                     // den gespeicherten Stand wirklich lesen
+  let text = null;                      // null = kaputt, nicht anfassen!
+  try { text = localStorage.getItem(ENG_KEY); } catch(e) { return null; }
+  if (text === null || text === '') return {};        // es gibt noch gar nichts
+  try {
+    const o = JSON.parse(text);
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+    return o;
+  } catch(e) { return null; }
+}
 function engLaden() {
-  try { const r = localStorage.getItem(ENG_KEY); return r ? JSON.parse(r) : {}; }
-  catch(e) { return {}; }
+  const o = engRoh();
+  const s = (o === null) ? {} : o;
+  // Wir merken uns am Stand selbst, wie er beim Laden aussah - daran erkennt
+  // engSpeichern später, was das Spiel geändert hat (und ob es lesen konnte).
+  try {
+    Object.defineProperty(s, '__engRoh', { value: o === null ? null : JSON.stringify(s),
+      enumerable: false, configurable: true, writable: true });
+  } catch(e) {}
+  return s;
 }
 function engSpeichern(s) {
-  try { localStorage.setItem(ENG_KEY, JSON.stringify(s)); } catch(e) {}
+  if (!s || typeof s !== 'object') return;
+  const roh = s.__engRoh;
+  if (roh === null) return;             // 🛟 Lesen war kaputt: NICHTS überschreiben
+  let vorher = {};
+  if (typeof roh === 'string') { try { vorher = JSON.parse(roh) || {}; } catch(e) { vorher = {}; } }
+  const jetzt = engRoh();               // ganz frisch nachsehen, was gerade drinsteht
+  if (jetzt === null) return;           // zwischendurch kaputtgegangen? Finger weg!
+  let etwas = false;
+  for (const k of Object.keys(s)) {     // nur die geänderten Felder übernehmen
+    let neu, alt;
+    try { neu = JSON.stringify(s[k]); alt = JSON.stringify(vorher[k]); } catch(e) { continue; }
+    if (neu !== alt) { jetzt[k] = s[k]; etwas = true; }
+  }
+  for (const k of Object.keys(vorher))  // hat das Spiel selbst ein Feld gelöscht?
+    if (!(k in s) && (k in jetzt)) { delete jetzt[k]; etwas = true; }
+  if (!etwas) return;                   // nichts geändert: gar nicht erst schreiben
+  try { localStorage.setItem(ENG_KEY, JSON.stringify(jetzt)); } catch(e) {}
 }
 function engChat(id) { const s = engLaden(); return ((s.chats||{})[id]) || []; }
 // Eine Nachricht in den GEMEINSAMEN Verlauf schreiben (w:'f' = Freund, 'k' = Jonah)
