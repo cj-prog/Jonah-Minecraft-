@@ -68,8 +68,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.4
   („Freund bleibt, bis man Tschüss sagt") · Session läuft wieder (nach dem Anlegen von `main`,
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
-  Sticker (eigene Sicherung „fredapp1_schatz"). Offen: Jonahs verlorene Sticker ggf. aus der
-  Auto-Sicherung im Elternbereich zurückholen (Sache der Familie).
+  Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
+  schon wiederhergestellt (laut Christian, 31.10.).
 - **3 – Englisch-Stand im Spiel absichern** · in Arbeit · an Session 1 gegeben am 31.10. ·
   JonahCraft darf den Englisch-Stand nie leer überschreiben (gemeldet von Session 2, vermutete
   Ursache für Jonahs Sticker-Verlust, vom Manager im Code bestätigt) · Meldung abwarten.
