@@ -33,6 +33,9 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   Stand auf die neue Geschichte zurückzusetzen.
 - 31.10 – nach Ermessen – Thema 3 (Fehlerbehebung Englisch-Stand) an Session 1 gegeben, ohne
   Jonah zu fragen: kleine Fehlerbehebung, kein neues Ziel. Rückweg: Session 1 stoppen.
+- 31.10 – nach Ermessen – Thema 6: Der Wunsch-Zettel darf den vorhandenen KI-Schlüssel nutzen
+  (wie die Chats schon), ein kleiner Aufruf pro Wunsch. Grund: nur so versteht er Sätze
+  wirklich. Rückweg: KI-Teil abschalten, Stichwort-Verfahren bleibt.
 - 31.10 – Christian – Jonah wählt frei: Wünsche an den Manager (der gibt sie an Session 1 und 2
   weiter) oder direkt in die Session; die Sessions melden dem Manager jeweils zurück. Steht im Delta unter „Zusammenarbeit".
 - 23.10 – nach Ermessen – Der Behelf `session-manager/` (STAND, WUENSCHE, LOG) aus der
@@ -62,20 +65,23 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 295 (31.10., Knopf zur
-  Englisch-Lern-App) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 296 (31.10., Malfeld-Größe
+  einstellbar) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
-- **5 – Malfeld-Größe beim Wesen-Malen einstellbar** · in Arbeit · Wunsch von Jonah (31.10.):
-  beides – Kästchen-Zahl (z. B. 12/16/24/32) und Anzeige-Größe wählbar · an Session 1 gegeben
-  am 31.10. · Meldung abwarten.
+- **6 – Wunsch-Zettel versteht Jonah genau** · in Arbeit · Meldung von Jonah (31.10.): „nur
+  unter der Erde Wasser" wurde als „aus Erde, ganz flach" verstanden · an Session 1 gegeben am
+  31.10.: mit KI-Schlüssel versteht Claude den Wunsch, ohne Schlüssel besseres Stichwort-
+  Verfahren, und immer erst „So habe ich dich verstanden" zum Bestätigen · Meldung abwarten.
 
 ## Erledigt
 
+- **5 – Malfeld-Größe beim Wesen-Malen einstellbar** · Session 1 · JonahCraft v296 (31.10.):
+  12/16/24/32 Kästchen und Anzeige 60–200 %, alte Wesen unverändert.
 - **3 – Englisch-Stand im Spiel absichern** · Session 1 · JonahCraft v294 (31.10.): das Spiel
   überschreibt den Englisch-Stand nie mehr leer.
 - **4 – Wechsel-Knopf zwischen JonahCraft und Englisch-App** · JonahCraft v295 (📚-Knopf in der
