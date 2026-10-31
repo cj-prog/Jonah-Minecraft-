@@ -42,6 +42,8 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   ausprobieren soll, offene Fragen. Der Manager erklärt es Jonah in einfachen Worten.
 - Schreibt Jonah direkt in eine Session, arbeitet sie den Wunsch ab, antwortet ihm direkt und
   meldet danach kurz an den Manager, damit das Register stimmt.
+- Session 1 hat kein `send_message`-Werkzeug (ältere Version). Sie meldet in `meldungen/1.md`
+  auf dem Hauptzweig; der Manager liest dort nach. Session 2 meldet per Nachricht.
 
 ## Veröffentlichung
 

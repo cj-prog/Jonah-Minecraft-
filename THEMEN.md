@@ -33,6 +33,8 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   Stand auf die neue Geschichte zurückzusetzen.
 - 31.10 – nach Ermessen – Thema 3 (Fehlerbehebung Englisch-Stand) an Session 1 gegeben, ohne
   Jonah zu fragen: kleine Fehlerbehebung, kein neues Ziel. Rückweg: Session 1 stoppen.
+- 31.10 – Christian – „KI ja": Der Wunsch-Zettel schickt Jonahs Text an die Claude-API (wie die
+  Chats), ca. 1 Cent pro Wunsch. Session 1 hatte dafür zu Recht Christians Zustimmung verlangt.
 - 31.10 – nach Ermessen – Thema 6: Der Wunsch-Zettel darf den vorhandenen KI-Schlüssel nutzen
   (wie die Chats schon), ein kleiner Aufruf pro Wunsch. Grund: nur so versteht er Sätze
   wirklich. Rückweg: KI-Teil abschalten, Stichwort-Verfahren bleibt.
@@ -65,8 +67,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 297 (31.10., Wunsch-Zettel
-  versteht mehr) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 298 (31.10., Wunsch-Zettel
+  kennt alle Einstellungen) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -82,7 +84,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   KI-Teil, alle Einstellungen (auch Wetter/Himmel) als Wörter, Beispielsätze statt „nichts
   verstanden" · Jonah: „fast alles" wird nicht verstanden, Sonne war nur ein Beispiel →
   KI-Teil hat oberste Priorität, für alle Freitext-Felder; ohne Schlüssel klarer Hinweis ·
-  Meldung abwarten.
+  v298 (31.10.): alle Baukasten-Einstellungen in Kinder-Worten, Beispielsätze bei
+  Unverstandenem · KI-Teil von Christian freigegeben („KI ja", 31.10.), Session 1 baut ihn ·
+  Meldung in `meldungen/1.md` abwarten.
 
 ## Erledigt
 
