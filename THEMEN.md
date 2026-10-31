@@ -73,6 +73,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **3 – Englisch-Stand im Spiel absichern** · in Arbeit · an Session 1 gegeben am 31.10. ·
   JonahCraft darf den Englisch-Stand nie leer überschreiben (gemeldet von Session 2, vermutete
   Ursache für Jonahs Sticker-Verlust, vom Manager im Code bestätigt) · Meldung abwarten.
+- **4 – Wechsel-Knopf zwischen JonahCraft und Englisch-App** · in Arbeit · Wunsch von Jonah
+  (31.10.): oben ein Knopf, der fragt „Zur anderen App" oder „Abbrechen" und dann direkt
+  hinüberwechselt. 4a JonahCraft → Session 1 (nach Thema 3), 4b Englisch-App → Session 2 ·
+  Meldungen abwarten.
 
 ## Erledigt
 
