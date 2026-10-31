@@ -34,6 +34,14 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   fertig) und schreiben dasselbe als Nachweis in `meldungen/<nr>.md` in ihrem Branch.
 - Antworten auf Fragen schickt der Manager per `send_message` an die Session.
 - Fallback, wenn Nachrichten nicht ankommen: der Weg aus dem Skill (Jonah kopiert, `meldungen/`).
+- **Jonah wählt frei** (Christian, 31.10.): Jonah (oder Christian) kann Wünsche dem Manager sagen
+  oder direkt in Session 1 / Session 2 schreiben – beides ist richtig. Sagt er sie dem Manager,
+  gibt der Manager sie per `send_message` an Session 1
+  („1 Jonahcraft") bzw. Session 2 („2 Englisch-Lern-App") weiter. Die Session baut, testet und
+  meldet per `send_message` an den Manager zurück: was fertig ist, welche Version, was Jonah
+  ausprobieren soll, offene Fragen. Der Manager erklärt es Jonah in einfachen Worten.
+- Schreibt Jonah direkt in eine Session, arbeitet sie den Wunsch ab, antwortet ihm direkt und
+  meldet danach kurz an den Manager, damit das Register stimmt.
 
 ## Veröffentlichung
 
@@ -42,7 +50,7 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   Das Spiel auf Jonahs Geräten lädt die neue Version innerhalb einer Minute von selbst.
 - Auch die Dateien `SESSION-MANAGER.md`, `THEMEN.md` und `meldungen/` sind dann dort öffentlich
   lesbar – darum gilt besonders: keine persönlichen Daten.
-- Englisch-App: noch nachsehen.
+- Englisch-App: über GitHub Pages unter `https://cj-prog.github.io/Englisch-App/` (laut Session 2).
 
 ## Budget
 
@@ -73,8 +81,9 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   5. Version auf dem Startbildschirm **und** `GAME_VERSION` erhöhen.
   6. Einen deutschen Stichpunkt oben in die Liste „Was das Spiel kann" der `README.md` setzen.
   7. Committen und pushen, keine Pull Requests (Session 1: direkt auf den Hauptzweig, 23.10-2).
-  8. Jonah die Screenshots schicken; die Antwort endet mit
-     „Lade die Seite neu — Version N muss dastehen!"
+  8. Kam der Wunsch über den Manager: Ergebnis per `send_message` an den Manager melden (was neu
+     ist, Version, was Jonah ausprobieren soll). Kam er direkt von Jonah: Jonah die Screenshots
+     schicken, die Antwort endet mit „Lade die Seite neu — Version N muss dastehen!"
   9. Nach ca. 10 Minuten still prüfen, ob GitHub Pages die Version veröffentlicht hat; bei
      Erfolg nur eine kurze Zeile.
 - Keine persönlichen Daten in Repo, Commits oder README: kein Nachname, kein Alter, keine

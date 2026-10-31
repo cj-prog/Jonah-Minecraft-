@@ -3,7 +3,7 @@
 Register des „Session Manager für Jonah's Kiste". **Nur er schreibt in diese Datei.**
 Regeln: `.claude/skills/session-manager/SKILL.md` und `SESSION-MANAGER.md`.
 
-Letztes Lagebild: 25.10.2026
+Letztes Lagebild: 31.10.2026
 
 **Für Entwickler-Sessions:** Beim Start die Regeln lesen (Abschnitte Befugnisrahmen und
 Entwickler). Dieses Register nur lesen. Meldungen per Nachricht an den Manager und in
@@ -31,6 +31,10 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   `cj-prog/Jonah-Minecraft-` entfernt (alle drei Branches neu geschrieben). Alle Commits haben
   dadurch neue Kennungen; der Inhalt des Spiels ist unverändert. Session 1 wurde gebeten, ihren
   Stand auf die neue Geschichte zurückzusetzen.
+- 31.10 – nach Ermessen – Thema 3 (Fehlerbehebung Englisch-Stand) an Session 1 gegeben, ohne
+  Jonah zu fragen: kleine Fehlerbehebung, kein neues Ziel. Rückweg: Session 1 stoppen.
+- 31.10 – Christian – Jonah wählt frei: Wünsche an den Manager (der gibt sie an Session 1 und 2
+  weiter) oder direkt in die Session; die Sessions melden dem Manager jeweils zurück. Steht im Delta unter „Zusammenarbeit".
 - 23.10 – nach Ermessen – Der Behelf `session-manager/` (STAND, WUENSCHE, LOG) aus der
   Einrichtung ist ersetzt durch `SESSION-MANAGER.md`, `THEMEN.md` und `meldungen/`; `CLAUDE.md`
   verweist auf die neuen Regeln. Rückweg: Commit zurückdrehen.
@@ -62,10 +66,13 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   lang und hoch getrennt, und 50 Stück") · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.4
-  („Freund bleibt, bis man Tschüss sagt") · **geparkt:** Session startet weiterhin nicht, auch
-  nach dem Anlegen von `main` (23.10-3). Die Fehlermeldung ist noch die von 16:16 UTC und als
-  „nicht behebbar" markiert – die Session versucht offenbar keinen neuen Start. Laut Christian
-  nicht dringend. Möglicher Weg später: neue Session für die Englisch-App, vom Manager gestartet.
+  („Freund bleibt, bis man Tschüss sagt") · Session läuft wieder (nach dem Anlegen von `main`,
+  23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
+  Sticker (eigene Sicherung „fredapp1_schatz"). Offen: Jonahs verlorene Sticker ggf. aus der
+  Auto-Sicherung im Elternbereich zurückholen (Sache der Familie).
+- **3 – Englisch-Stand im Spiel absichern** · in Arbeit · an Session 1 gegeben am 31.10. ·
+  JonahCraft darf den Englisch-Stand nie leer überschreiben (gemeldet von Session 2, vermutete
+  Ursache für Jonahs Sticker-Verlust, vom Manager im Code bestätigt) · Meldung abwarten.
 
 ## Erledigt
 
