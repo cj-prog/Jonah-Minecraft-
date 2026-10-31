@@ -1756,7 +1756,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 297 &middot; 🤔💧 JETZT VERSTEHE ICH DICH GENAU! Jonah hat gemeldet: „Ich habe eingegeben, dass es nur unter der Erde Wasser geben soll. Aber dann hat er verstanden: aus Erde, ganz flach." Zwei Fehler waren schuld – jetzt sind sie weg. Neu: Das Spiel versteht „nur", „kein/ohne" und „unter der Erde / in Höhlen". Und bevor deine Welt gebaut wird, zeigt es dir „🤔 So habe ich dich verstanden!" – mit „✅ Ja, genau so!" oder „✏️ Nee, ich ändere noch was". Was es nicht kann, sagt es ehrlich. Und „Wasser nur unter der Erde" gibt es jetzt wirklich: oben alles trocken, unten Höhlen-Seen! 🕳️💧</p>
+    Version 298 &middot; 🎛️☀️ „IMMER SONNE" KLAPPT JETZT – UND ALLE ANDEREN EINSTELLUNGEN AUCH! Jonah hat geschrieben „immer Sonne" und das Spiel hat gesagt, es versteht nichts. Jetzt kennt es ALLE Knöpfe des Baukastens in Kinder-Worten: Wetter (immer Sonne, Regen, es schneit), Himmel (heller Tag, Abendrot, Nacht, Sterne), Land (platt, Hügel, Gebirge, Inseln), Wasser (kein Wasser, Seen, Meer), Bäume (kahl bis Dschungel), Boden (Wiese, Strand, Felsen, Gold, Regenbogen) und Schwerkraft (Mond-Sprünge, bleischwer). Egal, in welches Feld du es schreibst! Und wenn doch mal etwas nicht ankommt, zeigt dir das Spiel jetzt Beispielsätze, die wirklich gehen. 💡</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1802,7 +1802,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 297;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 298;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3458,6 +3458,95 @@ const JW_ORTE = [
 ];
 // 🚫 Verneinungen: "kein Wasser", "ohne Bäume", "nicht"
 const JW_NEIN = ['kein', 'keine', 'keinen', 'keiner', 'nichts', 'ohne', 'nie', 'niemals'];
+// ============== 🎛️ ALLE EINSTELLUNGEN IN KINDER-WORTEN ================
+// Jonah hat „immer Sonne" geschrieben und das Spiel hat gesagt, es versteht
+// nichts. Jetzt kennt es ALLE Knöpfe des Baukastens - und zwar so, wie ein
+// Kind sie nennt. (Egal, in welches Feld er es schreibt.)
+const JW_EINST = [
+  // ☀️🌧️❄️ DAS WETTER - in Jonahs Welt wechselt es nie, es bleibt so
+  { feld:'wetter', wert:'sonne',
+    w:['sonne','sonnig','sonnenschein','schönes wetter','schoenes wetter','heiter',
+       'blauer himmel','kein regen','keinen regen'], t:'☀️ Wetter: immer Sonne' },
+  { feld:'wetter', wert:'regen',
+    w:['regen','regn','gewitter','schauer','nieselt','pladdert'], t:'🌧️ Wetter: Regen' },
+  { feld:'wetter', wert:'schnee',
+    w:['schneit','schneefall','schneesturm','schneegestöber','es schneit'], t:'❄️ Wetter: Schnee' },
+  // 🌤️ DER HIMMEL
+  { feld:'himmel', wert:'tag',   w:['heller tag','immer tag','tagsüber','tagsueber','taghell',
+                                     'mittag','morgens','sonnenaufgang'], t:'☀️ Himmel: heller Tag' },
+  { feld:'himmel', wert:'abend', w:['abendrot','abend','sonnenuntergang','dämmerung','daemmerung',
+                                     'abends'], t:'🌇 Himmel: Abendrot' },
+  { feld:'himmel', wert:'nacht', w:['nacht','nachts','dunkel','finster','stockdunkel','sterne',
+                                     'sternenhimmel'], t:'🌙 Himmel: Nacht' },
+  // 🏞️ DAS LAND
+  { feld:'gelaende', wert:'flach',  w:['platt','ganz eben','eben','brett','keine berge',
+                                        'pfannkuchen'], t:'🟩 Land: platt wie ein Brett' },
+  { feld:'gelaende', wert:'huegel', w:['hügel','huegel','hügelig','huegelig','wellig'], t:'🏞️ Land: Hügel' },
+  { feld:'gelaende', wert:'berge',  w:['gebirge','gipfel','hohe berge','berge','berg'], t:'⛰️ Land: hohe Berge' },
+  { feld:'gelaende', wert:'inseln', w:['inseln','insel','archipel'], t:'🏝️ Land: Inseln' },
+  // 💧 DAS WASSER
+  { feld:'wasser', wert:'keins', w:['kein wasser','keinen see','wüste','wueste','knochentrocken'],
+    t:'🚫 Wasser: gar keins' },
+  { feld:'wasser', wert:'seen',  w:['seen','teiche','teich','see'], t:'💧 Wasser: Seen' },
+  { feld:'wasser', wert:'ozean', w:['ozean','meer','ganz viel wasser','überschwemmt','ueberschwemmt',
+                                     'alles unter wasser'], t:'🌊 Wasser: ganz viel' },
+  // 🌳 DIE BÄUME
+  { feld:'baeume', wert:'keine',     w:['keine bäume','keine baeume','ohne bäume','ohne baeume',
+                                         'kahl','baumlos'], t:'🚫 Bäume: keine' },
+  { feld:'baeume', wert:'wenige',    w:['ein paar bäume','wenige bäume','wenig bäume'], t:'🌱 Bäume: ein paar' },
+  { feld:'baeume', wert:'viele',     w:['viele bäume','viele baeume','wald','wälder','waelder'], t:'🌳 Bäume: viele' },
+  { feld:'baeume', wert:'dschungel', w:['dschungel','urwald','regenwald'], t:'🌴 Bäume: Dschungel' },
+  // 🪂 DIE SCHWERKRAFT
+  { feld:'schwer', wert:'leicht', w:['mond','mondsprünge','mondspruenge','federleicht','schweben',
+                                      'ganz hoch springen','leicht'], t:'🪶 Schwerkraft: Mond-Sprünge' },
+  { feld:'schwer', wert:'schwer', w:['schwerkraft','bleischwer','ganz schwer','schwer'], t:'🪨 Schwerkraft: schwer' },
+  // 🪨 DER BODEN (die Knöpfe - das Material steht extra in JW_STOFFE)
+  { feld:'boden', wert:'gras',   w:['wiese','rasen','grasboden','gras'], t:'🌿 Boden: Gras' },
+  { feld:'boden', wert:'sand',   w:['sandboden','strand','sand'],       t:'🏖️ Boden: Sand' },
+  { feld:'boden', wert:'schnee', w:['schneeboden','eiswelt','schneewelt'], t:'❄️ Boden: Schnee' },
+  { feld:'boden', wert:'stein',  w:['steinboden','felsen','steinwelt'], t:'🪨 Boden: Stein' },
+  { feld:'boden', wert:'gold',   w:['goldboden','goldwelt','alles aus gold'], t:'🪙 Boden: Gold' },
+  { feld:'boden', wert:'bunt',   w:['bunt','regenbogen','kunterbunt'],  t:'🌈 Boden: bunt' },
+];
+// Welche Einstellungen stecken im Satz? (je Feld das längste passende Wort)
+function jwEinstLesen(t) {
+  const roh = {}, lang = {}, txt = [], wort = {};
+  for (const e of JW_EINST) for (const w of e.w) {
+    if (w.length <= (lang[e.feld] || 0)) continue;
+    if (jwWortAb(t, w) < 0) continue;
+    // „aus Schnee" ist ein Material, kein Wetter - das lassen wir dem Stoff.
+    // Und in „Regenbogen" und „Regenwald" steckt zwar „Regen", gemeint ist
+    // aber etwas ganz anderes.
+    if (e.feld === 'wetter' && e.wert === 'schnee' && /aus schnee/.test(t)) continue;
+    if (e.feld === 'wetter' && e.wert === 'regen' &&
+        (w === 'regen' || w === 'regn') && /regenbogen|regenwald/.test(t)) continue;
+    lang[e.feld] = w.length; roh[e.feld] = e; wort[e.feld] = w;
+  }
+  const einst = {}, woerter = [];
+  for (const f in roh) {
+    einst[f] = roh[f].wert; txt.push(roh[f].t);
+    // ALLE Wörter dieses Eintrags merken, die im Satz stehen - sie sind schon
+    // verbraucht. (Sonst würde aus „platt wie ein Brett" noch ein Holzboden.)
+    const meine = [];
+    for (const w of roh[f].w) if (jwWortAb(t, w) >= 0) meine.push(w);
+    woerter.push(meine);
+  }
+  return Object.keys(einst).length ? { einst, txt, woerter } : null;
+}
+// 💡 Wenn gar nichts ankommt: ein paar Sätze zeigen, die wirklich gehen
+const JW_BEISPIELE = [
+  '„immer Sonne"', '„ganz hohe Berge"', '„Wasser nur unter der Erde"',
+  '„der Boden aus Gold im Norden"', '„ganz viele Bäume aus Bonbons"',
+  '„Türme aus Kristall"', '„ohne Bäume"', '„es soll immer Nacht sein"',
+  '„ganz viele Kühe im Westen"', '„Mond-Sprünge"',
+];
+function jwBeispiele(n) {
+  const a = JW_BEISPIELE.slice();
+  const raus = [];
+  for (let i = 0; i < (n || 3) && a.length; i++)
+    raus.push(a.splice(Math.floor(Math.random()*a.length), 1)[0]);
+  return raus.join(' · ');
+}
 // 🏗️ Was Jonah sich sonst noch in seine Welt wünschen kann
 const JW_BAUTEN = [
   { w:['türme','tuerme','turm','säulen','saeulen','säule','saeule'], art:'turm',     t:'Türme 🗼' },
@@ -3615,17 +3704,35 @@ function jwTextLesen(text) {
     while (i >= 0) { t = t.slice(0, i) + ' '.repeat(w.length) + t.slice(i + w.length);
                      i = jwWortAb(t, w); }
   }
-  const stoff = jwFinde(JW_STOFFE, t);
+  // 🥞 Die Schichten zuerst lesen - da zählen die Stoffe ("vierte Schicht aus
+  // Gras"), nicht der Boden-Knopf.
+  const schichten = jwSchichtenLesen(t);
+  // 🎛️ Dann die Einstellungen ("immer Sonne", "platt wie ein Brett") - deren
+  // Wörter werden AUCH gestrichen, sonst würde aus "Brett" noch ein Holzboden.
+  const E = jwEinstLesen(t0);
+  if (E && schichten && E.einst.boden) {        // die Schichten gewinnen
+    const i = Object.keys(E.einst).indexOf('boden');
+    E.woerter.splice(i, 1); E.txt.splice(i, 1); delete E.einst.boden;
+  }
+  // ... aber NUR für die Material-Suche. Für Menge und Höhe zählen sie weiter
+  // („ganz hohe Berge im Osten" soll die Berge im Osten wirklich höher machen).
+  let tStoff = t;
+  if (E) for (const gruppe of E.woerter) for (const w of gruppe) {
+    let i = jwWortAb(tStoff, w);
+    while (i >= 0) { tStoff = tStoff.slice(0, i) + ' '.repeat(w.length) + tStoff.slice(i + w.length);
+                     i = jwWortAb(tStoff, w); }
+  }
+  const stoff = jwFinde(JW_STOFFE, tStoff);
   let menge = jwFinde(JW_MENGEN, t), hoch = jwFinde(JW_HOEHEN, t);
   // 🚫 "kein Wasser", "ohne Bäume": dann gibt es davon gar nichts
   const nein = JW_NEIN.some(w => jwWortAb(t0, w) >= 0);
   if (nein) menge = { m: 0, t: 'gar keine 🚫' };
   const tiere = JW_TIERE.filter(x => t.includes(x.txt.split(' ')[1].toLowerCase().slice(0, 5)));
   const bauten = JW_BAUTEN.filter(x => x.w.some(w => t.includes(w)));
-  const schichten = jwSchichtenLesen(t);          // 🥞 „erste Schicht aus Gold ..."
   // 🎯 "nur im Norden", "nur unter der Erde": das ist eine harte Grenze
   const nur = /\bnur\b/.test(t0) && !!ort;
-  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length && !schichten)
+  const hatEinst = E && Object.keys(E.einst).length;
+  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length && !schichten && !hatEinst)
     return { leer:true };
   return {
     block: stoff ? stoff.b : null, ort: ort ? ort.o : null,
@@ -3633,7 +3740,9 @@ function jwTextLesen(text) {
     tiere: tiere.map(x => x.id),
     bauten: bauten.map(x => x.art),
     schichten, nur, nein,
-    txt: [schichten ? jwSchichtenText(schichten) : null,
+    einst: hatEinst ? E.einst : null,
+    txt: [hatEinst ? E.txt.join(' · ') : null,
+          schichten ? jwSchichtenText(schichten) : null,
           bauten.length ? bauten.map(x => x.t).join(', ') : null,
           schichten ? null : (stoff && stoff.t),
           ort && ((nur ? 'NUR ' : '') + ort.t), menge && menge.t, hoch && hoch.t,
@@ -3754,12 +3863,18 @@ function jwPlanAnwenden() {
     const r = jwTextLesen(weltPlan.text[k]);
     if (r && !r.leer) jwRegeln[k] = r;
   }
-  // ✍️ Schreibt er „Nacht" oder „Regen" ins Feld, wird auch der Knopf umgestellt
-  for (const [key, tab] of [['himmel', JW_HIMMEL], ['wetter', JW_WETTER], ['schwer', JW_SCHWER]]) {
-    const t = ((weltPlan.text || {})[key] || '').toLowerCase();
-    if (!t.trim()) continue;
-    for (const k in tab) if (t.includes(k)) { weltPlan[key] = k; break; }
-    if (key === 'schwer' && /mond|leicht|schweb/.test(t)) weltPlan.schwer = 'leicht';
+  // ✍️🎛️ Schreibt Jonah „immer Sonne", „hohe Berge" oder „Dschungel" irgendwo
+  // hin, wird auch wirklich der passende Knopf umgestellt. Der Wunsch-Zettel
+  // zuerst, danach die einzelnen Fragen - die haben das letzte Wort.
+  {
+    const texte = weltPlan.text || {};
+    const reihe = ['wunsch', 'boden', 'gelaende', 'wasser', 'baeume', 'himmel',
+                   'wetter', 'schwer', 'tiere', 'extras'];
+    for (const k of reihe) {
+      const E = jwEinstLesen((texte[k] || '').toLowerCase());
+      if (!E) continue;
+      for (const f in E.einst) weltPlan[f] = E.einst[f];
+    }
   }
   for (const k in jwSeeCache) delete jwSeeCache[k];   // 💧 Wasserhöhe neu ausrechnen
   for (const k in jwWesenTex) { gl.deleteTexture(jwWesenTex[k]); delete jwWesenTex[k]; }
@@ -30190,9 +30305,9 @@ function weltWunschPruefen() {
   const r = jwTextLesen(inp.value);
   if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; return; }
   if (r.leer || !r.txt) {
-    sagt.textContent = '❓ Das habe ich nicht verstanden. Ich kann: Türme, Häuser, ' +
-      'Pyramiden, Statuen, Pilze, Seen, Fackeln, Blumen und Schatztruhen – aus Gold, ' +
-      'Stein, Holz, Kristall, Bonbons … und zum Beispiel „im Norden" oder „überall".';
+    sagt.textContent = '❓ Das habe ich noch nicht verstanden. So geht es zum Beispiel: ' +
+      jwBeispiele(4) + ' – ich kenne Türme, Häuser, Pyramiden, Statuen, Pilze, Seen, Fackeln, ' +
+      'Blumen und Schatztruhen, dazu Wetter, Himmel, Land, Bäume, Tiere und die Schwerkraft.';
     sagt.className = 'jwVerstanden nix';
   } else {
     sagt.textContent = '✅ Verstanden: ' + r.txt;
@@ -30237,9 +30352,9 @@ function weltFragenZeichnen() {
       const r = jwTextLesen(inp.value);
       if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; return null; }
       if (r.leer || !r.txt) {
-        sagt.textContent = '❓ Das habe ich nicht verstanden – probier zum Beispiel ' +
-                           '„aus Gold im Norden", „ganz viele" oder ' +
-                           '„erste Schicht aus Gold, zweite Schicht aus Sand".';
+        sagt.textContent = '❓ Das habe ich noch nicht verstanden. So geht es zum ' +
+                           'Beispiel: ' + jwBeispiele(4) + ' – du kannst auch Wörter wie ' +
+                           '„immer", „nur", „kein", „überall", „im Norden" oder „unter der Erde" benutzen!';
         sagt.className = 'jwVerstanden nix';
         return null;
       }
@@ -30356,7 +30471,8 @@ function weltVerstandenZeigen() {
     d.className = 'vstZeile' + (ok ? '' : ' nix');
     const b = document.createElement('b'); b.textContent = titel; d.appendChild(b);
     const g = document.createElement('div');
-    g.textContent = ok ? txt : '❓ Das kann ich noch nicht: „' + satz + '"';
+    g.textContent = ok ? txt
+      : '❓ Das kann ich noch nicht: „' + satz + '". So geht es zum Beispiel: ' + jwBeispiele(3);
     d.appendChild(g);
     if (ok) { const sz = document.createElement('div');
       sz.className = 'vstSatz'; sz.textContent = '„' + satz + '"'; d.appendChild(sz); }
