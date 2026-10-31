@@ -49,7 +49,7 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   Das Spiel auf Jonahs Geräten lädt die neue Version innerhalb einer Minute von selbst.
 - Auch die Dateien `SESSION-MANAGER.md`, `THEMEN.md` und `meldungen/` sind dann dort öffentlich
   lesbar – darum gilt besonders: keine persönlichen Daten.
-- Englisch-App: noch nachsehen (fragt der Manager Session 2).
+- Englisch-App: über GitHub Pages unter `https://cj-prog.github.io/Englisch-App/` (laut Session 2).
 
 ## Budget
 
