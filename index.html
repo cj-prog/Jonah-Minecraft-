@@ -350,6 +350,38 @@
     font-weight:bold; color:#fff; background:rgba(20,16,44,.95); padding:9px 12px;
     border-radius:14px; border:3px solid #ffd45a; line-height:1.3;
     box-shadow:0 4px 16px rgba(0,0,0,.45); }
+  /* 📚 DER WECHSEL-KNOPF ZUR ENGLISCH-LERN-APP
+     Jonahs Wunsch: "Oben an der Seite so einen Knopf, wo ich hin und her
+     schalten kann." Er steht oben in der Knopf-Reihe - und weil er auch auf
+     dem Startbildschirm zu sehen sein soll, liegt er ÜBER ihm (z-index). */
+  #engBtn { width:40px; height:40px; font-size:20px; z-index:52;
+    background:rgba(120,80,200,.55); }
+  /* 🤔 „So habe ich dich verstanden" - vor dem Bauen */
+  #weltVerstanden { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
+    flex-direction:column; gap:9px; background:rgba(10,14,30,.98); padding:14px;
+    border-radius:18px; color:#fff; z-index:64; width:min(96vw,460px);
+    max-height:92vh; overflow-y:auto; border:3px solid #ffd34a; }
+  #weltVerstanden h3 { font-size:18px; margin:0; text-align:center; }
+  #weltVerstandenListe { display:flex; flex-direction:column; gap:7px; }
+  .vstZeile { background:rgba(255,255,255,.08); border-radius:11px; padding:8px 10px;
+    font-size:13px; line-height:1.45; }
+  .vstZeile b { font-size:12px; opacity:.85; display:block; }
+  .vstZeile.nix { background:rgba(255,160,90,.18); }
+  .vstSatz { font-size:11.5px; opacity:.7; font-style:italic; }
+  #weltVerstandenJa { font-size:17px; font-weight:bold; padding:12px; border-radius:12px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+  #weltVerstandenNein { font-size:14px; padding:9px; border-radius:10px; border:none;
+    background:#5a6a80; color:#fff; cursor:pointer; }
+  #engWahl { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
+    flex-direction:column; gap:10px; background:rgba(14,10,30,.98); padding:16px;
+    border-radius:18px; color:#fff; z-index:66; width:min(94vw,380px);
+    border:3px solid #c08aff; text-align:center; }
+  #engWahl h3 { font-size:18px; margin:0; }
+  #engWahl p { font-size:12.5px; opacity:.85; line-height:1.45; }
+  #engWahlJa { font-size:16px; font-weight:bold; padding:12px; border-radius:12px;
+    border:none; background:#8a5cd8; color:#fff; cursor:pointer; }
+  #engWahlNein { font-size:14px; padding:9px; border-radius:10px; border:none;
+    background:#5a6a80; color:#fff; cursor:pointer; }
   /* 🌈 blinkt einmal, damit Jonah den Knopf überhaupt findet */
   #weltBtn.blink { animation:weltBlink 1s ease-in-out infinite; }
   @keyframes weltBlink {
@@ -429,7 +461,7 @@
   #wesenBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; align-items:center; gap:8px; background:rgba(14,10,30,.98);
     padding:13px; border-radius:18px; color:#fff; z-index:63; width:min(96vw,460px);
-    max-height:96vh; overflow-y:auto; border:3px solid #c08aff; }
+    max-height:96vh; overflow:auto; border:3px solid #c08aff; }
   #wesenBox h3 { font-size:18px; margin:0; text-align:center; }
   #wesenHinweis { font-size:11.5px; opacity:.85; text-align:center; line-height:1.4; }
   /* 🎨 DAS MAL-FELD: so groß wie irgend möglich. Jonah: "Das Malfeld ist viel
@@ -440,8 +472,20 @@
   #wesenLinks { display:flex; flex-direction:column; align-items:center; gap:7px; }
   #wesenRechts { display:flex; flex-direction:column; gap:7px; flex:1 1 auto;
     min-width:0; width:100%; }
-  #wesenCanvas { width:min(84vw,58vh,400px); height:min(84vw,58vh,400px); background:#fff;
-    border-radius:10px; touch-action:none; image-rendering:pixelated; }
+  /* 🔍 --wz ist die Anzeige-Größe, die Jonah mit 🔍− und 🔍+ einstellt */
+  #wesenCanvas { width:calc(min(84vw,58vh,400px) * var(--wz,1));
+    height:calc(min(84vw,58vh,400px) * var(--wz,1)); background:#fff;
+    border-radius:10px; touch-action:none; image-rendering:pixelated; flex:none; }
+  #wesenEinst { display:flex; flex-direction:column; gap:5px;
+    background:rgba(255,255,255,.07); border-radius:11px; padding:7px 9px; }
+  .wesenEinstZeile { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .wesenEinstZeile > b { font-size:12px; opacity:.9; }
+  #wesenRasterWahl { display:flex; gap:5px; flex-wrap:wrap; }
+  #wesenRasterWahl .jwChip { font-size:12px; padding:5px 9px; }
+  .wesenZoomBtn { font-size:14px; font-weight:bold; padding:4px 9px; border-radius:9px;
+    border:none; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  #wesenZoomTxt { font-size:12px; font-weight:bold; min-width:40px; text-align:center; }
+  .wesenZoomBtn { white-space:nowrap; }
   @media (min-aspect-ratio: 12/10) {     /* 📱 quer gehaltenes Handy */
     #wesenBox { width:min(96vw,760px); gap:6px; }
     #wesenHinweis, #wesenBox h3 { display:none; }   /* Platz für ein großes Feld */
@@ -450,7 +494,8 @@
     /* die Farben stehen quer daneben - dann bleibt die ganze Höhe fürs Malen */
     #wesenPal { flex-direction:column; flex-wrap:wrap;
                 max-height:min(46vw,80vh,400px); width:64px; }
-    #wesenCanvas { width:min(46vw,80vh,400px); height:min(46vw,80vh,400px); }
+    #wesenCanvas { width:calc(min(46vw,80vh,400px) * var(--wz,1));
+                   height:calc(min(46vw,80vh,400px) * var(--wz,1)); }
   }
   #wesenPal { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; }
   #wesenPal .palBtn { width:26px; height:26px; border-radius:7px;
@@ -1184,6 +1229,19 @@
 </div>
 <div class="hud btn" id="filmBtn" title="Eigenen Film drehen">🎥</div>
 <div class="hud btn" id="weltBtn" title="Zwischen deinen Welten umschalten">🌈</div>
+<div class="hud btn" id="engBtn" title="Zur Englisch-Lern-App">📚</div>
+<div class="hud" id="weltVerstanden">
+  <h3>🤔 So habe ich dich verstanden!</h3>
+  <div id="weltVerstandenListe"></div>
+  <button id="weltVerstandenJa">✅ Ja, genau so!</button>
+  <button id="weltVerstandenNein">✏️ Nee, ich ändere noch was</button>
+</div>
+<div class="hud" id="engWahl">
+  <h3>📚 Zur Englisch-Lern-App?</h3>
+  <p>Dein Spielstand wird vorher gespeichert – du kannst jederzeit wieder zurück!</p>
+  <button id="engWahlJa">📚 Ja, zur Englisch-Lern-App!</button>
+  <button id="engWahlNein">✖ Abbrechen</button>
+</div>
 <div class="hud" id="weltTipp">⬆️ Hier ist dein 🌈-Knopf! Tipp ihn an – dann baust du dir deine ganz eigene Welt!</div>
 <div class="hud" id="weltWahl">
   <h3>🌍 In welche Welt möchtest du?</h3>
@@ -1200,6 +1258,14 @@
       <div id="wesenPal"></div>
     </div>
     <div id="wesenRechts">
+      <div id="wesenEinst">
+        <div class="wesenEinstZeile"><b>🔲 Kästchen</b><div id="wesenRasterWahl"></div></div>
+        <div class="wesenEinstZeile"><b>🔍 Größe</b>
+          <button id="wesenKleiner" class="wesenZoomBtn">🔍−</button>
+          <span id="wesenZoomTxt">100 %</span>
+          <button id="wesenGroesser" class="wesenZoomBtn">🔍+</button>
+        </div>
+      </div>
       <input id="wesenName" maxlength="20" placeholder="Wie heißt es?">
       <input id="wesenKann" maxlength="90" placeholder="Was kann es? z. B. fliegen, hüpfen, leuchten">
       <div id="wesenKannTxt"></div>
@@ -1690,7 +1756,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 294 &middot; 🛟📱 DEINE STICKER IN DER ENGLISCH-APP SIND JETZT SICHER! In der Englisch-App waren plötzlich alle Sticker weg. Schuld war JonahCraft: Wenn das Spiel den gemeinsamen Stand mal nicht lesen konnte, hat es beim nächsten Speichern einfach ALLES überschrieben – Sticker, gelernte Wörter und Chats. Das kann jetzt nicht mehr passieren: Klappt das Lesen nicht, schreibt das Spiel gar nichts mehr zurück, und beim Speichern ändert es nur noch genau die Felder, die es selbst anfasst. Alles andere bleibt stehen.</p>
+    Version 298 &middot; 🎛️☀️ „IMMER SONNE" KLAPPT JETZT – UND ALLE ANDEREN EINSTELLUNGEN AUCH! Jonah hat geschrieben „immer Sonne" und das Spiel hat gesagt, es versteht nichts. Jetzt kennt es ALLE Knöpfe des Baukastens in Kinder-Worten: Wetter (immer Sonne, Regen, es schneit), Himmel (heller Tag, Abendrot, Nacht, Sterne), Land (platt, Hügel, Gebirge, Inseln), Wasser (kein Wasser, Seen, Meer), Bäume (kahl bis Dschungel), Boden (Wiese, Strand, Felsen, Gold, Regenbogen) und Schwerkraft (Mond-Sprünge, bleischwer). Egal, in welches Feld du es schreibst! Und wenn doch mal etwas nicht ankommt, zeigt dir das Spiel jetzt Beispielsätze, die wirklich gehen. 💡</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1736,7 +1802,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 294;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 298;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3383,8 +3449,104 @@ const JW_ORTE = [
   { w:['weit weg','ganz draußen','am rand','rand','fern'],  o:'rand',   t:'weit draußen 🧭' },
   { w:['auf den bergen','auf dem berg','oben','hoch oben'], o:'hoch',   t:'oben auf den Bergen ⛰️' },
   { w:['im tal','in den tälern','unten','ganz unten'],      o:'tief',   t:'unten in den Tälern 🏞️' },
+  { w:['unter der erde','unterirdisch','in höhlen','in hoehlen','in der höhle',
+       'in der hoehle','untergrund','im boden','tief unter'],
+    o:'untergrund', t:'unter der Erde 🕳️' },
+  { w:['an der oberfläche','an der oberflaeche','oberirdisch','draußen auf der erde'],
+    o:'oberflaeche', t:'oben an der Oberfläche ☀️' },
   { w:['überall','ueberall'],                               o:'ueberall', t:'überall 🌍' },
 ];
+// 🚫 Verneinungen: "kein Wasser", "ohne Bäume", "nicht"
+const JW_NEIN = ['kein', 'keine', 'keinen', 'keiner', 'nichts', 'ohne', 'nie', 'niemals'];
+// ============== 🎛️ ALLE EINSTELLUNGEN IN KINDER-WORTEN ================
+// Jonah hat „immer Sonne" geschrieben und das Spiel hat gesagt, es versteht
+// nichts. Jetzt kennt es ALLE Knöpfe des Baukastens - und zwar so, wie ein
+// Kind sie nennt. (Egal, in welches Feld er es schreibt.)
+const JW_EINST = [
+  // ☀️🌧️❄️ DAS WETTER - in Jonahs Welt wechselt es nie, es bleibt so
+  { feld:'wetter', wert:'sonne',
+    w:['sonne','sonnig','sonnenschein','schönes wetter','schoenes wetter','heiter',
+       'blauer himmel','kein regen','keinen regen'], t:'☀️ Wetter: immer Sonne' },
+  { feld:'wetter', wert:'regen',
+    w:['regen','regn','gewitter','schauer','nieselt','pladdert'], t:'🌧️ Wetter: Regen' },
+  { feld:'wetter', wert:'schnee',
+    w:['schneit','schneefall','schneesturm','schneegestöber','es schneit'], t:'❄️ Wetter: Schnee' },
+  // 🌤️ DER HIMMEL
+  { feld:'himmel', wert:'tag',   w:['heller tag','immer tag','tagsüber','tagsueber','taghell',
+                                     'mittag','morgens','sonnenaufgang'], t:'☀️ Himmel: heller Tag' },
+  { feld:'himmel', wert:'abend', w:['abendrot','abend','sonnenuntergang','dämmerung','daemmerung',
+                                     'abends'], t:'🌇 Himmel: Abendrot' },
+  { feld:'himmel', wert:'nacht', w:['nacht','nachts','dunkel','finster','stockdunkel','sterne',
+                                     'sternenhimmel'], t:'🌙 Himmel: Nacht' },
+  // 🏞️ DAS LAND
+  { feld:'gelaende', wert:'flach',  w:['platt','ganz eben','eben','brett','keine berge',
+                                        'pfannkuchen'], t:'🟩 Land: platt wie ein Brett' },
+  { feld:'gelaende', wert:'huegel', w:['hügel','huegel','hügelig','huegelig','wellig'], t:'🏞️ Land: Hügel' },
+  { feld:'gelaende', wert:'berge',  w:['gebirge','gipfel','hohe berge','berge','berg'], t:'⛰️ Land: hohe Berge' },
+  { feld:'gelaende', wert:'inseln', w:['inseln','insel','archipel'], t:'🏝️ Land: Inseln' },
+  // 💧 DAS WASSER
+  { feld:'wasser', wert:'keins', w:['kein wasser','keinen see','wüste','wueste','knochentrocken'],
+    t:'🚫 Wasser: gar keins' },
+  { feld:'wasser', wert:'seen',  w:['seen','teiche','teich','see'], t:'💧 Wasser: Seen' },
+  { feld:'wasser', wert:'ozean', w:['ozean','meer','ganz viel wasser','überschwemmt','ueberschwemmt',
+                                     'alles unter wasser'], t:'🌊 Wasser: ganz viel' },
+  // 🌳 DIE BÄUME
+  { feld:'baeume', wert:'keine',     w:['keine bäume','keine baeume','ohne bäume','ohne baeume',
+                                         'kahl','baumlos'], t:'🚫 Bäume: keine' },
+  { feld:'baeume', wert:'wenige',    w:['ein paar bäume','wenige bäume','wenig bäume'], t:'🌱 Bäume: ein paar' },
+  { feld:'baeume', wert:'viele',     w:['viele bäume','viele baeume','wald','wälder','waelder'], t:'🌳 Bäume: viele' },
+  { feld:'baeume', wert:'dschungel', w:['dschungel','urwald','regenwald'], t:'🌴 Bäume: Dschungel' },
+  // 🪂 DIE SCHWERKRAFT
+  { feld:'schwer', wert:'leicht', w:['mond','mondsprünge','mondspruenge','federleicht','schweben',
+                                      'ganz hoch springen','leicht'], t:'🪶 Schwerkraft: Mond-Sprünge' },
+  { feld:'schwer', wert:'schwer', w:['schwerkraft','bleischwer','ganz schwer','schwer'], t:'🪨 Schwerkraft: schwer' },
+  // 🪨 DER BODEN (die Knöpfe - das Material steht extra in JW_STOFFE)
+  { feld:'boden', wert:'gras',   w:['wiese','rasen','grasboden','gras'], t:'🌿 Boden: Gras' },
+  { feld:'boden', wert:'sand',   w:['sandboden','strand','sand'],       t:'🏖️ Boden: Sand' },
+  { feld:'boden', wert:'schnee', w:['schneeboden','eiswelt','schneewelt'], t:'❄️ Boden: Schnee' },
+  { feld:'boden', wert:'stein',  w:['steinboden','felsen','steinwelt'], t:'🪨 Boden: Stein' },
+  { feld:'boden', wert:'gold',   w:['goldboden','goldwelt','alles aus gold'], t:'🪙 Boden: Gold' },
+  { feld:'boden', wert:'bunt',   w:['bunt','regenbogen','kunterbunt'],  t:'🌈 Boden: bunt' },
+];
+// Welche Einstellungen stecken im Satz? (je Feld das längste passende Wort)
+function jwEinstLesen(t) {
+  const roh = {}, lang = {}, txt = [], wort = {};
+  for (const e of JW_EINST) for (const w of e.w) {
+    if (w.length <= (lang[e.feld] || 0)) continue;
+    if (jwWortAb(t, w) < 0) continue;
+    // „aus Schnee" ist ein Material, kein Wetter - das lassen wir dem Stoff.
+    // Und in „Regenbogen" und „Regenwald" steckt zwar „Regen", gemeint ist
+    // aber etwas ganz anderes.
+    if (e.feld === 'wetter' && e.wert === 'schnee' && /aus schnee/.test(t)) continue;
+    if (e.feld === 'wetter' && e.wert === 'regen' &&
+        (w === 'regen' || w === 'regn') && /regenbogen|regenwald/.test(t)) continue;
+    lang[e.feld] = w.length; roh[e.feld] = e; wort[e.feld] = w;
+  }
+  const einst = {}, woerter = [];
+  for (const f in roh) {
+    einst[f] = roh[f].wert; txt.push(roh[f].t);
+    // ALLE Wörter dieses Eintrags merken, die im Satz stehen - sie sind schon
+    // verbraucht. (Sonst würde aus „platt wie ein Brett" noch ein Holzboden.)
+    const meine = [];
+    for (const w of roh[f].w) if (jwWortAb(t, w) >= 0) meine.push(w);
+    woerter.push(meine);
+  }
+  return Object.keys(einst).length ? { einst, txt, woerter } : null;
+}
+// 💡 Wenn gar nichts ankommt: ein paar Sätze zeigen, die wirklich gehen
+const JW_BEISPIELE = [
+  '„immer Sonne"', '„ganz hohe Berge"', '„Wasser nur unter der Erde"',
+  '„der Boden aus Gold im Norden"', '„ganz viele Bäume aus Bonbons"',
+  '„Türme aus Kristall"', '„ohne Bäume"', '„es soll immer Nacht sein"',
+  '„ganz viele Kühe im Westen"', '„Mond-Sprünge"',
+];
+function jwBeispiele(n) {
+  const a = JW_BEISPIELE.slice();
+  const raus = [];
+  for (let i = 0; i < (n || 3) && a.length; i++)
+    raus.push(a.splice(Math.floor(Math.random()*a.length), 1)[0]);
+  return raus.join(' · ');
+}
 // 🏗️ Was Jonah sich sonst noch in seine Welt wünschen kann
 const JW_BAUTEN = [
   { w:['türme','tuerme','turm','säulen','saeulen','säule','saeule'], art:'turm',     t:'Türme 🗼' },
@@ -3468,10 +3630,20 @@ const JW_HOEHEN = [
     h:0.3, t:'ganz flach' },
 ];
 // Das längste passende Wort gewinnt („ganz viele" schlägt „viele")
+// 🔎 Steht dieses Wort im Satz - und zwar als ANFANG eines Wortes?
+// (Vorher wurde einfach irgendwo im Text gesucht. Dann steckte in „geben"
+// das Wort „eben" und das Spiel baute eine ganz flache Welt. Jonah hat das
+// gemerkt: "Ich habe eingegeben, dass es nur unter der Erde Wasser geben
+// soll. Aber dann hat er verstanden: aus Erde, ganz flach.")
+function jwWortAb(t, w) {
+  for (let i = t.indexOf(w); i >= 0; i = t.indexOf(w, i + 1))
+    if (i === 0 || !/[a-zäöüßà-ÿ0-9]/.test(t[i-1])) return i;
+  return -1;
+}
 function jwFinde(liste, t) {
   let best = null, bl = 0;
   for (const e of liste) for (const w of e.w)
-    if (t.includes(w) && w.length > bl) { bl = w.length; best = e; }
+    if (w.length > bl && jwWortAb(t, w) >= 0) { bl = w.length; best = e; }
   return best;
 }
 // 🥞 „DIE ERSTE SCHICHT AUS GOLD, DIE ZWEITE AUS SAND ..."
@@ -3521,30 +3693,70 @@ function jwSchichtenText(schichten) {
     (i + 1) + '. Schicht ' + (namen[b] || '?')).filter(x => x).join(' · ');
 }
 function jwTextLesen(text) {
-  const t = (text || '').toLowerCase();
-  if (!t.trim()) return null;
-  const stoff = jwFinde(JW_STOFFE, t), ort = jwFinde(JW_ORTE, t);
-  const menge = jwFinde(JW_MENGEN, t), hoch = jwFinde(JW_HOEHEN, t);
+  const t0 = (text || '').toLowerCase();
+  if (!t0.trim()) return null;
+  // 📍 ZUERST der Ort - und dann wird er aus dem Satz GESTRICHEN. Sonst
+  // würde aus "unter der Erde" auch noch "Boden aus Erde" werden.
+  const ort = jwFinde(JW_ORTE, t0);
+  let t = t0;
+  if (ort) for (const w of ort.w) {
+    let i = jwWortAb(t, w);
+    while (i >= 0) { t = t.slice(0, i) + ' '.repeat(w.length) + t.slice(i + w.length);
+                     i = jwWortAb(t, w); }
+  }
+  // 🥞 Die Schichten zuerst lesen - da zählen die Stoffe ("vierte Schicht aus
+  // Gras"), nicht der Boden-Knopf.
+  const schichten = jwSchichtenLesen(t);
+  // 🎛️ Dann die Einstellungen ("immer Sonne", "platt wie ein Brett") - deren
+  // Wörter werden AUCH gestrichen, sonst würde aus "Brett" noch ein Holzboden.
+  const E = jwEinstLesen(t0);
+  if (E && schichten && E.einst.boden) {        // die Schichten gewinnen
+    const i = Object.keys(E.einst).indexOf('boden');
+    E.woerter.splice(i, 1); E.txt.splice(i, 1); delete E.einst.boden;
+  }
+  // ... aber NUR für die Material-Suche. Für Menge und Höhe zählen sie weiter
+  // („ganz hohe Berge im Osten" soll die Berge im Osten wirklich höher machen).
+  let tStoff = t;
+  if (E) for (const gruppe of E.woerter) for (const w of gruppe) {
+    let i = jwWortAb(tStoff, w);
+    while (i >= 0) { tStoff = tStoff.slice(0, i) + ' '.repeat(w.length) + tStoff.slice(i + w.length);
+                     i = jwWortAb(tStoff, w); }
+  }
+  const stoff = jwFinde(JW_STOFFE, tStoff);
+  let menge = jwFinde(JW_MENGEN, t), hoch = jwFinde(JW_HOEHEN, t);
+  // 🚫 "kein Wasser", "ohne Bäume": dann gibt es davon gar nichts
+  const nein = JW_NEIN.some(w => jwWortAb(t0, w) >= 0);
+  if (nein) menge = { m: 0, t: 'gar keine 🚫' };
   const tiere = JW_TIERE.filter(x => t.includes(x.txt.split(' ')[1].toLowerCase().slice(0, 5)));
   const bauten = JW_BAUTEN.filter(x => x.w.some(w => t.includes(w)));
-  const schichten = jwSchichtenLesen(t);          // 🥞 „erste Schicht aus Gold ..."
-  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length && !schichten)
+  // 🎯 "nur im Norden", "nur unter der Erde": das ist eine harte Grenze
+  const nur = /\bnur\b/.test(t0) && !!ort;
+  const hatEinst = E && Object.keys(E.einst).length;
+  if (!stoff && !ort && !menge && !hoch && !tiere.length && !bauten.length && !schichten && !hatEinst)
     return { leer:true };
   return {
     block: stoff ? stoff.b : null, ort: ort ? ort.o : null,
     menge: menge ? menge.m : null,  hoch: hoch ? hoch.h : null,
     tiere: tiere.map(x => x.id),
     bauten: bauten.map(x => x.art),
-    schichten,
-    txt: [schichten ? jwSchichtenText(schichten) : null,
+    schichten, nur, nein,
+    einst: hatEinst ? E.einst : null,
+    txt: [hatEinst ? E.txt.join(' · ') : null,
+          schichten ? jwSchichtenText(schichten) : null,
           bauten.length ? bauten.map(x => x.t).join(', ') : null,
-          schichten ? null : (stoff && stoff.t), ort && ort.t, menge && menge.t, hoch && hoch.t,
+          schichten ? null : (stoff && stoff.t),
+          ort && ((nur ? 'NUR ' : '') + ort.t), menge && menge.t, hoch && hoch.t,
           tiere.length ? tiere.map(x => x.txt).join(', ') : null].filter(x => x).join(' · '),
   };
 }
 // Gilt eine Regel an dieser Stelle? (h = Bodenhöhe, nur für oben/unten nötig)
 function jwInZone(ort, x, z, h) {
   if (!ort || ort === 'ueberall') return true;
+  // 🕳️ "unter der Erde" und ☀️ "an der Oberfläche" sind keine Himmelsrichtungen -
+  // sie sagen, ob etwas OBEN oder UNTEN sein soll. Für alles, was auf dem Boden
+  // steht, heißt "unter der Erde" deshalb: hier NICHT.
+  if (ort === 'untergrund')  return false;
+  if (ort === 'oberflaeche') return true;
   const weit = Math.max(Math.abs(x), Math.abs(z));
   if (ort === 'norden') return z < -30;
   if (ort === 'sueden') return z > 30;
@@ -3651,12 +3863,18 @@ function jwPlanAnwenden() {
     const r = jwTextLesen(weltPlan.text[k]);
     if (r && !r.leer) jwRegeln[k] = r;
   }
-  // ✍️ Schreibt er „Nacht" oder „Regen" ins Feld, wird auch der Knopf umgestellt
-  for (const [key, tab] of [['himmel', JW_HIMMEL], ['wetter', JW_WETTER], ['schwer', JW_SCHWER]]) {
-    const t = ((weltPlan.text || {})[key] || '').toLowerCase();
-    if (!t.trim()) continue;
-    for (const k in tab) if (t.includes(k)) { weltPlan[key] = k; break; }
-    if (key === 'schwer' && /mond|leicht|schweb/.test(t)) weltPlan.schwer = 'leicht';
+  // ✍️🎛️ Schreibt Jonah „immer Sonne", „hohe Berge" oder „Dschungel" irgendwo
+  // hin, wird auch wirklich der passende Knopf umgestellt. Der Wunsch-Zettel
+  // zuerst, danach die einzelnen Fragen - die haben das letzte Wort.
+  {
+    const texte = weltPlan.text || {};
+    const reihe = ['wunsch', 'boden', 'gelaende', 'wasser', 'baeume', 'himmel',
+                   'wetter', 'schwer', 'tiere', 'extras'];
+    for (const k of reihe) {
+      const E = jwEinstLesen((texte[k] || '').toLowerCase());
+      if (!E) continue;
+      for (const f in E.einst) weltPlan[f] = E.einst[f];
+    }
   }
   for (const k in jwSeeCache) delete jwSeeCache[k];   // 💧 Wasserhöhe neu ausrechnen
   for (const k in jwWesenTex) { gl.deleteTexture(jwWesenTex[k]); delete jwWesenTex[k]; }
@@ -4661,6 +4879,15 @@ function genPlanetChunk(cx, cz, ohneEdits, dim) {
       if (RW && RW.ort && !jwInZone(RW.ort, wx, wz, h)) see = null;
       if (RW && RW.menge === 0) see = null;
       if (see !== null) for (let y=h+1; y<=see; y++) setz(lx, y, lz, WATER);
+      // 🕳️ „Wasser NUR unter der Erde": oben bleibt alles trocken, aber tief
+      // unten liegen Höhlen-Seen. (Jonahs Wunsch vom 31.10.)
+      if (RW && RW.ort === 'untergrund') {
+        const uY = h - 12;
+        if (uY > CH_MIN + 6 && vnoise(wx*0.035, wz*0.035, 4242) > 0.22) {
+          for (let y = uY - 2; y <= uY; y++) setz(lx, y, lz, WATER);
+          for (let y = uY + 1; y <= uY + 3; y++) setz(lx, y, lz, AIR);
+        }
+      }
       const trocken = see === null || h > see;
       if (B.eis) {                      // ❄️ Schnee-Welt: oben liegt Schnee
         if (trocken && r < 0.6) setz(lx, h+1, lz, SNOW);
@@ -6849,13 +7076,16 @@ function loadGame() {
       p.text = txt;
       // 🎨 und seine gemalten Wesen
       p.wesen = (Array.isArray(p.wesen) ? p.wesen : [])
-        .filter(w => w && typeof w.bild === 'string' && w.bild.length === PN*PN)
+        .filter(w => { if (!w || typeof w.bild !== 'string') return false;
+          const n = Math.round(Math.sqrt(w.bild.length));
+          return n*n === w.bild.length && JW_RASTER.indexOf(n) >= 0; })
         .slice(0, JW_WESEN_MAX)
         .map(w => {
           const gr2 = jwGroesseLesen(w.gross || ''), an2 = jwAnzahlLesen(w.wieviele || '');
           const f2 = jwKannLesen(w.kann || '').f;
           return { name: String(w.name || 'Mein Wesen').slice(0, 20), bild: w.bild,
                    kann: String(w.kann || '').slice(0, 90),
+                   raster: Math.round(Math.sqrt(w.bild.length)),
                    gross: String(w.gross || '').slice(0, 60),
                    wieviele: String(w.wieviele || '').slice(0, 40), f: f2,
                    gr: gr2 ? gr2.gr : (typeof w.gr === 'number' ? w.gr
@@ -11951,10 +12181,11 @@ function makePaintTexture(key) {
 function jwWesenTextur(i) {
   const d = (weltPlan.wesen || [])[i];
   if (!d || !d.bild) return false;
-  const c = document.createElement('canvas'); c.width = PN; c.height = PN;
+  const N = Math.round(Math.sqrt(d.bild.length)) || 12;   // eigene Kästchen-Zahl
+  const c = document.createElement('canvas'); c.width = N; c.height = N;
   const g = c.getContext('2d');
-  for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
-    const v = parseInt(d.bild[y*PN+x], 16) || 0;
+  for (let y=0; y<N; y++) for (let x=0; x<N; x++) {
+    const v = parseInt(d.bild[y*N+x], 16) || 0;
     if (!v) continue;                   // 0 = weiß = durchsichtig
     g.fillStyle = PAINT_COLS[v];
     g.fillRect(x, y, 1, 1);
@@ -30074,9 +30305,9 @@ function weltWunschPruefen() {
   const r = jwTextLesen(inp.value);
   if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; return; }
   if (r.leer || !r.txt) {
-    sagt.textContent = '❓ Das habe ich nicht verstanden. Ich kann: Türme, Häuser, ' +
-      'Pyramiden, Statuen, Pilze, Seen, Fackeln, Blumen und Schatztruhen – aus Gold, ' +
-      'Stein, Holz, Kristall, Bonbons … und zum Beispiel „im Norden" oder „überall".';
+    sagt.textContent = '❓ Das habe ich noch nicht verstanden. So geht es zum Beispiel: ' +
+      jwBeispiele(4) + ' – ich kenne Türme, Häuser, Pyramiden, Statuen, Pilze, Seen, Fackeln, ' +
+      'Blumen und Schatztruhen, dazu Wetter, Himmel, Land, Bäume, Tiere und die Schwerkraft.';
     sagt.className = 'jwVerstanden nix';
   } else {
     sagt.textContent = '✅ Verstanden: ' + r.txt;
@@ -30121,9 +30352,9 @@ function weltFragenZeichnen() {
       const r = jwTextLesen(inp.value);
       if (!r) { sagt.textContent = ''; sagt.className = 'jwVerstanden'; return null; }
       if (r.leer || !r.txt) {
-        sagt.textContent = '❓ Das habe ich nicht verstanden – probier zum Beispiel ' +
-                           '„aus Gold im Norden", „ganz viele" oder ' +
-                           '„erste Schicht aus Gold, zweite Schicht aus Sand".';
+        sagt.textContent = '❓ Das habe ich noch nicht verstanden. So geht es zum ' +
+                           'Beispiel: ' + jwBeispiele(4) + ' – du kannst auch Wörter wie ' +
+                           '„immer", „nur", „kein", „überall", „im Norden" oder „unter der Erde" benutzen!';
         sagt.className = 'jwVerstanden nix';
         return null;
       }
@@ -30189,10 +30420,11 @@ function jwWesenListe() {
     const z = document.createElement('div');
     z.className = 'jwWesenZeile';
     const c = document.createElement('canvas');
-    c.className = 'jwWesenBild'; c.width = PN; c.height = PN;
+    const N = Math.round(Math.sqrt(d.bild.length)) || 12;
+    c.className = 'jwWesenBild'; c.width = N; c.height = N;
     const g = c.getContext('2d');
-    for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
-      const v = parseInt(d.bild[y*PN+x], 16) || 0;
+    for (let y=0; y<N; y++) for (let x=0; x<N; x++) {
+      const v = parseInt(d.bild[y*N+x], 16) || 0;
       if (!v) continue;
       g.fillStyle = PAINT_COLS[v]; g.fillRect(x, y, 1, 1);
     }
@@ -30222,9 +30454,59 @@ function jwWesenListe() {
     box.appendChild(z);
   });
 }
+// ============== 🤔 „SO HABE ICH DICH VERSTANDEN!" =====================
+// Jonah hat gemeldet, dass das Spiel seinen Satz falsch verstanden hat und er
+// es erst in der fertigen Welt gemerkt hat. Deshalb zeigt das Spiel jetzt
+// VOR dem Bauen, was angekommen ist - und baut erst nach seinem OK.
+const JW_FRAGE_NAME = { wunsch:'✍️ Dein Wunsch', boden:'🪨 Boden', gelaende:'🏞️ Land',
+  wasser:'💧 Wasser', baeume:'🌳 Bäume', himmel:'🌤️ Himmel', wetter:'🌦️ Wetter',
+  schwer:'🪂 Schwerkraft', tiere:'🐾 Tiere', extras:'✨ Extras' };
+function weltVerstandenZeigen() {
+  const liste = document.getElementById('weltVerstandenListe');
+  liste.innerHTML = '';
+  let etwas = false;
+  const zeile = (titel, satz, txt, ok) => {
+    etwas = true;
+    const d = document.createElement('div');
+    d.className = 'vstZeile' + (ok ? '' : ' nix');
+    const b = document.createElement('b'); b.textContent = titel; d.appendChild(b);
+    const g = document.createElement('div');
+    g.textContent = ok ? txt
+      : '❓ Das kann ich noch nicht: „' + satz + '". So geht es zum Beispiel: ' + jwBeispiele(3);
+    d.appendChild(g);
+    if (ok) { const sz = document.createElement('div');
+      sz.className = 'vstSatz'; sz.textContent = '„' + satz + '"'; d.appendChild(sz); }
+    liste.appendChild(d);
+  };
+  for (const k in JW_FRAGE_NAME) {
+    const satz = ((weltPlan.text || {})[k] || '').trim();
+    if (!satz) continue;
+    const r = jwTextLesen(satz);
+    zeile(JW_FRAGE_NAME[k], satz, r && r.txt, !!(r && !r.leer && r.txt));
+  }
+  const wesen = (weltPlan.wesen || []);
+  if (wesen.length) {
+    etwas = true;
+    const d = document.createElement('div');
+    d.className = 'vstZeile';
+    const b = document.createElement('b'); b.textContent = '🎨 Deine gemalten Wesen';
+    d.appendChild(b);
+    const g = document.createElement('div');
+    g.textContent = wesen.map(w => w.name + ' (' + (w.n || 2) + '×)').join(' · ');
+    d.appendChild(g);
+    liste.appendChild(d);
+  }
+  if (!etwas) return false;             // nichts selbst geschrieben: gleich bauen
+  document.getElementById('weltVerstanden').style.display = 'flex';
+  blip(700, 0.05); blip(900, 0.06);
+  return true;
+}
 function weltBauenFertig() {
   const nm = (document.getElementById('weltNameInput').value || '').trim().slice(0, 24);
   weltPlan.name = nm || 'Meine Welt';
+  // erst zeigen, was angekommen ist - gebaut wird nach dem OK
+  if (!weltBauenBestaetigt && weltVerstandenZeigen()) return;
+  weltBauenBestaetigt = false;
   const zumErstenMal = !weltFertig;
   weltFertig = true;
   jwPlanAnwenden();
@@ -30243,6 +30525,7 @@ function weltBauenFertig() {
             'zwischen deinen Welten hin und her – und umbauen kannst du sie jederzeit!', 11000);
   }
 }
+let weltBauenBestaetigt = false;        // hat Jonah „Ja, genau so!" gedrückt?
 function jwNeuZeichnen() {              // die Welt nach einer Änderung neu bauen
   for (const ch of [...chunks.values()]) freeChunk(ch);
   cropSet.clear(); snowSet.clear();
@@ -30255,25 +30538,90 @@ function jwNeuZeichnen() {              // die Welt nach einer Änderung neu bau
 // Gemalte danach in Jonahs Welt herumläuft.
 const wCan = document.getElementById('wesenCanvas');
 const wCtx = wCan.getContext('2d');
-const WPIX = 480, WCELL = WPIX / PN;   // 🎨 feiner gezeichnet
+// ============== 🎨 DAS MAL-FELD: GRÖSSE EINSTELLBAR ====================
+// Jonahs Wunsch: "Dass ich bei dem, wo ich die Wesen male, einstellen kann,
+// wie groß das Malfeld ist." Er wollte BEIDES:
+//   1. Wie viele Kästchen? 12, 16, 24 oder 32 pro Reihe - mehr Kästchen
+//      heißt feiner malen, und das Wesen sieht in der Welt auch so fein aus.
+//   2. Wie groß soll das Feld auf dem Bildschirm sein? 🔍− und 🔍+.
+// Alte Wesen (12x12) bleiben, wie sie sind: jedes Wesen merkt sich seine
+// eigene Kästchen-Zahl.
+const JW_RASTER = [12, 16, 24, 32];     // so viele Kästchen pro Reihe gibt es
+const WESEN_ZOOM_KEY = 'jonahcraft_wesen_zoom';
+const WPIX = 480;                       // so fein wird die Mal-Fläche gerechnet
+let wesenRaster = 12;                   // womit malt Jonah gerade?
+let wesenBasis = null;                  // das zuletzt HANDgemalte Bild {raster, daten}
+let wesenZoom = 1;                      // Anzeige-Größe des Feldes
+function wesenRasterOk(n) { return JW_RASTER.indexOf(n) >= 0; }
+// Ein Bild auf eine andere Kästchen-Zahl umrechnen (jedes Kästchen wird
+// einfach übernommen - so geht beim Wechseln nichts kaputt).
+function wesenSkalieren(daten, von, nach) {
+  if (von === nach) return daten.slice();
+  const neu = new Array(nach*nach).fill('0');
+  for (let y = 0; y < nach; y++) for (let x = 0; x < nach; x++)
+    neu[y*nach + x] = daten[Math.floor(y*von/nach)*von + Math.floor(x*von/nach)] || '0';
+  return neu;
+}
+function wesenZoomLesen() {
+  try { const z = parseFloat(localStorage.getItem(WESEN_ZOOM_KEY)); 
+    if (z >= 0.6 && z <= 2) return z; } catch(e) {}
+  return 1;
+}
+function wesenZoomSetzen(z) {
+  wesenZoom = Math.max(0.6, Math.min(2, Math.round(z * 10) / 10));
+  document.documentElement.style.setProperty('--wz', wesenZoom);
+  try { localStorage.setItem(WESEN_ZOOM_KEY, String(wesenZoom)); } catch(e) {}
+  const t = document.getElementById('wesenZoomTxt');
+  if (t) t.textContent = Math.round(wesenZoom * 100) + ' %';
+}
+// Die Knopf-Reihe für die Kästchen-Zahl
+function wesenRasterZeichnen() {
+  const w = document.getElementById('wesenRasterWahl');
+  if (!w) return;
+  w.innerHTML = '';
+  for (const n of JW_RASTER) {
+    const b = document.createElement('button');
+    b.className = 'jwChip' + (n === wesenRaster ? ' sel' : '');
+    b.textContent = n + '×' + n;
+    b.addEventListener('click', () => wesenRasterWechseln(n));
+    w.appendChild(b);
+  }
+}
+function wesenRasterWechseln(n) {
+  if (!wesenRasterOk(n) || n === wesenRaster) return;
+  // Vom zuletzt HANDgemalten Bild umrechnen - so kommt beim Hin- und
+  // Herschalten (32 → 12 → 32) alles wieder genau so zurück.
+  const basis = wesenBasis || { raster: wesenRaster, daten: wesenDaten };
+  wesenDaten = wesenSkalieren(basis.daten, basis.raster, n);
+  wesenRaster = n;
+  wesenRasterZeichnen();
+  wesenMalen();
+  wesenEntwurfSichern();
+  blip(620, 0.05); blip(840, 0.06);
+  if (!/^0+$/.test(basis.daten.join('')))
+    toast('🎨 ' + n + '×' + n + ' Kästchen – dein Bild ist mitgekommen!', 3000);
+}
 let wesenDaten = null, wesenFarbe = 2, wesenNr = -1;
 function wesenMalen() {
-  for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
-    wCtx.fillStyle = PAINT_COLS[parseInt(wesenDaten[y*PN+x], 16) || 0];
-    wCtx.fillRect(x*WCELL, y*WCELL, WCELL, WCELL);
+  const N = wesenRaster, ZELL = WPIX / N;
+  for (let y=0; y<N; y++) for (let x=0; x<N; x++) {
+    wCtx.fillStyle = PAINT_COLS[parseInt(wesenDaten[y*N+x], 16) || 0];
+    wCtx.fillRect(x*ZELL, y*ZELL, ZELL, ZELL);
   }
-  wCtx.strokeStyle = 'rgba(0,0,0,0.12)'; wCtx.lineWidth = 2;
-  for (let i=1; i<PN; i++) {
-    wCtx.beginPath(); wCtx.moveTo(i*WCELL, 0); wCtx.lineTo(i*WCELL, WPIX); wCtx.stroke();
-    wCtx.beginPath(); wCtx.moveTo(0, i*WCELL); wCtx.lineTo(WPIX, i*WCELL); wCtx.stroke();
+  wCtx.strokeStyle = 'rgba(0,0,0,0.12)';
+  wCtx.lineWidth = N > 20 ? 1 : 2;      // bei vielen Kästchen dünnere Linien
+  for (let i=1; i<N; i++) {
+    wCtx.beginPath(); wCtx.moveTo(i*ZELL, 0); wCtx.lineTo(i*ZELL, WPIX); wCtx.stroke();
+    wCtx.beginPath(); wCtx.moveTo(0, i*ZELL); wCtx.lineTo(WPIX, i*ZELL); wCtx.stroke();
   }
 }
 function wesenPunkt(clientX, clientY) {
-  const r = wCan.getBoundingClientRect();
-  const x = Math.floor((clientX - r.left) / r.width * PN);
-  const y = Math.floor((clientY - r.top) / r.height * PN);
-  if (x < 0 || x >= PN || y < 0 || y >= PN) return;
-  wesenDaten[y*PN + x] = wesenFarbe.toString(16);
+  const r = wCan.getBoundingClientRect(), N = wesenRaster;
+  const x = Math.floor((clientX - r.left) / r.width * N);
+  const y = Math.floor((clientY - r.top) / r.height * N);
+  if (x < 0 || x >= N || y < 0 || y >= N) return;
+  wesenDaten[y*N + x] = wesenFarbe.toString(16);
+  wesenBasis = { raster: N, daten: wesenDaten.slice() };   // das ist jetzt das Original
   wesenMalen();
   wesenEntwurfSichern();              // 💾 sofort merken
 }
@@ -30306,7 +30654,8 @@ function wesenEntwurfSichern() {
   if (!wesenDaten) return;
   try {
     localStorage.setItem(WESEN_ENTWURF_KEY, JSON.stringify({
-      bild: wesenDaten.join(''), nr: wesenNr, t: Date.now(),
+      bild: wesenDaten.join(''), nr: wesenNr, t: Date.now(), raster: wesenRaster,
+      basis: wesenBasis ? { raster: wesenBasis.raster, daten: wesenBasis.daten.join('') } : null,
       name: wesenFeld('wesenName'), kann: wesenFeld('wesenKann'),
       gross: wesenFeld('wesenGross'), wieviele: wesenFeld('wesenAnzahl') }));
   } catch(e) {}
@@ -30319,8 +30668,12 @@ function wesenEntwurfWeg() {
 function wesenEntwurfLesen() {
   try {
     const d = JSON.parse(localStorage.getItem(WESEN_ENTWURF_KEY) || 'null');
-    if (d && typeof d.bild === 'string' && d.bild.length === PN*PN &&
-        !/^0+$/.test(d.bild) && Date.now() - (d.t || 0) < 14*24*3600*1000) return d;
+    const n = d && typeof d.bild === 'string' ? Math.round(Math.sqrt(d.bild.length)) : 0;
+    if (d && n && wesenRasterOk(n) && n*n === d.bild.length &&
+        !/^0+$/.test(d.bild) && Date.now() - (d.t || 0) < 14*24*3600*1000) {
+      d.raster = n;
+      return d;
+    }
   } catch(e) {}
   return null;
 }
@@ -30334,7 +30687,10 @@ function wesenEntwurfAnbieten() {
 function wesenOeffnen(nr) {
   wesenNr = (nr === undefined) ? -1 : nr;
   const d = wesenNr >= 0 ? weltPlan.wesen[wesenNr] : null;
-  wesenDaten = (d ? d.bild : '0'.repeat(PN*PN)).split('');
+  // jedes Wesen bringt seine eigene Kästchen-Zahl mit (alte: 12)
+  wesenRaster = d && wesenRasterOk(d.raster) ? d.raster : (d ? 12 : wesenRaster);
+  wesenDaten = (d ? d.bild : '0'.repeat(wesenRaster*wesenRaster)).split('');
+  wesenBasis = { raster: wesenRaster, daten: wesenDaten.slice() };
   document.getElementById('wesenName').value = d ? (d.name || '') : '';
   document.getElementById('wesenKann').value = d ? (d.kann || '') : '';
   document.getElementById('wesenGross').value = d ? (d.gross || '') : '';
@@ -30342,7 +30698,12 @@ function wesenOeffnen(nr) {
   // 💾 War da noch ein angefangenes Bild? Dann ist es wieder da.
   const e = wesenEntwurfLesen();
   if (e && e.nr === wesenNr) {
+    wesenRaster = e.raster;
     wesenDaten = e.bild.split('');
+    wesenBasis = (e.basis && wesenRasterOk(e.basis.raster) &&
+                  e.basis.daten.length === e.basis.raster*e.basis.raster)
+               ? { raster: e.basis.raster, daten: e.basis.daten.split('') }
+               : { raster: wesenRaster, daten: wesenDaten.slice() };
     document.getElementById('wesenName').value = e.name || '';
     document.getElementById('wesenKann').value = e.kann || '';
     document.getElementById('wesenGross').value = e.gross || '';
@@ -30350,6 +30711,8 @@ function wesenOeffnen(nr) {
     toast('🎨 Dein angefangenes Bild ist noch da – mal einfach weiter! ✏️', 4500);
   }
   document.getElementById('entwurfBox').style.display = 'none';
+  wesenRasterZeichnen();
+  wesenZoomSetzen(wesenZoom);
   wesenKannZeigen();
   wesenMalen();
   document.getElementById('wesenBox').style.display = 'flex';
@@ -30394,6 +30757,7 @@ function wesenSichern() {
   const f = jwKannLesen(kann).f;
   const grund = f.gross ? 2 : f.klein ? 0.55 : 1;
   const d = { name: name || 'Mein Wesen', bild, kann, f, gross, wieviele,
+              raster: wesenRaster,
               gr:  g ? g.gr  : grund,
               grB: g ? (g.grB !== undefined ? g.grB : g.gr) : grund,
               n:   an ? an.n : 2 };
@@ -30419,6 +30783,18 @@ function wesenSichern() {
   for (const f of [523, 659, 784, 1047]) blip(f, 0.09);
 }
 document.getElementById('weltWesenNeu').addEventListener('click', () => wesenOeffnen());
+document.getElementById('wesenKleiner').addEventListener('click', () => {
+  wesenZoomSetzen(wesenZoom - 0.2); blip(420, 0.05); });
+document.getElementById('wesenGroesser').addEventListener('click', () => {
+  wesenZoomSetzen(wesenZoom + 0.2); blip(760, 0.05); });
+wesenZoom = wesenZoomLesen();
+wesenZoomSetzen(wesenZoom);
+wesenRasterZeichnen();
+const engBtnEl = document.getElementById('engBtn');
+engBtnEl.addEventListener('touchstart', e => { e.preventDefault(); engWahlZeigen(); }, {passive:false});
+engBtnEl.addEventListener('mousedown',  e => { e.preventDefault(); engWahlZeigen(); });
+document.getElementById('engWahlJa').addEventListener('click', engAppHin);
+document.getElementById('engWahlNein').addEventListener('click', () => { engWahlZu(); blip(300,0.06); });
 document.getElementById('entwurfWeiter').addEventListener('click', () => {
   const e = wesenEntwurfLesen();
   wesenOeffnen(e && e.nr >= 0 ? e.nr : undefined);
@@ -30447,8 +30823,9 @@ document.getElementById('weltWunschOk').addEventListener('click', weltWunschOk);
 document.getElementById('weltWunsch').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); weltWunschOk(); } });
 document.getElementById('wesenLeer').addEventListener('click', () => {
-  wesenDaten = '0'.repeat(PN*PN).split(''); wesenMalen(); wesenEntwurfWeg();
-  blip(300, 0.07); });
+  wesenDaten = '0'.repeat(wesenRaster*wesenRaster).split('');
+  wesenBasis = { raster: wesenRaster, daten: wesenDaten.slice() };
+  wesenMalen(); wesenEntwurfWeg(); blip(300, 0.07); });
 document.getElementById('wesenZu').addEventListener('click', () => {
   document.getElementById('wesenBox').style.display = 'none'; blip(300, 0.06); });
 const weltBtnEl = document.getElementById('weltBtn');
@@ -30462,6 +30839,16 @@ function weltBtnTipp() {                // 🌈 angetippt: Auswahl zeigen, Hinwe
 }
 document.getElementById('weltWahlZu').addEventListener('click', () => { weltWahlZu(); blip(300,0.06); });
 document.getElementById('weltFertigBtn').addEventListener('click', weltBauenFertig);
+document.getElementById('weltVerstandenJa').addEventListener('click', () => {
+  document.getElementById('weltVerstanden').style.display = 'none';
+  weltBauenBestaetigt = true;           // jetzt wird wirklich gebaut
+  weltBauenFertig();
+});
+document.getElementById('weltVerstandenNein').addEventListener('click', () => {
+  document.getElementById('weltVerstanden').style.display = 'none';
+  document.getElementById('weltBox').style.display = 'flex';
+  blip(300, 0.06);
+});
 document.getElementById('weltAbbruch').addEventListener('click', () => {
   document.getElementById('weltBox').style.display = 'none'; blip(300, 0.06); });
 document.getElementById('weltNameInput').addEventListener('keydown', e => {
@@ -30477,7 +30864,7 @@ jwPlanAnwenden();
 // die nächste Zeile darunter, und wenn es eng wird, werden sie etwas
 // kleiner. Was sonst oben links anfängt, rutscht genauso weit nach unten.
 const KOPF_KNOEPFE = ['fsBtn','resetBtn','chatBtn','navBtn','mpBtn','mapBtn','selfieBtn',
-                      'rotBtn','repBtn','lookBtn','schwebBtn','filmBtn','weltBtn'];
+                      'rotBtn','repBtn','lookBtn','schwebBtn','filmBtn','weltBtn','engBtn'];
 const KOPF_MASSE = [[40,50,''], [36,44,'17px'], [32,39,'15px']];   // Größe, Abstand, Schrift
 // 🥕 Oben links stehen Karotten, Geld und Co. - so breit wie die Anzeige
 // gerade ist, so viel Platz lassen die Knöpfe frei (höchstens die halbe
@@ -30523,6 +30910,25 @@ function kopfKnoepfePruefen() {
 addEventListener('resize', kopfKnoepfeOrdnen);
 addEventListener('orientationchange', kopfKnoepfeOrdnen);
 kopfKnoepfeOrdnen();
+// ============== 📚 HINÜBER IN DIE ENGLISCH-LERN-APP ====================
+// Jonahs Wunsch: "Wenn ich in JonahCraft bin und drücke, steht da: Gehe in die
+// Englisch-Lern-App - oder Abbrechen. Wenn ich Englisch-Lern-App drücke, bin
+// ich automatisch direkt in der Englisch-Lern-App."
+// Vorher wird IMMER gespeichert, damit nichts verloren geht.
+const ENG_APP_URL = 'https://cj-prog.github.io/Englisch-App/';
+function engWahlZeigen() {
+  document.getElementById('engWahl').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700, 0.05); blip(900, 0.06);
+}
+function engWahlZu() { document.getElementById('engWahl').style.display = 'none'; }
+function engAppHin() {
+  engWahlZu();
+  try { wesenEntwurfSichern(); } catch(e) {}        // 🎨 angefangenes Bild
+  try { clearTimeout(saveTimer); if (started) saveGame(); } catch(e) {}
+  for (const f of [700, 900, 1100]) blip(f, 0.07);
+  location.href = ENG_APP_URL;
+}
 // 🌈 Einmal zeigen, wo der Knopf für die eigene Welt steht - solange Jonah
 // ihn noch nie benutzt hat. Danach kommt der Hinweis nie wieder.
 const WELT_TIPP_KEY = 'jonahcraft_tipp_welt';
