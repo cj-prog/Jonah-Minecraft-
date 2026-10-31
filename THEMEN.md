@@ -70,16 +70,15 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
-- **3 – Englisch-Stand im Spiel absichern** · in Arbeit · an Session 1 gegeben am 31.10. ·
-  JonahCraft darf den Englisch-Stand nie leer überschreiben (gemeldet von Session 2, vermutete
-  Ursache für Jonahs Sticker-Verlust, vom Manager im Code bestätigt) · Meldung abwarten.
-- **4 – Wechsel-Knopf zwischen JonahCraft und Englisch-App** · in Arbeit · Wunsch von Jonah
-  (31.10.): oben ein Knopf, der fragt „Zur anderen App" oder „Abbrechen" und dann direkt
-  hinüberwechselt. 4a JonahCraft → Session 1 (nach Thema 3), 4b Englisch-App → Session 2 ·
-  **4b fertig** (31.10., Englisch-App v2.9, Commit 80a09e8: ⛏️-Knopf oben rechts, speichert vor
-  dem Wechsel) · 4a: Meldung von Session 1 abwarten.
+- **5 – Malfeld-Größe beim Wesen-Malen einstellbar** · offen · Wunsch von Jonah (31.10.) ·
+  Rückfrage an Jonah: mehr Kästchen oder größer auf dem Bildschirm? · danach an Session 1.
 
 ## Erledigt
+
+- **3 – Englisch-Stand im Spiel absichern** · Session 1 · JonahCraft v294 (31.10.): das Spiel
+  überschreibt den Englisch-Stand nie mehr leer.
+- **4 – Wechsel-Knopf zwischen JonahCraft und Englisch-App** · JonahCraft v295 (📚-Knopf in der
+  oberen Knopfreihe, Session 1) und Englisch-App v2.9 (⛏️-Knopf oben rechts, Session 2), 31.10.
 
 - **Session-Manager einrichten** · Branch `claude/relaxed-ptolemy-rz4v9m` · in den Hauptzweig
   gemergt am 25.10. (mit Christians OK).
