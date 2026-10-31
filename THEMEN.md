@@ -70,8 +70,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
-- **5 – Malfeld-Größe beim Wesen-Malen einstellbar** · offen · Wunsch von Jonah (31.10.) ·
-  Rückfrage an Jonah: mehr Kästchen oder größer auf dem Bildschirm? · danach an Session 1.
+- **5 – Malfeld-Größe beim Wesen-Malen einstellbar** · in Arbeit · Wunsch von Jonah (31.10.):
+  beides – Kästchen-Zahl (z. B. 12/16/24/32) und Anzeige-Größe wählbar · an Session 1 gegeben
+  am 31.10. · Meldung abwarten.
 
 ## Erledigt
 
