@@ -80,7 +80,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Stichwort-Verfahren, Bestätigungs-Fenster, Wasser nur unter der Erde – **KI-Teil fehlt noch** ·
   Neue Meldung von Jonah: „immer Sonne" → „nichts verstanden" · Nachauftrag an Session 1:
   KI-Teil, alle Einstellungen (auch Wetter/Himmel) als Wörter, Beispielsätze statt „nichts
-  verstanden" · Meldung abwarten.
+  verstanden" · Jonah: „fast alles" wird nicht verstanden, Sonne war nur ein Beispiel →
+  KI-Teil hat oberste Priorität, für alle Freitext-Felder; ohne Schlüssel klarer Hinweis ·
+  Meldung abwarten.
 
 ## Erledigt
 
