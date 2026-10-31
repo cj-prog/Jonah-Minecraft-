@@ -1756,7 +1756,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 298 &middot; 🎛️☀️ „IMMER SONNE" KLAPPT JETZT – UND ALLE ANDEREN EINSTELLUNGEN AUCH! Jonah hat geschrieben „immer Sonne" und das Spiel hat gesagt, es versteht nichts. Jetzt kennt es ALLE Knöpfe des Baukastens in Kinder-Worten: Wetter (immer Sonne, Regen, es schneit), Himmel (heller Tag, Abendrot, Nacht, Sterne), Land (platt, Hügel, Gebirge, Inseln), Wasser (kein Wasser, Seen, Meer), Bäume (kahl bis Dschungel), Boden (Wiese, Strand, Felsen, Gold, Regenbogen) und Schwerkraft (Mond-Sprünge, bleischwer). Egal, in welches Feld du es schreibst! Und wenn doch mal etwas nicht ankommt, zeigt dir das Spiel jetzt Beispielsätze, die wirklich gehen. 💡</p>
+    Version 299 &middot; 🤖✍️ JETZT VERSTEHE ICH JEDEN SATZ! Jonah hat gesagt, dass das Spiel fast alles nicht versteht, was er hinschreibt. Darum gibt es jetzt den schlauen Weg: Wenn im Elternbereich der Englisch-App ein KI-Schlüssel eingetragen ist, liest Claude deine Sätze – egal wie du sie schreibst! – und macht daraus die Einstellungen für deine Welt. Du siehst vorher genau, was angekommen ist, und was nicht geht, sagt es dir ehrlich. Ohne Schlüssel geht alles wie bisher mit den Wörtern, und das Spiel sagt dir, welche Sätze es sicher kann.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1802,7 +1802,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 298;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 299;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -3446,7 +3446,9 @@ const JW_ORTE = [
   { w:['im osten','osten','rechts'],                        o:'osten',  t:'im Osten ➡️' },
   { w:['im westen','westen','links'],                       o:'westen', t:'im Westen ⬅️' },
   { w:['in der mitte','mitte','bei mir','hier'],            o:'mitte',  t:'in der Mitte 🎯' },
-  { w:['weit weg','ganz draußen','am rand','rand','fern'],  o:'rand',   t:'weit draußen 🧭' },
+  { w:['weit weg','ganz weit draußen','ganz weit draussen','weit draußen','weit draussen',
+       'ganz draußen','ganz draussen','draußen','draussen','am rand','rand','fern'],
+    o:'rand', t:'weit draußen 🧭' },
   { w:['auf den bergen','auf dem berg','oben','hoch oben'], o:'hoch',   t:'oben auf den Bergen ⛰️' },
   { w:['im tal','in den tälern','unten','ganz unten'],      o:'tief',   t:'unten in den Tälern 🏞️' },
   { w:['unter der erde','unterirdisch','in höhlen','in hoehlen','in der höhle',
@@ -3513,7 +3515,9 @@ function jwEinstLesen(t) {
   const roh = {}, lang = {}, txt = [], wort = {};
   for (const e of JW_EINST) for (const w of e.w) {
     if (w.length <= (lang[e.feld] || 0)) continue;
-    if (jwWortAb(t, w) < 0) continue;
+    // Beim Boden und beim Wetter zählt „aus ..." nicht - das ist ein Material
+    const such = (e.feld === 'boden' || e.feld === 'wetter') ? jwWortAbOhneAus : jwWortAb;
+    if (such(t, w) < 0) continue;
     // „aus Schnee" ist ein Material, kein Wetter - das lassen wir dem Stoff.
     // Und in „Regenbogen" und „Regenwald" steckt zwar „Regen", gemeint ist
     // aber etwas ganz anderes.
@@ -3528,10 +3532,177 @@ function jwEinstLesen(t) {
     // ALLE Wörter dieses Eintrags merken, die im Satz stehen - sie sind schon
     // verbraucht. (Sonst würde aus „platt wie ein Brett" noch ein Holzboden.)
     const meine = [];
-    for (const w of roh[f].w) if (jwWortAb(t, w) >= 0) meine.push(w);
+    const such2 = (f === 'boden' || f === 'wetter') ? jwWortAbOhneAus : jwWortAb;
+    for (const w of roh[f].w) if (such2(t, w) >= 0) meine.push(w);
     woerter.push(meine);
   }
   return Object.keys(einst).length ? { einst, txt, woerter } : null;
+}
+// ============== 🤖 MIT KI: JEDEN SATZ WIRKLICH VERSTEHEN ==============
+// Eine Wörterliste kann niemals alles abdecken, was sich ein Kind ausdenkt.
+// Wenn im Elternbereich der Englisch-App ein KI-Schlüssel hinterlegt ist
+// (derselbe wie für die Chats mit Fred und Lucy), schickt das Spiel Jonahs
+// Sätze EINMAL an Claude und bekommt die Einstellungen als festes JSON
+// zurück. Ohne Schlüssel bleibt alles beim Wörter-Verfahren.
+const JW_KI_MODELL = 'claude-haiku-5-5';          // kleines, günstiges Modell
+const JW_KI_WERTE = {                             // was das Spiel wirklich kann
+  boden:    ['gras','sand','schnee','stein','gold','bunt'],
+  gelaende: ['flach','huegel','berge','inseln'],
+  wasser:   ['keins','seen','ozean'],
+  baeume:   ['keine','wenige','viele','dschungel'],
+  himmel:   ['tag','abend','nacht'],
+  wetter:   ['sonne','regen','schnee'],
+  schwer:   ['leicht','normal','schwer'],
+};
+const JW_KI_STOFF = { gold:'gold', ziegel:'ziegel', holz:'holz', kristall:'kristall',
+  wolle:'wolle', sand:'sand', schnee:'schnee', erde:'erde', gras:'gras', lava:'lava',
+  bonbon:'bonbon', blaetter:'blaetter', stein:'stein' };
+const JW_KI_STOFF_W = { gold:'gold', ziegel:'ziegel', holz:'holz', kristall:'kristall',
+  wolle:'wolle', sand:'sand', schnee:'schnee', erde:'erde', gras:'gras', lava:'lava',
+  bonbon:'bonbon', blaetter:'blätter', stein:'stein' };
+const JW_KI_ORTE = ['norden','sueden','osten','westen','mitte','rand','hoch','tief',
+                    'untergrund','oberflaeche','ueberall'];
+const JW_KI_MENGE = { keine:0, wenige:0.35, normal:1, viele:2.6 };
+const JW_KI_HOCH  = { flach:0.3, normal:1, hoch:2.4 };
+function jwKiSchluessel() {
+  try { const s = engLaden(); return (s && typeof s.apiKey === 'string') ? s.apiKey.trim() : ''; }
+  catch(e) { return ''; }
+}
+function jwKiAuftrag() {                          // was die KI wissen muss
+  const stoffe = Object.keys(JW_KI_STOFF).join('|');
+  const bauten = JW_BAUTEN.map(b => b.art).join('|');
+  const tiere  = JW_TIERE.map(t => t.id).join('|');
+  const extras = JW_EXTRAS.map(e => e.id).join('|');
+  return [
+    'Du hilfst einem Kind (Jonah), seine eigene Minecraft-Welt zu bauen.',
+    'Er schreibt auf Deutsch, oft in Kindersprache, was er haben möchte.',
+    'Übersetze seine Sätze in die Einstellungen, die das Spiel WIRKLICH kann.',
+    'Erfinde nichts dazu. Was das Spiel nicht kann, kommt in "kannIchNicht".',
+    '',
+    'Antworte NUR mit minified JSON, genau in dieser Form:',
+    '{"einst":{"boden":"' + JW_KI_WERTE.boden.join('|') + '",' +
+      '"gelaende":"' + JW_KI_WERTE.gelaende.join('|') + '",' +
+      '"wasser":"' + JW_KI_WERTE.wasser.join('|') + '",' +
+      '"baeume":"' + JW_KI_WERTE.baeume.join('|') + '",' +
+      '"himmel":"' + JW_KI_WERTE.himmel.join('|') + '",' +
+      '"wetter":"' + JW_KI_WERTE.wetter.join('|') + '",' +
+      '"schwer":"' + JW_KI_WERTE.schwer.join('|') + '"},',
+    '"tiere":["' + tiere + '"],"extras":["' + extras + '"],',
+    '"regeln":[{"feld":"boden|gelaende|wasser|baeume|bauten","block":"' + stoffe + '",' +
+      '"ort":"' + JW_KI_ORTE.join('|') + '","menge":"keine|wenige|normal|viele",' +
+      '"hoch":"flach|normal|hoch","bauten":["' + bauten + '"],"tiere":["' + tiere + '"],' +
+      '"text":"kurz auf Deutsch, was diese Regel macht"}],',
+    '"kannIchNicht":["kurz auf Deutsch, was das Spiel nicht kann"]}',
+    '',
+    'REGELN:',
+    '- Nimm nur Werte aus den Listen oben. Lass weg, was nicht passt (kein null).',
+    '- "einst" nur für Sachen, die er wirklich geschrieben hat.',
+    '- "regeln" sind Sonderwünsche mit Ort/Material/Menge, z. B. Boden aus Gold',
+    '  im Norden, Wasser nur unter der Erde (ort "untergrund"), Türme aus Kristall.',
+    '- Für Bauwerke (Türme, Häuser, Pyramiden, Statuen, Pilze, Seen, Fackeln,',
+    '  Blumen, Schatztruhen) ist feld "bauten".',
+    '- "text" ist für ein Kind geschrieben, kurz, mit passendem Emoji.',
+    '- Nichts Unanständiges, nichts Gefährliches, keine echten Personen.',
+  ].join('\n');
+}
+// Die Antwort der KI gegen die erlaubten Werte prüfen - alles Unbekannte fliegt raus.
+function jwKiPruefen(j) {
+  const raus = { einst:{}, tiere:[], extras:[], regeln:[], kannIchNicht:[], verstanden:[] };
+  if (!j || typeof j !== 'object') return null;
+  const e = j.einst && typeof j.einst === 'object' ? j.einst : {};
+  for (const f in JW_KI_WERTE)
+    if (JW_KI_WERTE[f].indexOf(e[f]) >= 0) raus.einst[f] = e[f];
+  if (Array.isArray(j.tiere))
+    raus.tiere = j.tiere.filter(t => JW_TIERE.some(x => x.id === t));
+  if (Array.isArray(j.extras))
+    raus.extras = j.extras.filter(x => JW_EXTRAS.some(y => y.id === x));
+  if (Array.isArray(j.regeln)) for (const r of j.regeln.slice(0, 12)) {
+    if (!r || typeof r !== 'object') continue;
+    const feld = ['boden','gelaende','wasser','baeume','bauten'].indexOf(r.feld) >= 0
+               ? r.feld : 'bauten';
+    const reg = { block:null, ort:null, menge:null, hoch:null, bauten:[], tiere:[],
+                  schichten:null, nur:false, nein:false, txt:'' };
+    if (JW_KI_STOFF[r.block]) {
+      const st = jwFinde(JW_STOFFE, JW_KI_STOFF_W[r.block]);
+      if (st) reg.block = st.b;
+    }
+    if (JW_KI_ORTE.indexOf(r.ort) >= 0) reg.ort = r.ort;
+    if (r.menge in JW_KI_MENGE) { reg.menge = JW_KI_MENGE[r.menge]; reg.nein = reg.menge === 0; }
+    if (r.hoch in JW_KI_HOCH) reg.hoch = JW_KI_HOCH[r.hoch];
+    if (Array.isArray(r.bauten))
+      reg.bauten = r.bauten.filter(b => JW_BAUTEN.some(x => x.art === b));
+    if (Array.isArray(r.tiere))
+      reg.tiere = r.tiere.filter(t => JW_TIERE.some(x => x.id === t));
+    reg.txt = typeof r.text === 'string' ? r.text.slice(0, 120) : '';
+    if (reg.block === null && !reg.ort && reg.menge === null && reg.hoch === null &&
+        !reg.bauten.length && !reg.tiere.length) continue;
+    raus.regeln.push({ feld, reg });
+    if (reg.txt) raus.verstanden.push(reg.txt);
+  }
+  if (Array.isArray(j.kannIchNicht))
+    raus.kannIchNicht = j.kannIchNicht.filter(x => typeof x === 'string')
+                                      .map(x => x.slice(0, 120)).slice(0, 6);
+  return raus;
+}
+// Beim Laden des Spielstands: die SCHON übersetzte KI-Antwort prüfen.
+// (Sie steht da anders drin als die Antwort der KI selbst - darum eine eigene
+// Prüfung. Ohne sie sähe Jonahs Welt nach dem Neuladen plötzlich anders aus.)
+function jwKiLaden(ki) {
+  if (!ki || typeof ki !== 'object' || !ki.texte || typeof ki.texte !== 'object') return null;
+  const texte = {};
+  for (const k in ki.texte)
+    if (typeof ki.texte[k] === 'string') texte[k] = ki.texte[k].slice(0, 200);
+  const raus = { texte, einst:{}, tiere:[], extras:[], regeln:[], verstanden:[], kannIchNicht:[] };
+  const e = ki.einst && typeof ki.einst === 'object' ? ki.einst : {};
+  for (const f in JW_KI_WERTE) if (JW_KI_WERTE[f].indexOf(e[f]) >= 0) raus.einst[f] = e[f];
+  if (Array.isArray(ki.tiere))  raus.tiere  = ki.tiere.filter(t => JW_TIERE.some(x => x.id === t));
+  if (Array.isArray(ki.extras)) raus.extras = ki.extras.filter(x => JW_EXTRAS.some(y => y.id === x));
+  const txte = (a) => Array.isArray(a) ? a.filter(x => typeof x === 'string')
+                        .map(x => x.slice(0, 120)).slice(0, 12) : [];
+  raus.verstanden = txte(ki.verstanden);
+  raus.kannIchNicht = txte(ki.kannIchNicht);
+  if (Array.isArray(ki.regeln)) for (const r of ki.regeln.slice(0, 12)) {
+    if (!r || typeof r !== 'object' || !r.reg || typeof r.reg !== 'object') continue;
+    const q = r.reg;
+    const reg = {
+      block: (typeof q.block === 'number' && BLOCKS[q.block]) ? q.block : null,
+      ort:   JW_KI_ORTE.indexOf(q.ort) >= 0 ? q.ort : null,
+      menge: typeof q.menge === 'number' && q.menge >= 0 && q.menge <= 5 ? q.menge : null,
+      hoch:  typeof q.hoch  === 'number' && q.hoch  >  0 && q.hoch  <= 5 ? q.hoch  : null,
+      bauten: Array.isArray(q.bauten) ? q.bauten.filter(b => JW_BAUTEN.some(x => x.art === b)) : [],
+      tiere:  Array.isArray(q.tiere)  ? q.tiere.filter(t => JW_TIERE.some(x => x.id === t)) : [],
+      schichten: null, nur: q.nur === true, nein: q.nein === true,
+      txt: typeof q.txt === 'string' ? q.txt.slice(0, 120) : '',
+    };
+    const feld = ['boden','gelaende','wasser','baeume','bauten'].indexOf(r.feld) >= 0
+               ? r.feld : 'bauten';
+    if (reg.block === null && !reg.ort && reg.menge === null && reg.hoch === null &&
+        !reg.bauten.length && !reg.tiere.length) continue;
+    raus.regeln.push({ feld, reg });
+  }
+  return raus;
+}
+// Ein einziger Aufruf pro Welt-Bau.
+async function jwKiFragen(texte) {
+  const key = jwKiSchluessel();
+  if (!key) return null;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', 'x-api-key': key,
+                'anthropic-version':'2023-06-01',
+                'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model: JW_KI_MODELL, max_tokens: 900,
+        system: jwKiAuftrag(),
+        messages: [{ role:'user', content: 'Das hat Jonah aufgeschrieben:\n' +
+          Object.keys(texte).map(k => '- ' + k + ': "' + texte[k] + '"').join('\n') }] })
+    });
+    if (!res.ok) throw new Error('http ' + res.status);
+    const data = await res.json();
+    const roh = (data.content || []).map(c => c.text || '').join('');
+    const j = JSON.parse(roh.slice(roh.indexOf('{'), roh.lastIndexOf('}') + 1));
+    return jwKiPruefen(j);
+  } catch(e) { return null; }
 }
 // 💡 Wenn gar nichts ankommt: ein paar Sätze zeigen, die wirklich gehen
 const JW_BEISPIELE = [
@@ -3638,6 +3809,16 @@ const JW_HOEHEN = [
 function jwWortAb(t, w) {
   for (let i = t.indexOf(w); i >= 0; i = t.indexOf(w, i + 1))
     if (i === 0 || !/[a-zäöüßà-ÿ0-9]/.test(t[i-1])) return i;
+  return -1;
+}
+// Dasselbe, aber „aus Sand" zählt nicht: Da ist Sand das MATERIAL von etwas
+// („Pyramiden aus Sand") und nicht der Boden der ganzen Welt.
+function jwWortAbOhneAus(t, w) {
+  for (let i = t.indexOf(w); i >= 0; i = t.indexOf(w, i + 1)) {
+    if (i !== 0 && /[a-zäöüßà-ÿ0-9]/.test(t[i-1])) continue;
+    if (/\baus\s+$/.test(t.slice(Math.max(0, i-6), i))) continue;
+    return i;
+  }
   return -1;
 }
 function jwFinde(liste, t) {
@@ -3768,6 +3949,22 @@ function jwInZone(ort, x, z, h) {
   if (ort === 'tief')   return h === undefined || h <= JW_BASIS - 2;
   return true;
 }
+// 🤖 Welche Sätze hat Jonah aufgeschrieben? (nur die, die etwas enthalten)
+function jwTexteJetzt() {
+  const t = {}, q = weltPlan.text || {};
+  for (const k of ['wunsch','boden','gelaende','wasser','baeume','himmel','wetter',
+                   'schwer','tiere','extras']) {
+    const v = (q[k] || '').trim();
+    if (v) t[k] = v;
+  }
+  return t;
+}
+// Gilt die KI-Übersetzung noch, oder hat Jonah seitdem etwas geändert?
+function jwKiGilt() {
+  const ki = weltPlan.ki;
+  if (!ki || !ki.texte || !Array.isArray(ki.regeln)) return false;
+  return JSON.stringify(ki.texte) === JSON.stringify(jwTexteJetzt());
+}
 // Alle Regeln einmal ausrechnen (nicht bei jedem einzelnen Block!)
 let jwRegeln = {};
 function jwRegel(key) { return jwRegeln[key] || null; }
@@ -3859,14 +4056,26 @@ function jwPlanAnwenden() {
   P.gruss  = 'DEINE EIGENE WELT! 🌈 ' + (weltPlan.name || 'Meine Welt') +
              ' - genau so, wie du sie dir ausgedacht hast.';
   jwRegeln = {};                        // ✍️ seine eigenen Sätze einmal verstehen
-  for (const k in (weltPlan.text || {})) {
+  // 🤖 Hat die KI seine Sätze gelesen (und sind es noch dieselben Sätze)?
+  // Dann gilt ihre Übersetzung - sie versteht viel mehr als die Wörterliste.
+  const kiGilt = jwKiGilt();
+  if (kiGilt) {
+    const ki = weltPlan.ki;
+    for (const f in ki.einst) weltPlan[f] = ki.einst[f];
+    if (ki.tiere && ki.tiere.length)  weltPlan.tiere  = ki.tiere.slice();
+    if (ki.extras && ki.extras.length) weltPlan.extras = ki.extras.slice();
+    for (const r of ki.regeln) {
+      const k = r.feld === 'bauten' ? 'wunsch' : r.feld;
+      jwRegeln[k] = jwRegeln[k] || r.reg;
+    }
+  } else for (const k in (weltPlan.text || {})) {
     const r = jwTextLesen(weltPlan.text[k]);
     if (r && !r.leer) jwRegeln[k] = r;
   }
   // ✍️🎛️ Schreibt Jonah „immer Sonne", „hohe Berge" oder „Dschungel" irgendwo
   // hin, wird auch wirklich der passende Knopf umgestellt. Der Wunsch-Zettel
   // zuerst, danach die einzelnen Fragen - die haben das letzte Wort.
-  {
+  if (!kiGilt) {
     const texte = weltPlan.text || {};
     const reihe = ['wunsch', 'boden', 'gelaende', 'wasser', 'baeume', 'himmel',
                    'wetter', 'schwer', 'tiere', 'extras'];
@@ -7074,6 +7283,9 @@ function loadGame() {
       if (p.text && typeof p.text === 'object')
         for (const k in p.text) if (typeof p.text[k] === 'string') txt[k] = p.text[k].slice(0, 200);
       p.text = txt;
+      // 🤖 Was die KI aus seinen Sätzen gemacht hat - sonst sähe seine Welt
+      // nach dem Neuladen plötzlich anders aus. Alles wird neu geprüft.
+      p.ki = jwKiLaden(p.ki);
       // 🎨 und seine gemalten Wesen
       p.wesen = (Array.isArray(p.wesen) ? p.wesen : [])
         .filter(w => { if (!w || typeof w.bild !== 'string') return false;
@@ -30461,44 +30673,85 @@ function jwWesenListe() {
 const JW_FRAGE_NAME = { wunsch:'✍️ Dein Wunsch', boden:'🪨 Boden', gelaende:'🏞️ Land',
   wasser:'💧 Wasser', baeume:'🌳 Bäume', himmel:'🌤️ Himmel', wetter:'🌦️ Wetter',
   schwer:'🪂 Schwerkraft', tiere:'🐾 Tiere', extras:'✨ Extras' };
-function weltVerstandenZeigen() {
+function weltVstZeile(liste, titel, inhalt, art) {
+  const d = document.createElement('div');
+  d.className = 'vstZeile' + (art ? ' ' + art : '');
+  if (titel) { const t = document.createElement('b'); t.textContent = titel; d.appendChild(t); }
+  const g = document.createElement('div'); g.textContent = inhalt; d.appendChild(g);
+  liste.appendChild(d);
+  return d;
+}
+// Was angekommen ist, aufschreiben - entweder von der KI oder von der Wörterliste
+function weltVerstandenZeichnen(texte) {
   const liste = document.getElementById('weltVerstandenListe');
   liste.innerHTML = '';
-  let etwas = false;
-  const zeile = (titel, satz, txt, ok) => {
-    etwas = true;
-    const d = document.createElement('div');
-    d.className = 'vstZeile' + (ok ? '' : ' nix');
-    const b = document.createElement('b'); b.textContent = titel; d.appendChild(b);
-    const g = document.createElement('div');
-    g.textContent = ok ? txt
-      : '❓ Das kann ich noch nicht: „' + satz + '". So geht es zum Beispiel: ' + jwBeispiele(3);
-    d.appendChild(g);
-    if (ok) { const sz = document.createElement('div');
-      sz.className = 'vstSatz'; sz.textContent = '„' + satz + '"'; d.appendChild(sz); }
-    liste.appendChild(d);
-  };
-  for (const k in JW_FRAGE_NAME) {
-    const satz = ((weltPlan.text || {})[k] || '').trim();
-    if (!satz) continue;
-    const r = jwTextLesen(satz);
-    zeile(JW_FRAGE_NAME[k], satz, r && r.txt, !!(r && !r.leer && r.txt));
+  const ki = jwKiGilt() ? weltPlan.ki : null;
+  if (ki) {
+    for (const z of (ki.verstanden || []))
+      weltVstZeile(liste, null, '✅ ' + z);
+    const e = ki.einst || {}, namen = { boden:'🪨 Boden', gelaende:'🏞️ Land',
+      wasser:'💧 Wasser', baeume:'🌳 Bäume', himmel:'🌤️ Himmel', wetter:'🌦️ Wetter',
+      schwer:'🪂 Schwerkraft' };
+    const tab = { boden:JW_BODEN, gelaende:JW_GELAENDE, wasser:JW_WASSER,
+                  baeume:JW_BAEUME, himmel:JW_HIMMEL, wetter:JW_WETTER, schwer:JW_SCHWER };
+    const zeilen = [];
+    for (const f in namen) if (e[f]) zeilen.push(namen[f] + ': ' + (tab[f][e[f]] || {}).txt);
+    if ((ki.tiere || []).length)
+      zeilen.push('🐾 Tiere: ' + ki.tiere.map(t =>
+        (JW_TIERE.find(x => x.id === t) || {}).txt).filter(x => x).join(', '));
+    if ((ki.extras || []).length)
+      zeilen.push('✨ Extras: ' + ki.extras.map(t =>
+        (JW_EXTRAS.find(x => x.id === t) || {}).txt).filter(x => x).join(', '));
+    if (zeilen.length) weltVstZeile(liste, '🎛️ Deine Einstellungen', zeilen.join(' · '));
+    for (const k of (ki.kannIchNicht || []))
+      weltVstZeile(liste, null, '❓ Das kann ich noch nicht: ' + k, 'nix');
+    if (!(ki.verstanden || []).length && !zeilen.length)
+      weltVstZeile(liste, null, '❓ Davon habe ich nichts gefunden, was ich bauen kann. ' +
+        'So geht es zum Beispiel: ' + jwBeispiele(3), 'nix');
+  } else {
+    for (const k in JW_FRAGE_NAME) {
+      const satz = (texte[k] || '').trim();
+      if (!satz) continue;
+      const r = jwTextLesen(satz);
+      const ok = !!(r && !r.leer && r.txt);
+      const d = weltVstZeile(liste, JW_FRAGE_NAME[k],
+        ok ? r.txt : '❓ Das kann ich noch nicht: „' + satz + '". So geht es zum Beispiel: ' +
+             jwBeispiele(3), ok ? '' : 'nix');
+      if (ok) { const sz = document.createElement('div');
+        sz.className = 'vstSatz'; sz.textContent = '„' + satz + '"'; d.appendChild(sz); }
+    }
+    if (!jwKiSchluessel())
+      weltVstZeile(liste, '💡 Tipp für ganz genaues Verstehen',
+        'Mit einem KI-Schlüssel versteht das Spiel JEDEN Satz, den du schreibst. ' +
+        'Den trägt ein Erwachsener im Elternbereich der Englisch-App ein. ' +
+        'Ohne Schlüssel verstehe ich diese Sätze sicher: ' + jwBeispiele(4));
   }
   const wesen = (weltPlan.wesen || []);
-  if (wesen.length) {
-    etwas = true;
-    const d = document.createElement('div');
-    d.className = 'vstZeile';
-    const b = document.createElement('b'); b.textContent = '🎨 Deine gemalten Wesen';
-    d.appendChild(b);
-    const g = document.createElement('div');
-    g.textContent = wesen.map(w => w.name + ' (' + (w.n || 2) + '×)').join(' · ');
-    d.appendChild(g);
-    liste.appendChild(d);
-  }
-  if (!etwas) return false;             // nichts selbst geschrieben: gleich bauen
-  document.getElementById('weltVerstanden').style.display = 'flex';
+  if (wesen.length)
+    weltVstZeile(liste, '🎨 Deine gemalten Wesen',
+      wesen.map(w => w.name + ' (' + (w.n || 2) + '×)').join(' · '));
+}
+// Zeigt das Fenster - und fragt vorher die KI, wenn ein Schlüssel da ist.
+function weltVerstandenZeigen() {
+  const texte = jwTexteJetzt();
+  const wesen = (weltPlan.wesen || []).length;
+  if (!Object.keys(texte).length && !wesen) return false;   // nichts geschrieben
+  const box = document.getElementById('weltVerstanden');
+  box.style.display = 'flex';
   blip(700, 0.05); blip(900, 0.06);
+  if (jwKiSchluessel() && Object.keys(texte).length && !jwKiGilt()) {
+    const liste = document.getElementById('weltVerstandenListe');
+    liste.innerHTML = '';
+    weltVstZeile(liste, null, '🤔 Ich lese deine Sätze ganz genau durch …');
+    jwKiFragen(texte).then(ki => {
+      weltPlan.ki = ki ? Object.assign({ texte }, ki) : null;
+      if (!ki) toast('🤔 Ich konnte gerade nicht genau nachdenken (kein Internet?) – ' +
+                     'ich nehme meine eigenen Wörter.', 4500);
+      weltVerstandenZeichnen(texte);
+    });
+    return true;
+  }
+  weltVerstandenZeichnen(texte);
   return true;
 }
 function weltBauenFertig() {
