@@ -65,8 +65,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 296 (31.10., Malfeld-Größe
-  einstellbar) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 297 (31.10., Wunsch-Zettel
+  versteht mehr) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -76,7 +76,11 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **6 – Wunsch-Zettel versteht Jonah genau** · in Arbeit · Meldung von Jonah (31.10.): „nur
   unter der Erde Wasser" wurde als „aus Erde, ganz flach" verstanden · an Session 1 gegeben am
   31.10.: mit KI-Schlüssel versteht Claude den Wunsch, ohne Schlüssel besseres Stichwort-
-  Verfahren, und immer erst „So habe ich dich verstanden" zum Bestätigen · Meldung abwarten.
+  Verfahren, und immer erst „So habe ich dich verstanden" zum Bestätigen · v297 (31.10.): besseres
+  Stichwort-Verfahren, Bestätigungs-Fenster, Wasser nur unter der Erde – **KI-Teil fehlt noch** ·
+  Neue Meldung von Jonah: „immer Sonne" → „nichts verstanden" · Nachauftrag an Session 1:
+  KI-Teil, alle Einstellungen (auch Wetter/Himmel) als Wörter, Beispielsätze statt „nichts
+  verstanden" · Meldung abwarten.
 
 ## Erledigt
 
