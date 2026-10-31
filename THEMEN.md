@@ -14,7 +14,22 @@ oder Schlüssel hier.
 
 Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fertige Antwort.
 
-– keine –
+**31.10-1 – Chat im Spiel mit kleinerem KI-Modell?** (an Christian, Vorschlag von Session 1)
+- Problem: Der Freunde-Chat in JonahCraft nutzt das große Modell, ca. 1 Cent pro Nachricht.
+- Weg A: so lassen. Weg B: kleines Modell, ca. 0,02 Cent pro Nachricht, für einfache Kinder-
+  Gespräche reicht es meist.
+- Empfehlung: Weg B. Fertige Antwort: „31.10-1: Weg B"
+
+**31.10-2 – KI-Verbrauchszähler im Spiel?** (an Christian, Vorschlag von Session 1)
+- Weg A: nein, Grenze nur über das Ausgabelimit im API-Konto. Weg B: das Spiel zählt mit und sagt
+  bei einem Monatslimit kindgerecht „für diesen Monat aufgebraucht".
+- Empfehlung: Weg A plus Ausgabelimit im API-Konto (einfacher, wirkt sicher). Fertige Antwort:
+  „31.10-2: Weg A"
+
+**31.10-3 – KI auch beim Wesen-Malen?** (an Christian, Vorschlag von Session 1)
+- Die Felder „was kann es / wie groß / wie viele" laufen noch über die Wörterliste. Weg B: ein
+  KI-Aufruf pro Wesen (ca. 0,03 Cent). Empfehlung: Weg B, gleiche Logik wie beim Welt-Bau.
+  Fertige Antwort: „31.10-3: Weg B"
 
 ## Entschieden
 
@@ -67,29 +82,25 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 298 (31.10., Wunsch-Zettel
-  kennt alle Einstellungen) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 299 (31.10., KI versteht
+  jeden Satz) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
-- **6 – Wunsch-Zettel versteht Jonah genau** · in Arbeit · Meldung von Jonah (31.10.): „nur
-  unter der Erde Wasser" wurde als „aus Erde, ganz flach" verstanden · an Session 1 gegeben am
-  31.10.: mit KI-Schlüssel versteht Claude den Wunsch, ohne Schlüssel besseres Stichwort-
-  Verfahren, und immer erst „So habe ich dich verstanden" zum Bestätigen · v297 (31.10.): besseres
-  Stichwort-Verfahren, Bestätigungs-Fenster, Wasser nur unter der Erde – **KI-Teil fehlt noch** ·
-  Neue Meldung von Jonah: „immer Sonne" → „nichts verstanden" · Nachauftrag an Session 1:
-  KI-Teil, alle Einstellungen (auch Wetter/Himmel) als Wörter, Beispielsätze statt „nichts
-  verstanden" · Jonah: „fast alles" wird nicht verstanden, Sonne war nur ein Beispiel →
-  KI-Teil hat oberste Priorität, für alle Freitext-Felder; ohne Schlüssel klarer Hinweis ·
-  v298 (31.10.): alle Baukasten-Einstellungen in Kinder-Worten, Beispielsätze bei
-  Unverstandenem · KI-Teil von Christian freigegeben („KI ja", 31.10.), Session 1 baut ihn ·
-  Meldung in `meldungen/1.md` abwarten.
+- **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
+  Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
+  Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
+  Tageszeit-Wechsel in der eigenen Welt.
 
 ## Erledigt
 
+- **6 – Wunsch-Zettel versteht Jonah genau** · Session 1 · v297 (Wörterliste repariert, „So habe
+  ich dich verstanden"-Fenster, Wasser nur unter der Erde), v298 (alle Einstellungen in Kinder-
+  Worten), v299 (31.10.: mit KI-Schlüssel versteht Claude jeden Satz, ~0,03 Cent pro Welt-Bau,
+  ohne Schlüssel Hinweis + Wörterliste) · Pages grün.
 - **5 – Malfeld-Größe beim Wesen-Malen einstellbar** · Session 1 · JonahCraft v296 (31.10.):
   12/16/24/32 Kästchen und Anzeige 60–200 %, alte Wesen unverändert.
 - **3 – Englisch-Stand im Spiel absichern** · Session 1 · JonahCraft v294 (31.10.): das Spiel
