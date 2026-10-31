@@ -76,7 +76,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **4 – Wechsel-Knopf zwischen JonahCraft und Englisch-App** · in Arbeit · Wunsch von Jonah
   (31.10.): oben ein Knopf, der fragt „Zur anderen App" oder „Abbrechen" und dann direkt
   hinüberwechselt. 4a JonahCraft → Session 1 (nach Thema 3), 4b Englisch-App → Session 2 ·
-  Meldungen abwarten.
+  **4b fertig** (31.10., Englisch-App v2.9, Commit 80a09e8: ⛏️-Knopf oben rechts, speichert vor
+  dem Wechsel) · 4a: Meldung von Session 1 abwarten.
 
 ## Erledigt
 
