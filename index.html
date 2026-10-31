@@ -445,7 +445,7 @@
   #wesenBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none;
     flex-direction:column; align-items:center; gap:8px; background:rgba(14,10,30,.98);
     padding:13px; border-radius:18px; color:#fff; z-index:63; width:min(96vw,460px);
-    max-height:96vh; overflow-y:auto; border:3px solid #c08aff; }
+    max-height:96vh; overflow:auto; border:3px solid #c08aff; }
   #wesenBox h3 { font-size:18px; margin:0; text-align:center; }
   #wesenHinweis { font-size:11.5px; opacity:.85; text-align:center; line-height:1.4; }
   /* 🎨 DAS MAL-FELD: so groß wie irgend möglich. Jonah: "Das Malfeld ist viel
@@ -456,8 +456,20 @@
   #wesenLinks { display:flex; flex-direction:column; align-items:center; gap:7px; }
   #wesenRechts { display:flex; flex-direction:column; gap:7px; flex:1 1 auto;
     min-width:0; width:100%; }
-  #wesenCanvas { width:min(84vw,58vh,400px); height:min(84vw,58vh,400px); background:#fff;
-    border-radius:10px; touch-action:none; image-rendering:pixelated; }
+  /* 🔍 --wz ist die Anzeige-Größe, die Jonah mit 🔍− und 🔍+ einstellt */
+  #wesenCanvas { width:calc(min(84vw,58vh,400px) * var(--wz,1));
+    height:calc(min(84vw,58vh,400px) * var(--wz,1)); background:#fff;
+    border-radius:10px; touch-action:none; image-rendering:pixelated; flex:none; }
+  #wesenEinst { display:flex; flex-direction:column; gap:5px;
+    background:rgba(255,255,255,.07); border-radius:11px; padding:7px 9px; }
+  .wesenEinstZeile { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .wesenEinstZeile > b { font-size:12px; opacity:.9; }
+  #wesenRasterWahl { display:flex; gap:5px; flex-wrap:wrap; }
+  #wesenRasterWahl .jwChip { font-size:12px; padding:5px 9px; }
+  .wesenZoomBtn { font-size:14px; font-weight:bold; padding:4px 9px; border-radius:9px;
+    border:none; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  #wesenZoomTxt { font-size:12px; font-weight:bold; min-width:40px; text-align:center; }
+  .wesenZoomBtn { white-space:nowrap; }
   @media (min-aspect-ratio: 12/10) {     /* 📱 quer gehaltenes Handy */
     #wesenBox { width:min(96vw,760px); gap:6px; }
     #wesenHinweis, #wesenBox h3 { display:none; }   /* Platz für ein großes Feld */
@@ -466,7 +478,8 @@
     /* die Farben stehen quer daneben - dann bleibt die ganze Höhe fürs Malen */
     #wesenPal { flex-direction:column; flex-wrap:wrap;
                 max-height:min(46vw,80vh,400px); width:64px; }
-    #wesenCanvas { width:min(46vw,80vh,400px); height:min(46vw,80vh,400px); }
+    #wesenCanvas { width:calc(min(46vw,80vh,400px) * var(--wz,1));
+                   height:calc(min(46vw,80vh,400px) * var(--wz,1)); }
   }
   #wesenPal { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; }
   #wesenPal .palBtn { width:26px; height:26px; border-radius:7px;
@@ -1223,6 +1236,14 @@
       <div id="wesenPal"></div>
     </div>
     <div id="wesenRechts">
+      <div id="wesenEinst">
+        <div class="wesenEinstZeile"><b>🔲 Kästchen</b><div id="wesenRasterWahl"></div></div>
+        <div class="wesenEinstZeile"><b>🔍 Größe</b>
+          <button id="wesenKleiner" class="wesenZoomBtn">🔍−</button>
+          <span id="wesenZoomTxt">100 %</span>
+          <button id="wesenGroesser" class="wesenZoomBtn">🔍+</button>
+        </div>
+      </div>
       <input id="wesenName" maxlength="20" placeholder="Wie heißt es?">
       <input id="wesenKann" maxlength="90" placeholder="Was kann es? z. B. fliegen, hüpfen, leuchten">
       <div id="wesenKannTxt"></div>
@@ -1713,7 +1734,7 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 295 &middot; 📚🔀 EIN KNOPF ZUR ENGLISCH-LERN-APP! Jonahs Wunsch: „Oben an der Seite so einen Knopf, wo ich hin und her schalten kann." Genau den gibt es jetzt: Tipp oben den 📚-Knopf an – dann fragt dich das Spiel „Zur Englisch-Lern-App?" und du kannst „Ja" oder „Abbrechen" drücken. Bei Ja wird dein Spielstand gespeichert und du landest direkt in deiner Englisch-Lern-App. Der Knopf ist immer da – auch auf dem Startbildschirm.</p>
+    Version 296 &middot; 🔲🔍 DU KANNST JETZT EINSTELLEN, WIE GROSS DEIN MAL-FELD IST! Jonahs Wunsch: Beim Wesen-Malen kannst du jetzt oben wählen, wie viele Kästchen du haben willst – 12×12, 16×16, 24×24 oder 32×32. Mehr Kästchen heißt: du kannst viel feiner malen, und dein Wesen sieht in der Welt auch wirklich so fein aus! Und mit 🔍− und 🔍+ machst du das Feld auf dem Bildschirm größer oder kleiner – das merkt sich das Spiel. Wechselst du mitten im Malen die Kästchen-Zahl, kommt dein Bild einfach mit. Deine alten Wesen bleiben genau so, wie sie sind.</p>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1759,7 +1780,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 295;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 296;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -6872,13 +6893,16 @@ function loadGame() {
       p.text = txt;
       // 🎨 und seine gemalten Wesen
       p.wesen = (Array.isArray(p.wesen) ? p.wesen : [])
-        .filter(w => w && typeof w.bild === 'string' && w.bild.length === PN*PN)
+        .filter(w => { if (!w || typeof w.bild !== 'string') return false;
+          const n = Math.round(Math.sqrt(w.bild.length));
+          return n*n === w.bild.length && JW_RASTER.indexOf(n) >= 0; })
         .slice(0, JW_WESEN_MAX)
         .map(w => {
           const gr2 = jwGroesseLesen(w.gross || ''), an2 = jwAnzahlLesen(w.wieviele || '');
           const f2 = jwKannLesen(w.kann || '').f;
           return { name: String(w.name || 'Mein Wesen').slice(0, 20), bild: w.bild,
                    kann: String(w.kann || '').slice(0, 90),
+                   raster: Math.round(Math.sqrt(w.bild.length)),
                    gross: String(w.gross || '').slice(0, 60),
                    wieviele: String(w.wieviele || '').slice(0, 40), f: f2,
                    gr: gr2 ? gr2.gr : (typeof w.gr === 'number' ? w.gr
@@ -11974,10 +11998,11 @@ function makePaintTexture(key) {
 function jwWesenTextur(i) {
   const d = (weltPlan.wesen || [])[i];
   if (!d || !d.bild) return false;
-  const c = document.createElement('canvas'); c.width = PN; c.height = PN;
+  const N = Math.round(Math.sqrt(d.bild.length)) || 12;   // eigene Kästchen-Zahl
+  const c = document.createElement('canvas'); c.width = N; c.height = N;
   const g = c.getContext('2d');
-  for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
-    const v = parseInt(d.bild[y*PN+x], 16) || 0;
+  for (let y=0; y<N; y++) for (let x=0; x<N; x++) {
+    const v = parseInt(d.bild[y*N+x], 16) || 0;
     if (!v) continue;                   // 0 = weiß = durchsichtig
     g.fillStyle = PAINT_COLS[v];
     g.fillRect(x, y, 1, 1);
@@ -30212,10 +30237,11 @@ function jwWesenListe() {
     const z = document.createElement('div');
     z.className = 'jwWesenZeile';
     const c = document.createElement('canvas');
-    c.className = 'jwWesenBild'; c.width = PN; c.height = PN;
+    const N = Math.round(Math.sqrt(d.bild.length)) || 12;
+    c.className = 'jwWesenBild'; c.width = N; c.height = N;
     const g = c.getContext('2d');
-    for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
-      const v = parseInt(d.bild[y*PN+x], 16) || 0;
+    for (let y=0; y<N; y++) for (let x=0; x<N; x++) {
+      const v = parseInt(d.bild[y*N+x], 16) || 0;
       if (!v) continue;
       g.fillStyle = PAINT_COLS[v]; g.fillRect(x, y, 1, 1);
     }
@@ -30278,25 +30304,90 @@ function jwNeuZeichnen() {              // die Welt nach einer Änderung neu bau
 // Gemalte danach in Jonahs Welt herumläuft.
 const wCan = document.getElementById('wesenCanvas');
 const wCtx = wCan.getContext('2d');
-const WPIX = 480, WCELL = WPIX / PN;   // 🎨 feiner gezeichnet
+// ============== 🎨 DAS MAL-FELD: GRÖSSE EINSTELLBAR ====================
+// Jonahs Wunsch: "Dass ich bei dem, wo ich die Wesen male, einstellen kann,
+// wie groß das Malfeld ist." Er wollte BEIDES:
+//   1. Wie viele Kästchen? 12, 16, 24 oder 32 pro Reihe - mehr Kästchen
+//      heißt feiner malen, und das Wesen sieht in der Welt auch so fein aus.
+//   2. Wie groß soll das Feld auf dem Bildschirm sein? 🔍− und 🔍+.
+// Alte Wesen (12x12) bleiben, wie sie sind: jedes Wesen merkt sich seine
+// eigene Kästchen-Zahl.
+const JW_RASTER = [12, 16, 24, 32];     // so viele Kästchen pro Reihe gibt es
+const WESEN_ZOOM_KEY = 'jonahcraft_wesen_zoom';
+const WPIX = 480;                       // so fein wird die Mal-Fläche gerechnet
+let wesenRaster = 12;                   // womit malt Jonah gerade?
+let wesenBasis = null;                  // das zuletzt HANDgemalte Bild {raster, daten}
+let wesenZoom = 1;                      // Anzeige-Größe des Feldes
+function wesenRasterOk(n) { return JW_RASTER.indexOf(n) >= 0; }
+// Ein Bild auf eine andere Kästchen-Zahl umrechnen (jedes Kästchen wird
+// einfach übernommen - so geht beim Wechseln nichts kaputt).
+function wesenSkalieren(daten, von, nach) {
+  if (von === nach) return daten.slice();
+  const neu = new Array(nach*nach).fill('0');
+  for (let y = 0; y < nach; y++) for (let x = 0; x < nach; x++)
+    neu[y*nach + x] = daten[Math.floor(y*von/nach)*von + Math.floor(x*von/nach)] || '0';
+  return neu;
+}
+function wesenZoomLesen() {
+  try { const z = parseFloat(localStorage.getItem(WESEN_ZOOM_KEY)); 
+    if (z >= 0.6 && z <= 2) return z; } catch(e) {}
+  return 1;
+}
+function wesenZoomSetzen(z) {
+  wesenZoom = Math.max(0.6, Math.min(2, Math.round(z * 10) / 10));
+  document.documentElement.style.setProperty('--wz', wesenZoom);
+  try { localStorage.setItem(WESEN_ZOOM_KEY, String(wesenZoom)); } catch(e) {}
+  const t = document.getElementById('wesenZoomTxt');
+  if (t) t.textContent = Math.round(wesenZoom * 100) + ' %';
+}
+// Die Knopf-Reihe für die Kästchen-Zahl
+function wesenRasterZeichnen() {
+  const w = document.getElementById('wesenRasterWahl');
+  if (!w) return;
+  w.innerHTML = '';
+  for (const n of JW_RASTER) {
+    const b = document.createElement('button');
+    b.className = 'jwChip' + (n === wesenRaster ? ' sel' : '');
+    b.textContent = n + '×' + n;
+    b.addEventListener('click', () => wesenRasterWechseln(n));
+    w.appendChild(b);
+  }
+}
+function wesenRasterWechseln(n) {
+  if (!wesenRasterOk(n) || n === wesenRaster) return;
+  // Vom zuletzt HANDgemalten Bild umrechnen - so kommt beim Hin- und
+  // Herschalten (32 → 12 → 32) alles wieder genau so zurück.
+  const basis = wesenBasis || { raster: wesenRaster, daten: wesenDaten };
+  wesenDaten = wesenSkalieren(basis.daten, basis.raster, n);
+  wesenRaster = n;
+  wesenRasterZeichnen();
+  wesenMalen();
+  wesenEntwurfSichern();
+  blip(620, 0.05); blip(840, 0.06);
+  if (!/^0+$/.test(basis.daten.join('')))
+    toast('🎨 ' + n + '×' + n + ' Kästchen – dein Bild ist mitgekommen!', 3000);
+}
 let wesenDaten = null, wesenFarbe = 2, wesenNr = -1;
 function wesenMalen() {
-  for (let y=0; y<PN; y++) for (let x=0; x<PN; x++) {
-    wCtx.fillStyle = PAINT_COLS[parseInt(wesenDaten[y*PN+x], 16) || 0];
-    wCtx.fillRect(x*WCELL, y*WCELL, WCELL, WCELL);
+  const N = wesenRaster, ZELL = WPIX / N;
+  for (let y=0; y<N; y++) for (let x=0; x<N; x++) {
+    wCtx.fillStyle = PAINT_COLS[parseInt(wesenDaten[y*N+x], 16) || 0];
+    wCtx.fillRect(x*ZELL, y*ZELL, ZELL, ZELL);
   }
-  wCtx.strokeStyle = 'rgba(0,0,0,0.12)'; wCtx.lineWidth = 2;
-  for (let i=1; i<PN; i++) {
-    wCtx.beginPath(); wCtx.moveTo(i*WCELL, 0); wCtx.lineTo(i*WCELL, WPIX); wCtx.stroke();
-    wCtx.beginPath(); wCtx.moveTo(0, i*WCELL); wCtx.lineTo(WPIX, i*WCELL); wCtx.stroke();
+  wCtx.strokeStyle = 'rgba(0,0,0,0.12)';
+  wCtx.lineWidth = N > 20 ? 1 : 2;      // bei vielen Kästchen dünnere Linien
+  for (let i=1; i<N; i++) {
+    wCtx.beginPath(); wCtx.moveTo(i*ZELL, 0); wCtx.lineTo(i*ZELL, WPIX); wCtx.stroke();
+    wCtx.beginPath(); wCtx.moveTo(0, i*ZELL); wCtx.lineTo(WPIX, i*ZELL); wCtx.stroke();
   }
 }
 function wesenPunkt(clientX, clientY) {
-  const r = wCan.getBoundingClientRect();
-  const x = Math.floor((clientX - r.left) / r.width * PN);
-  const y = Math.floor((clientY - r.top) / r.height * PN);
-  if (x < 0 || x >= PN || y < 0 || y >= PN) return;
-  wesenDaten[y*PN + x] = wesenFarbe.toString(16);
+  const r = wCan.getBoundingClientRect(), N = wesenRaster;
+  const x = Math.floor((clientX - r.left) / r.width * N);
+  const y = Math.floor((clientY - r.top) / r.height * N);
+  if (x < 0 || x >= N || y < 0 || y >= N) return;
+  wesenDaten[y*N + x] = wesenFarbe.toString(16);
+  wesenBasis = { raster: N, daten: wesenDaten.slice() };   // das ist jetzt das Original
   wesenMalen();
   wesenEntwurfSichern();              // 💾 sofort merken
 }
@@ -30329,7 +30420,8 @@ function wesenEntwurfSichern() {
   if (!wesenDaten) return;
   try {
     localStorage.setItem(WESEN_ENTWURF_KEY, JSON.stringify({
-      bild: wesenDaten.join(''), nr: wesenNr, t: Date.now(),
+      bild: wesenDaten.join(''), nr: wesenNr, t: Date.now(), raster: wesenRaster,
+      basis: wesenBasis ? { raster: wesenBasis.raster, daten: wesenBasis.daten.join('') } : null,
       name: wesenFeld('wesenName'), kann: wesenFeld('wesenKann'),
       gross: wesenFeld('wesenGross'), wieviele: wesenFeld('wesenAnzahl') }));
   } catch(e) {}
@@ -30342,8 +30434,12 @@ function wesenEntwurfWeg() {
 function wesenEntwurfLesen() {
   try {
     const d = JSON.parse(localStorage.getItem(WESEN_ENTWURF_KEY) || 'null');
-    if (d && typeof d.bild === 'string' && d.bild.length === PN*PN &&
-        !/^0+$/.test(d.bild) && Date.now() - (d.t || 0) < 14*24*3600*1000) return d;
+    const n = d && typeof d.bild === 'string' ? Math.round(Math.sqrt(d.bild.length)) : 0;
+    if (d && n && wesenRasterOk(n) && n*n === d.bild.length &&
+        !/^0+$/.test(d.bild) && Date.now() - (d.t || 0) < 14*24*3600*1000) {
+      d.raster = n;
+      return d;
+    }
   } catch(e) {}
   return null;
 }
@@ -30357,7 +30453,10 @@ function wesenEntwurfAnbieten() {
 function wesenOeffnen(nr) {
   wesenNr = (nr === undefined) ? -1 : nr;
   const d = wesenNr >= 0 ? weltPlan.wesen[wesenNr] : null;
-  wesenDaten = (d ? d.bild : '0'.repeat(PN*PN)).split('');
+  // jedes Wesen bringt seine eigene Kästchen-Zahl mit (alte: 12)
+  wesenRaster = d && wesenRasterOk(d.raster) ? d.raster : (d ? 12 : wesenRaster);
+  wesenDaten = (d ? d.bild : '0'.repeat(wesenRaster*wesenRaster)).split('');
+  wesenBasis = { raster: wesenRaster, daten: wesenDaten.slice() };
   document.getElementById('wesenName').value = d ? (d.name || '') : '';
   document.getElementById('wesenKann').value = d ? (d.kann || '') : '';
   document.getElementById('wesenGross').value = d ? (d.gross || '') : '';
@@ -30365,7 +30464,12 @@ function wesenOeffnen(nr) {
   // 💾 War da noch ein angefangenes Bild? Dann ist es wieder da.
   const e = wesenEntwurfLesen();
   if (e && e.nr === wesenNr) {
+    wesenRaster = e.raster;
     wesenDaten = e.bild.split('');
+    wesenBasis = (e.basis && wesenRasterOk(e.basis.raster) &&
+                  e.basis.daten.length === e.basis.raster*e.basis.raster)
+               ? { raster: e.basis.raster, daten: e.basis.daten.split('') }
+               : { raster: wesenRaster, daten: wesenDaten.slice() };
     document.getElementById('wesenName').value = e.name || '';
     document.getElementById('wesenKann').value = e.kann || '';
     document.getElementById('wesenGross').value = e.gross || '';
@@ -30373,6 +30477,8 @@ function wesenOeffnen(nr) {
     toast('🎨 Dein angefangenes Bild ist noch da – mal einfach weiter! ✏️', 4500);
   }
   document.getElementById('entwurfBox').style.display = 'none';
+  wesenRasterZeichnen();
+  wesenZoomSetzen(wesenZoom);
   wesenKannZeigen();
   wesenMalen();
   document.getElementById('wesenBox').style.display = 'flex';
@@ -30417,6 +30523,7 @@ function wesenSichern() {
   const f = jwKannLesen(kann).f;
   const grund = f.gross ? 2 : f.klein ? 0.55 : 1;
   const d = { name: name || 'Mein Wesen', bild, kann, f, gross, wieviele,
+              raster: wesenRaster,
               gr:  g ? g.gr  : grund,
               grB: g ? (g.grB !== undefined ? g.grB : g.gr) : grund,
               n:   an ? an.n : 2 };
@@ -30442,6 +30549,13 @@ function wesenSichern() {
   for (const f of [523, 659, 784, 1047]) blip(f, 0.09);
 }
 document.getElementById('weltWesenNeu').addEventListener('click', () => wesenOeffnen());
+document.getElementById('wesenKleiner').addEventListener('click', () => {
+  wesenZoomSetzen(wesenZoom - 0.2); blip(420, 0.05); });
+document.getElementById('wesenGroesser').addEventListener('click', () => {
+  wesenZoomSetzen(wesenZoom + 0.2); blip(760, 0.05); });
+wesenZoom = wesenZoomLesen();
+wesenZoomSetzen(wesenZoom);
+wesenRasterZeichnen();
 const engBtnEl = document.getElementById('engBtn');
 engBtnEl.addEventListener('touchstart', e => { e.preventDefault(); engWahlZeigen(); }, {passive:false});
 engBtnEl.addEventListener('mousedown',  e => { e.preventDefault(); engWahlZeigen(); });
@@ -30475,8 +30589,9 @@ document.getElementById('weltWunschOk').addEventListener('click', weltWunschOk);
 document.getElementById('weltWunsch').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); weltWunschOk(); } });
 document.getElementById('wesenLeer').addEventListener('click', () => {
-  wesenDaten = '0'.repeat(PN*PN).split(''); wesenMalen(); wesenEntwurfWeg();
-  blip(300, 0.07); });
+  wesenDaten = '0'.repeat(wesenRaster*wesenRaster).split('');
+  wesenBasis = { raster: wesenRaster, daten: wesenDaten.slice() };
+  wesenMalen(); wesenEntwurfWeg(); blip(300, 0.07); });
 document.getElementById('wesenZu').addEventListener('click', () => {
   document.getElementById('wesenBox').style.display = 'none'; blip(300, 0.06); });
 const weltBtnEl = document.getElementById('weltBtn');
