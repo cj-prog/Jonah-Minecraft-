@@ -73,8 +73,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 303 (01.11., Tore in der
-  Riesenburg) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 304 (01.11., Online-
+  Rangliste) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -99,6 +99,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Aussehen (Jonah, 01.11.): größerer Streifen an der Seite, oben der eigene Eintrag („Jona 15"),
   darunter die anderen; nur wer gerade spielt, steht drin; Punkte bleiben gespeichert und gelten
   beim nächsten Mal weiter (hängen am Gerät).
+  **v304 online (01.11.):** Spitzname auf der Startseite, Rangliste links (einklappbar), anonyme
+  Anmeldung per REST, `firestore.rules` im Repo · wartet auf Christian: Regeln in der Konsole
+  veröffentlichen (+ „Anonym" prüfen) · Punkte-Tabelle noch Platzhalter, Jonahs Punkte-Regeln und
+  „nur wer gerade spielt" sind nachgereicht.
 - **12 – Hinweise beim ersten Spielen** · in Arbeit · Wunsch von Jonah (01.11.): neue Spieler
   bekommen beim ersten Mal Schritt-für-Schritt-Hinweise (überspringbar, später wieder abrufbar)
   · an Session 1 gegeben (nach Thema 11) · Meldung in `meldungen/1.md` abwarten.
