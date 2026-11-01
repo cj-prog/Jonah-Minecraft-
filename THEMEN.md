@@ -99,6 +99,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Aussehen (Jonah, 01.11.): größerer Streifen an der Seite, oben der eigene Eintrag („Jona 15"),
   darunter die anderen; nur wer gerade spielt, steht drin; Punkte bleiben gespeichert und gelten
   beim nächsten Mal weiter (hängen am Gerät).
+- **12 – Hinweise beim ersten Spielen** · in Arbeit · Wunsch von Jonah (01.11.): neue Spieler
+  bekommen beim ersten Mal Schritt-für-Schritt-Hinweise (überspringbar, später wieder abrufbar)
+  · an Session 1 gegeben (nach Thema 11) · Meldung in `meldungen/1.md` abwarten.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
