@@ -1147,13 +1147,28 @@
   #missBox { cursor:pointer; }
 
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
-  #start h1 { font-size:44px; color:#fff; text-shadow:3px 3px 0 rgba(0,0,0,.3); letter-spacing:2px; }
-  /* Der Neuigkeiten-Text wird mit jeder Version laenger. Damit der gruene
-     Spielen-Knopf auf einem QUER gehaltenen Handy NIE aus dem Bild rutscht,
-     bekommt der Text eine Hoechsthoehe und darf selbst scrollen. */
-  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px; line-height:1.6; font-size:15px;
-    max-height:40vh; overflow-y:auto; flex:0 0 auto; }
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; text-align:center; padding:16px 16px 24px; }
+  #start h1 { font-size:44px; color:#fff; text-shadow:3px 3px 0 rgba(0,0,0,.3);
+    letter-spacing:2px; flex:0 0 auto; }
+  /* 🟢 DER SPIELEN-KNOPF IST WICHTIGER ALS JEDER TEXT.
+     Jonah: "Das ist viel zu gross fuer den Bildschirm. Und dann kann ich nicht
+     mehr so gut auf Spielen druecken." Darum steckt alles Lesbare in EINEM
+     Kasten, der schrumpfen und scrollen darf (#startMitte), und der Knopf
+     sitzt in #startUnten, das NIE schrumpft. Lange Texte machen also nur den
+     Kasten voller - nie den Knopf unerreichbar. */
+  #startMitte { flex:0 1 auto; min-height:0; overflow-y:auto; width:100%;
+    display:flex; flex-direction:column; align-items:center; gap:10px; }
+  #startUnten { flex:0 0 auto; display:flex; flex-direction:column;
+    align-items:center; gap:10px; }
+  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px;
+    line-height:1.6; font-size:15px; margin:0; }
+  #newsBtn, #helpBtn { font-size:14px; color:#fff; background:rgba(0,0,0,.3);
+    border:1px solid rgba(255,255,255,.5); border-radius:9px; padding:8px 16px;
+    cursor:pointer; flex:0 0 auto; }
+  #startKnoepfe { display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+    flex:0 0 auto; }
+  #helpTouch, #helpDesk { display:none; }
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
     padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
   #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
@@ -1165,10 +1180,11 @@
   /* Handy im QUERFORMAT: wenig Hoehe. Dann wird alles etwas kleiner, damit
      der Spielen-Knopf (und die Ueberschrift) sicher ins Bild passen. */
   @media (max-height: 540px) {
-    #start { gap:10px; padding:10px; }
-    #start h1 { font-size:30px; }
-    #start p { font-size:13px; line-height:1.45; max-height:30vh; }
+    #start { gap:8px; padding:8px 10px 14px; }
+    #start h1 { font-size:26px; }
+    #start p { font-size:13px; line-height:1.45; }
     #playBtn { font-size:19px; padding:10px 34px; }
+    #newsBtn, #helpBtn { font-size:12.5px; padding:6px 12px; }
   }
 </style>
 </head>
@@ -1779,8 +1795,19 @@
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
-  <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 300 &middot; 🎨🤖 JETZT VERSTEHE ICH AUCH DEIN WESEN! Beim Mal-Feld kannst du jetzt ganz frei hinschreiben, was dein Wesen kann, wie groß es ist und wie viele es davon geben soll – mit KI-Schlüssel liest Claude deinen Satz genau durch, und vorher siehst du im Fenster „So habe ich dein Wesen verstanden!", was angekommen ist. Was nicht geht, sagt es dir ehrlich. Außerdem fragt das Spiel überall das kleine, günstige Modell – auch in den Chats mit Fred und Lucy.</p>
+  <div id="startMitte">
+  <p id="news" style="font-weight:bold; background:rgba(0,0,0,.25); padding:8px 14px; border-radius:10px;">
+    <!-- 📰 NEUE VERSION: Die fette Zeile ist alles, was Jonah sofort sieht.
+         Der lange Text steckt in #newsRest hinter "Mehr lesen". -->
+    <span id="newsKopf">Version 301 &middot; 🟢 DER SPIELEN-KNOPF IST WIEDER DA!</span>
+    <span id="newsRest" style="display:none"><br><br>
+    Jonah hat gesagt: „Wenn ich eine neue Version neu starte, steht da erstmal, was neu gekommen ist &ndash; und das ist viel zu groß für den Bildschirm. Dann kann ich nicht mehr so gut auf Spielen drücken." Stimmt! Jetzt steht hier nur noch eine kurze Zeile, und der Rest kommt erst, wenn du auf 📖 <b>Mehr lesen</b> drückst. Die Steuerung versteckt sich hinter ℹ️ <b>So geht's</b>. Der grüne Knopf rutscht nie mehr weg &ndash; egal wie lang der Text ist.<br><br>
+    <b>Aus Version 300:</b> 🎨🤖 Beim Mal-Feld kannst du jetzt ganz frei hinschreiben, was dein Wesen kann, wie groß es ist und wie viele es davon geben soll. Mit KI-Schlüssel liest Claude deinen Satz genau durch, und vorher siehst du im Fenster „So habe ich dein Wesen verstanden!", was angekommen ist. Was nicht geht, sagt es dir ehrlich.</span>
+  </p>
+  <div id="startKnoepfe">
+    <button id="newsBtn">📖 Mehr lesen</button>
+    <button id="helpBtn">ℹ️ So geht's</button>
+  </div>
   <p id="helpTouch">
     <b>Steuerung:</b><br>
     🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
@@ -1795,17 +1822,20 @@
     💬 Tippe einen Dorfbewohner an und hör, was er sagt!<br>
     🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!
   </p>
-  <p id="helpDesk" style="display:none">
+  <p id="helpDesk">
     <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
     Rechtsklick setzen · Leertaste springen · Tasten 1–8 Block wählen
   </p>
-  <button id="playBtn">▶ Spielen</button>
-  <div id="saveRow">
-    <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
-    <button id="expBtn">📤 Spielstand sichern</button>
-    <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
   </div>
-  <div id="err"></div>
+  <div id="startUnten">
+    <button id="playBtn">▶ Spielen</button>
+    <div id="saveRow">
+      <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
+      <button id="expBtn">📤 Spielstand sichern</button>
+      <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
+    </div>
+    <div id="err"></div>
+  </div>
 </div>
 
 <script>
@@ -1826,7 +1856,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 300;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 301;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -30197,10 +30227,25 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 }
 
 // ------------------------------ Start ----------------------------------------
-if (!isTouch) {
-  document.getElementById('helpTouch').style.display='none';
-  document.getElementById('helpDesk').style.display='block';
-}
+// 📖 "Mehr lesen" und ℹ️ "So geht's": beides ist zugeklappt, damit der gruene
+// Spielen-Knopf sofort zu sehen ist. Wer mag, klappt es auf.
+(() => {
+  const auf = (el) => el.style.display === 'block' || el.style.display === 'inline';
+  const rest = document.getElementById('newsRest'), nBtn = document.getElementById('newsBtn');
+  nBtn.addEventListener('click', () => {
+    const z = auf(rest);
+    rest.style.display = z ? 'none' : 'inline';
+    nBtn.textContent = z ? '📖 Mehr lesen' : '📕 Weniger';
+  });
+  // Am Tablet die Finger-Steuerung, am Rechner die Tasten-Steuerung
+  const hilfe = document.getElementById(isTouch ? 'helpTouch' : 'helpDesk');
+  const hBtn = document.getElementById('helpBtn');
+  hBtn.addEventListener('click', () => {
+    const z = auf(hilfe);
+    hilfe.style.display = z ? 'none' : 'block';
+    hBtn.textContent = z ? "ℹ️ So geht's" : '✖ Zuklappen';
+  });
+})();
 document.getElementById('playBtn').addEventListener('click',()=>{
   const saved=loadGame();
   if (saved) {
