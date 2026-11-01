@@ -93,7 +93,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Projekt „jonahcraft" (Spark-Tarif, kostenlos, Firestore Frankfurt) ist angelegt, Web-App
   registriert · in Arbeit: an Session 1 gegeben (01.11.) – Spitzname vor dem Spielen mit
   Wortfilter, Top-10 am Rand, Sicherheitsregeln (Christian fügt sie in der Konsole ein) ·
-  offen: Jonahs Antwort, wofür es Punkte gibt (bis dahin Platzhalter).
+  Punkte (Jonah, 01.11.): Block abbauen 1, 1 € gesammelt 2, Bauen nach Höhe (2 hoch 3, über 20
+  hoch mehr), dazu Tiere zähmen, Monster/Räuber/Riesen besiegen (Werte als Vorschlag, änderbar);
+  mit Schutz gegen Tricksen an Session 1 weitergegeben.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
