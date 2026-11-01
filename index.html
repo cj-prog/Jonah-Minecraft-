@@ -1163,12 +1163,16 @@
     align-items:center; gap:10px; }
   #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px;
     line-height:1.6; font-size:15px; margin:0; }
-  #newsBtn, #helpBtn { font-size:14px; color:#fff; background:rgba(0,0,0,.3);
-    border:1px solid rgba(255,255,255,.5); border-radius:9px; padding:8px 16px;
-    cursor:pointer; flex:0 0 auto; }
-  #startKnoepfe { display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
-    flex:0 0 auto; }
-  #helpTouch, #helpDesk { display:none; }
+  .hilfe { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.35);
+    background:rgba(0,0,0,.22); border-radius:12px; padding:10px 14px;
+    max-width:620px; font-size:14px; line-height:1.5; }
+  .hilfe b { display:block; margin-bottom:6px; font-size:15px; }
+  /* Eine Spalte: zwei Spalten zerreissen die Zeilen und lesen sich fuer
+     ein Kind schlechter (im Screenshot verglichen). */
+  .hilfeGitter { display:grid; gap:3px; text-align:left; }
+  #helpDesk { display:none; }
+  #verZeile { font-size:12px; color:rgba(255,255,255,.7);
+    text-shadow:1px 1px 0 rgba(0,0,0,.3); }
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
     padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
   #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
@@ -1184,7 +1188,8 @@
     #start h1 { font-size:26px; }
     #start p { font-size:13px; line-height:1.45; }
     #playBtn { font-size:19px; padding:10px 34px; }
-    #newsBtn, #helpBtn { font-size:12.5px; padding:6px 12px; }
+    .hilfe { font-size:12.5px; line-height:1.4; padding:7px 11px; }
+    .hilfe b { font-size:13px; margin-bottom:3px; }
   }
 </style>
 </head>
@@ -1796,36 +1801,37 @@
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
   <div id="startMitte">
-  <p id="news" style="font-weight:bold; background:rgba(0,0,0,.25); padding:8px 14px; border-radius:10px;">
-    <!-- 📰 NEUE VERSION: Die fette Zeile ist alles, was Jonah sofort sieht.
-         Der lange Text steckt in #newsRest hinter "Mehr lesen". -->
-    <span id="newsKopf">Version 301 &middot; 🟢 DER SPIELEN-KNOPF IST WIEDER DA!</span>
-    <span id="newsRest" style="display:none"><br><br>
-    Jonah hat gesagt: „Wenn ich eine neue Version neu starte, steht da erstmal, was neu gekommen ist &ndash; und das ist viel zu groß für den Bildschirm. Dann kann ich nicht mehr so gut auf Spielen drücken." Stimmt! Jetzt steht hier nur noch eine kurze Zeile, und der Rest kommt erst, wenn du auf 📖 <b>Mehr lesen</b> drückst. Die Steuerung versteckt sich hinter ℹ️ <b>So geht's</b>. Der grüne Knopf rutscht nie mehr weg &ndash; egal wie lang der Text ist.<br><br>
-    <b>Aus Version 300:</b> 🎨🤖 Beim Mal-Feld kannst du jetzt ganz frei hinschreiben, was dein Wesen kann, wie groß es ist und wie viele es davon geben soll. Mit KI-Schlüssel liest Claude deinen Satz genau durch, und vorher siehst du im Fenster „So habe ich dein Wesen verstanden!", was angekommen ist. Was nicht geht, sagt es dir ehrlich.</span>
-  </p>
-  <div id="startKnoepfe">
-    <button id="newsBtn">📖 Mehr lesen</button>
-    <button id="helpBtn">ℹ️ So geht's</button>
+  <!-- 🎮 Auf der Startseite steht nur noch, WIE man spielt (Jonahs Wunsch,
+       01.11.: die Neuigkeiten kommen ganz weg). Damit der Spielen-Knopf
+       trotzdem immer ins Bild passt, stehen die Zeilen in einem Gitter, das
+       auf breiten Bildschirmen zwei Spalten nimmt. -->
+  <div id="helpTouch" class="hilfe">
+    <b>🎮 So wird gespielt:</b>
+    <div class="hilfeGitter">
+      <span>🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)</span>
+      <span>👀 Rechte Hälfte: Umsehen (wischen)</span>
+      <span>👆 Tippen: Block abbauen / setzen (⛏️/🧱 umschalten)</span>
+      <span>⬆ Knopf: Springen &amp; Schwimmen</span>
+      <span>💥 TNT hinstellen und antippen &rarr; BOOM!</span>
+      <span>🐴 Tippe ein Pferd an und reite los!</span>
+      <span>✈️ Knopf rechts: Fliegen an/aus (⬆ hoch, ⬇ runter)</span>
+      <span>🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!</span>
+      <span>🕊️ Lange auf ein Tier drücken = wieder freilassen</span>
+      <span>💬 Tippe einen Dorfbewohner an und hör, was er sagt!</span>
+      <span>🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!</span>
+    </div>
   </div>
-  <p id="helpTouch">
-    <b>Steuerung:</b><br>
-    🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
-    👀 Rechte Hälfte: Umsehen (wischen)<br>
-    👆 Tippen: Block abbauen / setzen (⛏️/🧱 umschalten)<br>
-    ⬆ Knopf: Springen &amp; Schwimmen<br>
-    💥 TNT hinstellen und antippen &rarr; BOOM!<br>
-    🐴 Tippe ein Pferd an und reite los!<br>
-    ✈️ Knopf rechts: Fliegen an/aus (⬆ hoch, ⬇ runter)<br>
-    🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!<br>
-    🕊️ Lange auf ein Tier drücken = wieder freilassen<br>
-    💬 Tippe einen Dorfbewohner an und hör, was er sagt!<br>
-    🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!
-  </p>
-  <p id="helpDesk">
-    <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
-    Rechtsklick setzen · Leertaste springen · Tasten 1–8 Block wählen
-  </p>
+  <div id="helpDesk" class="hilfe">
+    <b>🎮 So wird gespielt:</b>
+    <div class="hilfeGitter">
+      <span>⌨️ WASD: laufen</span>
+      <span>🖱️ Maus: umsehen</span>
+      <span>👆 Linksklick: abbauen</span>
+      <span>🧱 Rechtsklick: setzen</span>
+      <span>⬆ Leertaste: springen</span>
+      <span>1–8: Block wählen</span>
+    </div>
+  </div>
   </div>
   <div id="startUnten">
     <button id="playBtn">▶ Spielen</button>
@@ -1835,6 +1841,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
+    <div id="verZeile">Version 302</div>
   </div>
 </div>
 
@@ -1856,7 +1863,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 301;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 302;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -30227,25 +30234,13 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 }
 
 // ------------------------------ Start ----------------------------------------
-// 📖 "Mehr lesen" und ℹ️ "So geht's": beides ist zugeklappt, damit der gruene
-// Spielen-Knopf sofort zu sehen ist. Wer mag, klappt es auf.
-(() => {
-  const auf = (el) => el.style.display === 'block' || el.style.display === 'inline';
-  const rest = document.getElementById('newsRest'), nBtn = document.getElementById('newsBtn');
-  nBtn.addEventListener('click', () => {
-    const z = auf(rest);
-    rest.style.display = z ? 'none' : 'inline';
-    nBtn.textContent = z ? '📖 Mehr lesen' : '📕 Weniger';
-  });
-  // Am Tablet die Finger-Steuerung, am Rechner die Tasten-Steuerung
-  const hilfe = document.getElementById(isTouch ? 'helpTouch' : 'helpDesk');
-  const hBtn = document.getElementById('helpBtn');
-  hBtn.addEventListener('click', () => {
-    const z = auf(hilfe);
-    hilfe.style.display = z ? 'none' : 'block';
-    hBtn.textContent = z ? "ℹ️ So geht's" : '✖ Zuklappen';
-  });
-})();
+// Am Tablet die Finger-Steuerung, am Rechner die Tasten-Steuerung.
+// Die Versionsnummer kommt aus GAME_VERSION, damit sie nie veraltet.
+if (!isTouch) {
+  document.getElementById('helpTouch').style.display = 'none';
+  document.getElementById('helpDesk').style.display = 'block';
+}
+document.getElementById('verZeile').textContent = 'Version ' + GAME_VERSION;
 document.getElementById('playBtn').addEventListener('click',()=>{
   const saved=loadGame();
   if (saved) {
