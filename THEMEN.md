@@ -84,6 +84,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **8 – Geld verdienen mit JonahCraft** · in Arbeit (Gespräch, kein Bauauftrag) · neue Session
   „8 Geld verdienen mit JonahCraft" vom Manager gestartet am 01.11. (`session_01ENoEgaWL1MYrLnYWcfT6Te`)
   · nichts ändern/pushen/anmelden; Ergebnisse meldet sie dem Manager.
+- **10 – Startbildschirm zu groß** · in Arbeit · Meldung von Jonah (01.11.): Neuigkeiten und
+  Steuerung sind zu groß, der Spielen-Knopf ist schwer zu treffen · an Session 1 gegeben, Vorrang
+  vor Thema 9 · Meldung in `meldungen/1.md` abwarten.
 - **9 – Riesige Tore in der Riesenburg** · in Arbeit · Wunsch von Jonah (01.11.): in jede offene
   Tür-Öffnung der Riesenburg ein großes Tor, das die ganze Öffnung bedeckt; Antippen öffnet und
   schließt · an Session 1 gegeben (nach Thema 7) · Meldung in `meldungen/1.md` abwarten.
