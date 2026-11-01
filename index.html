@@ -1921,7 +1921,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 306</div>
+    <div id="verZeile">Version 307</div>
   </div>
 </div>
 
@@ -1943,7 +1943,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 306;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 307;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -16341,6 +16341,7 @@ function freundeTick(dt) {
 function msgrKnopf() {
   const b = document.getElementById('msgrBtn'), p = document.getElementById('msgrPunkt');
   if (!b || !p) return;
+  if (!jonahsGeraet()) { b.style.display = 'none'; p.style.display = 'none'; return; }
   const n = engUngelesen().length;
   p.textContent = n;
   p.style.display = n ? 'flex' : 'none';
@@ -27831,6 +27832,9 @@ function vokStufeCheck() {
   return false;
 }
 function matheTick(dt) {
+  // 🙋 Die Rechen- und Englisch-Aufgaben sind Jonahs Sache - die anderen
+  // Spieler sollen einfach bauen können.
+  if (!jonahsGeraet()) return;
   if (mathePause || !started || flugT > 0) return;   // nicht mitten im Raketenflug
   matheGespielt += dt;
   // Ist gerade eine neue Takt-Stufe erreicht? Dann sagen wir Bescheid - sonst
@@ -30967,6 +30971,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   saveGame();                           // beim Start sofort speichern
   rangSichtbar = true;                  // 🏆 ab jetzt steht die Rangliste am Rand
   rangStellen();
+  jonahSachenStellen();                 // 🙋 Englisch-Sachen nur auf Jonahs Gerät
   setTimeout(async () => { await rangEigenesHolen(); rangLaden(true); rangSenden(true); }, 1500);
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
@@ -32141,6 +32146,66 @@ kopfKnoepfeOrdnen();
 // ich automatisch direkt in der Englisch-Lern-App."
 // Vorher wird IMMER gespeichert, damit nichts verloren geht.
 const ENG_APP_URL = 'https://cj-prog.github.io/Englisch-App/';
+// ============== 🙋 IST DAS JONAHS GERÄT? ================================
+// Jonah: "Wenn die anderen JonahCraft spielen, möchte ich nicht, dass die
+// auch mit meinen englischen Freunden reden können, weil die die ja gar
+// nicht kennen." Dazu sollen für alle anderen auch der 📚-Knopf und die
+// Mathe- und Englisch-Aufgaben verschwinden.
+//
+// Erkannt wird das auf drei Wegen - mit Absicht so, dass Jonah seine Sachen
+// NICHT aus Versehen verliert:
+//   1. Es liegt ein echter Englisch-Stand auf dem Gerät (Sticker, gelernte
+//      Wörter, Chats, Name oder KI-Schlüssel). Das ist Jonahs Englisch-App.
+//   2. Einmal erkannt, bleibt es gemerkt - auch wenn der Englisch-Stand
+//      später mal leer aussieht.
+//   3. Von Hand ein- und ausschalten: die Seite einmal mit ?jonah=1 am Ende
+//      der Adresse öffnen (bzw. ?jonah=0 zum Abschalten). Das braucht man
+//      nach dem Löschen der Browserdaten - oder wenn Jonah die Englisch-App
+//      auf diesem Gerät noch gar nicht benutzt hat.
+const JONAH_KEY = 'jonahcraft_jonahs_geraet';
+let jonahFlag = null;
+function jonahsGeraet() {
+  if (jonahFlag !== null) return jonahFlag;
+  try {                                 // 3) von Hand gesetzt?
+    const p = new URLSearchParams(location.search);
+    if (p.has('jonah')) {
+      jonahFlag = p.get('jonah') !== '0';
+      localStorage.setItem(JONAH_KEY, jonahFlag ? '1' : '0');
+      return jonahFlag;
+    }
+  } catch(e) {}
+  try {                                 // 2) schon einmal erkannt?
+    const g = localStorage.getItem(JONAH_KEY);
+    if (g === '1') return (jonahFlag = true);
+    if (g === '0') return (jonahFlag = false);
+  } catch(e) {}
+  let ja = false;                       // 1) liegt ein echter Englisch-Stand da?
+  try {
+    const e = engLaden();
+    ja = !!((e.stickers && e.stickers.length) ||
+            (e.learned && Object.keys(e.learned).length) ||
+            (e.chats && Object.keys(e.chats).length) ||
+            (e.apiKey && e.apiKey.trim()) || (e.name && e.name.trim()));
+  } catch(e2) {}
+  jonahFlag = ja;
+  try { if (ja) localStorage.setItem(JONAH_KEY, '1'); } catch(e3) {}
+  return jonahFlag;
+}
+// Alles, was nur Jonah sieht, an einer Stelle aus- und wieder einblenden.
+function jonahSachenStellen() {
+  const ja = jonahsGeraet();
+  for (const id of ['engBtn', 'msgrBtn']) {
+    const e = document.getElementById(id);
+    if (e) e.style.display = ja ? '' : 'none';
+  }
+  if (!ja) {                            // 📱 auch der Zähler am Messenger
+    const p = document.getElementById('msgrPunkt');
+    if (p) p.style.display = 'none';
+  }
+  try { kopfKnoepfeOrdnen(); } catch(e) {}
+}
+// Gleich beim Laden - sonst blitzt der 📚-Knopf auf dem Startbildschirm auf.
+jonahSachenStellen();
 function engWahlZeigen() {
   document.getElementById('engWahl').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
