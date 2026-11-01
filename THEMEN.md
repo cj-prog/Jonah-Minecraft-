@@ -96,6 +96,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Punkte (Jonah, 01.11.): Block abbauen 1, 1 € gesammelt 2, Bauen nach Höhe (2 hoch 3, über 20
   hoch mehr), dazu Tiere zähmen, Monster/Räuber/Riesen besiegen (Werte als Vorschlag, änderbar);
   mit Schutz gegen Tricksen an Session 1 weitergegeben.
+  Aussehen (Jonah, 01.11.): größerer Streifen an der Seite, oben der eigene Eintrag („Jona 15"),
+  darunter die anderen; nur wer gerade spielt, steht drin; Punkte bleiben gespeichert und gelten
+  beim nächsten Mal weiter (hängen am Gerät).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
