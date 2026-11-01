@@ -455,6 +455,9 @@
     background:rgba(255,255,255,.08); border-radius:9px; padding:5px 9px; }
   .pHzeile span:first-child { flex:1 1 auto; }
   .pHzeile b { color:#ffe09a; }
+  .pHzeile.geld { background:rgba(120,220,150,.18); }
+  .pHzeile.geld b { color:#9ef0b4; }
+  #pHtrenn { height:2px; background:rgba(255,255,255,.22); margin:4px 0 2px; }
   #punkteHilfeZu { font-size:16px; font-weight:bold; padding:11px; border-radius:12px;
     border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
   #rangNeu { display:none; gap:4px; }
@@ -1990,7 +1993,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 309</div>
+    <div id="verZeile">Version 310</div>
   </div>
 </div>
 
@@ -2012,7 +2015,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 309;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 310;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -30633,6 +30636,64 @@ const PUNKTE_FUER = {
   raeuber:      { p: 15, t: '🦹 Einen Räuber besiegen' },
   riese:        { p: 50, t: '🗿 Einen Riesen besiegen' },
 };
+// ---- 💶 SPIELGELD ALS BELOHNUNG FÜR PUNKTE ----
+// Jonah: "Immer wenn man 100 Punkte mehr hat, kriegt man Geld - Spielgeld im
+// Spiel, kein richtiges Geld. Und wenn man zum Beispiel 1000 Punkte hat, dann
+// kriegt man etwas mehr Geld."
+// Auch das steht an EINER Stelle und wird im Fenster "So bekommst du Punkte"
+// mit angezeigt. Dieses Geld gibt selbst KEINE Punkte (sonst drehte sich das
+// im Kreis) - dafür sorgt geldNichtZaehlen().
+const PUNKTE_BELOHNUNG = {
+  hundert: { marke:  100, geld:  20, t: '💶 Für je 100 Punkte bekommst du' },
+  tausend: { marke: 1000, geld: 250, t: '💰 Und für je 1000 Punkte extra' },
+};
+const BELOHNT_KEY = 'jonahcraft_belohnt';
+let belohntH = 0, belohntT = 0;       // bis zu welcher Marke ist schon ausgezahlt?
+function belohnungLesen() {
+  try {
+    const b = JSON.parse(localStorage.getItem(BELOHNT_KEY) || 'null');
+    belohntH = (b && b.h) | 0; belohntT = (b && b.t) | 0;
+  } catch(e) { belohntH = belohntT = 0; }
+}
+function belohnungMerken() {
+  try { localStorage.setItem(BELOHNT_KEY, JSON.stringify({ h: belohntH, t: belohntT })); }
+  catch(e) {}
+}
+// Zahlt alle Marken aus, die seit dem letzten Mal dazugekommen sind. Jede
+// Marke gibt es genau EINMAL - auch wenn die Punkte nach dem Neuladen oder
+// aus der Datenbank zurückkommen.
+function belohnungPruefen() {
+  const H = PUNKTE_BELOHNUNG.hundert, T = PUNKTE_BELOHNUNG.tausend;
+  const h = Math.floor(punkte / H.marke), t = Math.floor(punkte / T.marke);
+  if (h <= belohntH && t <= belohntT) return 0;
+  const nh = Math.max(0, h - belohntH), nt = Math.max(0, t - belohntT);
+  const geld = nh * H.geld + nt * T.geld;
+  belohntH = Math.max(belohntH, h); belohntT = Math.max(belohntT, t);
+  belohnungMerken();
+  if (geld <= 0) return 0;
+  if (typeof money === 'number') {
+    money += geld;
+    geldNichtZaehlen(geld);           // 🛡️ Belohnungsgeld gibt keine Punkte
+    try { updateFoodHUD(); scheduleSave(); } catch(e) {}
+  }
+  // 🎉 Und jetzt freundlich Bescheid sagen
+  try {
+    if (nt > 0) {
+      toast('🏆💰 ' + (t * T.marke) + ' PUNKTE!!! Du bekommst ' + geld +
+            ' € Spielgeld – damit kannst du bauen und kaufen, was du willst! 🎉', 8000);
+      for (const f of [523, 659, 784, 1047, 1319]) blip(f, 0.12);
+    } else if (nh === 1) {
+      toast('🎉 ' + (h * H.marke) + ' Punkte! Du bekommst ' + geld + ' € Spielgeld! 💶', 5000);
+      blip(660, 0.08); blip(880, 0.09); blip(1047, 0.12);
+    } else {
+      toast('🎉 Super! Für deine ' + punkte + ' Punkte bekommst du ' + geld +
+            ' € Spielgeld! 💶', 7000);
+      for (const f of [523, 659, 784, 1047]) blip(f, 0.1);
+    }
+  } catch(e) {}
+  return geld;
+}
+
 // 🛡️ DAMIT DIE RANGLISTE FAIR BLEIBT
 // Pro Minute gibt es hoechstens so viele Punkte. Das passt zu der Regel in
 // firestore.rules ("punkte darf pro Schreibvorgang nur um 5000 steigen"):
@@ -30656,6 +30717,7 @@ function punkteLesen() {
   try { const n = parseInt(localStorage.getItem(RANG_PUNKTE_KEY) || '0', 10);
         punkte = (isFinite(n) && n > 0) ? n : 0; } catch(e) { punkte = 0; }
   punkteGesendet = punkte;
+  belohnungLesen();
 }
 function punkteGeben(was, mal) {
   const r = PUNKTE_FUER[was];
@@ -30668,6 +30730,7 @@ function punkteGeben(was, mal) {
   punkteMinute += p;
   punkte += p;
   try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
+  belohnungPruefen();                 // 💶 volle Hunderter geben Spielgeld
   return p;
 }
 // 🧱 Einen Block hingestellt: Punkte gibt es fuer die HOEHE des Bauwerks,
@@ -30887,6 +30950,7 @@ async function rangEigenesHolen() {
       try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
     }
     punkteGesendet = Math.min(punkteGesendet < 0 ? punkte : punkteGesendet, punkte);
+    belohnungPruefen();               // 💶 verpasste Marken einmal nachzahlen
     rangZeichnen();
   } catch(e) { /* kein Netz? Dann gelten die Punkte vom Gerät. */ }
 }
@@ -31010,6 +31074,15 @@ function punkteHilfeZeigen() {
     const b2 = document.createElement('b'); b2.textContent = '+' + r.p;
     d.appendChild(a); d.appendChild(b2); l.appendChild(d);
   }
+  // 💶 ... und darunter, was es für die Punkte gibt
+  const tr = document.createElement('div'); tr.id = 'pHtrenn'; l.appendChild(tr);
+  for (const k in PUNKTE_BELOHNUNG) {
+    const r = PUNKTE_BELOHNUNG[k];
+    const d = document.createElement('div'); d.className = 'pHzeile geld';
+    const a = document.createElement('span'); a.textContent = r.t;
+    const b2 = document.createElement('b'); b2.textContent = r.geld + ' €';
+    d.appendChild(a); d.appendChild(b2); l.appendChild(d);
+  }
   document.getElementById('punkteHilfe').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
   blip(700, 0.05); blip(900, 0.06);
@@ -31094,6 +31167,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
         'Startbildschirm auf 🛟 Sicherung zurückholen!', 15000), 3000);
   } catch(e) {}
   saveGame();                           // beim Start sofort speichern
+  setTimeout(belohnungPruefen, 2200);   // 💶 alte Punkte einmal nachbelohnen
   rangSichtbar = true;                  // 🏆 ab jetzt steht die Rangliste am Rand
   rangStellen();
   jonahSachenStellen();                 // 🙋 Englisch-Sachen nur auf Jonahs Gerät

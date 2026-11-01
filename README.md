@@ -57,6 +57,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- 💶 **Spielgeld für Punkte:** Bei jeden vollen 100 Punkten gibt es 20 € Spielgeld, bei jeden vollen 1000 Punkten noch 250 € extra. Jede Marke genau einmal – steht alles in „❓ So bekommst du Punkte“
 - ⋯ **Auf kleinen Handys freie Sicht:** Dort stehen nur noch Springen, Abbauen/Bauen und die Blockleiste herum – alle anderen Knöpfe stecken im ⋯-Menü oben rechts. Auf dem Tablet bleibt alles, wie es war
 - 🛸 **Die Teleport-Liste lässt sich endlich scrollen:** Große Ziele mit Abstand, Wischen scrollt (und teleportiert nicht mehr aus Versehen!), und bei vielen Zielen gibt es oben eine Suche
 - 🙋 **Jonahs Sachen sind Jonahs Sachen:** Die englischen Freunde, der 📚-Knopf zur Englisch-App und die Mathe- und Englisch-Aufgaben gibt es nur auf Jonahs Gerät. Alle anderen Spieler bauen einfach drauflos
