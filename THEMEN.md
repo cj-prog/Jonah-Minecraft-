@@ -33,6 +33,9 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   Stand auf die neue Geschichte zurückzusetzen.
 - 31.10 – nach Ermessen – Thema 3 (Fehlerbehebung Englisch-Stand) an Session 1 gegeben, ohne
   Jonah zu fragen: kleine Fehlerbehebung, kein neues Ziel. Rückweg: Session 1 stoppen.
+- 01.11 – Christian – **01.11-1 Weg A:** Online-Rangliste mit Firebase (Spark-Tarif, ohne
+  Zahlungsdaten). Projekt liegt im Google-Konto von Jonah; Empfehlung: Christian als Inhaber
+  hinzufügen.
 - 31.10 – Christian – **31.10-1 Weg B:** Freunde-Chat im Spiel auf das kleine Modell
   (claude-haiku-5-5). **31.10-2 Weg A:** kein Zähler im Spiel, Grenze über das Ausgabelimit im
   API-Konto. **31.10-3 Weg B:** KI auch für die Felder beim Wesen-Malen. → Thema 7 an Session 1.
@@ -70,17 +73,14 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 299 (31.10., KI versteht
-  jeden Satz) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 303 (01.11., Tore in der
+  Riesenburg) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
-- **7 – KI-Feinschliff** · in Arbeit · an Session 1 gegeben (31.10.): Chat auf kleines Modell,
-  KI für die Wesen-Felder (was kann es / wie groß / wie viele) · Meldung in `meldungen/1.md`
-  abwarten.
 - **8 – Geld verdienen mit JonahCraft** · in Arbeit (Gespräch, kein Bauauftrag) · neue Session
   „8 Geld verdienen mit JonahCraft" vom Manager gestartet am 01.11. (`session_01ENoEgaWL1MYrLnYWcfT6Te`)
   · nichts ändern/pushen/anmelden; Ergebnisse meldet sie dem Manager.
@@ -88,14 +88,11 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   (Link an Familie/Freunde, evtl. Schule, QR-Code); Bezahlen, Werbung, Spenden bis dahin
   zurückgestellt. Kein Spielerzähler (Datenschutz bei Kindern), lieber nachfragen. Mögliche
   spätere Wünsche: QR-Code oder „Teilen"-Knopf. Offen: Jonahs Frage, wie Updates laufen sollen.
-- **10 – Startbildschirm zu groß** · in Arbeit · Meldung von Jonah (01.11.): Neuigkeiten und
-  Steuerung sind zu groß, der Spielen-Knopf ist schwer zu treffen · an Session 1 gegeben, Vorrang
-  vor Thema 9 · Ergänzung 01.11. (Jonah über Session 8): Neuigkeiten ganz weg, nur noch „wie man
-  spielt" (Steuerung sichtbar); Versionsnummer bleibt klein („Version 300", Jonah 01.11.) ·
-  Meldung in `meldungen/1.md` abwarten.
-- **9 – Riesige Tore in der Riesenburg** · in Arbeit · Wunsch von Jonah (01.11.): in jede offene
-  Tür-Öffnung der Riesenburg ein großes Tor, das die ganze Öffnung bedeckt; Antippen öffnet und
-  schließt · an Session 1 gegeben (nach Thema 7) · Meldung in `meldungen/1.md` abwarten.
+- **11 – Online-Rangliste** · offen · Wunsch von Jonah (01.11.): Spieler geben vor dem Spielen
+  einen Namen ein, am Rand eine Rangliste mit Punkten. Christian (01.11.): Weg A mit Firebase,
+  Projekt „Jonahcraft" (Spark-Tarif, kostenlos) ist angelegt · warten auf: firebaseConfig von
+  Christian, Jonahs Antwort, wofür es Punkte gibt · dann Auftrag an Session 1 (Spitznamen,
+  Wortfilter, Sicherheitsregeln).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
@@ -103,6 +100,12 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **9 – Riesige Tore in der Riesenburg** · Session 1 · v303 (01.11.): Tore in allen 48
+  Türöffnungen, Antippen zieht sie wie ein Fallgitter hoch, Diener kommen trotzdem durch.
+- **10 – Startbildschirm zu groß** · Session 1 · v301 (Spielen-Knopf immer im Bild) und v302
+  (01.11.: Neuigkeiten weg, nur noch „So wird gespielt", Version klein unten).
+- **7 – KI-Feinschliff** · Session 1 · v300 (01.11.): alle KI-Aufrufe mit dem kleinen Modell,
+  KI versteht auch die Wesen-Felder.
 - **6 – Wunsch-Zettel versteht Jonah genau** · Session 1 · v297 (Wörterliste repariert, „So habe
   ich dich verstanden"-Fenster, Wasser nur unter der Erde), v298 (alle Einstellungen in Kinder-
   Worten), v299 (31.10.: mit KI-Schlüssel versteht Claude jeden Satz, ~0,03 Cent pro Welt-Bau,
