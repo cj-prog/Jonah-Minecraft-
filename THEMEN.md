@@ -81,6 +81,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **7 – KI-Feinschliff** · in Arbeit · an Session 1 gegeben (31.10.): Chat auf kleines Modell,
   KI für die Wesen-Felder (was kann es / wie groß / wie viele) · Meldung in `meldungen/1.md`
   abwarten.
+- **8 – Geld verdienen mit JonahCraft** · in Arbeit (Gespräch, kein Bauauftrag) · neue Session
+  „8 Geld verdienen mit JonahCraft" vom Manager gestartet am 01.11. (`session_01ENoEgaWL1MYrLnYWcfT6Te`)
+  · nichts ändern/pushen/anmelden; Ergebnisse meldet sie dem Manager.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
