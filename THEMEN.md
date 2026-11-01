@@ -3,7 +3,7 @@
 Register des „Session Manager für Jonah's Kiste". **Nur er schreibt in diese Datei.**
 Regeln: `.claude/skills/session-manager/SKILL.md` und `SESSION-MANAGER.md`.
 
-Letztes Lagebild: 31.10.2026
+Letztes Lagebild: 01.11.2026
 
 **Für Entwickler-Sessions:** Beim Start die Regeln lesen (Abschnitte Befugnisrahmen und
 Entwickler). Dieses Register nur lesen. Meldungen per Nachricht an den Manager und in
@@ -84,9 +84,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **8 – Geld verdienen mit JonahCraft** · in Arbeit (Gespräch, kein Bauauftrag) · neue Session
   „8 Geld verdienen mit JonahCraft" vom Manager gestartet am 01.11. (`session_01ENoEgaWL1MYrLnYWcfT6Te`)
   · nichts ändern/pushen/anmelden; Ergebnisse meldet sie dem Manager.
-  Zwischenstand 01.11.: Bezahlen ist zurückgestellt – Jonah ist wichtiger, dass überhaupt Leute
-  spielen. Weiter im Gespräch: Wege, Spieler zu finden, und wie Updates laufen sollen. Noch
-  nichts zu bauen.
+  **Entscheidung 01.11. (Jonah mit Familie):** Erst 10 Leute finden, die JonahCraft spielen
+  (Link an Familie/Freunde, evtl. Schule, QR-Code); Bezahlen, Werbung, Spenden bis dahin
+  zurückgestellt. Kein Spielerzähler (Datenschutz bei Kindern), lieber nachfragen. Mögliche
+  spätere Wünsche: QR-Code oder „Teilen"-Knopf. Offen: Jonahs Frage, wie Updates laufen sollen.
 - **10 – Startbildschirm zu groß** · in Arbeit · Meldung von Jonah (01.11.): Neuigkeiten und
   Steuerung sind zu groß, der Spielen-Knopf ist schwer zu treffen · an Session 1 gegeben, Vorrang
   vor Thema 9 · Meldung in `meldungen/1.md` abwarten.
