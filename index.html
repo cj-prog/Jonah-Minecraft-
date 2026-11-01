@@ -361,8 +361,15 @@
   #rangBox { display:none; left:calc(10px + env(safe-area-inset-left));
     flex-direction:column; gap:3px; z-index:49;
     background:rgba(18,16,40,.80); color:#fff; border:2px solid rgba(255,205,90,.8);
-    border-radius:12px; padding:6px 8px; width:min(44vw,190px);
-    max-height:34vh; overflow-y:auto; font-size:12px; line-height:1.35; }
+    border-radius:12px; padding:7px 10px; width:min(46vw,230px);
+    max-height:34vh; overflow-y:auto; font-size:13px; line-height:1.4; }
+  /* 👑 Jonahs eigener Eintrag steht GANZ OBEN und ist groesser */
+  #rangIch { display:flex; gap:7px; align-items:baseline;
+    background:rgba(255,205,90,.26); border-radius:8px; padding:3px 6px;
+    font-size:15px; font-weight:bold; }
+  #rangIch .rNa { flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #rangIch .rPu { color:#ffe09a; }
+  #rangTrenn { height:1px; background:rgba(255,255,255,.25); margin:2px 0; }
   #rangKopf { font-weight:bold; font-size:12.5px; color:#ffd980;
     display:flex; justify-content:space-between; align-items:center; gap:6px; }
   #rangTitel { cursor:pointer; user-select:none; flex:1 1 auto; }
@@ -374,7 +381,21 @@
   .rangZeile .rPu { font-weight:bold; color:#ffe09a; }
   .rangZeile.ich { background:rgba(255,205,90,.22); border-radius:6px;
     padding:1px 3px; margin:0 -3px; }
-  #rangInfo { font-size:11px; opacity:.8; }
+  #rangInfo { font-size:11.5px; opacity:.85; }
+  #rangHilfeBtn { font-size:11px; padding:3px 6px; border-radius:7px; border:none;
+    background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  #punkteHilfe { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
+    flex-direction:column; gap:9px; background:rgba(10,14,30,.98); padding:14px;
+    border-radius:18px; color:#fff; z-index:66; width:min(94vw,400px);
+    max-height:90vh; overflow-y:auto; border:3px solid #ffd34a; }
+  #punkteHilfe h3 { font-size:18px; margin:0; text-align:center; }
+  #punkteHilfe p { font-size:12.5px; margin:0; opacity:.9; line-height:1.45; }
+  .pHzeile { display:flex; gap:8px; align-items:baseline; font-size:14px;
+    background:rgba(255,255,255,.08); border-radius:9px; padding:5px 9px; }
+  .pHzeile span:first-child { flex:1 1 auto; }
+  .pHzeile b { color:#ffe09a; }
+  #punkteHilfeZu { font-size:16px; font-weight:bold; padding:11px; border-radius:12px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
   #rangNeu { display:none; gap:4px; }
   #rangNeu input { flex:1 1 auto; min-width:0; font-size:12px; padding:4px 6px;
     border-radius:7px; border:1px solid rgba(255,255,255,.5);
@@ -1223,8 +1244,9 @@
     #start h1 { font-size:26px; }
     #start p { font-size:13px; line-height:1.45; }
     #playBtn { font-size:19px; padding:10px 34px; }
-    #rangBox { font-size:11px; line-height:1.3; padding:5px 7px; width:min(42vw,168px); }
+    #rangBox { font-size:11.5px; line-height:1.3; padding:5px 8px; width:min(44vw,195px); }
     #rangKopf { font-size:11.5px; }
+    #rangIch { font-size:13px; }
     .hilfe { font-size:12.5px; line-height:1.4; padding:7px 11px; }
     .hilfe b { font-size:13px; margin-bottom:3px; }
   }
@@ -1305,8 +1327,18 @@
 <div class="hud" id="rangBox">
   <div id="rangKopf"><span id="rangTitel">🏆 Rangliste <span id="rangPfeil">▾</span></span><button id="rangNameBtn">✏️</button></div>
   <div id="rangNeu"><input id="rangNameInput" maxlength="16"><button id="rangNameOk">✔</button></div>
+  <div id="rangIch"></div>
+  <div id="rangTrenn"></div>
   <div id="rangListe"></div>
   <div id="rangInfo"></div>
+  <button id="rangHilfeBtn">❓ So bekommst du Punkte</button>
+</div>
+<div class="hud" id="punkteHilfe">
+  <h3>🏆 So bekommst du Punkte!</h3>
+  <div id="punkteHilfeListe"></div>
+  <p id="punkteHilfeFuss">Deine Punkte hängen an <b>diesem Gerät</b> – spielst du hier weiter,
+     geht es mit deinen Punkten weiter. 💾</p>
+  <button id="punkteHilfeZu">✅ Alles klar!</button>
 </div>
 <div class="hud" id="weltVerstanden">
   <h3>🤔 So habe ich dich verstanden!</h3>
@@ -1889,7 +1921,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 304</div>
+    <div id="verZeile">Version 305</div>
   </div>
 </div>
 
@@ -1911,7 +1943,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 304;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 305;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7122,6 +7154,7 @@ function setBlock(wx,wy,wz,v) {
   const vorher = ch.data[i];
   if (vorher===v) return;
   bloeckeGeaendert++;                 // 🏆 fuer die Punkte der Rangliste
+  if (!ersteAenderung) ersteAenderung = [wx, wy, wz];   // welcher Block war es?
   ch.data[i]=v;
   // 💰 Merkliste: wo liegt gerade Geld herum? (danach suchen die Räuber!)
   const gk = wx+','+wy+','+wz;
@@ -7508,7 +7541,7 @@ function loadGame() {
     if (typeof s.snowCnt==='number') snowCnt = s.snowCnt;
     if (typeof s.gems==='number') gems = s.gems;
     if (typeof s.cakes==='number') cakes = s.cakes;
-    if (typeof s.money==='number') money = s.money;
+    if (typeof s.money==='number') { money = s.money; geldMerk = null; }   // 💾 kein Fund
     if (typeof s.bonbons==='number') bonbons = s.bonbons;       // 🍬 der Naschbeutel
     if (typeof s.naschZahl==='number') naschZahl = s.naschZahl;
     // 💰 beim Laden wieder aufteilen: Grundstück oder nicht? (Alte Spielstände
@@ -7599,7 +7632,7 @@ function loadGame() {
     // 💰 Aus Version 248: Geld, das damals im Tresor lag, kommt zurück in die Tasche.
     const ausTresor = typeof s.speicher === 'number' ? Math.max(0, Math.round(s.speicher)) : 0;
     if (ausTresor > 0) {
-      money += ausTresor;
+      money += ausTresor; geldNichtZaehlen(ausTresor);   // alter Tresor, kein Fund
       setTimeout(() => toast('💰 Der alte Tresor im Geldspeicher ist weg – dein Geld (' + ausTresor +
         ' €) liegt wieder in deiner Tasche. Leg es einfach selbst in deinen Geldspeicher! 💵🪙', 9000), 2500);
     }
@@ -8892,6 +8925,7 @@ const isNight = () => light01() < 0.45;
 let selSlot = 0;
 let placeMode = false;          // false = abbauen, true = setzen
 let bloeckeGeaendert = 0;       // 🏆 wie oft hat sich wirklich ein Block geaendert?
+let ersteAenderung = null;      // 🏆 und WO - der erste Block, den ein Tipp bewegt hat
 const keys = {};
 let jumpHeld = false;
 
@@ -9722,7 +9756,8 @@ function feiereJubilaeum() {            // 🎉 100 Versionen JonahCraft!
   box.querySelector('p').textContent = 'Danke, dass du JonahCraft spielst, Jonah! 💚';
   box.style.display = 'block';
   setTimeout(()=>box.style.display='none', 9000);
-  money += 100; updateFoodHUD();
+  money += 100; geldNichtZaehlen(100);  // 🎁 ein Geschenk, kein Fund
+  updateFoodHUD();
   toast('🎁 Jubiläums-Geschenk: 100 € Taschengeld UND der goldene Pokal 🏆 in deiner Blockleiste!', 6500);
   for (let i=0;i<10;i++) {              // Feuerwerks-Salve rundherum!
     setTimeout(()=>{
@@ -20540,7 +20575,8 @@ function geldSaugen(wunsch, nurGold) {
         rest -= wert; n += wert; bloecke++;
       }
   if (n > 0) {
-    money += n; updateFoodHUD(); scheduleSave();
+    money += n; geldNichtZaehlen(n);      // 🧲 der Geld-Sauger zaehlt nicht
+    updateFoodHUD(); scheduleSave();
     for (const f of [990, 790, 660, 520]) blip(f, 0.07);   // schlürf!
     for (let i = 0; i < 20; i++)        // es saugt!
       fireworks.push({ x: player.x+(Math.random()-0.5)*2.4, y: player.y+0.4+Math.random(),
@@ -20778,7 +20814,7 @@ function altesGoldAufraeumen() {
         if (GELD_BLOCK.has(b)) { setBlock(wx, y, wz, STONE); euro += GELD_WERT[b]; }
         else if (b === GOLD) setBlock(wx, y, wz, STONE);
       }
-  if (euro > 0) { money += euro; updateFoodHUD(); }
+  if (euro > 0) { money += euro; geldNichtZaehlen(euro); updateFoodHUD(); }  // Aufraeumen
   altesGoldWeg = true;
   return euro;
 }
@@ -24693,7 +24729,7 @@ function bankAktion(was) {
   };
   const raus = n => {
     if (kontoStand < n || n <= 0) { toast('🏦 So viel liegt nicht auf deinem Konto! (Da sind '+euroText(kontoStand)+' €)', 3000); blip(180,0.12); return; }
-    kontoStand -= n; money += n;
+    kontoStand -= n; money += n; geldNichtZaehlen(n);   // 🏦 eigenes Geld, kein Fund
     toast('🏦 '+n+' € abgehoben! Du hast jetzt '+money+' € in der Tasche.', 3400);
     blip(880,0.06); blip(700,0.08);
   };
@@ -28153,6 +28189,9 @@ function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
   blip(150,0.08);
   if (a.hp<=0) {
     animals.splice(animals.indexOf(a),1);
+    // 🏆 Punkte fuer den Sieg - je nach Gegner verschieden
+    punkteGeben(a.type === 'riese' ? 'riese'
+              : a.type === 'raeuber' ? 'raeuber' : 'monster');
     if (a.type==='boss') {              // der große Königs-Schatz! 👑
       gems += 5; money += 10; updateFoodHUD(); scheduleSave();
       toast('👑💥 MONSTER-KÖNIG BESIEGT! Du bekommst 5 Diamanten und 10 €! Du bist ein Held!', 5000);
@@ -28291,7 +28330,8 @@ function hitEntity(a, dir) {
     sitting = null;
     if (flying) toggleFly();
     riding = a; a.walking = false;
-    if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); challEvent('tier'); scheduleSave(); }
+    if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); challEvent('tier');
+                   punkteGeben('tierGezaehmt'); scheduleSave(); }
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
@@ -28397,6 +28437,7 @@ function hitEntity(a, dir) {
   if (isPet(a)) {                       // Tiere zähmen!
     if (!a.tame) {
       a.tame = true; a.sit = false; missEvent('zaehm'); challEvent('tier');
+      punkteGeben('tierGezaehmt');
       if (a.type!=='bird') { a.vy = 4.5; a.onGround = false; }
       toast(TAME_MSG[a.type]);
       const s = TAME_SOUND[a.type];
@@ -29901,10 +29942,16 @@ function touchEnd(e){
       }
       if (dt<350 && look.moved<14) {           // kurzes Tippen = Aktion
         const dir=screenRay(t.clientX,t.clientY);
-        if (placeMode) { const v = bloeckeGeaendert; doPlace(dir);
-                         if (bloeckeGeaendert > v) punkteGeben('blockSetzen'); }
-        else            { const v = bloeckeGeaendert; doBreak(dir);
-                          if (bloeckeGeaendert > v) punkteGeben('blockAbbauen'); }
+        // 🏆 Punkte nur, wenn sich wirklich ein Block geaendert hat - und mit
+        // dem Schutz gegen Abbauen-und-wieder-Hinsetzen in Dauerschleife.
+        ersteAenderung = null;
+        const v = bloeckeGeaendert;
+        if (placeMode) doPlace(dir); else doBreak(dir);
+        if (bloeckeGeaendert > v && ersteAenderung) {
+          const a2 = ersteAenderung;
+          if (placeMode) punkteBauen(a2[0], a2[1], a2[2]);
+          else           punkteAbbauen(a2[0], a2[1], a2[2]);
+        }
       } else if (dt>=600 && look.moved<14) {   // langes Drücken = freilassen
         tryRelease(screenRay(t.clientX,t.clientY));
       }
@@ -30397,26 +30444,102 @@ const RANG_TOKEN_KEY = 'jonahcraft_rang_anmeldung';
 const RANG_PUNKTE_KEY= 'jonahcraft_punkte';
 const RANG_OFFEN_KEY = 'jonahcraft_rang_offen';
 
-// ---- 🎯 DIE PUNKTE STEHEN AN EINER EINZIGEN STELLE ----
-// (Platzhalter, bis Jonah sagt, wofuer es Punkte geben soll. Zum Aendern
-//  reicht es, hier eine Zahl zu drehen oder eine Zeile dazuzuschreiben.)
+// ---- 🎯 DIE PUNKTE-TABELLE: ALLES AN EINER EINZIGEN STELLE ----
+// Jonah wollte Punkte fuer "alle Sachen", je nach Art verschieden. Zum
+// Aendern reicht es, hier eine Zahl zu drehen. Der Text daneben ist genau
+// das, was im Spiel unter "So bekommst du Punkte" steht.
 const PUNKTE_FUER = {
-  blockAbbauen: 1,                    // ⛏️ einen Block abbauen
-  blockSetzen:  1,                    // 🧱 einen Block hinstellen
+  blockAbbauen: { p:  1, t: '⛏️ Einen Block abbauen' },
+  geld:         { p:  2, t: '💰 Einen Euro sammeln' },
+  bauen2:       { p:  3, t: '🏗️ Etwas 2 Blöcke Hohes bauen' },
+  bauen5:       { p:  6, t: '🏗️ … 5 Blöcke hoch' },
+  bauen10:      { p: 12, t: '🏗️ … 10 Blöcke hoch' },
+  bauen20:      { p: 30, t: '🏗️ … über 20 Blöcke hoch!' },
+  tierGezaehmt: { p:  5, t: '🐶 Ein Tier zähmen' },
+  monster:      { p: 10, t: '👾 Ein Monster besiegen' },
+  raeuber:      { p: 15, t: '🦹 Einen Räuber besiegen' },
+  riese:        { p: 50, t: '🗿 Einen Riesen besiegen' },
 };
+// 🛡️ DAMIT DIE RANGLISTE FAIR BLEIBT
+// Pro Minute gibt es hoechstens so viele Punkte. Das passt zu der Regel in
+// firestore.rules ("punkte darf pro Schreibvorgang nur um 5000 steigen"):
+// Hochgeladen wird hoechstens alle 30 Sekunden, also kaeme man selbst bei
+// Vollgas nie ueber die Haelfte davon.
+const PUNKTE_MAX_PRO_MINUTE = 2000;
 const PUNKTE_MAX_SCHRITT = 5000;      // so viel darf EIN Hochladen hoechstens zulegen
+const PUNKTE_SPERRE_MS = 10 * 60 * 1000;   // so lange merkt sich das Spiel eine Stelle
 let punkte = 0, punkteGesendet = 0;
+let punkteMinute = 0, punkteMinuteAb = 0;
+// 🧱 Welche Stellen haben schon Punkte gebracht? (gegen Abbauen-und-wieder-
+// Hinsetzen in Dauerschleife). Schluessel "x,y,z" -> wann zuletzt.
+const punkteStellen = new Map();
+const punkteHoehe = new Map();        // "x,z" -> welche Hoehen-Stufe gab es schon?
+function punkteAufraeumen(jetzt) {
+  for (const [k, t] of punkteStellen) if (jetzt - t > PUNKTE_SPERRE_MS) punkteStellen.delete(k);
+  if (punkteStellen.size > 20000) punkteStellen.clear();
+  if (punkteHoehe.size > 20000) punkteHoehe.clear();
+}
 function punkteLesen() {
   try { const n = parseInt(localStorage.getItem(RANG_PUNKTE_KEY) || '0', 10);
         punkte = (isFinite(n) && n > 0) ? n : 0; } catch(e) { punkte = 0; }
   punkteGesendet = punkte;
 }
 function punkteGeben(was, mal) {
-  const p = PUNKTE_FUER[was];
-  if (!p) return;
-  punkte += p * (mal || 1);
+  const r = PUNKTE_FUER[was];
+  if (!r) return 0;
+  const jetzt = Date.now();
+  if (jetzt - punkteMinuteAb > 60000) { punkteMinuteAb = jetzt; punkteMinute = 0; }
+  let p = r.p * (mal || 1);
+  p = Math.min(p, Math.max(0, PUNKTE_MAX_PRO_MINUTE - punkteMinute));   // 🛡️ Deckel
+  if (p <= 0) return 0;
+  punkteMinute += p;
+  punkte += p;
   try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
+  return p;
 }
+// 🧱 Einen Block hingestellt: Punkte gibt es fuer die HOEHE des Bauwerks,
+// und zwar fuer jede Stelle nur einmal pro Stufe.
+function punkteBauen(wx, wy, wz) {
+  const jetzt = Date.now();
+  punkteAufraeumen(jetzt);
+  punkteStellen.set(wx + ',' + wy + ',' + wz, jetzt);   // selbst gesetzt: Abbauen gibt nichts
+  const boden = terrainHeight(wx, wz);
+  const hoch = wy - boden;
+  const stufe = hoch > 20 ? 'bauen20' : hoch >= 10 ? 'bauen10'
+              : hoch >= 5 ? 'bauen5'  : hoch >= 2 ? 'bauen2' : null;
+  if (!stufe) return 0;
+  const k = wx + ',' + wz;
+  const schon = punkteHoehe.get(k) || 0;
+  const nr = { bauen2:1, bauen5:2, bauen10:3, bauen20:4 }[stufe];
+  if (nr <= schon) return 0;            // diese Stufe gab es hier schon
+  punkteHoehe.set(k, nr);
+  return punkteGeben(stufe);
+}
+// ⛏️ Einen Block abgebaut: selbst gesetzte Bloecke bringen nichts.
+function punkteAbbauen(wx, wy, wz) {
+  const jetzt = Date.now();
+  punkteAufraeumen(jetzt);
+  const k = wx + ',' + wy + ',' + wz;
+  // Schon einmal dagewesen? Dann gibt es hier nichts mehr - und die Stelle
+  // bleibt gemerkt, sonst waere "abbauen, hinsetzen, abbauen" eine Tretmuehle.
+  if (punkteStellen.has(k)) { punkteStellen.set(k, jetzt); return 0; }
+  punkteStellen.set(k, jetzt);          // und sofort wieder hinsetzen bringt auch nichts
+  return punkteGeben('blockAbbauen');
+}
+// 💰 Geld: NUR selbst gesammeltes zaehlt. Zinsen, der Geld-Sauger, das
+// Abheben vom Konto und das Laden eines Spielstands zaehlen ausdruecklich
+// nicht - sonst waere die Rangliste mit einem Knopfdruck kaputt (es gab
+// schon einmal eine "Billion" durch Zinsen).
+let geldMerk = null;
+function geldNichtZaehlen(n) { if (geldMerk !== null) geldMerk += n; }
+function geldPunkteTick() {
+  if (typeof money !== 'number') return;
+  if (geldMerk === null) { geldMerk = money; return; }
+  const zu = money - geldMerk;
+  geldMerk = money;
+  if (zu > 0) punkteGeben('geld', Math.min(zu, 1000));
+}
+setInterval(geldPunkteTick, 500);
 
 // ---- 🏷️ DER SPITZNAME ----
 const NAME_MIN = 2, NAME_MAX = 16;
@@ -30515,6 +30638,8 @@ async function rangSenden(sofort) {
                   fields: { name:   { stringValue: name },
                             punkte: { integerValue: String(sende) } } },
         updateMask: { fieldPaths: ['name','punkte'] },
+        // ⏱️ "zuletzt dabei" faehrt beim selben Schreibvorgang mit - also
+        // ohne ein einziges zusaetzliches Schreiben.
         updateTransforms: [{ fieldPath:'zeit', setToServerValue:'REQUEST_TIME' }] }] }) });
     if (!r.ok) throw new Error('Hochladen ' + r.status);
     punkteGesendet = sende;
@@ -30528,24 +30653,41 @@ async function rangSenden(sofort) {
 }
 
 // ---- ⬇️ DIE BESTEN ZEHN HOLEN (hoechstens jede Minute) ----
+// 🟢 In der Liste steht nur, wer GERADE SPIELT. Dafuer schaut das Spiel auf
+// das Feld "zeit", das bei jedem Hochladen vom Server gesetzt wird: Wer in
+// den letzten zwei Minuten dabei war, zaehlt als "gerade dabei". Die Punkte
+// bleiben trotzdem in der Datenbank - wer wiederkommt, macht da weiter, wo
+// er aufgehoert hat.
+const RANG_DABEI_MS = 2 * 60 * 1000;
 async function rangLaden(sofort) {
   if (rangLeseLauft) return;
   if (!sofort && Date.now() - rangGelesen < RANG_LESE_ABSTAND) return;
   rangLeseLauft = true;
   try {
+    // Sortiert nach Punkten - EIN Feld, dafuer braucht Firestore keinen
+    // extra Index. Das Aussieben nach "gerade dabei" macht das Spiel selbst,
+    // deshalb holen wir etwas mehr als die zehn, die am Ende dastehen.
     const r = await fetch(FB_DOKS + ':runQuery?key=' + FB_KEY, {
       method:'POST', headers:{'content-type':'application/json'},
       body: JSON.stringify({ structuredQuery: {
         from: [{ collectionId: 'rangliste' }],
         orderBy: [{ field:{ fieldPath:'punkte' }, direction:'DESCENDING' }],
-        limit: 10 } }) });
+        limit: 60 } }) });
     if (!r.ok) throw new Error('Laden ' + r.status);
     const j = await r.json();
+    const jetzt = Date.now();
     rangListe = (Array.isArray(j) ? j : [])
       .filter(z => z && z.document && z.document.fields)
-      .map(z => ({ id: String(z.document.name || '').split('/').pop(),
-                   name: String((z.document.fields.name || {}).stringValue || '?').slice(0, NAME_MAX),
-                   punkte: parseInt((z.document.fields.punkte || {}).integerValue || '0', 10) || 0 }));
+      .map(z => {
+        const f = z.document.fields;
+        const t = Date.parse((f.zeit || {}).timestampValue || '') || 0;
+        return { id: String(z.document.name || '').split('/').pop(),
+                 name: String((f.name || {}).stringValue || '?').slice(0, NAME_MAX),
+                 punkte: parseInt((f.punkte || {}).integerValue || '0', 10) || 0,
+                 zeit: t };
+      })
+      .filter(e => e.zeit && jetzt - e.zeit < RANG_DABEI_MS)   // 🟢 nur wer gerade dabei ist
+      .slice(0, 10);
     rangGelesen = Date.now();
     rangFehler = null;
   } catch(e) {
@@ -30553,37 +30695,64 @@ async function rangLaden(sofort) {
   } finally { rangLeseLauft = false; rangZeichnen(); }
 }
 
+// ---- 💾 BEIM START: WIE VIELE PUNKTE STEHEN IN DER DATENBANK? ----
+// Wer eine Weile nicht gespielt hat, verschwindet aus der Liste - seine
+// Punkte bleiben aber gespeichert. Beim Wiederkommen holt sich das Spiel
+// sie zurueck und macht damit weiter. (Ein einziges Lesen pro Spielstart.)
+async function rangEigenesHolen() {
+  if (!spitzname()) return;
+  try {
+    const tok = await fbAnmelden();
+    const r = await fetch(FB_DOKS + '/rangliste/' + fbUid, {
+      headers: { 'Authorization': 'Bearer ' + tok } });
+    if (r.status === 404) return;               // noch gar nicht drin
+    if (!r.ok) throw new Error('Eigenes ' + r.status);
+    const j = await r.json();
+    const n = parseInt(((j.fields || {}).punkte || {}).integerValue || '0', 10) || 0;
+    if (n > punkte) {                           // in der Datenbank steht mehr
+      punkte = n;
+      try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
+    }
+    punkteGesendet = Math.min(punkteGesendet < 0 ? punkte : punkteGesendet, punkte);
+    rangZeichnen();
+  } catch(e) { /* kein Netz? Dann gelten die Punkte vom Gerät. */ }
+}
+
 // ---- 🖊️ DIE RANGLISTE HINMALEN ----
 function rangZeichnen() {
   const box = document.getElementById('rangBox');
   if (!box) return;
+  // 👑 Ganz oben steht man selbst - nur Name und Zahl, so wie Jonah es wollte
+  const ichBox = document.getElementById('rangIch');
+  ichBox.innerHTML = '';
+  const ich = spitzname();
+  const na0 = document.createElement('span'); na0.className = 'rNa';
+  na0.textContent = ich || 'Du';
+  const pu0 = document.createElement('span'); pu0.className = 'rPu';
+  pu0.textContent = punkte;
+  ichBox.appendChild(na0); ichBox.appendChild(pu0);
+  // ... darunter die anderen, die gerade mitspielen
   const liste = document.getElementById('rangListe');
   liste.innerHTML = '';
-  const ich = spitzname();
-  let drin = false;
-  rangListe.forEach((e, i) => {
+  let andere = 0;
+  rangListe.forEach((e) => {
+    if (fbUid && e.id === fbUid) return;          // steht ja schon oben
+    andere++;
     const d = document.createElement('div');
-    d.className = 'rangZeile' + ((fbUid && e.id === fbUid) ? ' ich' : '');
-    if (fbUid && e.id === fbUid) drin = true;
-    const nr = document.createElement('span'); nr.className = 'rNr'; nr.textContent = (i+1) + '.';
+    d.className = 'rangZeile';
+    // Durchgezaehlt 1, 2, 3 - ohne Luecke an der Stelle, wo man selbst steht.
+    // (Mit den echten Plaetzen sprang die Liste "1., 3., 4." und sah nach
+    //  einem Fehler aus - im Screenshot gesehen.)
+    const nr = document.createElement('span'); nr.className = 'rNr'; nr.textContent = andere + '.';
     const na = document.createElement('span'); na.className = 'rNa'; na.textContent = e.name;
     const pu = document.createElement('span'); pu.className = 'rPu'; pu.textContent = e.punkte;
     d.appendChild(nr); d.appendChild(na); d.appendChild(pu);
     liste.appendChild(d);
   });
-  if (ich && !drin) {                 // noch nicht unter den Besten? Trotzdem zeigen
-    const d = document.createElement('div');
-    d.className = 'rangZeile ich';
-    const nr = document.createElement('span'); nr.className = 'rNr'; nr.textContent = '–';
-    const na = document.createElement('span'); na.className = 'rNa'; na.textContent = ich;
-    const pu = document.createElement('span'); pu.className = 'rPu'; pu.textContent = punkte;
-    d.appendChild(nr); d.appendChild(na); d.appendChild(pu);
-    liste.appendChild(d);
-  }
   const info = document.getElementById('rangInfo');
   if (rangFehler) info.textContent = '📴 Gerade nicht erreichbar – du kannst aber ganz normal weiterspielen!';
-  else if (!rangListe.length) info.textContent = '⏳ Noch niemand da – spiel los und sei der Erste! 🚀';
-  else info.textContent = 'Deine Punkte: ' + punkte;
+  else if (!andere) info.textContent = '🙋 Gerade spielt sonst niemand. Deine Punkte bleiben gespeichert!';
+  else info.textContent = '🟢 ' + andere + (andere === 1 ? ' spielt' : ' spielen') + ' gerade mit';
   rangPlatz();
 }
 // 📏 Wie viel Platz ist links wirklich frei? Die Rangliste darf die Minikarte
@@ -30607,8 +30776,9 @@ function rangPlatz() {
 function rangStellen() {              // auf- oder zuklappen (wird gemerkt)
   const box = document.getElementById('rangBox');
   box.style.display = rangSichtbar ? 'flex' : 'none';
-  for (const id of ['rangListe','rangInfo'])
+  for (const id of ['rangListe','rangInfo','rangIch','rangTrenn','rangHilfeBtn'])
     document.getElementById(id).style.display = rangOffen ? '' : 'none';
+  if (rangOffen) document.getElementById('rangIch').style.display = 'flex';
   if (!rangOffen) document.getElementById('rangNeu').style.display = 'none';
   document.getElementById('rangNameBtn').style.display = rangOffen ? '' : 'none';
   document.getElementById('rangPfeil').textContent = rangOffen ? '▾' : '▸';
@@ -30655,6 +30825,25 @@ document.getElementById('rangTitel').addEventListener('touchstart',
   e => { e.preventDefault(); rangUmschalten(); }, {passive:false});
 document.getElementById('rangTitel').addEventListener('mousedown',
   e => { e.preventDefault(); rangUmschalten(); });
+// ❓ Die Punkte-Tabelle kommt direkt aus PUNKTE_FUER - sie kann also nie
+// etwas anderes sagen, als das Spiel wirklich macht.
+function punkteHilfeZeigen() {
+  const l = document.getElementById('punkteHilfeListe');
+  l.innerHTML = '';
+  for (const k in PUNKTE_FUER) {
+    const r = PUNKTE_FUER[k];
+    const d = document.createElement('div'); d.className = 'pHzeile';
+    const a = document.createElement('span'); a.textContent = r.t;
+    const b2 = document.createElement('b'); b2.textContent = '+' + r.p;
+    d.appendChild(a); d.appendChild(b2); l.appendChild(d);
+  }
+  document.getElementById('punkteHilfe').style.display = 'flex';
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700, 0.05); blip(900, 0.06);
+}
+document.getElementById('rangHilfeBtn').addEventListener('click', punkteHilfeZeigen);
+document.getElementById('punkteHilfeZu').addEventListener('click', () => {
+  document.getElementById('punkteHilfe').style.display = 'none'; blip(520, 0.06); });
 document.getElementById('rangNameBtn').addEventListener('click', rangNameFeldZeigen);
 document.getElementById('rangNameOk').addEventListener('click', rangNameSpeichern);
 document.getElementById('rangNameInput').addEventListener('keydown',
@@ -30734,7 +30923,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   saveGame();                           // beim Start sofort speichern
   rangSichtbar = true;                  // 🏆 ab jetzt steht die Rangliste am Rand
   rangStellen();
-  setTimeout(() => { rangLaden(true); rangSenden(true); }, 1500);
+  setTimeout(async () => { await rangEigenesHolen(); rangLaden(true); rangSenden(true); }, 1500);
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
     // ... und als richtige Datei herunterladen – die ist sicher, egal was passiert!
