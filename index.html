@@ -368,9 +368,23 @@
   .vstZeile b { font-size:12px; opacity:.85; display:block; }
   .vstZeile.nix { background:rgba(255,160,90,.18); }
   .vstSatz { font-size:11.5px; opacity:.7; font-style:italic; }
+  .vstKnoepfe { position:sticky; bottom:-14px; display:flex; flex-direction:column;
+    gap:8px; margin:0 -14px -14px; padding:9px 14px 14px;
+    background:rgba(10,14,30,.98); }
   #weltVerstandenJa { font-size:17px; font-weight:bold; padding:12px; border-radius:12px;
     border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
   #weltVerstandenNein { font-size:14px; padding:9px; border-radius:10px; border:none;
+    background:#5a6a80; color:#fff; cursor:pointer; }
+  /* 🤔 Dasselbe Fenster, nur fuer das gemalte Wesen (ueber dem Mal-Feld) */
+  #wesenVst { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
+    flex-direction:column; gap:9px; background:rgba(10,14,30,.98); padding:14px;
+    border-radius:18px; color:#fff; z-index:65; width:min(96vw,460px);
+    max-height:92vh; overflow-y:auto; border:3px solid #ffd34a; }
+  #wesenVst h3 { font-size:17px; margin:0; text-align:center; }
+  #wesenVstListe { display:flex; flex-direction:column; gap:7px; }
+  #wesenVstJa { font-size:17px; font-weight:bold; padding:12px; border-radius:12px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+  #wesenVstNein { font-size:14px; padding:9px; border-radius:10px; border:none;
     background:#5a6a80; color:#fff; cursor:pointer; }
   #engWahl { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
     flex-direction:column; gap:10px; background:rgba(14,10,30,.98); padding:16px;
@@ -1133,13 +1147,32 @@
   #missBox { cursor:pointer; }
 
   #start { inset:0; z-index:50; background:linear-gradient(#5aa4d8,#87ceeb 60%,#7ec850);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; }
-  #start h1 { font-size:44px; color:#fff; text-shadow:3px 3px 0 rgba(0,0,0,.3); letter-spacing:2px; }
-  /* Der Neuigkeiten-Text wird mit jeder Version laenger. Damit der gruene
-     Spielen-Knopf auf einem QUER gehaltenen Handy NIE aus dem Bild rutscht,
-     bekommt der Text eine Hoechsthoehe und darf selbst scrollen. */
-  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px; line-height:1.6; font-size:15px;
-    max-height:40vh; overflow-y:auto; flex:0 0 auto; }
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; text-align:center; padding:16px 16px 24px; }
+  #start h1 { font-size:44px; color:#fff; text-shadow:3px 3px 0 rgba(0,0,0,.3);
+    letter-spacing:2px; flex:0 0 auto; }
+  /* 🟢 DER SPIELEN-KNOPF IST WICHTIGER ALS JEDER TEXT.
+     Jonah: "Das ist viel zu gross fuer den Bildschirm. Und dann kann ich nicht
+     mehr so gut auf Spielen druecken." Darum steckt alles Lesbare in EINEM
+     Kasten, der schrumpfen und scrollen darf (#startMitte), und der Knopf
+     sitzt in #startUnten, das NIE schrumpft. Lange Texte machen also nur den
+     Kasten voller - nie den Knopf unerreichbar. */
+  #startMitte { flex:0 1 auto; min-height:0; overflow-y:auto; width:100%;
+    display:flex; flex-direction:column; align-items:center; gap:10px; }
+  #startUnten { flex:0 0 auto; display:flex; flex-direction:column;
+    align-items:center; gap:10px; }
+  #start p { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.3); max-width:420px;
+    line-height:1.6; font-size:15px; margin:0; }
+  .hilfe { color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.35);
+    background:rgba(0,0,0,.22); border-radius:12px; padding:10px 14px;
+    max-width:620px; font-size:14px; line-height:1.5; }
+  .hilfe b { display:block; margin-bottom:6px; font-size:15px; }
+  /* Eine Spalte: zwei Spalten zerreissen die Zeilen und lesen sich fuer
+     ein Kind schlechter (im Screenshot verglichen). */
+  .hilfeGitter { display:grid; gap:3px; text-align:left; }
+  #helpDesk { display:none; }
+  #verZeile { font-size:12px; color:rgba(255,255,255,.7);
+    text-shadow:1px 1px 0 rgba(0,0,0,.3); }
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
     padding:14px 44px; box-shadow:0 4px 0 #2e7d32; cursor:pointer; }
   #playBtn:active { transform:translateY(3px); box-shadow:0 1px 0 #2e7d32; }
@@ -1151,10 +1184,12 @@
   /* Handy im QUERFORMAT: wenig Hoehe. Dann wird alles etwas kleiner, damit
      der Spielen-Knopf (und die Ueberschrift) sicher ins Bild passen. */
   @media (max-height: 540px) {
-    #start { gap:10px; padding:10px; }
-    #start h1 { font-size:30px; }
-    #start p { font-size:13px; line-height:1.45; max-height:30vh; }
+    #start { gap:8px; padding:8px 10px 14px; }
+    #start h1 { font-size:26px; }
+    #start p { font-size:13px; line-height:1.45; }
     #playBtn { font-size:19px; padding:10px 34px; }
+    .hilfe { font-size:12.5px; line-height:1.4; padding:7px 11px; }
+    .hilfe b { font-size:13px; margin-bottom:3px; }
   }
 </style>
 </head>
@@ -1233,8 +1268,18 @@
 <div class="hud" id="weltVerstanden">
   <h3>🤔 So habe ich dich verstanden!</h3>
   <div id="weltVerstandenListe"></div>
-  <button id="weltVerstandenJa">✅ Ja, genau so!</button>
-  <button id="weltVerstandenNein">✏️ Nee, ich ändere noch was</button>
+  <div class="vstKnoepfe">
+    <button id="weltVerstandenJa">✅ Ja, genau so!</button>
+    <button id="weltVerstandenNein">✏️ Nee, ich ändere noch was</button>
+  </div>
+</div>
+<div class="hud" id="wesenVst">
+  <h3>🤔 So habe ich dein Wesen verstanden!</h3>
+  <div id="wesenVstListe"></div>
+  <div class="vstKnoepfe">
+    <button id="wesenVstJa">✅ Ja, genau so!</button>
+    <button id="wesenVstNein">✏️ Nee, ich ändere noch was</button>
+  </div>
 </div>
 <div class="hud" id="engWahl">
   <h3>📚 Zur Englisch-Lern-App?</h3>
@@ -1755,33 +1800,49 @@
 
 <div class="hud" id="start">
   <h1>⛏️ JonahCraft</h1>
-  <p style="font-weight:bold; background:rgba(0,0,0,.25); padding:4px 14px; border-radius:8px;">
-    Version 299 &middot; 🤖✍️ JETZT VERSTEHE ICH JEDEN SATZ! Jonah hat gesagt, dass das Spiel fast alles nicht versteht, was er hinschreibt. Darum gibt es jetzt den schlauen Weg: Wenn im Elternbereich der Englisch-App ein KI-Schlüssel eingetragen ist, liest Claude deine Sätze – egal wie du sie schreibst! – und macht daraus die Einstellungen für deine Welt. Du siehst vorher genau, was angekommen ist, und was nicht geht, sagt es dir ehrlich. Ohne Schlüssel geht alles wie bisher mit den Wörtern, und das Spiel sagt dir, welche Sätze es sicher kann.</p>
-  <p id="helpTouch">
-    <b>Steuerung:</b><br>
-    🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)<br>
-    👀 Rechte Hälfte: Umsehen (wischen)<br>
-    👆 Tippen: Block abbauen / setzen (⛏️/🧱 umschalten)<br>
-    ⬆ Knopf: Springen &amp; Schwimmen<br>
-    💥 TNT hinstellen und antippen &rarr; BOOM!<br>
-    🐴 Tippe ein Pferd an und reite los!<br>
-    ✈️ Knopf rechts: Fliegen an/aus (⬆ hoch, ⬇ runter)<br>
-    🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!<br>
-    🕊️ Lange auf ein Tier drücken = wieder freilassen<br>
-    💬 Tippe einen Dorfbewohner an und hör, was er sagt!<br>
-    🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!
-  </p>
-  <p id="helpDesk" style="display:none">
-    <b>Steuerung:</b> WASD laufen · Maus umsehen · Linksklick abbauen ·
-    Rechtsklick setzen · Leertaste springen · Tasten 1–8 Block wählen
-  </p>
-  <button id="playBtn">▶ Spielen</button>
-  <div id="saveRow">
-    <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
-    <button id="expBtn">📤 Spielstand sichern</button>
-    <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
+  <div id="startMitte">
+  <!-- 🎮 Auf der Startseite steht nur noch, WIE man spielt (Jonahs Wunsch,
+       01.11.: die Neuigkeiten kommen ganz weg). Damit der Spielen-Knopf
+       trotzdem immer ins Bild passt, stehen die Zeilen in einem Gitter, das
+       auf breiten Bildschirmen zwei Spalten nimmt. -->
+  <div id="helpTouch" class="hilfe">
+    <b>🎮 So wird gespielt:</b>
+    <div class="hilfeGitter">
+      <span>🕹️ Linke Bildschirmhälfte: Laufen (Daumen ziehen)</span>
+      <span>👀 Rechte Hälfte: Umsehen (wischen)</span>
+      <span>👆 Tippen: Block abbauen / setzen (⛏️/🧱 umschalten)</span>
+      <span>⬆ Knopf: Springen &amp; Schwimmen</span>
+      <span>💥 TNT hinstellen und antippen &rarr; BOOM!</span>
+      <span>🐴 Tippe ein Pferd an und reite los!</span>
+      <span>✈️ Knopf rechts: Fliegen an/aus (⬆ hoch, ⬇ runter)</span>
+      <span>🐶🐱 Tippe Hund oder Katze an &rarr; dein Haustier folgt dir!</span>
+      <span>🕊️ Lange auf ein Tier drücken = wieder freilassen</span>
+      <span>💬 Tippe einen Dorfbewohner an und hör, was er sagt!</span>
+      <span>🗨️ 💬-Knopf oben: Sag selber etwas &ndash; sie antworten dir!</span>
+    </div>
   </div>
-  <div id="err"></div>
+  <div id="helpDesk" class="hilfe">
+    <b>🎮 So wird gespielt:</b>
+    <div class="hilfeGitter">
+      <span>⌨️ WASD: laufen</span>
+      <span>🖱️ Maus: umsehen</span>
+      <span>👆 Linksklick: abbauen</span>
+      <span>🧱 Rechtsklick: setzen</span>
+      <span>⬆ Leertaste: springen</span>
+      <span>1–8: Block wählen</span>
+    </div>
+  </div>
+  </div>
+  <div id="startUnten">
+    <button id="playBtn">▶ Spielen</button>
+    <div id="saveRow">
+      <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
+      <button id="expBtn">📤 Spielstand sichern</button>
+      <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
+    </div>
+    <div id="err"></div>
+    <div id="verZeile">Version 303</div>
+  </div>
 </div>
 
 <script>
@@ -1802,7 +1863,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 299;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 303;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -1980,10 +2041,11 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       BUCHREGAL_OBEN=131,               // 📚 der obere Teil des Bücherregals
       BUCHREGAL_V=132,                  // 📚 dasselbe Regal, aber voller Bücher
       BUCHREGAL_OBEN_V=133,             // 📚 (unten und oben)
-      GLOCKE=134;                       // 🔔 die Diener-Glocke in jedem Burgzimmer
+      GLOCKE=134,                       // 🔔 die Diener-Glocke in jedem Burgzimmer
+      RB_TOR=135;                       // 🚪 das Riesentor vor jedem Zimmer der Riesenburg
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
-const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
+const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF, RB_TOR]);
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -2365,6 +2427,10 @@ const BLOCKS = {
   // 🔔 DIE DIENER-GLOCKE: In jedem Zimmer von Jonahs Festung und seiner
   // Riesenburg hängt eine goldene Glocke an einem Gestell. Einmal antippen -
   // sie bimmelt, und GENAU EIN Diener macht sich auf den Weg zu ihm.
+  // 🚪 DAS RIESENTOR: steht in jeder Tuer der Riesenburg und bedeckt sie ganz.
+  // Antippen zieht es hoch wie ein Fallgitter - oben bleibt ein Stueck stehen,
+  // und das tippt man an, damit es wieder herunterfaellt.
+  [RB_TOR]: { name:'Riesentor 🚪 (antippen = auf und zu!)', tiles:[181,181,181], solid:true },
   [GLOCKE]: { name:'Diener-Glocke 🔔 (antippen = ein Diener kommt!)',
     tiles:[115,115,115], solid:false, model:[
     [0.06,0.00,0.40, 0.20,0.92,0.60, 5],                // linker Pfosten
@@ -3544,7 +3610,12 @@ function jwEinstLesen(t) {
 // (derselbe wie für die Chats mit Fred und Lucy), schickt das Spiel Jonahs
 // Sätze EINMAL an Claude und bekommt die Einstellungen als festes JSON
 // zurück. Ohne Schlüssel bleibt alles beim Wörter-Verfahren.
-const JW_KI_MODELL = 'claude-haiku-5-5';          // kleines, günstiges Modell
+// 💰 Dasselbe kleine Modell nimmt das Spiel ÜBERALL, wo es die KI fragt:
+// beim Welt-Bauen, beim Wesen-Verstehen, in den Chats mit den Freunden und
+// beim Übersetzen. So kostet ein Aufruf nur Bruchteile eines Cents und die
+// Ausgaben bleiben vorhersehbar (Papas Wunsch: ein Monatsbudget).
+const KI_MODELL = 'claude-haiku-5-5';             // kleines, günstiges Modell
+const JW_KI_MODELL = KI_MODELL;
 const JW_KI_WERTE = {                             // was das Spiel wirklich kann
   boden:    ['gras','sand','schnee','stein','gold','bunt'],
   gelaende: ['flach','huegel','berge','inseln'],
@@ -4017,6 +4088,165 @@ function jwKannLesen(text) {
     else txt.push('👾 Monster jagen');
   }
   return { f, txt };
+}
+// ====== 🤖 MIT KI: AUCH DAS GEMALTE WESEN GENAU VERSTEHEN ==============
+// Genau wie beim Welt-Bauen: Ist im Elternbereich der Englisch-App ein
+// KI-Schlüssel hinterlegt, liest Claude EINMAL Jonahs drei Sätze ("was kann
+// es", "wie groß", "wie viele") und gibt feste Werte zurück. Jeder Wert wird
+// gegen die erlaubten Listen geprüft; ohne Schlüssel bleibt es bei den
+// Wörtern, und die sind auch der Rückfall, wenn die KI nicht antwortet.
+const WESEN_KI_IDS = JW_KANN.map(k => k.id).concat(['monster']);
+const WESEN_KI_TXT = (() => {
+  const m = { monster: '👾 Monster jagen' };
+  for (const k of JW_KANN) m[k.id] = k.t;
+  return m;
+})();
+function wesenKiAuftrag() {
+  return [
+    'Du hilfst einem 9-jährigen deutschen Kind (Jonah), sein selbst gemaltes Wesen',
+    'in seinem Minecraft-Spiel einzustellen. Er schreibt frei auf Deutsch hin, was',
+    'es kann, wie groß es ist und wie viele es davon geben soll.',
+    'Antworte NUR mit minified JSON, ohne jede Erklärung:',
+    '{"kann":["id",...],"hoch":Zahl|null,"lang":Zahl|null,"anzahl":Zahl|null,' +
+      '"verstanden":["kurzer deutscher Satz mit Emoji",...],"kannIchNicht":["..."]}',
+    'ERLAUBTE Fähigkeiten - nur diese ids, höchstens 8:',
+    WESEN_KI_IDS.map(id => '- ' + id + ' = ' + WESEN_KI_TXT[id]).join('\n'),
+    'WICHTIG zu den Fähigkeiten:',
+    '- "jagen" heißt: es jagt JONAH selbst. Will er, dass es Monster, Zombies,',
+    '  Gegner oder Räuber jagt, nimm "monster" und NICHT "jagen". Nie beides.',
+    '- "gross" oder "klein" nur dann, wenn er keine Zahl nennt.',
+    'GRÖSSE: "hoch" und "lang" in Blöcken, erlaubt ist 0.3 bis ' + JW_GROESSE_MAX + '.',
+    '- "15 Blöcke lang und 5 Blöcke hoch" -> lang:15, hoch:5.',
+    '- "3 Blöcke groß" -> hoch:3. "riesig" -> hoch:5. "winzig" -> hoch:0.5.',
+    '- Sagt er dazu nichts: null.',
+    'ANZAHL: "anzahl" ist eine ganze Zahl von 1 bis ' + JW_WESEN_MAX_N + '.',
+    '- "50" -> 50. "ganz viele" -> 12. "nur eins" -> 1. Nichts gesagt: null.',
+    'VERSTANDEN: höchstens 4 kurze deutsche Sätze (Du-Form, kindgerecht, mit Emoji),',
+    'die genau sagen, was du verstanden hast.',
+    'KANNICHNICHT: höchstens 3 Wünsche, die in der Fähigkeiten-Liste NICHT',
+    'vorkommen (z. B. "Es soll Eier legen") - kurz und freundlich auf Deutsch.',
+  ].join('\n');
+}
+function wesenKiZahl(v, min, max) {
+  const n = typeof v === 'number' ? v : parseFloat(v);
+  if (!isFinite(n)) return null;
+  return Math.max(min, Math.min(max, n));
+}
+function wesenKiSaetze(a, max) {
+  if (!Array.isArray(a)) return [];
+  return a.filter(x => typeof x === 'string' && x.trim())
+          .map(x => x.trim().slice(0, 120)).slice(0, max);
+}
+// Alles, was die KI schickt, wird geprüft - Unbekanntes fliegt raus.
+function wesenKiPruefen(j) {
+  if (!j || typeof j !== 'object') return null;
+  const kann = [];
+  for (const id of (Array.isArray(j.kann) ? j.kann : []))
+    if (WESEN_KI_IDS.indexOf(id) >= 0 && kann.indexOf(id) < 0 && kann.length < 8)
+      kann.push(id);
+  if (kann.indexOf('monster') >= 0) {      // Monster jagen schlägt "dich jagen"
+    const i = kann.indexOf('jagen');
+    if (i >= 0) kann.splice(i, 1);
+  }
+  const ki = { kann,
+    hoch: wesenKiZahl(j.hoch, 0.3, JW_GROESSE_MAX),
+    lang: wesenKiZahl(j.lang, 0.3, JW_GROESSE_MAX),
+    anzahl: null,
+    verstanden:   wesenKiSaetze(j.verstanden, 4),
+    kannIchNicht: wesenKiSaetze(j.kannIchNicht, 3) };
+  const n = wesenKiZahl(j.anzahl, 1, JW_WESEN_MAX_N);
+  if (n !== null) ki.anzahl = Math.round(n);
+  if (!ki.kann.length && ki.hoch === null && ki.lang === null &&
+      ki.anzahl === null && !ki.kannIchNicht.length) return null;
+  return ki;
+}
+// Die drei Sätze, die die KI lesen soll
+function wesenTexte(w) {
+  const t = {};
+  if ((w.kann || '').trim())     t['was kann es'] = w.kann.trim();
+  if ((w.gross || '').trim())    t['wie groß']    = w.gross.trim();
+  if ((w.wieviele || '').trim()) t['wie viele']   = w.wieviele.trim();
+  return t;
+}
+// Gilt die gespeicherte Übersetzung noch? Nur bei GENAU denselben Sätzen -
+// sonst wird neu gefragt. (Dieselbe Falle wie beim Welt-Bau: nach dem
+// Neuladen darf das Wesen nicht plötzlich anders sein.)
+function wesenKiLaden(ki, w) {
+  if (!ki || typeof ki !== 'object') return null;
+  const jetzt = wesenTexte(w), alt = (ki.texte && typeof ki.texte === 'object') ? ki.texte : {};
+  for (const k in jetzt) if (alt[k] !== jetzt[k]) return null;
+  for (const k in alt)   if (jetzt[k] !== alt[k]) return null;
+  const g = wesenKiPruefen(ki);
+  return g ? Object.assign(g, { texte: jetzt }) : null;
+}
+async function wesenKiFragen(texte) {
+  const key = jwKiSchluessel();
+  if (!key) return null;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', 'x-api-key': key,
+                'anthropic-version':'2023-06-01',
+                'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model: KI_MODELL, max_tokens: 500,
+        system: wesenKiAuftrag(),
+        messages: [{ role:'user', content: 'Das hat Jonah über sein Wesen aufgeschrieben:\n' +
+          Object.keys(texte).map(k => '- ' + k + ': "' + texte[k] + '"').join('\n') }] })
+    });
+    if (!res.ok) throw new Error('http ' + res.status);
+    const data = await res.json();
+    const roh = (data.content || []).map(c => c.text || '').join('');
+    const j = JSON.parse(roh.slice(roh.indexOf('{'), roh.lastIndexOf('}') + 1));
+    const g = wesenKiPruefen(j);
+    return g ? Object.assign(g, { texte }) : null;
+  } catch(e) { return null; }
+}
+// 📋 Was gilt für dieses Wesen? Die KI-Übersetzung - sonst die Wörterliste -
+// sonst die Werte aus einem alten Spielstand. Das steht absichtlich an EINER
+// Stelle, damit das Wesen im Spiel, in der Liste und nach dem Neuladen
+// wirklich überall gleich ist.
+function wesenAuswerten(w) {
+  const ki = wesenKiLaden(w.ki, w);
+  if (ki) {
+    const f = {};
+    for (const id of ki.kann) f[id] = true;
+    const grund = f.gross ? 2 : f.klein ? 0.55 : 1;
+    const gr  = ki.hoch !== null ? ki.hoch / 1.6 : grund;
+    const grB = ki.lang !== null ? ki.lang / 0.8 : gr;
+    const txt = ki.kann.map(id => WESEN_KI_TXT[id]);
+    const mass = [];
+    if (ki.lang !== null) mass.push(ki.lang + ' Blöcke lang');
+    if (ki.hoch !== null) mass.push(ki.hoch + ' Blöcke hoch');
+    if (mass.length) txt.push('📏 ' + mass.join(' · '));
+    if (ki.anzahl !== null) txt.push('🔢 ' + ki.anzahl + ' Stück');
+    return { f, gr, grB, n: ki.anzahl !== null ? ki.anzahl : 2, txt, ki };
+  }
+  const zahl = v => (typeof v === 'number' && isFinite(v)) ? v : null;
+  const kl = jwKannLesen(w.kann || '');
+  const g = jwGroesseLesen(w.gross || ''), an = jwAnzahlLesen(w.wieviele || '');
+  const grund = kl.f.gross ? 2 : kl.f.klein ? 0.55 : 1;
+  const txt = kl.txt.slice();
+  if (g)  txt.push('📏 ' + g.txt);
+  if (an) txt.push('🔢 ' + an.txt);
+  return { f: kl.f,
+           gr: g ? g.gr : (zahl(w.gr) !== null ? w.gr : grund),
+           grB: g ? (g.grB !== undefined ? g.grB : g.gr)
+                  : (zahl(w.grB) !== null ? w.grB
+                  : (zahl(w.gr) !== null ? w.gr : grund)),
+           n: an ? an.n : (zahl(w.n) !== null
+                ? Math.max(1, Math.min(JW_WESEN_MAX_N, Math.round(w.n))) : 2),
+           txt, ki: null };
+}
+// Welcher Satz wurde von den WÖRTERN nicht verstanden? (ohne Schlüssel)
+function wesenUnklar(w) {
+  const u = [];
+  if ((w.kann || '').trim() && !jwKannLesen(w.kann).txt.length)
+    u.push(['🎯 Was kann es?', w.kann.trim()]);
+  if ((w.gross || '').trim() && !jwGroesseLesen(w.gross))
+    u.push(['📏 Wie groß?', w.gross.trim()]);
+  if ((w.wieviele || '').trim() && !jwAnzahlLesen(w.wieviele))
+    u.push(['🔢 Wie viele?', w.wieviele.trim()]);
+  return u;
 }
 // Jonahs aktuelle Einstellungen (und ob er schon auf FERTIG gedrückt hat)
 const JW_VORGABE = { name:'Meine Welt', boden:'gras', gelaende:'huegel', wasser:'seen',
@@ -7293,21 +7523,14 @@ function loadGame() {
           return n*n === w.bild.length && JW_RASTER.indexOf(n) >= 0; })
         .slice(0, JW_WESEN_MAX)
         .map(w => {
-          const gr2 = jwGroesseLesen(w.gross || ''), an2 = jwAnzahlLesen(w.wieviele || '');
-          const f2 = jwKannLesen(w.kann || '').f;
-          return { name: String(w.name || 'Mein Wesen').slice(0, 20), bild: w.bild,
-                   kann: String(w.kann || '').slice(0, 90),
-                   raster: Math.round(Math.sqrt(w.bild.length)),
-                   gross: String(w.gross || '').slice(0, 60),
-                   wieviele: String(w.wieviele || '').slice(0, 40), f: f2,
-                   gr: gr2 ? gr2.gr : (typeof w.gr === 'number' ? w.gr
-                        : (f2.gross ? 2 : f2.klein ? 0.55 : 1)),
-                   grB: gr2 ? (gr2.grB !== undefined ? gr2.grB : gr2.gr)
-                        : (typeof w.grB === 'number' ? w.grB
-                        : (typeof w.gr === 'number' ? w.gr
-                        : (f2.gross ? 2 : f2.klein ? 0.55 : 1))),
-                   n: an2 ? an2.n : (typeof w.n === 'number'
-                        ? Math.max(1, Math.min(JW_WESEN_MAX_N, w.n)) : 2) };
+          const b = { name: String(w.name || 'Mein Wesen').slice(0, 20), bild: w.bild,
+                      kann: String(w.kann || '').slice(0, 90),
+                      raster: Math.round(Math.sqrt(w.bild.length)),
+                      gross: String(w.gross || '').slice(0, 60),
+                      wieviele: String(w.wieviele || '').slice(0, 40),
+                      gr: w.gr, grB: w.grB, n: w.n, ki: w.ki };
+          const a = wesenAuswerten(b);        // 🤖 KI-Übersetzung, sonst Wörter
+          return Object.assign(b, { f: a.f, gr: a.gr, grB: a.grB, n: a.n, ki: a.ki });
         });
       weltPlan = p;
     }
@@ -8156,6 +8379,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 5.0 && Math.min(Math.abs(dx),Math.abs(dy)) < 0.8) return vary(200,208,220,10);  // Speichen
     if (r > 6.8) return vary(96,104,118,10);                        // Rahmen
     return vary(140,150,166,12);                                    // Lukendeckel
+  });
+  tile(181,(x,y)=>{                                                 // 🚪 Riesentor
+    const band = (y>=2 && y<=3) || (y>=12 && y<=13);                // zwei Goldbaender
+    if (band && x%5===2) return vary(252,234,150,8);                // die Nieten darauf
+    if (band) return vary(222,182,62,14);                           // Gold
+    if (x%4===0) return vary(54,40,26,8);                           // Fugen der Bretter
+    return vary(98,72,46,18);                                       // dunkles Burgholz
   });
   tile(128,()=> vary(58,66,86,12));                                 // 🛰️ dunkle Stationswand
   tile(129,(x,y)=>{                                                 // 🛰️ Solarzellen-Flügel
@@ -15076,11 +15306,16 @@ function butlerTick(a, dt) {
     if (dp > 2.4) {
       a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
       a.walking = true; a.spd = 3.6; a.t = 9;
-      // Hängt er irgendwo fest und ist weit weg? Dann nimmt er die Abkürzung.
-      if (a.glocke > 0 && a.glocke < 18 && dp > 24) {
+      // 🚪 Steht er vor einem zugemachten Riesentor, kommt er zu Fuß nicht
+      // weiter. Darum: Kommt er drei Sekunden lang nicht näher, nimmt er die
+      // Abkürzung - genauso wie wenn er sonst irgendwo festhängt.
+      if (a.festD === undefined || dp < a.festD - 0.5) { a.festD = dp; a.festT = 0; }
+      else a.festT = (a.festT || 0) + dt;
+      if ((a.glocke > 0 && a.glocke < 18 && dp > 24) || a.festT > 3) {
         a.x = player.x + (Math.random()*4 - 2);
         a.z = player.z + (Math.random()*4 - 2);
         a.y = player.y + 1; a.vy = 0;
+        a.festD = undefined; a.festT = 0;
       }
     } else {
       a.befehl = 'warten'; a.walking = false; a.glocke = 0; a.warteX = undefined;
@@ -16341,7 +16576,7 @@ async function msgrKiAntwort(f, text, s) {
       headers:{ 'content-type':'application/json', 'x-api-key': s.apiKey,
                 'anthropic-version':'2023-06-01',
                 'anthropic-dangerous-direct-browser-access':'true' },
-      body: JSON.stringify({ model: s.model || 'claude-opus-5', max_tokens: 300,
+      body: JSON.stringify({ model: KI_MODELL, max_tokens: 300,
                              system, messages: verlauf.length ? verlauf
                                : [{ role:'user', content:text }] })
     });
@@ -16758,7 +16993,7 @@ async function uebersetzen() {
       headers:{ "content-type":"application/json", "x-api-key": s.apiKey,
                 "anthropic-version":"2023-06-01",
                 "anthropic-dangerous-direct-browser-access":"true" },
-      body: JSON.stringify({ model: s.model || "claude-opus-5", max_tokens:120,
+      body: JSON.stringify({ model: KI_MODELL, max_tokens:120,
         system:"You help a 9-year-old German child (3rd grade, English beginner) say things in English. Translate the child's German input into VERY simple English a beginner can say - short words, short sentence. Reply with ONLY the English translation, nothing else. If the input is already English, reply with it unchanged (fix small mistakes).",
         messages:[{ role:"user", content: frage }] })
     });
@@ -19343,6 +19578,67 @@ function rbFahrzeugeHeim() {
   }
   return n;
 }
+// ============== 🚪 DIE RIESENTORE DER RIESENBURG ========================
+// Jonah: "Dass in meiner gigantischen Riesenburg vor jedem neuen Raum, also
+// in der Tür, ein riesig großes Tor ist, das dann die ganze Tür bedeckt. Und
+// das soll in jeder jetzt noch offenen Tür sein."
+// Jede Türöffnung ist 5 Blöcke breit und 4 hoch. Antippen zieht das Tor hoch
+// wie ein Fallgitter: die unteren drei Reihen verschwinden, die OBERSTE bleibt
+// immer stehen - die tippt man an, damit es wieder herunterfällt. So gibt es
+// immer etwas zum Antippen, egal ob das Tor auf oder zu ist.
+const RB_TOR_H = 4;                     // so hoch ist eine Türöffnung
+// Zu welchem Tor gehört dieser Block? (null = zu gar keinem)
+function rbTorFinden(wx, wy, wz) {
+  if (weltDim !== RB_DIM) return null;
+  riesenHoehe();
+  const dx = wx - RB_X, dz = wz - RB_Z, dy = wy - RB_Y;
+  const adx = Math.abs(dx), adz = Math.abs(dz);
+  if (adx > RB_KERN || adz > RB_KERN) return null;
+  if (adx !== RB_WAND && adz !== RB_WAND) return null;
+  const et = rbEtage(dy);
+  if (et < 0 || et >= RB_ETAGEN) return null;
+  const aufEtage = dy - (et * RB_ETAGE);
+  if (aufEtage < 1 || aufEtage > RB_TOR_H) return null;
+  const laengs = adx === RB_WAND ? dz : dx;
+  const n = ((laengs % 30) + 30) % 30;
+  if (Math.min(n, 30 - n) > 2) return null;          // da ist gar keine Tür
+  const mitte = Math.round(laengs / 30) * 30;
+  const by = RB_Y + et * RB_ETAGE;                   // Fußboden dieser Etage
+  const felder = [];
+  for (let i = -2; i <= 2; i++)
+    for (let h = 1; h < RB_TOR_H; h++)               // die oberste Reihe bleibt stehen
+      felder.push(adx === RB_WAND ? [RB_X + dx, by + h, RB_Z + mitte + i]
+                                  : [RB_X + mitte + i, by + h, RB_Z + dz]);
+  return { felder, by, et };
+}
+function rbTorOffen(t) {                // steht dieses Tor gerade offen?
+  const f = t.felder[0];
+  return getBlock(f[0], f[1], f[2]) !== RB_TOR;
+}
+function rbTorSchalten(wx, wy, wz) {
+  const t = rbTorFinden(wx, wy, wz);
+  if (!t) return false;
+  if (!rbTorOffen(t)) {                 // 🔓 aufmachen - das Gitter geht hoch
+    for (const f of t.felder) setBlock(f[0], f[1], f[2], AIR);
+    blip(280, 0.1); setTimeout(() => blip(420, 0.09), 90);
+    setTimeout(() => blip(600, 0.13), 190);
+    toast('🚪 Das Tor geht hoch! ⬆️ Tipp das Gitter oben an, dann fällt es wieder zu.', 4000);
+    return true;
+  }
+  // 🔒 zumachen - aber niemals auf Jonah drauf!
+  const px = Math.floor(player.x), pz = Math.floor(player.z), py = Math.floor(player.y);
+  for (const f of t.felder)
+    if (f[0] === px && f[2] === pz && (f[1] === py || f[1] === py + 1)) {
+      toast('🚪 Du stehst mitten im Tor! Geh einen Schritt zur Seite, dann mache ich es zu. 🙂', 4000);
+      blip(220, 0.1);
+      return false;
+    }
+  for (const f of t.felder) setBlock(f[0], f[1], f[2], RB_TOR);
+  blip(600, 0.09); setTimeout(() => blip(420, 0.09), 90);
+  setTimeout(() => blip(250, 0.15), 190);
+  toast('🚪 Zu! 🔒 Tipp das Tor noch mal an, dann geht es wieder auf.', 3500);
+  return true;
+}
 function riesenBlock(dx, dz, y) {
   riesenHoehe();
   const by = RB_Y, adx = Math.abs(dx), adz = Math.abs(dz);
@@ -19411,7 +19707,9 @@ function riesenBlock(dx, dz, y) {
       // in den Zimmerecken - da kam man nur um die Ecke von Raum zu Raum.
       const n = ((laengs % 30) + 30) % 30;
       const tuer = Math.min(n, 30 - n) <= 2;       // 5 Blöcke breit, alle 30 Blöcke
-      if (tuer && aufEtage <= 4) return AIR;
+      // 🚪 Jonahs Wunsch: in JEDER noch offenen Tür steht jetzt ein riesiges
+      // Tor, das die ganze Öffnung bedeckt. Antippen zieht es hoch.
+      if (tuer && aufEtage <= RB_TOR_H) return RB_TOR;
       if (aufEtage === 7 && ((laengs % 5) + 5) % 5 === 0) return GLASS;  // Innenfenster
       return SCHUTZ;
     }
@@ -25388,7 +25686,7 @@ const MAP_BLOCK_COL = {
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
-  [GLOCKE]:'#f0c83c',
+  [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -28561,6 +28859,10 @@ function doPlace(dir) {
     glockeLaeuten();
     return;
   }
+  if (hit.block===RB_TOR) {               // 🚪 das Riesentor auf- und zumachen
+    rbTorSchalten(hit.x, hit.y, hit.z);
+    return;
+  }
   if (hit.block===HOLOKNOPF) {            // 🔴 der Startknopf an der Hallenwand
     halleProgrammStarten();
     return;
@@ -30016,10 +30318,13 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 }
 
 // ------------------------------ Start ----------------------------------------
+// Am Tablet die Finger-Steuerung, am Rechner die Tasten-Steuerung.
+// Die Versionsnummer kommt aus GAME_VERSION, damit sie nie veraltet.
 if (!isTouch) {
-  document.getElementById('helpTouch').style.display='none';
-  document.getElementById('helpDesk').style.display='block';
+  document.getElementById('helpTouch').style.display = 'none';
+  document.getElementById('helpDesk').style.display = 'block';
 }
+document.getElementById('verZeile').textContent = 'Version ' + GAME_VERSION;
 document.getElementById('playBtn').addEventListener('click',()=>{
   const saved=loadGame();
   if (saved) {
@@ -30642,16 +30947,12 @@ function jwWesenListe() {
     }
     const t = document.createElement('div');
     t.className = 'jwWesenText';
-    const kann = jwKannLesen(d.kann).txt;
+    const aw = wesenAuswerten(d);
     t.innerHTML = '<b></b><br><span></span>';
     t.querySelector('b').textContent = d.name || 'Namenloses Wesen';
-    const mass = [];
-    const gTxt = jwGroesseLesen(d.gross || ''), aTxt = jwAnzahlLesen(d.wieviele || '');
-    if (gTxt) mass.push('📏 ' + gTxt.txt);
-    if (aTxt) mass.push('🔢 ' + aTxt.txt);
     t.querySelector('span').textContent =
-      (kann.length ? kann.join(' · ') : 'steht einfach herum 🗿') +
-      (mass.length ? '  —  ' + mass.join(' · ') : '');
+      (aw.txt.length ? aw.txt.join(' · ') : 'steht einfach herum 🗿') +
+      (aw.ki ? '  🤖' : '');
     const weg = document.createElement('button');
     weg.className = 'jwWesenWeg'; weg.textContent = '🗑️';
     weg.addEventListener('click', () => {
@@ -30939,6 +31240,7 @@ function wesenEntwurfAnbieten() {
 }
 function wesenOeffnen(nr) {
   wesenNr = (nr === undefined) ? -1 : nr;
+  wesenKiWartet = null; wesenBestaetigt = false;   // 🤖 neues Wesen, neu fragen
   const d = wesenNr >= 0 ? weltPlan.wesen[wesenNr] : null;
   // jedes Wesen bringt seine eigene Kästchen-Zahl mit (alte: 12)
   wesenRaster = d && wesenRasterOk(d.raster) ? d.raster : (d ? 12 : wesenRaster);
@@ -30977,9 +31279,12 @@ function wesenKannZeigen() {
   const el = document.getElementById('wesenKannTxt');
   el.textContent = txt.length
     ? '✅ Es kann: ' + txt.join(' · ')
-    : 'Schreib hin, was es kann – z. B. fliegen, hüpfen, leuchten, dir folgen, ' +
-      'MONSTER JAGEN, Feuer spucken, zaubern, Blumen pflanzen, tanzen, singen, reden, ' +
-      'schlafen oder unsichtbar werden.';
+    : (jwKiSchluessel()
+      ? 'Schreib einfach los, wie du magst 🤖 – wenn du auf FERTIG drückst, lese ich ' +
+        'deinen Satz ganz genau durch und zeige dir, was angekommen ist.'
+      : 'Schreib hin, was es kann – z. B. fliegen, hüpfen, leuchten, dir folgen, ' +
+        'MONSTER JAGEN, Feuer spucken, zaubern, Blumen pflanzen, tanzen, singen, reden, ' +
+        'schlafen oder unsichtbar werden.');
   el.className = txt.length ? '' : 'nix';
   wesenMassZeigen();
 }
@@ -30996,6 +31301,64 @@ function wesenMassZeigen() {
     ? '✅ ' + teile.join(' · ')
     : 'Ohne Angabe ist es normal groß und es gibt zwei davon.';
 }
+// 🤖 Was noch bestaetigt werden muss
+let wesenKiWartet = null;               // die Uebersetzung der KI
+let wesenBestaetigt = false;            // hat Jonah "Ja, genau so!" gedrueckt?
+// Zeigt das Fenster "So habe ich dein Wesen verstanden!" - und fragt vorher
+// die KI, wenn ein Schluessel da ist. true = es wird gezeigt, also noch nicht
+// uebernehmen. Ohne Schluessel kommt es nur, wenn ein Satz unklar ist; sonst
+// waere es nur ein zusaetzlicher Klick (unter den Feldern steht es schon).
+function wesenVstZeigen(w) {
+  const texte = wesenTexte(w);
+  if (!Object.keys(texte).length) return false;
+  const key = jwKiSchluessel();
+  const schonKi = !!wesenKiLaden(w.ki, w);
+  if (!key && !wesenUnklar(w).length) return false;
+  document.getElementById('wesenVst').style.display = 'flex';
+  blip(700, 0.05); blip(900, 0.06);
+  if (key && !schonKi) {
+    const liste = document.getElementById('wesenVstListe');
+    liste.innerHTML = '';
+    weltVstZeile(liste, null, '🤔 Ich lese deine Sätze ganz genau durch …');
+    wesenKiFragen(texte).then(ki => {
+      wesenKiWartet = ki; w.ki = ki;
+      if (!ki) toast('🤔 Ich konnte gerade nicht genau nachdenken (kein Internet?) – ' +
+                     'ich nehme meine eigenen Wörter.', 4500);
+      wesenVstZeichnen(w);
+    });
+    return true;
+  }
+  wesenVstZeichnen(w);
+  return true;
+}
+function wesenVstZeichnen(w) {
+  const liste = document.getElementById('wesenVstListe');
+  liste.innerHTML = '';
+  const a = wesenAuswerten(w);
+  weltVstZeile(liste, '🎨 Dein Wesen', w.name || 'Mein Wesen');
+  if (a.ki) {
+    for (const z of a.ki.verstanden) weltVstZeile(liste, null, '✅ ' + z);
+    for (const k of a.ki.kannIchNicht)
+      weltVstZeile(liste, null, '❓ Das kann ich noch nicht: ' + k, 'nix');
+  } else {
+    for (const u of wesenUnklar(w)) {
+      const d = weltVstZeile(liste, u[0],
+        '❓ Das kann ich noch nicht: „' + u[1] + '"', 'nix');
+      const sz = document.createElement('div');
+      sz.className = 'vstSatz';
+      sz.textContent = 'So geht es zum Beispiel: „fliegen und leuchten" · ' +
+                       '„15 Blöcke lang und 5 Blöcke hoch" · „50 Stück"';
+      d.appendChild(sz);
+    }
+    if (!jwKiSchluessel())
+      weltVstZeile(liste, '💡 Tipp für ganz genaues Verstehen',
+        'Mit einem KI-Schlüssel versteht das Spiel JEDEN Satz, den du schreibst. ' +
+        'Den trägt ein Erwachsener im Elternbereich der Englisch-App ein.');
+  }
+  weltVstZeile(liste, '🎛️ So kommt es in die Welt',
+    (a.txt.length ? a.txt.join(' · ') : 'Es steht einfach herum 🗿') +
+    (a.txt.some(t => t.indexOf('🔢') === 0) ? '' : '  —  🔢 2 Stück'));
+}
 function wesenSichern() {
   const bild = wesenDaten.join('');
   if (/^0+$/.test(bild)) {
@@ -31006,14 +31369,13 @@ function wesenSichern() {
   const kann = (document.getElementById('wesenKann').value || '').trim().slice(0, 90);
   const gross = (document.getElementById('wesenGross').value || '').trim().slice(0, 60);
   const wieviele = (document.getElementById('wesenAnzahl').value || '').trim().slice(0, 40);
-  const g = jwGroesseLesen(gross), an = jwAnzahlLesen(wieviele);
-  const f = jwKannLesen(kann).f;
-  const grund = f.gross ? 2 : f.klein ? 0.55 : 1;
-  const d = { name: name || 'Mein Wesen', bild, kann, f, gross, wieviele,
-              raster: wesenRaster,
-              gr:  g ? g.gr  : grund,
-              grB: g ? (g.grB !== undefined ? g.grB : g.gr) : grund,
-              n:   an ? an.n : 2 };
+  const roh = { name: name || 'Mein Wesen', bild, kann, gross, wieviele,
+                raster: wesenRaster, ki: wesenKiWartet };
+  // 🤔 erst zeigen, was angekommen ist - uebernommen wird nach dem OK
+  if (!wesenBestaetigt && wesenVstZeigen(roh)) return;
+  wesenBestaetigt = false; wesenKiWartet = null;
+  const a = wesenAuswerten(roh);
+  const d = Object.assign({}, roh, { f: a.f, gr: a.gr, grB: a.grB, n: a.n, ki: a.ki });
   if (!Array.isArray(weltPlan.wesen)) weltPlan.wesen = [];
   if (wesenNr >= 0) weltPlan.wesen[wesenNr] = d;
   else if (weltPlan.wesen.length >= JW_WESEN_MAX) {
@@ -31028,11 +31390,9 @@ function wesenSichern() {
   wesenEntwurfWeg();                  // 💾 fertig - der Entwurf wird nicht mehr gebraucht
   jwWesenListe();
   clearTimeout(saveTimer); saveGame();
-  const kannTxt = jwKannLesen(kann).txt;
-  toast('🎨🎉 „' + d.name + '" lebt jetzt in deiner Welt!' +
-        (kannTxt.length ? ' Es kann: ' + kannTxt.join(', ') + '.' : ' Es steht einfach herum.') +
-        ' Es ist ' + (g ? g.txt : 'normal groß') + ', und es gibt ' +
-        (an ? an.txt : '2 Stück') + ' davon.', 8000);
+  toast('🎨🎉 „' + d.name + '" lebt jetzt in deiner Welt! ' +
+        (a.txt.length ? a.txt.join(' · ') : 'Es steht einfach herum.') +
+        ' Es gibt ' + d.n + '× davon.', 8000);
   for (const f of [523, 659, 784, 1047]) blip(f, 0.09);
 }
 document.getElementById('weltWesenNeu').addEventListener('click', () => wesenOeffnen());
@@ -31055,6 +31415,14 @@ document.getElementById('entwurfWeiter').addEventListener('click', () => {
 document.getElementById('entwurfWeg').addEventListener('click', () => {
   wesenEntwurfWeg(); blip(300, 0.06); });
 document.getElementById('wesenFertig').addEventListener('click', wesenSichern);
+document.getElementById('wesenVstJa').addEventListener('click', () => {
+  document.getElementById('wesenVst').style.display = 'none';
+  wesenBestaetigt = true; blip(880, 0.08); wesenSichern();
+});
+document.getElementById('wesenVstNein').addEventListener('click', () => {
+  document.getElementById('wesenVst').style.display = 'none';
+  wesenBestaetigt = false; blip(300, 0.06);
+});
 for (const id of ['wesenName','wesenKann','wesenGross','wesenAnzahl'])
   document.getElementById(id).addEventListener('input', wesenEntwurfSichern);
 document.getElementById('wesenKann').addEventListener('input', wesenKannZeigen);
