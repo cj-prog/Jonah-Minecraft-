@@ -14,22 +14,7 @@ oder Schlüssel hier.
 
 Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fertige Antwort.
 
-**31.10-1 – Chat im Spiel mit kleinerem KI-Modell?** (an Christian, Vorschlag von Session 1)
-- Problem: Der Freunde-Chat in JonahCraft nutzt das große Modell, ca. 1 Cent pro Nachricht.
-- Weg A: so lassen. Weg B: kleines Modell, ca. 0,02 Cent pro Nachricht, für einfache Kinder-
-  Gespräche reicht es meist.
-- Empfehlung: Weg B. Fertige Antwort: „31.10-1: Weg B"
-
-**31.10-2 – KI-Verbrauchszähler im Spiel?** (an Christian, Vorschlag von Session 1)
-- Weg A: nein, Grenze nur über das Ausgabelimit im API-Konto. Weg B: das Spiel zählt mit und sagt
-  bei einem Monatslimit kindgerecht „für diesen Monat aufgebraucht".
-- Empfehlung: Weg A plus Ausgabelimit im API-Konto (einfacher, wirkt sicher). Fertige Antwort:
-  „31.10-2: Weg A"
-
-**31.10-3 – KI auch beim Wesen-Malen?** (an Christian, Vorschlag von Session 1)
-- Die Felder „was kann es / wie groß / wie viele" laufen noch über die Wörterliste. Weg B: ein
-  KI-Aufruf pro Wesen (ca. 0,03 Cent). Empfehlung: Weg B, gleiche Logik wie beim Welt-Bau.
-  Fertige Antwort: „31.10-3: Weg B"
+– keine –
 
 ## Entschieden
 
@@ -48,6 +33,9 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   Stand auf die neue Geschichte zurückzusetzen.
 - 31.10 – nach Ermessen – Thema 3 (Fehlerbehebung Englisch-Stand) an Session 1 gegeben, ohne
   Jonah zu fragen: kleine Fehlerbehebung, kein neues Ziel. Rückweg: Session 1 stoppen.
+- 31.10 – Christian – **31.10-1 Weg B:** Freunde-Chat im Spiel auf das kleine Modell
+  (claude-haiku-5-5). **31.10-2 Weg A:** kein Zähler im Spiel, Grenze über das Ausgabelimit im
+  API-Konto. **31.10-3 Weg B:** KI auch für die Felder beim Wesen-Malen. → Thema 7 an Session 1.
 - 31.10 – Christian – „KI ja": Der Wunsch-Zettel schickt Jonahs Text an die Claude-API (wie die
   Chats), ca. 1 Cent pro Wunsch. Session 1 hatte dafür zu Recht Christians Zustimmung verlangt.
 - 31.10 – nach Ermessen – Thema 6: Der Wunsch-Zettel darf den vorhandenen KI-Schlüssel nutzen
@@ -90,6 +78,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
+- **7 – KI-Feinschliff** · in Arbeit · an Session 1 gegeben (31.10.): Chat auf kleines Modell,
+  KI für die Wesen-Felder (was kann es / wie groß / wie viele) · Meldung in `meldungen/1.md`
+  abwarten.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
