@@ -1841,7 +1841,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 302</div>
+    <div id="verZeile">Version 303</div>
   </div>
 </div>
 
@@ -1863,7 +1863,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 302;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 303;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -2041,10 +2041,11 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       BUCHREGAL_OBEN=131,               // 📚 der obere Teil des Bücherregals
       BUCHREGAL_V=132,                  // 📚 dasselbe Regal, aber voller Bücher
       BUCHREGAL_OBEN_V=133,             // 📚 (unten und oben)
-      GLOCKE=134;                       // 🔔 die Diener-Glocke in jedem Burgzimmer
+      GLOCKE=134,                       // 🔔 die Diener-Glocke in jedem Burgzimmer
+      RB_TOR=135;                       // 🚪 das Riesentor vor jedem Zimmer der Riesenburg
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
-const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF]);
+const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF, RB_TOR]);
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -2426,6 +2427,10 @@ const BLOCKS = {
   // 🔔 DIE DIENER-GLOCKE: In jedem Zimmer von Jonahs Festung und seiner
   // Riesenburg hängt eine goldene Glocke an einem Gestell. Einmal antippen -
   // sie bimmelt, und GENAU EIN Diener macht sich auf den Weg zu ihm.
+  // 🚪 DAS RIESENTOR: steht in jeder Tuer der Riesenburg und bedeckt sie ganz.
+  // Antippen zieht es hoch wie ein Fallgitter - oben bleibt ein Stueck stehen,
+  // und das tippt man an, damit es wieder herunterfaellt.
+  [RB_TOR]: { name:'Riesentor 🚪 (antippen = auf und zu!)', tiles:[181,181,181], solid:true },
   [GLOCKE]: { name:'Diener-Glocke 🔔 (antippen = ein Diener kommt!)',
     tiles:[115,115,115], solid:false, model:[
     [0.06,0.00,0.40, 0.20,0.92,0.60, 5],                // linker Pfosten
@@ -8374,6 +8379,13 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 5.0 && Math.min(Math.abs(dx),Math.abs(dy)) < 0.8) return vary(200,208,220,10);  // Speichen
     if (r > 6.8) return vary(96,104,118,10);                        // Rahmen
     return vary(140,150,166,12);                                    // Lukendeckel
+  });
+  tile(181,(x,y)=>{                                                 // 🚪 Riesentor
+    const band = (y>=2 && y<=3) || (y>=12 && y<=13);                // zwei Goldbaender
+    if (band && x%5===2) return vary(252,234,150,8);                // die Nieten darauf
+    if (band) return vary(222,182,62,14);                           // Gold
+    if (x%4===0) return vary(54,40,26,8);                           // Fugen der Bretter
+    return vary(98,72,46,18);                                       // dunkles Burgholz
   });
   tile(128,()=> vary(58,66,86,12));                                 // 🛰️ dunkle Stationswand
   tile(129,(x,y)=>{                                                 // 🛰️ Solarzellen-Flügel
@@ -15294,11 +15306,16 @@ function butlerTick(a, dt) {
     if (dp > 2.4) {
       a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
       a.walking = true; a.spd = 3.6; a.t = 9;
-      // Hängt er irgendwo fest und ist weit weg? Dann nimmt er die Abkürzung.
-      if (a.glocke > 0 && a.glocke < 18 && dp > 24) {
+      // 🚪 Steht er vor einem zugemachten Riesentor, kommt er zu Fuß nicht
+      // weiter. Darum: Kommt er drei Sekunden lang nicht näher, nimmt er die
+      // Abkürzung - genauso wie wenn er sonst irgendwo festhängt.
+      if (a.festD === undefined || dp < a.festD - 0.5) { a.festD = dp; a.festT = 0; }
+      else a.festT = (a.festT || 0) + dt;
+      if ((a.glocke > 0 && a.glocke < 18 && dp > 24) || a.festT > 3) {
         a.x = player.x + (Math.random()*4 - 2);
         a.z = player.z + (Math.random()*4 - 2);
         a.y = player.y + 1; a.vy = 0;
+        a.festD = undefined; a.festT = 0;
       }
     } else {
       a.befehl = 'warten'; a.walking = false; a.glocke = 0; a.warteX = undefined;
@@ -19561,6 +19578,67 @@ function rbFahrzeugeHeim() {
   }
   return n;
 }
+// ============== 🚪 DIE RIESENTORE DER RIESENBURG ========================
+// Jonah: "Dass in meiner gigantischen Riesenburg vor jedem neuen Raum, also
+// in der Tür, ein riesig großes Tor ist, das dann die ganze Tür bedeckt. Und
+// das soll in jeder jetzt noch offenen Tür sein."
+// Jede Türöffnung ist 5 Blöcke breit und 4 hoch. Antippen zieht das Tor hoch
+// wie ein Fallgitter: die unteren drei Reihen verschwinden, die OBERSTE bleibt
+// immer stehen - die tippt man an, damit es wieder herunterfällt. So gibt es
+// immer etwas zum Antippen, egal ob das Tor auf oder zu ist.
+const RB_TOR_H = 4;                     // so hoch ist eine Türöffnung
+// Zu welchem Tor gehört dieser Block? (null = zu gar keinem)
+function rbTorFinden(wx, wy, wz) {
+  if (weltDim !== RB_DIM) return null;
+  riesenHoehe();
+  const dx = wx - RB_X, dz = wz - RB_Z, dy = wy - RB_Y;
+  const adx = Math.abs(dx), adz = Math.abs(dz);
+  if (adx > RB_KERN || adz > RB_KERN) return null;
+  if (adx !== RB_WAND && adz !== RB_WAND) return null;
+  const et = rbEtage(dy);
+  if (et < 0 || et >= RB_ETAGEN) return null;
+  const aufEtage = dy - (et * RB_ETAGE);
+  if (aufEtage < 1 || aufEtage > RB_TOR_H) return null;
+  const laengs = adx === RB_WAND ? dz : dx;
+  const n = ((laengs % 30) + 30) % 30;
+  if (Math.min(n, 30 - n) > 2) return null;          // da ist gar keine Tür
+  const mitte = Math.round(laengs / 30) * 30;
+  const by = RB_Y + et * RB_ETAGE;                   // Fußboden dieser Etage
+  const felder = [];
+  for (let i = -2; i <= 2; i++)
+    for (let h = 1; h < RB_TOR_H; h++)               // die oberste Reihe bleibt stehen
+      felder.push(adx === RB_WAND ? [RB_X + dx, by + h, RB_Z + mitte + i]
+                                  : [RB_X + mitte + i, by + h, RB_Z + dz]);
+  return { felder, by, et };
+}
+function rbTorOffen(t) {                // steht dieses Tor gerade offen?
+  const f = t.felder[0];
+  return getBlock(f[0], f[1], f[2]) !== RB_TOR;
+}
+function rbTorSchalten(wx, wy, wz) {
+  const t = rbTorFinden(wx, wy, wz);
+  if (!t) return false;
+  if (!rbTorOffen(t)) {                 // 🔓 aufmachen - das Gitter geht hoch
+    for (const f of t.felder) setBlock(f[0], f[1], f[2], AIR);
+    blip(280, 0.1); setTimeout(() => blip(420, 0.09), 90);
+    setTimeout(() => blip(600, 0.13), 190);
+    toast('🚪 Das Tor geht hoch! ⬆️ Tipp das Gitter oben an, dann fällt es wieder zu.', 4000);
+    return true;
+  }
+  // 🔒 zumachen - aber niemals auf Jonah drauf!
+  const px = Math.floor(player.x), pz = Math.floor(player.z), py = Math.floor(player.y);
+  for (const f of t.felder)
+    if (f[0] === px && f[2] === pz && (f[1] === py || f[1] === py + 1)) {
+      toast('🚪 Du stehst mitten im Tor! Geh einen Schritt zur Seite, dann mache ich es zu. 🙂', 4000);
+      blip(220, 0.1);
+      return false;
+    }
+  for (const f of t.felder) setBlock(f[0], f[1], f[2], RB_TOR);
+  blip(600, 0.09); setTimeout(() => blip(420, 0.09), 90);
+  setTimeout(() => blip(250, 0.15), 190);
+  toast('🚪 Zu! 🔒 Tipp das Tor noch mal an, dann geht es wieder auf.', 3500);
+  return true;
+}
 function riesenBlock(dx, dz, y) {
   riesenHoehe();
   const by = RB_Y, adx = Math.abs(dx), adz = Math.abs(dz);
@@ -19629,7 +19707,9 @@ function riesenBlock(dx, dz, y) {
       // in den Zimmerecken - da kam man nur um die Ecke von Raum zu Raum.
       const n = ((laengs % 30) + 30) % 30;
       const tuer = Math.min(n, 30 - n) <= 2;       // 5 Blöcke breit, alle 30 Blöcke
-      if (tuer && aufEtage <= 4) return AIR;
+      // 🚪 Jonahs Wunsch: in JEDER noch offenen Tür steht jetzt ein riesiges
+      // Tor, das die ganze Öffnung bedeckt. Antippen zieht es hoch.
+      if (tuer && aufEtage <= RB_TOR_H) return RB_TOR;
       if (aufEtage === 7 && ((laengs % 5) + 5) % 5 === 0) return GLASS;  // Innenfenster
       return SCHUTZ;
     }
@@ -25606,7 +25686,7 @@ const MAP_BLOCK_COL = {
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
-  [GLOCKE]:'#f0c83c',
+  [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -28777,6 +28857,10 @@ function doPlace(dir) {
   }
   if (hit.block===GLOCKE) {               // 🔔 die Diener-Glocke läuten
     glockeLaeuten();
+    return;
+  }
+  if (hit.block===RB_TOR) {               // 🚪 das Riesentor auf- und zumachen
+    rbTorSchalten(hit.x, hit.y, hit.z);
     return;
   }
   if (hit.block===HOLOKNOPF) {            // 🔴 der Startknopf an der Hallenwand
