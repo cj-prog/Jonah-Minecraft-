@@ -53,6 +53,33 @@
      und die Knöpfe, die etwas weiter weg sind, versperren die ganze Sicht."
      Darum bleiben dort nur Springen, Abbauen/Bauen und die Blockleiste
      stehen - alles andere wandert in dieses Menü. */
+  /* 👋 DIE HINWEISE BEIM ERSTEN SPIELEN
+     Ein kleiner Kasten oben in der Mitte - unter der Knopfreihe, neben der
+     Rangliste, weit weg vom Joystick (linke Hälfte) und von der Blockleiste. */
+  /* Berührungen gehen DURCH den Kasten hindurch - nur die Knöpfe fangen sie
+     ab. So stört er den Joystick auf der linken Hälfte überhaupt nicht. */
+  #tippBox { display:none; left:50%; transform:translateX(-50%); pointer-events:none;
+    flex-direction:column; align-items:center; gap:7px; z-index:47;
+    background:rgba(16,22,44,.93); border:3px solid #ffd34a; border-radius:14px;
+    padding:10px 14px; color:#fff; width:min(70vw,380px); box-sizing:border-box;
+    text-align:center; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+  #tippText { font-size:15px; line-height:1.45; font-weight:bold; }
+  #tippZahl { font-size:11px; opacity:.75; }
+  #tippReihe { display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+    pointer-events:auto; }
+  #tippWeiter { font-size:14px; font-weight:bold; padding:8px 18px; border-radius:10px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+  #tippSkip { font-size:12px; padding:7px 12px; border-radius:9px; border:none;
+    background:rgba(255,255,255,.2); color:#fff; cursor:pointer; }
+  #tippNochmal { font-size:13px; color:#fff; background:rgba(0,0,0,.3);
+    border:1px solid rgba(255,255,255,.5); border-radius:9px; padding:7px 14px;
+    cursor:pointer; flex:0 0 auto; }
+  @media (max-height: 540px) {
+    #tippBox { padding:7px 11px; gap:5px; width:min(74vw,330px); }
+    #tippText { font-size:13px; line-height:1.3; }
+    #tippWeiter { font-size:13px; padding:6px 14px; }
+    #tippSkip { font-size:11px; padding:5px 10px; }
+  }
   #menuBtn { display:none; right:calc(12px + env(safe-area-inset-right));
     top:calc(12px + env(safe-area-inset-top)); width:42px; height:42px;
     font-size:24px; z-index:53; background:rgba(0,0,0,.45); }
@@ -1339,6 +1366,14 @@
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
 <div class="hud btn" id="tpBtn" title="Teleport - wohin soll es gehen?">🛸</div>
 <div class="hud btn" id="menuBtn" title="Alle Knöpfe">⋯</div>
+<div class="hud" id="tippBox">
+  <div id="tippZahl"></div>
+  <div id="tippText"></div>
+  <div id="tippReihe">
+    <button id="tippWeiter">Weiter ▸</button>
+    <button id="tippSkip">Überspringen</button>
+  </div>
+</div>
 <div class="hud" id="kleinMenu">
   <div id="kleinMenuKopf">⋯ Alle Knöpfe</div>
   <div id="kleinMenuGitter"></div>
@@ -1979,6 +2014,7 @@
       <span>1–8: Block wählen</span>
     </div>
   </div>
+  <button id="tippNochmal">ℹ️ Hinweise noch mal zeigen</button>
   </div>
   <div id="startUnten">
     <div id="nameBox">
@@ -1993,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 310</div>
+    <div id="verZeile">Version 311</div>
   </div>
 </div>
 
@@ -2015,7 +2051,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 310;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 311;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -28507,7 +28543,7 @@ function hitEntity(a, dir) {
     if (flying) toggleFly();
     riding = a; a.walking = false;
     if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); challEvent('tier');
-                   punkteGeben('tierGezaehmt'); scheduleSave(); }
+                   punkteGeben('tierGezaehmt'); tippGetan.tier++; scheduleSave(); }
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
@@ -28613,7 +28649,7 @@ function hitEntity(a, dir) {
   if (isPet(a)) {                       // Tiere zähmen!
     if (!a.tame) {
       a.tame = true; a.sit = false; missEvent('zaehm'); challEvent('tier');
-      punkteGeben('tierGezaehmt');
+      punkteGeben('tierGezaehmt'); tippGetan.tier++;
       if (a.type!=='bird') { a.vy = 4.5; a.onGround = false; }
       toast(TAME_MSG[a.type]);
       const s = TAME_SOUND[a.type];
@@ -30125,8 +30161,8 @@ function touchEnd(e){
         if (placeMode) doPlace(dir); else doBreak(dir);
         if (bloeckeGeaendert > v && ersteAenderung) {
           const a2 = ersteAenderung;
-          if (placeMode) punkteBauen(a2[0], a2[1], a2[2]);
-          else           punkteAbbauen(a2[0], a2[1], a2[2]);
+          if (placeMode) { punkteBauen(a2[0], a2[1], a2[2]); tippGetan.bauen++; }
+          else           { punkteAbbauen(a2[0], a2[1], a2[2]); tippGetan.abbauen++; }
         }
       } else if (dt>=600 && look.moved<14) {   // langes Drücken = freilassen
         tryRelease(screenRay(t.clientX,t.clientY));
@@ -31172,6 +31208,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   rangStellen();
   jonahSachenStellen();                 // 🙋 Englisch-Sachen nur auf Jonahs Gerät
   kleinStellen();                       // ⋯ auf kleinen Bildschirmen aufräumen
+  tippPruefen();                        // 👋 Hinweise beim allerersten Spielen
   setTimeout(async () => { await rangEigenesHolen(); rangLaden(true); rangSenden(true); }, 1500);
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
@@ -32346,6 +32383,125 @@ kopfKnoepfeOrdnen();
 // ich automatisch direkt in der Englisch-Lern-App."
 // Vorher wird IMMER gespeichert, damit nichts verloren geht.
 const ENG_APP_URL = 'https://cj-prog.github.io/Englisch-App/';
+// ============== 👋 HINWEISE BEIM ERSTEN SPIELEN =========================
+// Jonah: "Wenn andere JonahCraft das erste Mal spielen, sollen ihnen Hinweise
+// gegeben werden."
+// Sie kommen NUR beim allerersten Mal auf einem Gerät. Wer schon einen
+// Spielstand hat (also Jonah), bekommt sie nicht von allein - er kann sie
+// aber auf der Startseite anfordern.
+// Wo es geht, geht der Hinweis von allein weiter, sobald der Spieler die
+// Sache wirklich gemacht hat. Zur Sicherheit steht überall auch "Weiter".
+const TIPP_KEY = 'jonahcraft_tipps_fertig';
+// ⚠️ GANZ WICHTIG hier nachzuschauen, BEVOR das Spiel losgeht: Beim Start
+// speichert es sofort - danach sähe jeder Spieler wie ein alter aus, und die
+// Hinweise kämen nie. (Genau das ist im Test passiert.)
+const tippWarSchonDa = (() => {
+  try { return !!localStorage.getItem(SAVE_KEY); } catch(e) { return false; }
+})();
+let tippNr = -1, tippStart = null, tippAn = false;
+const tippGetan = { abbauen:0, bauen:0, springen:0, tier:0 };
+function tippListe() {
+  const touch = isTouch;
+  return [
+    { t: touch ? '🕹️ Zieh mit dem Daumen auf der LINKEN Bildschirmhälfte – so läufst du!'
+               : '🕹️ Drück W, A, S, D – so läufst du!',
+      fertig: () => tippStart && Math.hypot(player.x - tippStart[0], player.z - tippStart[1]) > 4 },
+    { t: touch ? '👀 Wisch auf der RECHTEN Hälfte – so schaust du dich um!'
+               : '👀 Beweg die Maus – so schaust du dich um!',
+      fertig: () => tippStart && Math.abs(yaw - tippStart[2]) > 0.8 },
+    { t: touch ? '⛏️ Tipp einen Block an – zack, ist er abgebaut! Probier es mal.'
+               : '⛏️ Klick links auf einen Block – zack, ist er abgebaut!',
+      fertig: () => tippGetan.abbauen > 0 },
+    { t: touch ? '🧱 Tipp unten rechts auf ⛏️ – dann wird daraus 🧱, und du BAUST statt abzubauen!'
+               : '🧱 Klick rechts – so baust du einen Block hin!',
+      fertig: () => tippGetan.bauen > 0 },
+    { t: touch ? '⬆️ Der große Pfeil unten rechts lässt dich springen – und schwimmen!'
+               : '⬆️ Die Leertaste lässt dich springen – und schwimmen!',
+      fertig: () => tippGetan.springen > 0 },
+    { t: '🐶 Tipp ein Tier an – Hund, Katze oder Pferd. Dann wird es dein Freund und läuft dir hinterher!',
+      fertig: () => tippGetan.tier > 0 },
+    { t: '🏆 Links steht die Rangliste. Für alles, was du tust, gibt es Punkte – und für Punkte ' +
+         'bekommst du Spielgeld! Tipp dort auf „So bekommst du Punkte".',
+      fertig: () => getComputedStyle(document.getElementById('punkteHilfe')).display !== 'none' },
+    { t: '🎉 Das war\'s! Jetzt bau dir deine eigene Welt. Viel Spaß in JonahCraft!',
+      fertig: () => false, letzter: true },
+  ];
+}
+let tippAlle = [];
+function tippZeigen() {
+  const box = document.getElementById('tippBox');
+  if (!tippAn || tippNr < 0 || tippNr >= tippAlle.length) { box.style.display = 'none'; return; }
+  const t = tippAlle[tippNr];
+  document.getElementById('tippZahl').textContent =
+    'Tipp ' + (tippNr + 1) + ' von ' + tippAlle.length;
+  document.getElementById('tippText').textContent = t.t;
+  document.getElementById('tippWeiter').textContent = t.letzter ? '✅ Los geht\'s!' : 'Weiter ▸';
+  document.getElementById('tippSkip').style.display = t.letzter ? 'none' : '';
+  box.style.display = 'flex';
+  tippStellen();
+}
+function tippStellen() {               // unter die Knopfreihe - und unter die Rangliste
+  const box = document.getElementById('tippBox');
+  if (getComputedStyle(box).display === 'none') return;
+  let oben = 56;
+  const m = document.getElementById('menuBtn');
+  if (m && getComputedStyle(m).display !== 'none') oben = 62;
+  const rb = document.getElementById('rangBox');
+  if (rb && getComputedStyle(rb).display !== 'none') {
+    const c = rb.getBoundingClientRect(), b = box.getBoundingClientRect();
+    // Liegen sie nebeneinander? Dann rutscht der Kasten darunter.
+    if (c.width > 2 && c.right > b.left && c.left < b.right)
+      oben = Math.max(oben, c.bottom + 8);
+  }
+  box.style.top = 'calc(' + oben + 'px + env(safe-area-inset-top))';
+}
+function tippWeiter() {
+  const t = tippAlle[tippNr];
+  if (t && t.letzter) { tippFertig(); return; }
+  tippNr++;
+  tippStart = [player.x, player.z, yaw];
+  blip(760, 0.05);
+  tippZeigen();
+}
+function tippFertig() {
+  tippAn = false; tippNr = -1;
+  document.getElementById('tippBox').style.display = 'none';
+  try { localStorage.setItem(TIPP_KEY, '1'); } catch(e) {}
+  blip(620, 0.06); blip(880, 0.08);
+}
+function tippStarten() {
+  tippAlle = tippListe();
+  tippNr = 0; tippAn = true;
+  tippStart = [player.x, player.z, yaw];
+  for (const k in tippGetan) tippGetan[k] = 0;
+  tippZeigen();
+}
+function tippTick() {                  // schaut nach, ob der Spieler es schon getan hat
+  if (!tippAn || tippNr < 0) return;
+  const t = tippAlle[tippNr];
+  if (!t || t.letzter) return;
+  let fertig = false;
+  try { fertig = !!t.fertig(); } catch(e) {}
+  if (fertig) { toast('👍 Super gemacht!', 1600); tippWeiter(); }
+}
+setInterval(tippTick, 400);
+document.getElementById('tippWeiter').addEventListener('click', tippWeiter);
+document.getElementById('tippSkip').addEventListener('click', tippFertig);
+document.getElementById('tippNochmal').addEventListener('click', () => {
+  try { localStorage.removeItem(TIPP_KEY); } catch(e) {}
+  const b = document.getElementById('tippNochmal');
+  b.textContent = '✅ Kommt gleich!'; b.disabled = true;
+  tippGewuenscht = true;
+});
+let tippGewuenscht = false;
+// Beim allerersten Spielen auf diesem Gerät kommen sie von allein.
+function tippPruefen() {
+  let fertigSchon = false;
+  try { fertigSchon = localStorage.getItem(TIPP_KEY) === '1'; } catch(e) {}
+  if (tippGewuenscht || (!fertigSchon && !tippWarSchonDa)) setTimeout(tippStarten, 1400);
+}
+addEventListener('resize', tippStellen);
+
 // ============== ⋯ KLEINER BILDSCHIRM: NUR DAS NÖTIGSTE ==================
 // Auf dem Handy bleiben nur Springen, Abbauen/Bauen und die Blockleiste
 // stehen. Alles andere liegt im ⋯-Menü - dort sind die Knöpfe DIESELBEN

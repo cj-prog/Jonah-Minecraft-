@@ -57,6 +57,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- 👋 **Hinweise beim ersten Spielen:** Wer JonahCraft zum ersten Mal öffnet, bekommt acht kurze Tipps – Laufen, Umsehen, Abbauen, Bauen, Springen, Tiere zähmen und die Punkte. Der nächste Tipp kommt von allein, sobald man es gemacht hat. Überspringen geht immer, und auf der Startseite kann man sie noch mal anfordern
 - 💶 **Spielgeld für Punkte:** Bei jeden vollen 100 Punkten gibt es 20 € Spielgeld, bei jeden vollen 1000 Punkten noch 250 € extra. Jede Marke genau einmal – steht alles in „❓ So bekommst du Punkte“
 - ⋯ **Auf kleinen Handys freie Sicht:** Dort stehen nur noch Springen, Abbauen/Bauen und die Blockleiste herum – alle anderen Knöpfe stecken im ⋯-Menü oben rechts. Auf dem Tablet bleibt alles, wie es war
 - 🛸 **Die Teleport-Liste lässt sich endlich scrollen:** Große Ziele mit Abstand, Wischen scrollt (und teleportiert nicht mehr aus Versehen!), und bei vielen Zielen gibt es oben eine Suche
