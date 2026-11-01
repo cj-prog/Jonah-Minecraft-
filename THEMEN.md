@@ -117,6 +117,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **16 – Spielgeld für Punkte** · in Arbeit · Wunsch von Jonah (01.11.): je 100 Punkte Spielgeld,
   bei 1000 Punkten mehr (Vorschlag 20 € / +250 €, änderbar); Belohnungsgeld bringt keine Punkte
   · an Session 1 gegeben.
+- **17 – Teleport-Liste schlecht scrollbar** · in Arbeit · Meldung von Jonah (01.11.): in der
+  🛸 Teleport-Station kann man nur auf den dünnen Einträgen scrollen und tippt aus Versehen falsche
+  Ziele an · an Session 1 mit Vorrang gegeben (Wischen löst nie aus, größere Liste/Einträge).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
