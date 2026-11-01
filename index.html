@@ -1921,7 +1921,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 305</div>
+    <div id="verZeile">Version 306</div>
   </div>
 </div>
 
@@ -1943,7 +1943,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 305;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 306;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -20612,6 +20612,50 @@ function eingangFreiRaeumen() {
   tafelAuffrischen(true);
   return summe;
 }
+// ============== 🌪️ DER GELD-SAUGER MUSS DA SEIN ========================
+// Jonah: "Ich bin in meinem Geldspeicher und wollte Geld rausnehmen und habe
+// gemerkt, dass ich meinen Geld-Sauger nicht wiederfinde."
+//
+// In einer NEUEN Welt steht er da. In Jonahs altem Spielstand nicht - und das
+// hat einen Grund: Den Sauger gibt es erst seit v264. Vorher war sein Platz
+// (dx=-5, dz=10) einfach Luft, und das Geld wurde beim Schütten auch dorthin
+// gelegt. Dadurch steht in Jonahs Spielstand an dieser Stelle eine eigene
+// Änderung - und eigene Änderungen gewinnen immer gegen das, was das Spiel
+// von sich aus baut. Als v265 dann den Gang hinter der Tür freiräumte, wurde
+// aus dem Geldblock LUFT - und die Luft bleibt für immer dort stehen.
+//
+// Darum wird einmal pro Spielstart nachgeschaut und notfalls repariert.
+// Lag dort Geld, kommt es vorher in den Geldbeutel - es geht nichts verloren.
+const SP_FESTE_SACHEN = [[-5, 10, 'sauger'], [-2, 10, 'schuette'], [2, 10, 'schild']];
+let saugerGeprueft = false;
+function saugerPruefen() {
+  if (saugerGeprueft || weltDim !== 0) return;
+  speicherHoehe();
+  const m = SP_MITTE, hy = SP_HY;
+  let repariert = 0, zurueck = 0;
+  for (const [dx, dz, art] of SP_FESTE_SACHEN) {
+    const soll = art === 'sauger' ? GELDSAUGER : art === 'schuette' ? GELDSCHUETTE : SIGN;
+    const wx = SP_X + m + dx, wy = hy + 1, wz = SP_Z + m + dz;
+    const ch = getChunk(wx >> 4, wz >> 4);
+    if (!ch || !ch.data) return;        // der Geldspeicher ist noch nicht geladen
+    const ist = getBlock(wx, wy, wz);
+    if (ist === soll) continue;
+    if (GELD_BLOCK.has(ist)) {          // da lag Geld drauf: das kommt zurück
+      const w = GELD_WERT[ist] || 0;
+      money += w; geldNichtZaehlen(w); zurueck += w;
+    }
+    setBlock(wx, wy, wz, soll);
+    repariert++;
+  }
+  saugerGeprueft = true;
+  if (!repariert) return;
+  updateFoodHUD(); scheduleSave();
+  toast('🌪️ Dein Geld-Sauger stand nicht mehr an seinem Platz – ich habe ihn ' +
+        'wieder neben die Geld-Schütte gestellt!' +
+        (zurueck ? ' (' + zurueck + ' € sind zurück in deinem Geldbeutel.)' : ''), 8000);
+  for (const f of [520, 660, 790, 990]) blip(f, 0.07);
+}
+setInterval(saugerPruefen, 2000);
 function saugAnzeigen() {
   const info = speicherGeldInfo();
   document.getElementById('saugInfo').innerHTML =
