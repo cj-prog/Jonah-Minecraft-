@@ -48,6 +48,28 @@
   }
   .btn { display:flex; align-items:center; justify-content:center; border-radius:50%;
     background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
+  /* ⋯ AUF KLEINEN BILDSCHIRMEN IST DIE SICHT WICHTIGER ALS DIE KNÖPFE
+     Jonah: "Wenn die auf dem Handy spielen, das Handy ist manchmal zu klein,
+     und die Knöpfe, die etwas weiter weg sind, versperren die ganze Sicht."
+     Darum bleiben dort nur Springen, Abbauen/Bauen und die Blockleiste
+     stehen - alles andere wandert in dieses Menü. */
+  #menuBtn { display:none; right:calc(12px + env(safe-area-inset-right));
+    top:calc(12px + env(safe-area-inset-top)); width:42px; height:42px;
+    font-size:24px; z-index:53; background:rgba(0,0,0,.45); }
+  #kleinMenu { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
+    flex-direction:column; gap:10px; z-index:58; background:rgba(8,14,30,.96);
+    border:3px solid rgba(255,255,255,.45); border-radius:16px; padding:12px;
+    width:min(94vw,440px); max-height:92vh; overflow-y:auto; box-sizing:border-box; }
+  #kleinMenuKopf { color:#fff; font-size:15px; font-weight:bold; text-align:center; }
+  #kleinMenuGitter { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  #kleinMenuGitter .btn.imMenu { position:static !important; width:46px !important;
+    height:46px !important; font-size:23px !important; margin:0 !important;
+    left:auto !important; right:auto !important; top:auto !important; bottom:auto !important;
+    flex:0 0 auto; opacity:1; }
+  #kleinMenuZu { font-size:15px; font-weight:bold; padding:10px; border-radius:11px;
+    border:none; background:#4caf50; color:#fff; cursor:pointer; }
+  /* die übrig gebliebenen Knöpfe etwas durchsichtiger, damit man durchsieht */
+  body.klein #jumpBtn, body.klein #modeBtn { opacity:.78; }
   /* alle Raster-Knöpfe sind gleich groß */
   #modeBtn, #rideBtn, #fireBtn, #flyBtn, #rufBtn, #faustBtn, #superBtn, #kroneBtn,
   #zepterBtn, #groesseBtn, #tpBtn, #schlachtBtn, #halleBtn, #msgrBtn, #brushBtn, #lassoBtn {
@@ -1313,6 +1335,12 @@
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
 <div class="hud btn" id="tpBtn" title="Teleport - wohin soll es gehen?">🛸</div>
+<div class="hud btn" id="menuBtn" title="Alle Knöpfe">⋯</div>
+<div class="hud" id="kleinMenu">
+  <div id="kleinMenuKopf">⋯ Alle Knöpfe</div>
+  <div id="kleinMenuGitter"></div>
+  <button id="kleinMenuZu">✅ Zu – weiterspielen!</button>
+</div>
 <div class="hud btn" id="schlachtBtn" style="display:none" title="Die große Schlacht">⚔️</div>
 <div class="hud btn" id="halleBtn" style="display:none" title="Die Halle der Aufgaben">🏟️</div>
 <div class="hud btn" id="msgrBtn" title="Deine englischen Freunde">📱<span id="msgrPunkt">0</span></div>
@@ -1962,7 +1990,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 308</div>
+    <div id="verZeile">Version 309</div>
   </div>
 </div>
 
@@ -1984,7 +2012,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 308;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 309;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -31069,6 +31097,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   rangSichtbar = true;                  // 🏆 ab jetzt steht die Rangliste am Rand
   rangStellen();
   jonahSachenStellen();                 // 🙋 Englisch-Sachen nur auf Jonahs Gerät
+  kleinStellen();                       // ⋯ auf kleinen Bildschirmen aufräumen
   setTimeout(async () => { await rangEigenesHolen(); rangLaden(true); rangSenden(true); }, 1500);
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
@@ -32243,6 +32272,71 @@ kopfKnoepfeOrdnen();
 // ich automatisch direkt in der Englisch-Lern-App."
 // Vorher wird IMMER gespeichert, damit nichts verloren geht.
 const ENG_APP_URL = 'https://cj-prog.github.io/Englisch-App/';
+// ============== ⋯ KLEINER BILDSCHIRM: NUR DAS NÖTIGSTE ==================
+// Auf dem Handy bleiben nur Springen, Abbauen/Bauen und die Blockleiste
+// stehen. Alles andere liegt im ⋯-Menü - dort sind die Knöpfe DIESELBEN
+// Elemente (sie werden nur umgehängt), also funktioniert alles weiter.
+const KLEIN_BLEIBT = new Set(['jumpBtn', 'modeBtn', 'menuBtn', 'bowBtn']);
+let menuOffen = false;
+const menuMerk = new Map();             // Knopf -> wie er vorher aussah
+function kleinerSchirm() { return innerWidth < 760 || innerHeight < 560; }
+function kleinKnoepfe() {               // welche Knöpfe wandern ins Menü?
+  return [...document.querySelectorAll('.hud.btn')]
+    .filter(e => !KLEIN_BLEIBT.has(e.id));
+}
+function kleinStellen() {
+  const klein = kleinerSchirm();
+  document.body.classList.toggle('klein', klein);
+  document.getElementById('menuBtn').style.display = klein ? 'flex' : 'none';
+  if (!klein && menuOffen) menuZu();
+  for (const e of kleinKnoepfe()) {
+    if (menuMerk.has(e)) continue;      // steckt gerade im Menü
+    e.style.visibility = klein ? 'hidden' : '';
+    e.style.pointerEvents = klein ? 'none' : '';
+  }
+  if (klein) { rangOffen = false; try { rangStellen(); } catch(e) {} }
+}
+function menuAuf() {
+  const gitter = document.getElementById('kleinMenuGitter');
+  gitter.innerHTML = '';
+  for (const e of kleinKnoepfe()) {
+    // Nur Knoepfe, die gerade ueberhaupt zum Spiel gehoeren. Wichtig:
+    // getComputedStyle, nicht e.style - manche sind per CSS-Regel versteckt
+    // (z. B. der Feuer-Knopf, wenn man nichts Brennendes dabei hat).
+    if (getComputedStyle(e).display === 'none') continue;
+    menuMerk.set(e, { display: e.style.display, vis: e.style.visibility,
+                      pe: e.style.pointerEvents });
+    e.style.visibility = ''; e.style.pointerEvents = '';
+    e.classList.add('imMenu');
+    gitter.appendChild(e);
+  }
+  document.getElementById('kleinMenu').style.display = 'flex';
+  menuOffen = true;
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700, 0.05); blip(900, 0.06);
+}
+function menuZu() {
+  for (const [e, alt] of menuMerk) {
+    e.classList.remove('imMenu');
+    document.body.appendChild(e);
+    e.style.display = alt.display;
+    e.style.visibility = kleinerSchirm() ? 'hidden' : alt.vis;
+    e.style.pointerEvents = kleinerSchirm() ? 'none' : alt.pe;
+  }
+  menuMerk.clear();
+  document.getElementById('kleinMenu').style.display = 'none';
+  menuOffen = false;
+  try { kopfKnoepfeOrdnen(); } catch(e) {}
+  blip(480, 0.05);
+}
+document.getElementById('menuBtn').addEventListener('touchstart',
+  e => { e.preventDefault(); menuOffen ? menuZu() : menuAuf(); }, { passive:false });
+document.getElementById('menuBtn').addEventListener('mousedown',
+  e => { e.preventDefault(); menuOffen ? menuZu() : menuAuf(); });
+document.getElementById('kleinMenuZu').addEventListener('click', menuZu);
+addEventListener('resize', () => { if (!menuOffen) kleinStellen(); });
+addEventListener('orientationchange', () => { if (!menuOffen) kleinStellen(); });
+
 // ============== 🙋 IST DAS JONAHS GERÄT? ================================
 // Jonah: "Wenn die anderen JonahCraft spielen, möchte ich nicht, dass die
 // auch mit meinen englischen Freunden reden können, weil die die ja gar

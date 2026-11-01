@@ -57,6 +57,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- ⋯ **Auf kleinen Handys freie Sicht:** Dort stehen nur noch Springen, Abbauen/Bauen und die Blockleiste herum – alle anderen Knöpfe stecken im ⋯-Menü oben rechts. Auf dem Tablet bleibt alles, wie es war
 - 🛸 **Die Teleport-Liste lässt sich endlich scrollen:** Große Ziele mit Abstand, Wischen scrollt (und teleportiert nicht mehr aus Versehen!), und bei vielen Zielen gibt es oben eine Suche
 - 🙋 **Jonahs Sachen sind Jonahs Sachen:** Die englischen Freunde, der 📚-Knopf zur Englisch-App und die Mathe- und Englisch-Aufgaben gibt es nur auf Jonahs Gerät. Alle anderen Spieler bauen einfach drauflos
 - 🌪️ **Der Geld-Sauger ist wieder da:** In alten Spielständen fehlte er neben der Geld-Schütte. Das Spiel merkt das jetzt selbst und stellt ihn zurück – lag dort Geld, kommt es vorher in den Geldbeutel
