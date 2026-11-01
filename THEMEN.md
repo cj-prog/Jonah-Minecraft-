@@ -88,11 +88,12 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   (Link an Familie/Freunde, evtl. Schule, QR-Code); Bezahlen, Werbung, Spenden bis dahin
   zurückgestellt. Kein Spielerzähler (Datenschutz bei Kindern), lieber nachfragen. Mögliche
   spätere Wünsche: QR-Code oder „Teilen"-Knopf. Offen: Jonahs Frage, wie Updates laufen sollen.
-- **11 – Online-Rangliste** · offen · Wunsch von Jonah (01.11.): Spieler geben vor dem Spielen
+- **11 – Online-Rangliste** · in Arbeit · Wunsch von Jonah (01.11.): Spieler geben vor dem Spielen
   einen Namen ein, am Rand eine Rangliste mit Punkten. Christian (01.11.): Weg A mit Firebase,
-  Projekt „Jonahcraft" (Spark-Tarif, kostenlos) ist angelegt · warten auf: firebaseConfig von
-  Christian, Jonahs Antwort, wofür es Punkte gibt · dann Auftrag an Session 1 (Spitznamen,
-  Wortfilter, Sicherheitsregeln).
+  Projekt „jonahcraft" (Spark-Tarif, kostenlos, Firestore Frankfurt) ist angelegt, Web-App
+  registriert · in Arbeit: an Session 1 gegeben (01.11.) – Spitzname vor dem Spielen mit
+  Wortfilter, Top-10 am Rand, Sicherheitsregeln (Christian fügt sie in der Konsole ein) ·
+  offen: Jonahs Antwort, wofür es Punkte gibt (bis dahin Platzhalter).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
