@@ -73,8 +73,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 304 (01.11., Online-
-  Rangliste) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 306 (01.11., Geld-Sauger
+  zurück) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -101,8 +101,11 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   beim nächsten Mal weiter (hängen am Gerät).
   **v304 online (01.11.):** Spitzname auf der Startseite, Rangliste links (einklappbar), anonyme
   Anmeldung per REST, `firestore.rules` im Repo · wartet auf Christian: Regeln in der Konsole
-  veröffentlichen (+ „Anonym" prüfen) · Punkte-Tabelle noch Platzhalter, Jonahs Punkte-Regeln und
-  „nur wer gerade spielt" sind nachgereicht.
+  veröffentlichen (+ „Anonym" prüfen).
+  **v305 (01.11.):** Jonahs Punkte-Tabelle mit Schutz gegen Tricksen, breiter Streifen, eigener
+  Eintrag oben, nur wer in den letzten 2 Minuten gespielt hat, Punkte bleiben (pro Gerät) ·
+  Geräte-Wechsel: Session 1 empfiehlt „nichts tun" (sonst Umzugs-Code) – nur auf Nachfrage.
+  Offen: nur noch Christians Schritt in der Konsole.
 - **12 – Hinweise beim ersten Spielen** · in Arbeit · Wunsch von Jonah (01.11.): neue Spieler
   bekommen beim ersten Mal Schritt-für-Schritt-Hinweise (überspringbar, später wieder abrufbar)
   · an Session 1 gegeben (nach Thema 11) · Meldung in `meldungen/1.md` abwarten.
@@ -111,9 +114,6 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   kein 📚-Knopf und keine Mathe-/Englisch-Aufgaben · an Session 1 gegeben.
 - **14 – Knöpfe auf kleinen Handys** · in Arbeit · Meldung von Jonah (01.11.): auf kleinen Handys
   versperren die Knöpfe die Sicht → nur wichtige Knöpfe sichtbar, Rest im „⋯"-Menü · an Session 1.
-- **15 – Geld-Sauger fehlt** · in Arbeit, dringend · Meldung von Jonah (01.11.): hinter der
-  Tresortür steht nur die Geld-Schütte, der Geld-Sauger (v264) ist weg · an Session 1 mit
-  Vorrang gegeben.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
@@ -121,6 +121,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **15 – Geld-Sauger fehlt** · Session 1 · v306 (01.11.): Ursache war Jonahs alter Spielstand
+  (Stelle wurde vor v264 mit Geld belegt und in v265 zu Luft geräumt); Sauger, Schütte und
+  Schild werden jetzt bei jedem Start geprüft und zurückgestellt, kein Geld geht verloren.
 - **9 – Riesige Tore in der Riesenburg** · Session 1 · v303 (01.11.): Tore in allen 48
   Türöffnungen, Antippen zieht sie wie ein Fallgitter hoch, Diener kommen trotzdem durch.
 - **10 – Startbildschirm zu groß** · Session 1 · v301 (Spielen-Knopf immer im Bild) und v302
