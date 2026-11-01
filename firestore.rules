@@ -1,0 +1,63 @@
+// 🔒 Sicherheitsregeln für die JonahCraft-Rangliste
+//
+// Diese Regeln gehören in die Firebase-Konsole (Firestore Database → Regeln).
+// Eine Schritt-für-Schritt-Anleitung steht in meldungen/1.md.
+//
+// Ohne diese Regeln lehnt Firestore im Produktionsmodus ALLES ab. Das Spiel
+// läuft dann ganz normal weiter, die Rangliste sagt nur freundlich
+// „gerade nicht erreichbar".
+//
+// Was erlaubt ist:
+//   - Lesen: alle. Die Rangliste soll ja jeder sehen können.
+//   - Schreiben: nur angemeldete Spieler, und nur das EIGENE Dokument
+//     (die Dokument-ID muss die eigene Nutzerkennung sein).
+//   - Genau drei Felder: name, punkte, zeit. Nichts sonst.
+//   - Punkte dürfen nur steigen, pro Schreibvorgang höchstens um 5000.
+//   - Löschen: niemand. Andere Sammlungen: niemand.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function istIchSelbst(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function felderStimmen() {
+      return request.resource.data.keys().hasOnly(['name', 'punkte', 'zeit'])
+          && request.resource.data.keys().hasAll(['name', 'punkte', 'zeit'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 2
+          && request.resource.data.name.size() <= 16
+          && request.resource.data.name.matches('[A-Za-z0-9ÄÖÜäöüß _-]+')
+          && request.resource.data.punkte is int
+          && request.resource.data.punkte >= 0
+          && request.resource.data.zeit == request.time;
+    }
+
+    match /rangliste/{uid} {
+
+      // Jeder darf die Rangliste lesen
+      allow read: if true;
+
+      allow create: if istIchSelbst(uid)
+                    && felderStimmen()
+                    && request.resource.data.punkte <= 5000;
+
+      // Punkte dürfen nur hoch - und nicht in Riesensprüngen
+      allow update: if istIchSelbst(uid)
+                    && felderStimmen()
+                    && request.resource.data.punkte >= resource.data.punkte
+                    && request.resource.data.punkte <= resource.data.punkte + 5000;
+
+      // Einmal drin, bleibt drin
+      allow delete: if false;
+    }
+
+    // Alles andere ist dicht
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

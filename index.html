@@ -356,6 +356,29 @@
      dem Startbildschirm zu sehen sein soll, liegt er ÜBER ihm (z-index). */
   #engBtn { width:40px; height:40px; font-size:20px; z-index:52;
     background:rgba(120,80,200,.55); }
+  /* 🏆 DIE RANGLISTE am linken Rand: klein, einklappbar und so hoch, dass sie
+     weder die Karte unten links noch die Knöpfe rechts verdeckt. */
+  #rangBox { display:none; left:calc(10px + env(safe-area-inset-left));
+    flex-direction:column; gap:3px; z-index:49;
+    background:rgba(18,16,40,.80); color:#fff; border:2px solid rgba(255,205,90,.8);
+    border-radius:12px; padding:6px 8px; width:min(44vw,190px);
+    max-height:34vh; overflow-y:auto; font-size:12px; line-height:1.35; }
+  #rangKopf { font-weight:bold; font-size:12.5px; color:#ffd980;
+    display:flex; justify-content:space-between; align-items:center; gap:6px; }
+  #rangTitel { cursor:pointer; user-select:none; flex:1 1 auto; }
+  #rangKopf button { font-size:11px; padding:2px 6px; border-radius:7px; border:none;
+    background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  .rangZeile { display:flex; gap:5px; }
+  .rangZeile .rNr { opacity:.7; min-width:16px; }
+  .rangZeile .rNa { flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rangZeile .rPu { font-weight:bold; color:#ffe09a; }
+  .rangZeile.ich { background:rgba(255,205,90,.22); border-radius:6px;
+    padding:1px 3px; margin:0 -3px; }
+  #rangInfo { font-size:11px; opacity:.8; }
+  #rangNeu { display:none; gap:4px; }
+  #rangNeu input { flex:1 1 auto; min-width:0; font-size:12px; padding:4px 6px;
+    border-radius:7px; border:1px solid rgba(255,255,255,.5);
+    background:rgba(0,0,0,.3); color:#fff; }
   /* 🤔 „So habe ich dich verstanden" - vor dem Bauen */
   #weltVerstanden { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
     flex-direction:column; gap:9px; background:rgba(10,14,30,.98); padding:14px;
@@ -1171,6 +1194,18 @@
      ein Kind schlechter (im Screenshot verglichen). */
   .hilfeGitter { display:grid; gap:3px; text-align:left; }
   #helpDesk { display:none; }
+  /* 🏷️ Spitzname auf der Startseite - OHNE den geht es nicht los */
+  #nameBox { display:flex; flex-direction:column; align-items:center; gap:4px;
+    flex:0 0 auto; }
+  #nameBox label { font-size:13px; color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.35);
+    font-weight:bold; }
+  #nameInput { font-size:17px; padding:9px 14px; border-radius:11px;
+    border:2px solid rgba(255,255,255,.75); background:rgba(0,0,0,.28); color:#fff;
+    text-align:center; width:min(78vw,260px); box-sizing:border-box; }
+  #nameInput::placeholder { color:rgba(255,255,255,.55); }
+  #nameHinweis { font-size:11.5px; color:rgba(255,255,255,.8); max-width:270px;
+    text-shadow:1px 1px 0 rgba(0,0,0,.3); }
+  #nameHinweis.warn { color:#ffd27a; font-weight:bold; }
   #verZeile { font-size:12px; color:rgba(255,255,255,.7);
     text-shadow:1px 1px 0 rgba(0,0,0,.3); }
   #playBtn { font-size:22px; font-weight:bold; color:#fff; background:#4caf50; border:none; border-radius:12px;
@@ -1188,6 +1223,8 @@
     #start h1 { font-size:26px; }
     #start p { font-size:13px; line-height:1.45; }
     #playBtn { font-size:19px; padding:10px 34px; }
+    #rangBox { font-size:11px; line-height:1.3; padding:5px 7px; width:min(42vw,168px); }
+    #rangKopf { font-size:11.5px; }
     .hilfe { font-size:12.5px; line-height:1.4; padding:7px 11px; }
     .hilfe b { font-size:13px; margin-bottom:3px; }
   }
@@ -1265,6 +1302,12 @@
 <div class="hud btn" id="filmBtn" title="Eigenen Film drehen">🎥</div>
 <div class="hud btn" id="weltBtn" title="Zwischen deinen Welten umschalten">🌈</div>
 <div class="hud btn" id="engBtn" title="Zur Englisch-Lern-App">📚</div>
+<div class="hud" id="rangBox">
+  <div id="rangKopf"><span id="rangTitel">🏆 Rangliste <span id="rangPfeil">▾</span></span><button id="rangNameBtn">✏️</button></div>
+  <div id="rangNeu"><input id="rangNameInput" maxlength="16"><button id="rangNameOk">✔</button></div>
+  <div id="rangListe"></div>
+  <div id="rangInfo"></div>
+</div>
 <div class="hud" id="weltVerstanden">
   <h3>🤔 So habe ich dich verstanden!</h3>
   <div id="weltVerstandenListe"></div>
@@ -1834,6 +1877,11 @@
   </div>
   </div>
   <div id="startUnten">
+    <div id="nameBox">
+      <label for="nameInput">🏷️ Dein Spitzname</label>
+      <input id="nameInput" maxlength="16" placeholder="z. B. BlitzBagger" autocomplete="off">
+      <div id="nameHinweis">Bitte nicht deinen echten Namen! 🙂</div>
+    </div>
     <button id="playBtn">▶ Spielen</button>
     <div id="saveRow">
       <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
@@ -1841,7 +1889,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 303</div>
+    <div id="verZeile">Version 304</div>
   </div>
 </div>
 
@@ -1863,7 +1911,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 303;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 304;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7073,6 +7121,7 @@ function setBlock(wx,wy,wz,v) {
   const lx=wx&15, lz=wz&15, i=bidx(lx,wy,lz);
   const vorher = ch.data[i];
   if (vorher===v) return;
+  bloeckeGeaendert++;                 // 🏆 fuer die Punkte der Rangliste
   ch.data[i]=v;
   // 💰 Merkliste: wo liegt gerade Geld herum? (danach suchen die Räuber!)
   const gk = wx+','+wy+','+wz;
@@ -8842,6 +8891,7 @@ function light01() {
 const isNight = () => light01() < 0.45;
 let selSlot = 0;
 let placeMode = false;          // false = abbauen, true = setzen
+let bloeckeGeaendert = 0;       // 🏆 wie oft hat sich wirklich ein Block geaendert?
 const keys = {};
 let jumpHeld = false;
 
@@ -15306,16 +15356,16 @@ function butlerTick(a, dt) {
     if (dp > 2.4) {
       a.yaw = Math.atan2(player.x-a.x, -(player.z-a.z));
       a.walking = true; a.spd = 3.6; a.t = 9;
-      // 🚪 Steht er vor einem zugemachten Riesentor, kommt er zu Fuß nicht
-      // weiter. Darum: Kommt er drei Sekunden lang nicht näher, nimmt er die
-      // Abkürzung - genauso wie wenn er sonst irgendwo festhängt.
-      if (a.festD === undefined || dp < a.festD - 0.5) { a.festD = dp; a.festT = 0; }
-      else a.festT = (a.festT || 0) + dt;
-      if ((a.glocke > 0 && a.glocke < 18 && dp > 24) || a.festT > 3) {
+      // 🚪 Steht ein zugemachtes Riesentor im Weg, kommt er zu Fuß nicht
+      // durch - er schrammt dann nur noch ganz langsam an der Wand entlang.
+      // Darum ganz einfach: Wer zehn Sekunden nach dem Läuten immer noch
+      // nicht da ist, nimmt die Abkürzung. (Ein Test, bei dem er nur
+      // kriechend vorankam, hat gezeigt, dass "kommt nicht näher" dafür
+      // nicht reicht - er kam ja näher, nur viel zu langsam.)
+      if (a.glocke > 0 && a.glocke < 20) {
         a.x = player.x + (Math.random()*4 - 2);
         a.z = player.z + (Math.random()*4 - 2);
         a.y = player.y + 1; a.vy = 0;
-        a.festD = undefined; a.festT = 0;
       }
     } else {
       a.befehl = 'warten'; a.walking = false; a.glocke = 0; a.warteX = undefined;
@@ -29851,7 +29901,10 @@ function touchEnd(e){
       }
       if (dt<350 && look.moved<14) {           // kurzes Tippen = Aktion
         const dir=screenRay(t.clientX,t.clientY);
-        if (placeMode) doPlace(dir); else doBreak(dir);
+        if (placeMode) { const v = bloeckeGeaendert; doPlace(dir);
+                         if (bloeckeGeaendert > v) punkteGeben('blockSetzen'); }
+        else            { const v = bloeckeGeaendert; doBreak(dir);
+                          if (bloeckeGeaendert > v) punkteGeben('blockAbbauen'); }
       } else if (dt>=600 && look.moved<14) {   // langes Drücken = freilassen
         tryRelease(screenRay(t.clientX,t.clientY));
       }
@@ -30325,7 +30378,320 @@ if (!isTouch) {
   document.getElementById('helpDesk').style.display = 'block';
 }
 document.getElementById('verZeile').textContent = 'Version ' + GAME_VERSION;
+// ============== 🏆 DIE ONLINE-RANGLISTE ================================
+// Jonah: "Wenn die anderen Leute JonahCraft spielen, moechte ich sehen, dass
+// sie das wirklich spielen. An der Seite soll es eine Rangliste geben, wo die
+// Namen der Spieler stehen. Die Spieler muessen ihren Namen eingeben, bevor
+// sie spielen koennen. Hinter dem Namen steht die Punktzahl."
+//
+// Das Spiel bleibt EINE Datei: keine fremde Bibliothek, nur fetch() auf die
+// offenen Schnittstellen von Firebase. Geht das Netz nicht, laeuft das Spiel
+// ganz normal weiter - die Rangliste sagt dann nur freundlich Bescheid.
+// Gespeichert werden NUR Spitzname, Punkte und die Uhrzeit. Sonst nichts.
+const FB_KEY = 'AIzaSyAfcaS3o89K_j-Wmoc2wOOhmHXYfVEfqp4';   // oeffentlich, kein Geheimnis
+const FB_PROJEKT = 'jonahcraft';
+const FB_DOKS = 'https://firestore.googleapis.com/v1/projects/' + FB_PROJEKT +
+                '/databases/(default)/documents';
+const RANG_NAME_KEY  = 'jonahcraft_spitzname';
+const RANG_TOKEN_KEY = 'jonahcraft_rang_anmeldung';
+const RANG_PUNKTE_KEY= 'jonahcraft_punkte';
+const RANG_OFFEN_KEY = 'jonahcraft_rang_offen';
+
+// ---- 🎯 DIE PUNKTE STEHEN AN EINER EINZIGEN STELLE ----
+// (Platzhalter, bis Jonah sagt, wofuer es Punkte geben soll. Zum Aendern
+//  reicht es, hier eine Zahl zu drehen oder eine Zeile dazuzuschreiben.)
+const PUNKTE_FUER = {
+  blockAbbauen: 1,                    // ⛏️ einen Block abbauen
+  blockSetzen:  1,                    // 🧱 einen Block hinstellen
+};
+const PUNKTE_MAX_SCHRITT = 5000;      // so viel darf EIN Hochladen hoechstens zulegen
+let punkte = 0, punkteGesendet = 0;
+function punkteLesen() {
+  try { const n = parseInt(localStorage.getItem(RANG_PUNKTE_KEY) || '0', 10);
+        punkte = (isFinite(n) && n > 0) ? n : 0; } catch(e) { punkte = 0; }
+  punkteGesendet = punkte;
+}
+function punkteGeben(was, mal) {
+  const p = PUNKTE_FUER[was];
+  if (!p) return;
+  punkte += p * (mal || 1);
+  try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
+}
+
+// ---- 🏷️ DER SPITZNAME ----
+const NAME_MIN = 2, NAME_MAX = 16;
+const NAME_ERLAUBT = /^[A-Za-z0-9ÄÖÜäöüß _\-]+$/;
+// Gemeine Woerter, Deutsch und Englisch. Absichtlich OHNE ganz kurze
+// Allerwelts-Silben wie "dick" (heisst auf Deutsch etwas voellig Harmloses)
+// oder "kill" - sonst waere "Killerwal" verboten.
+const NAME_BOESE = ['arsch','scheiss','kacke','fick','fotze','hure','nutte','wichser',
+  'schlampe','pimmel','titten','penis','vagina','nazi','hitler','neger','schwuchtel',
+  'hurensohn','missgeburt','spast','wixer','votze','mistgeburt',
+  'fuck','shit','bitch','cunt','pussy','whore','slut','rape','porn','nigger','nigga',
+  'faggot','asshole','bastard','retard'];
+function nameNormal(n) {              // Tricks wie "5ch31ss" ausbuegeln
+  return String(n || '').toLowerCase()
+    .replace(/[àáâä]/g,'a').replace(/[èéêë]/g,'e').replace(/[ìíîï]/g,'i')
+    .replace(/[òóôö]/g,'o').replace(/[ùúûü]/g,'u').replace(/ß/g,'ss')
+    .replace(/[@4]/g,'a').replace(/[0]/g,'o').replace(/[1!|]/g,'i')
+    .replace(/[3]/g,'e').replace(/[5$]/g,'s').replace(/[7]/g,'t').replace(/[8]/g,'b')
+    .replace(/[^a-z]/g,'');
+}
+function namePruefen(n) {
+  const t = String(n || '').trim();
+  if (t.length < NAME_MIN) return 'Dein Spitzname braucht mindestens 2 Zeichen. ✏️';
+  if (t.length > NAME_MAX) return 'Höchstens 16 Zeichen, bitte! ✏️';
+  if (!NAME_ERLAUBT.test(t)) return 'Nur Buchstaben, Zahlen, Leerzeichen, - und _ bitte. ✏️';
+  const k = nameNormal(t);
+  for (const w of NAME_BOESE)
+    if (k.indexOf(w) >= 0) return 'Such dir bitte einen netteren Namen aus. 🙂';
+  return null;
+}
+function spitzname() {
+  try { return (localStorage.getItem(RANG_NAME_KEY) || '').trim(); } catch(e) { return ''; }
+}
+function spitznameSetzen(n) {
+  const t = String(n || '').trim();
+  if (namePruefen(t)) return false;
+  try { localStorage.setItem(RANG_NAME_KEY, t); } catch(e) {}
+  punkteGesendet = -1;                 // der neue Name soll gleich hochgehen
+  return true;
+}
+
+// ---- 🔑 ANONYM ANMELDEN (ohne E-Mail, ohne Passwort) ----
+let fbToken = null, fbTokenBis = 0, fbUid = null;
+async function fbAnmelden() {
+  if (fbToken && Date.now() < fbTokenBis - 60000) return fbToken;
+  let alt = null;
+  try { alt = JSON.parse(localStorage.getItem(RANG_TOKEN_KEY) || 'null'); } catch(e) {}
+  if (alt && alt.refresh) {            // schon mal angemeldet? Dann nur auffrischen
+    try {
+      const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + FB_KEY, {
+        method:'POST', headers:{'content-type':'application/x-www-form-urlencoded'},
+        body:'grant_type=refresh_token&refresh_token=' + encodeURIComponent(alt.refresh) });
+      if (r.ok) {
+        const j = await r.json();
+        fbToken = j.id_token; fbUid = j.user_id;
+        fbTokenBis = Date.now() + (parseInt(j.expires_in, 10) || 3600) * 1000;
+        return fbToken;
+      }
+    } catch(e) {}
+  }
+  const r2 = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FB_KEY, {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ returnSecureToken: true }) });
+  if (!r2.ok) throw new Error('Anmelden ' + r2.status);
+  const j2 = await r2.json();
+  fbToken = j2.idToken; fbUid = j2.localId;
+  fbTokenBis = Date.now() + (parseInt(j2.expiresIn, 10) || 3600) * 1000;
+  try { localStorage.setItem(RANG_TOKEN_KEY,
+    JSON.stringify({ refresh: j2.refreshToken, uid: fbUid })); } catch(e) {}
+  return fbToken;
+}
+
+// ---- ⬆️ PUNKTE HOCHLADEN (sparsam: hoechstens alle 30 Sekunden) ----
+const RANG_SENDE_ABSTAND = 30000, RANG_LESE_ABSTAND = 60000;
+let rangSendeLauft = false, rangZuletztGesendet = 0;
+let rangListe = [], rangGelesen = 0, rangLeseLauft = false, rangFehler = null;
+let rangOffen = true;                 // aufgeklappt oder nur die Kopfzeile?
+let rangSichtbar = false;             // auf dem Startbildschirm: gar nicht
+async function rangSenden(sofort) {
+  const name = spitzname();
+  if (!name || rangSendeLauft) return false;
+  if (punkte <= punkteGesendet && punkteGesendet >= 0) return false;
+  if (!sofort && Date.now() - rangZuletztGesendet < RANG_SENDE_ABSTAND) return false;
+  rangSendeLauft = true;
+  // ⚠️ Genau DIESE Zahl geht raus. Waehrend des Hochladens kann Jonah
+  // weiterbauen - dann darf der Zuwachs nicht als "schon gesendet" gelten,
+  // sonst verliert er die Punkte. (Im Test aufgefallen.)
+  const sende = punkte;
+  try {
+    const tok = await fbAnmelden();
+    const r = await fetch(FB_DOKS + ':commit', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', 'Authorization':'Bearer ' + tok },
+      body: JSON.stringify({ writes: [{
+        update: { name: FB_DOKS + '/rangliste/' + fbUid,
+                  fields: { name:   { stringValue: name },
+                            punkte: { integerValue: String(sende) } } },
+        updateMask: { fieldPaths: ['name','punkte'] },
+        updateTransforms: [{ fieldPath:'zeit', setToServerValue:'REQUEST_TIME' }] }] }) });
+    if (!r.ok) throw new Error('Hochladen ' + r.status);
+    punkteGesendet = sende;
+    rangZuletztGesendet = Date.now();
+    rangFehler = null;
+    return true;
+  } catch(e) {
+    rangFehler = String(e && e.message || e);
+    return false;
+  } finally { rangSendeLauft = false; rangZeichnen(); }
+}
+
+// ---- ⬇️ DIE BESTEN ZEHN HOLEN (hoechstens jede Minute) ----
+async function rangLaden(sofort) {
+  if (rangLeseLauft) return;
+  if (!sofort && Date.now() - rangGelesen < RANG_LESE_ABSTAND) return;
+  rangLeseLauft = true;
+  try {
+    const r = await fetch(FB_DOKS + ':runQuery?key=' + FB_KEY, {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ structuredQuery: {
+        from: [{ collectionId: 'rangliste' }],
+        orderBy: [{ field:{ fieldPath:'punkte' }, direction:'DESCENDING' }],
+        limit: 10 } }) });
+    if (!r.ok) throw new Error('Laden ' + r.status);
+    const j = await r.json();
+    rangListe = (Array.isArray(j) ? j : [])
+      .filter(z => z && z.document && z.document.fields)
+      .map(z => ({ id: String(z.document.name || '').split('/').pop(),
+                   name: String((z.document.fields.name || {}).stringValue || '?').slice(0, NAME_MAX),
+                   punkte: parseInt((z.document.fields.punkte || {}).integerValue || '0', 10) || 0 }));
+    rangGelesen = Date.now();
+    rangFehler = null;
+  } catch(e) {
+    rangFehler = String(e && e.message || e);
+  } finally { rangLeseLauft = false; rangZeichnen(); }
+}
+
+// ---- 🖊️ DIE RANGLISTE HINMALEN ----
+function rangZeichnen() {
+  const box = document.getElementById('rangBox');
+  if (!box) return;
+  const liste = document.getElementById('rangListe');
+  liste.innerHTML = '';
+  const ich = spitzname();
+  let drin = false;
+  rangListe.forEach((e, i) => {
+    const d = document.createElement('div');
+    d.className = 'rangZeile' + ((fbUid && e.id === fbUid) ? ' ich' : '');
+    if (fbUid && e.id === fbUid) drin = true;
+    const nr = document.createElement('span'); nr.className = 'rNr'; nr.textContent = (i+1) + '.';
+    const na = document.createElement('span'); na.className = 'rNa'; na.textContent = e.name;
+    const pu = document.createElement('span'); pu.className = 'rPu'; pu.textContent = e.punkte;
+    d.appendChild(nr); d.appendChild(na); d.appendChild(pu);
+    liste.appendChild(d);
+  });
+  if (ich && !drin) {                 // noch nicht unter den Besten? Trotzdem zeigen
+    const d = document.createElement('div');
+    d.className = 'rangZeile ich';
+    const nr = document.createElement('span'); nr.className = 'rNr'; nr.textContent = '–';
+    const na = document.createElement('span'); na.className = 'rNa'; na.textContent = ich;
+    const pu = document.createElement('span'); pu.className = 'rPu'; pu.textContent = punkte;
+    d.appendChild(nr); d.appendChild(na); d.appendChild(pu);
+    liste.appendChild(d);
+  }
+  const info = document.getElementById('rangInfo');
+  if (rangFehler) info.textContent = '📴 Gerade nicht erreichbar – du kannst aber ganz normal weiterspielen!';
+  else if (!rangListe.length) info.textContent = '⏳ Noch niemand da – spiel los und sei der Erste! 🚀';
+  else info.textContent = 'Deine Punkte: ' + punkte;
+  rangPlatz();
+}
+// 📏 Wie viel Platz ist links wirklich frei? Die Rangliste darf die Minikarte
+// und die Werkzeugleiste NICHT verdecken - sie hört einfach vorher auf und
+// scrollt dann. (Im Test war sie auf dem kleinen Handy quer über der Karte.)
+function rangPlatz() {
+  const box = document.getElementById('rangBox');
+  if (!box || box.style.display === 'none') return;
+  box.style.maxHeight = '';                       // erst messen, dann begrenzen
+  const oben = box.getBoundingClientRect().top;
+  let unten = innerHeight - 10;
+  for (const id of ['miniMap', 'hotbar']) {
+    const e = document.getElementById(id);
+    if (!e || getComputedStyle(e).display === 'none') continue;
+    const r = e.getBoundingClientRect();
+    if (r.height < 2 || r.left > 240) continue;   // nur was links unten steht
+    if (r.top > oben + 20) unten = Math.min(unten, r.top - 8);
+  }
+  box.style.maxHeight = Math.max(56, Math.round(unten - oben)) + 'px';
+}
+function rangStellen() {              // auf- oder zuklappen (wird gemerkt)
+  const box = document.getElementById('rangBox');
+  box.style.display = rangSichtbar ? 'flex' : 'none';
+  for (const id of ['rangListe','rangInfo'])
+    document.getElementById(id).style.display = rangOffen ? '' : 'none';
+  if (!rangOffen) document.getElementById('rangNeu').style.display = 'none';
+  document.getElementById('rangNameBtn').style.display = rangOffen ? '' : 'none';
+  document.getElementById('rangPfeil').textContent = rangOffen ? '▾' : '▸';
+  // 📜 Der Aufgaben-Kasten rueckt zur Seite, damit sich nichts ueberdeckt
+  const miss = document.getElementById('missBox');
+  if (miss) miss.style.left = (rangSichtbar && rangOffen)
+    ? 'calc(12px + min(44vw,190px) + 14px + env(safe-area-inset-left))'
+    : 'calc(12px + env(safe-area-inset-left))';
+  try { localStorage.setItem(RANG_OFFEN_KEY, rangOffen ? '1' : '0'); } catch(e) {}
+  if (rangSichtbar && rangOffen) { rangZeichnen(); rangPlatz(); rangLaden(false); }
+}
+function rangUmschalten() { rangOffen = !rangOffen; rangStellen(); blip(rangOffen?760:380, 0.05); }
+
+// ---- ✏️ Den Namen spaeter aendern ----
+function rangNameFeldZeigen() {
+  const n = document.getElementById('rangNeu');
+  const auf = n.style.display === 'flex';
+  n.style.display = auf ? 'none' : 'flex';
+  if (!auf) { const i = document.getElementById('rangNameInput');
+              i.value = spitzname(); i.focus(); }
+}
+function rangNameSpeichern() {
+  const i = document.getElementById('rangNameInput');
+  const fehler = namePruefen(i.value);
+  if (fehler) { toast('🏷️ ' + fehler, 4000); blip(240, 0.1); return; }
+  spitznameSetzen(i.value);
+  document.getElementById('rangNeu').style.display = 'none';
+  toast('🏷️ Du heißt jetzt „' + spitzname() + '" in der Rangliste! 🏆', 4000);
+  blip(760, 0.07); blip(950, 0.08);
+  rangSenden(true).then(() => rangLaden(true));
+}
+
+// ---- ⏱️ regelmaessig, aber sparsam ----
+function rangTick() {
+  if (!spitzname()) return;
+  rangSenden(false);
+  if (rangOffen) rangLaden(false);
+}
+setInterval(rangTick, 10000);
+addEventListener('visibilitychange', () => { if (document.hidden) rangSenden(true); });
+addEventListener('pagehide', () => { rangSenden(true); });
+
+document.getElementById('rangTitel').addEventListener('touchstart',
+  e => { e.preventDefault(); rangUmschalten(); }, {passive:false});
+document.getElementById('rangTitel').addEventListener('mousedown',
+  e => { e.preventDefault(); rangUmschalten(); });
+document.getElementById('rangNameBtn').addEventListener('click', rangNameFeldZeigen);
+document.getElementById('rangNameOk').addEventListener('click', rangNameSpeichern);
+document.getElementById('rangNameInput').addEventListener('keydown',
+  e => { if (e.key === 'Enter') rangNameSpeichern(); });
+
+// ---- 🏷️ Das Namensfeld auf der Startseite ----
+(() => {
+  const feld = document.getElementById('nameInput');
+  const hinweis = document.getElementById('nameHinweis');
+  feld.value = spitzname();
+  punkteLesen();
+  try { rangOffen = localStorage.getItem(RANG_OFFEN_KEY) !== '0'; } catch(e) { rangOffen = true; }
+  feld.addEventListener('input', () => {
+    const f = namePruefen(feld.value);
+    hinweis.textContent = feld.value.trim()
+      ? (f || '✅ Der Name ist gut!')
+      : 'Bitte nicht deinen echten Namen! 🙂';
+    hinweis.className = (feld.value.trim() && f) ? 'warn' : '';
+  });
+})();
+// Vor dem Spielen MUSS ein Spitzname dastehen.
+function startNamePruefen() {
+  const feld = document.getElementById('nameInput');
+  const hinweis = document.getElementById('nameHinweis');
+  const fehler = namePruefen(feld.value);
+  if (fehler) {
+    hinweis.textContent = fehler; hinweis.className = 'warn';
+    feld.focus();
+    try { feld.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],
+                       {duration:260}); } catch(e) {}
+    return false;
+  }
+  spitznameSetzen(feld.value);
+  return true;
+}
 document.getElementById('playBtn').addEventListener('click',()=>{
+  if (!startNamePruefen()) return;
   const saved=loadGame();
   if (saved) {
     player.x=saved.x; player.y=saved.y; player.z=saved.z;
@@ -30366,6 +30732,9 @@ document.getElementById('playBtn').addEventListener('click',()=>{
         'Startbildschirm auf 🛟 Sicherung zurückholen!', 15000), 3000);
   } catch(e) {}
   saveGame();                           // beim Start sofort speichern
+  rangSichtbar = true;                  // 🏆 ab jetzt steht die Rangliste am Rand
+  rangStellen();
+  setTimeout(() => { rangLaden(true); rangSenden(true); }, 1500);
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
     // ... und als richtige Datei herunterladen – die ist sicher, egal was passiert!
@@ -31518,6 +31887,8 @@ function kopfKnoepfeOrdnen() {
   const unten = 12 + (best.reihen-1)*best.abst + best.gr;   // hier hört die Knopf-Reihe auf
   const schieb = (id, plus) => { const e = document.getElementById(id);
     if (e) e.style.top = 'calc(' + (unten + plus) + 'px + env(safe-area-inset-top))'; };
+  schieb('rangBox', 0);                 // 🏆 die Rangliste
+  try { rangPlatz(); } catch(e) {}      // ... und neu ausmessen, was sie darf
   schieb('missBox', 0);                 // 📜 der Aufgaben-Kasten
   schieb('superBox', 4);                // 💥 die Super-Anzeige
   schieb('filmRec', 8);                 // 🔴 das Aufnahme-Lämpchen
