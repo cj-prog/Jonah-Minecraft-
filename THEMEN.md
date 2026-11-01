@@ -84,6 +84,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **8 – Geld verdienen mit JonahCraft** · in Arbeit (Gespräch, kein Bauauftrag) · neue Session
   „8 Geld verdienen mit JonahCraft" vom Manager gestartet am 01.11. (`session_01ENoEgaWL1MYrLnYWcfT6Te`)
   · nichts ändern/pushen/anmelden; Ergebnisse meldet sie dem Manager.
+  Zwischenstand 01.11.: Bezahlen ist zurückgestellt – Jonah ist wichtiger, dass überhaupt Leute
+  spielen. Weiter im Gespräch: Wege, Spieler zu finden, und wie Updates laufen sollen. Noch
+  nichts zu bauen.
 - **10 – Startbildschirm zu groß** · in Arbeit · Meldung von Jonah (01.11.): Neuigkeiten und
   Steuerung sind zu groß, der Spielen-Knopf ist schwer zu treffen · an Session 1 gegeben, Vorrang
   vor Thema 9 · Meldung in `meldungen/1.md` abwarten.
