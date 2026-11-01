@@ -57,6 +57,8 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- 🎨🤖 **Dein gemaltes Wesen wird genau verstanden:** Schreib frei hin, was es kann, wie groß es ist und wie viele es geben soll – mit KI-Schlüssel liest Claude deinen Satz durch, und im Fenster „So habe ich dein Wesen verstanden!“ siehst du vorher genau, was angekommen ist (und was noch nicht geht)
+- 💰 Das Spiel fragt die KI überall mit dem kleinen, günstigen Modell – auch in den Chats mit Fred und Lucy. So bleiben die Kosten winzig.
 - Zufällig erzeugte 3D-Welt: Hügel, Strände, Seen, Bäume und Dörfer 🌳🏘️
 - Tiere: Schweine 🐷 und Kühe 🐮 laufen durch die Welt (und hüpfen bei Explosionen!)
 - Schafe! 🐑 Flauschige weiße Schafe geben Wolle: Antippen schert sie
