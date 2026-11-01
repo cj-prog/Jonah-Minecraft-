@@ -57,6 +57,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- 🏆 **Online-Rangliste:** Vor dem Spielen gibst du einen Spitznamen ein (bitte nicht deinen echten Namen!). Am linken Rand stehen dann die besten zehn Spieler mit ihren Punkten – dein eigener Eintrag ist hervorgehoben. Punkte gibt es fürs Abbauen und Bauen von Blöcken. Die Liste lässt sich einklappen, und ohne Internet spielst du einfach ganz normal weiter
 - 🚪🏰 **Riesentore in der Riesenburg:** Vor jedem Zimmer steht jetzt ein riesiges Tor, das die ganze Tür bedeckt. Antippen zieht es hoch wie ein Fallgitter – oben bleibt ein Stück stehen, das tippst du an, damit es wieder herunterfällt. Deine Diener kommen trotzdem überall hin
 - 🟢 **Der Startbildschirm ist aufgeräumt:** Dort steht jetzt nur noch, **wie man spielt**. Die Neuigkeiten sind ganz weg, die Versionsnummer steht klein unten – und der grüne Spielen-Knopf ist auf jedem Bildschirm sofort da und gut zu treffen
 - 🎨🤖 **Dein gemaltes Wesen wird genau verstanden:** Schreib frei hin, was es kann, wie groß es ist und wie viele es geben soll – mit KI-Schlüssel liest Claude deinen Satz durch, und im Fenster „So habe ich dein Wesen verstanden!“ siehst du vorher genau, was angekommen ist (und was noch nicht geht)
