@@ -89,9 +89,48 @@
     font-size:24px; background:rgba(90,150,240,.45);
     border-color:rgba(190,220,255,.75); }
   #tpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
-    align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
-    color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
+    align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:12px 14px; border-radius:14px;
+    /* ueber der Rangliste (49) - sonst deckt sie auf dem Handy quer die
+       linke Haelfte der Ziele zu (im Screenshot gesehen) */
+    color:#fff; z-index:55; text-align:center; max-height:92vh; overflow-y:auto;
+    width:min(94vw,440px); box-sizing:border-box;
     border:3px solid rgba(90,225,255,.7); }
+  /* 🛸 DIE ZIEL-LISTE: Jonah hat gemeldet, dass er hier kaum scrollen kann und
+     dauernd aus Versehen ein falsches Ziel trifft. Darum: die Liste ist der
+     Scroll-Bereich, sie ist breit und hoch, hat links und rechts einen Rand
+     zum Anfassen, und die Einträge sind groß und stehen weit auseinander. */
+  #tpListe { width:100%; box-sizing:border-box; max-height:min(52vh,400px);
+    overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    display:flex; flex-direction:column; gap:9px; padding:4px 10px;
+    background:rgba(0,0,0,.22); border-radius:11px; }
+  #tpListe .senderRow { width:100%; min-width:0; box-sizing:border-box;
+    font-size:16px; padding:13px 14px; text-align:left; margin:0; }
+  #tpSucheReihe { width:100%; display:flex; gap:6px; align-items:center; }
+  #tpSuche { flex:1 1 auto; min-width:0; font-size:15px; padding:9px 12px;
+    border-radius:10px; border:2px solid rgba(255,255,255,.35);
+    background:rgba(0,0,0,.3); color:#fff; }
+  #tpSuche::placeholder { color:rgba(255,255,255,.55); }
+  #tpLeer { font-size:14px; opacity:.85; padding:10px; }
+  /* ✏️ Die Koordinaten-Eingabe braucht man selten. Auf flachen Bildschirmen
+     klappt sie weg, damit die ZIELE den Platz bekommen. */
+  #tpMehr { display:none; font-size:13px; padding:7px 14px; border-radius:9px;
+    border:none; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  #tpBox.koordZu #tpEigen, #tpBox.koordZu #tpEigenGo { display:none; }
+  /* 📱 Handy QUER: wenig Höhe. Dann wird alles um die Liste herum kleiner,
+     damit für die Ziele selbst genug Platz bleibt (sonst blieben nur zwei
+     Einträge sichtbar - im Test gemessen). */
+  @media (max-height: 540px) {
+    #tpBox { padding:8px 10px; gap:4px; max-height:96vh; }
+    #tpBox h3 { font-size:15px; margin:0; }
+    #tpBox p { display:none; }         /* der Erklärsatz kostet nur Platz */
+    #tpMehr { display:block; }
+    #tpListe { max-height:70vh; gap:7px; padding:3px 9px; }
+    #tpListe .senderRow { font-size:14px; padding:10px 12px; }
+    #tpSuche { font-size:13px; padding:6px 10px; }
+    #tpEigen input { font-size:13px; padding:5px 8px; }
+    #tpEigenGo { font-size:13px; padding:7px 12px; }
+    #tpClose { font-size:13px; padding:5px 14px; }
+  }
   /* 🧮 Das Einmaleins-Fenster: es legt sich ueber ALLES und pausiert das Spiel */
   #matheBox { left:0; top:0; width:100%; height:100%; display:none;
     flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -1560,7 +1599,9 @@
 <div class="hud" id="tpBox">
   <h3>🛸 Teleport-Station</h3>
   <p id="tpText">Wohin soll es gehen, Jonah? Tipp ein Ziel an - zack, bist du da!</p>
+  <div id="tpSucheReihe"><input id="tpSuche" placeholder="🔎 Suchen … z. B. Burg"></div>
   <div id="tpListe"></div>
+  <button id="tpMehr">✏️ Eigene Koordinaten</button>
   <div id="tpEigen">
     <input id="tpX" type="number" step="1" inputmode="numeric" placeholder="X">
     <input id="tpZ" type="number" step="1" inputmode="numeric" placeholder="Z">
@@ -1921,7 +1962,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 307</div>
+    <div id="verZeile">Version 308</div>
   </div>
 </div>
 
@@ -1943,7 +1984,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 307;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 308;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -24165,6 +24206,36 @@ function teleportZu(zx, zz, label) {
   toast('🛸✨ ZACK! Du bist bei „' + label + '"  (X ' + bx + ' / Z ' + bz + ')', 3200);
   scheduleSave();
 }
+// 👆 TIPPEN UND WISCHEN AUSEINANDERHALTEN
+// Vorher hing am Ziel ein "touchstart" mit preventDefault: Es löste schon
+// beim BERÜHREN aus und verhinderte obendrein das Scrollen - genau Jonahs
+// Ärger ("ich muss auf diesen Dingen scrollen" / "drücke aus Versehen drauf").
+// Jetzt zählt nur ein kurzer Tipp, der sich kaum bewegt hat. Sobald der
+// Finger wischt, ist es Scrollen und es passiert gar nichts.
+const TIPP_WEG = 10, TIPP_ZEIT = 300;   // höchstens 10 Pixel, höchstens 300 ms
+function tippOhneWischen(el, tun) {
+  let sx = 0, sy = 0, st = 0, gewischt = false, letzterTouch = 0;
+  el.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    sx = t.clientX; sy = t.clientY; st = Date.now(); gewischt = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (Math.abs(t.clientX - sx) > TIPP_WEG || Math.abs(t.clientY - sy) > TIPP_WEG)
+      gewischt = true;
+  }, { passive: true });
+  el.addEventListener('touchcancel', () => { gewischt = true; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    letzterTouch = Date.now();
+    if (gewischt || letzterTouch - st > TIPP_ZEIT) return;   // gewischt = scrollen
+    e.preventDefault();                 // kein Geister-Klick hinterher
+    tun();
+  }, { passive: false });
+  el.addEventListener('click', () => {  // Maus am Rechner
+    if (Date.now() - letzterTouch < 700) return;
+    tun();
+  });
+}
 function openTeleport() {
   if (!started) return;
   const liste = document.getElementById('tpListe');
@@ -24173,21 +24244,44 @@ function openTeleport() {
   const px = Math.round(player.x), pz = Math.round(player.z);
   document.getElementById('tpText').textContent =
     'Du stehst bei X ' + px + ' / Z ' + pz + '. Wohin soll es gehen, Jonah?';
-  for (const [text, zx, zz] of ziele) {
-    const el = document.createElement('div');
-    el.className = 'senderRow';
-    const d = Math.round(Math.hypot(zx-px, zz-pz));
-    el.textContent = text + (d === 1 ? '  (1 Block)' : '  (' + d + ' Blöcke)');
-    const w = () => teleportZu(zx, zz, text);
-    el.addEventListener('click', w);
-    el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
-    liste.appendChild(el);
-  }
+  tpZiele = ziele; tpPx = px; tpPz = pz;
+  document.getElementById('tpSuche').value = '';
+  tpListeMalen();
   document.getElementById('tpX').value = px;
   document.getElementById('tpZ').value = pz;
-  document.getElementById('tpBox').style.display = 'flex';
+  const box = document.getElementById('tpBox');
+  // 📱 Auf flachen Bildschirmen ist die Koordinaten-Eingabe erst mal zu
+  box.classList.toggle('koordZu', innerHeight <= 540);
+  box.style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
   blip(700,0.06); blip(900,0.08);
+}
+// 🔎 Die Liste hinmalen - und bei vielen Zielen kann Jonah oben suchen.
+let tpZiele = [], tpPx = 0, tpPz = 0;
+function tpListeMalen() {
+  const liste = document.getElementById('tpListe');
+  liste.innerHTML = '';
+  const suche = (document.getElementById('tpSuche').value || '').trim().toLowerCase();
+  let n = 0;
+  for (const [text, zx, zz] of tpZiele) {
+    if (suche && text.toLowerCase().indexOf(suche) < 0) continue;
+    n++;
+    const el = document.createElement('div');
+    el.className = 'senderRow';
+    const d = Math.round(Math.hypot(zx - tpPx, zz - tpPz));
+    el.textContent = text + (d === 1 ? '  (1 Block)' : '  (' + d + ' Blöcke)');
+    tippOhneWischen(el, () => teleportZu(zx, zz, text));
+    liste.appendChild(el);
+  }
+  if (!n) {
+    const leer = document.createElement('div');
+    leer.id = 'tpLeer';
+    leer.textContent = '🔎 Dazu finde ich kein Ziel. Lösch die Suche, dann siehst du wieder alle!';
+    liste.appendChild(leer);
+  }
+  // Das Suchfeld kommt erst, wenn die Liste wirklich lang ist
+  document.getElementById('tpSucheReihe').style.display =
+    (tpZiele.length > 6 || suche) ? 'flex' : 'none';
 }
 
 const thronBox = document.getElementById('thronBox');
@@ -24715,6 +24809,9 @@ document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.s
 }
 // 🛸 der Teleport-Knopf und das eigene Wunsch-Ziel
 {
+  document.getElementById('tpSuche').addEventListener('input', tpListeMalen);
+  document.getElementById('tpMehr').addEventListener('click', () => {
+    document.getElementById('tpBox').classList.toggle('koordZu'); blip(620, 0.05); });
   const tb = document.getElementById('tpBtn');
   tb.addEventListener('touchstart', e=>{ e.preventDefault(); openTeleport(); }, {passive:false});
   tb.addEventListener('mousedown',  e=>{ e.preventDefault(); openTeleport(); });

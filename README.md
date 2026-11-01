@@ -57,6 +57,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- 🛸 **Die Teleport-Liste lässt sich endlich scrollen:** Große Ziele mit Abstand, Wischen scrollt (und teleportiert nicht mehr aus Versehen!), und bei vielen Zielen gibt es oben eine Suche
 - 🙋 **Jonahs Sachen sind Jonahs Sachen:** Die englischen Freunde, der 📚-Knopf zur Englisch-App und die Mathe- und Englisch-Aufgaben gibt es nur auf Jonahs Gerät. Alle anderen Spieler bauen einfach drauflos
 - 🌪️ **Der Geld-Sauger ist wieder da:** In alten Spielständen fehlte er neben der Geld-Schütte. Das Spiel merkt das jetzt selbst und stellt ihn zurück – lag dort Geld, kommt es vorher in den Geldbeutel
 - 🎯 **Punkte für alles Mögliche:** Block abbauen, Geld sammeln, hoch bauen (je höher, desto mehr!), Tiere zähmen, Monster, Räuber und Riesen besiegen. Unter „❓ So bekommst du Punkte“ steht die ganze Tabelle. In der Rangliste stehst **du ganz oben**, darunter alle, die **gerade mitspielen**
