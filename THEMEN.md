@@ -102,9 +102,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **12 – Hinweise beim ersten Spielen** · in Arbeit · Wunsch von Jonah (01.11.): neue Spieler
   bekommen beim ersten Mal Schritt-für-Schritt-Hinweise (überspringbar, später wieder abrufbar)
   · an Session 1 gegeben (nach Thema 11) · Meldung in `meldungen/1.md` abwarten.
-- **13 – Englische Freunde nur für Jonah** · in Arbeit · Wunsch von Jonah (01.11.): andere Spieler
-  sollen nicht mit Jonahs englischen Freunden reden können · an Session 1 gegeben · offen: Frage
-  an Jonah, ob 📚-Knopf und Mathe-/Englisch-Aufgaben für andere auch weg sollen.
+- **13 – Jonahs Sachen nur für Jonah** (englische Freunde, 📚-Knopf, Lern-Aufgaben) · in Arbeit · Wunsch von Jonah (01.11.): andere Spieler
+  sollen nicht mit Jonahs englischen Freunden reden können; dazu (Jonah, 01.11.) für andere auch
+  kein 📚-Knopf und keine Mathe-/Englisch-Aufgaben · an Session 1 gegeben.
 - **14 – Knöpfe auf kleinen Handys** · in Arbeit · Meldung von Jonah (01.11.): auf kleinen Handys
   versperren die Knöpfe die Sicht → nur wichtige Knöpfe sichtbar, Rest im „⋯"-Menü · an Session 1.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
