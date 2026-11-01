@@ -114,6 +114,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   kein 📚-Knopf und keine Mathe-/Englisch-Aufgaben · an Session 1 gegeben.
 - **14 – Knöpfe auf kleinen Handys** · in Arbeit · Meldung von Jonah (01.11.): auf kleinen Handys
   versperren die Knöpfe die Sicht → nur wichtige Knöpfe sichtbar, Rest im „⋯"-Menü · an Session 1.
+- **16 – Spielgeld für Punkte** · in Arbeit · Wunsch von Jonah (01.11.): je 100 Punkte Spielgeld,
+  bei 1000 Punkten mehr (Vorschlag 20 € / +250 €, änderbar); Belohnungsgeld bringt keine Punkte
+  · an Session 1 gegeben.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
