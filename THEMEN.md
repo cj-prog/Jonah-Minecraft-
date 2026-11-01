@@ -111,6 +111,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   kein 📚-Knopf und keine Mathe-/Englisch-Aufgaben · an Session 1 gegeben.
 - **14 – Knöpfe auf kleinen Handys** · in Arbeit · Meldung von Jonah (01.11.): auf kleinen Handys
   versperren die Knöpfe die Sicht → nur wichtige Knöpfe sichtbar, Rest im „⋯"-Menü · an Session 1.
+- **15 – Geld-Sauger fehlt** · in Arbeit, dringend · Meldung von Jonah (01.11.): hinter der
+  Tresortür steht nur die Geld-Schütte, der Geld-Sauger (v264) ist weg · an Session 1 mit
+  Vorrang gegeben.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
