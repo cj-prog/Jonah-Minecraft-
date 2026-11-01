@@ -91,7 +91,7 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **10 – Startbildschirm zu groß** · in Arbeit · Meldung von Jonah (01.11.): Neuigkeiten und
   Steuerung sind zu groß, der Spielen-Knopf ist schwer zu treffen · an Session 1 gegeben, Vorrang
   vor Thema 9 · Ergänzung 01.11. (Jonah über Session 8): Neuigkeiten ganz weg, nur noch „wie man
-  spielt" (Steuerung sichtbar); Versionsnummer: Antwort von Jonah folgt (bis dahin klein unten) ·
+  spielt" (Steuerung sichtbar); Versionsnummer bleibt klein („Version 300", Jonah 01.11.) ·
   Meldung in `meldungen/1.md` abwarten.
 - **9 – Riesige Tore in der Riesenburg** · in Arbeit · Wunsch von Jonah (01.11.): in jede offene
   Tür-Öffnung der Riesenburg ein großes Tor, das die ganze Öffnung bedeckt; Antippen öffnet und
