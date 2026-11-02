@@ -48,6 +48,55 @@
   }
   .btn { display:flex; align-items:center; justify-content:center; border-radius:50%;
     background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.5); color:#fff; font-size:26px; }
+  /* ⋯ AUF KLEINEN BILDSCHIRMEN IST DIE SICHT WICHTIGER ALS DIE KNÖPFE
+     Jonah: "Wenn die auf dem Handy spielen, das Handy ist manchmal zu klein,
+     und die Knöpfe, die etwas weiter weg sind, versperren die ganze Sicht."
+     Darum bleiben dort nur Springen, Abbauen/Bauen und die Blockleiste
+     stehen - alles andere wandert in dieses Menü. */
+  /* 👋 DIE HINWEISE BEIM ERSTEN SPIELEN
+     Ein kleiner Kasten oben in der Mitte - unter der Knopfreihe, neben der
+     Rangliste, weit weg vom Joystick (linke Hälfte) und von der Blockleiste. */
+  /* Berührungen gehen DURCH den Kasten hindurch - nur die Knöpfe fangen sie
+     ab. So stört er den Joystick auf der linken Hälfte überhaupt nicht. */
+  #tippBox { display:none; left:50%; transform:translateX(-50%); pointer-events:none;
+    flex-direction:column; align-items:center; gap:7px; z-index:47;
+    background:rgba(16,22,44,.93); border:3px solid #ffd34a; border-radius:14px;
+    padding:10px 14px; color:#fff; width:min(70vw,380px); box-sizing:border-box;
+    text-align:center; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+  #tippText { font-size:15px; line-height:1.45; font-weight:bold; }
+  #tippZahl { font-size:11px; opacity:.75; }
+  #tippReihe { display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+    pointer-events:auto; }
+  #tippWeiter { font-size:14px; font-weight:bold; padding:8px 18px; border-radius:10px;
+    border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
+  #tippSkip { font-size:12px; padding:7px 12px; border-radius:9px; border:none;
+    background:rgba(255,255,255,.2); color:#fff; cursor:pointer; }
+  #tippNochmal { font-size:13px; color:#fff; background:rgba(0,0,0,.3);
+    border:1px solid rgba(255,255,255,.5); border-radius:9px; padding:7px 14px;
+    cursor:pointer; flex:0 0 auto; }
+  @media (max-height: 540px) {
+    #tippBox { padding:7px 11px; gap:5px; width:min(74vw,330px); }
+    #tippText { font-size:13px; line-height:1.3; }
+    #tippWeiter { font-size:13px; padding:6px 14px; }
+    #tippSkip { font-size:11px; padding:5px 10px; }
+  }
+  #menuBtn { display:none; right:calc(12px + env(safe-area-inset-right));
+    top:calc(12px + env(safe-area-inset-top)); width:42px; height:42px;
+    font-size:24px; z-index:53; background:rgba(0,0,0,.45); }
+  #kleinMenu { display:none; left:50%; top:50%; transform:translate(-50%,-50%);
+    flex-direction:column; gap:10px; z-index:58; background:rgba(8,14,30,.96);
+    border:3px solid rgba(255,255,255,.45); border-radius:16px; padding:12px;
+    width:min(94vw,440px); max-height:92vh; overflow-y:auto; box-sizing:border-box; }
+  #kleinMenuKopf { color:#fff; font-size:15px; font-weight:bold; text-align:center; }
+  #kleinMenuGitter { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  #kleinMenuGitter .btn.imMenu { position:static !important; width:46px !important;
+    height:46px !important; font-size:23px !important; margin:0 !important;
+    left:auto !important; right:auto !important; top:auto !important; bottom:auto !important;
+    flex:0 0 auto; opacity:1; }
+  #kleinMenuZu { font-size:15px; font-weight:bold; padding:10px; border-radius:11px;
+    border:none; background:#4caf50; color:#fff; cursor:pointer; }
+  /* die übrig gebliebenen Knöpfe etwas durchsichtiger, damit man durchsieht */
+  body.klein #jumpBtn, body.klein #modeBtn { opacity:.78; }
   /* alle Raster-Knöpfe sind gleich groß */
   #modeBtn, #rideBtn, #fireBtn, #flyBtn, #rufBtn, #faustBtn, #superBtn, #kroneBtn,
   #zepterBtn, #groesseBtn, #tpBtn, #schlachtBtn, #halleBtn, #msgrBtn, #brushBtn, #lassoBtn {
@@ -89,9 +138,48 @@
     font-size:24px; background:rgba(90,150,240,.45);
     border-color:rgba(190,220,255,.75); }
   #tpBox { left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column;
-    align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:14px 18px; border-radius:14px;
-    color:#fff; z-index:40; text-align:center; max-height:86vh; overflow-y:auto;
+    align-items:center; gap:7px; background:rgba(8,26,44,.96); padding:12px 14px; border-radius:14px;
+    /* ueber der Rangliste (49) - sonst deckt sie auf dem Handy quer die
+       linke Haelfte der Ziele zu (im Screenshot gesehen) */
+    color:#fff; z-index:55; text-align:center; max-height:92vh; overflow-y:auto;
+    width:min(94vw,440px); box-sizing:border-box;
     border:3px solid rgba(90,225,255,.7); }
+  /* 🛸 DIE ZIEL-LISTE: Jonah hat gemeldet, dass er hier kaum scrollen kann und
+     dauernd aus Versehen ein falsches Ziel trifft. Darum: die Liste ist der
+     Scroll-Bereich, sie ist breit und hoch, hat links und rechts einen Rand
+     zum Anfassen, und die Einträge sind groß und stehen weit auseinander. */
+  #tpListe { width:100%; box-sizing:border-box; max-height:min(52vh,400px);
+    overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    display:flex; flex-direction:column; gap:9px; padding:4px 10px;
+    background:rgba(0,0,0,.22); border-radius:11px; }
+  #tpListe .senderRow { width:100%; min-width:0; box-sizing:border-box;
+    font-size:16px; padding:13px 14px; text-align:left; margin:0; }
+  #tpSucheReihe { width:100%; display:flex; gap:6px; align-items:center; }
+  #tpSuche { flex:1 1 auto; min-width:0; font-size:15px; padding:9px 12px;
+    border-radius:10px; border:2px solid rgba(255,255,255,.35);
+    background:rgba(0,0,0,.3); color:#fff; }
+  #tpSuche::placeholder { color:rgba(255,255,255,.55); }
+  #tpLeer { font-size:14px; opacity:.85; padding:10px; }
+  /* ✏️ Die Koordinaten-Eingabe braucht man selten. Auf flachen Bildschirmen
+     klappt sie weg, damit die ZIELE den Platz bekommen. */
+  #tpMehr { display:none; font-size:13px; padding:7px 14px; border-radius:9px;
+    border:none; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  #tpBox.koordZu #tpEigen, #tpBox.koordZu #tpEigenGo { display:none; }
+  /* 📱 Handy QUER: wenig Höhe. Dann wird alles um die Liste herum kleiner,
+     damit für die Ziele selbst genug Platz bleibt (sonst blieben nur zwei
+     Einträge sichtbar - im Test gemessen). */
+  @media (max-height: 540px) {
+    #tpBox { padding:8px 10px; gap:4px; max-height:96vh; }
+    #tpBox h3 { font-size:15px; margin:0; }
+    #tpBox p { display:none; }         /* der Erklärsatz kostet nur Platz */
+    #tpMehr { display:block; }
+    #tpListe { max-height:70vh; gap:7px; padding:3px 9px; }
+    #tpListe .senderRow { font-size:14px; padding:10px 12px; }
+    #tpSuche { font-size:13px; padding:6px 10px; }
+    #tpEigen input { font-size:13px; padding:5px 8px; }
+    #tpEigenGo { font-size:13px; padding:7px 12px; }
+    #tpClose { font-size:13px; padding:5px 14px; }
+  }
   /* 🧮 Das Einmaleins-Fenster: es legt sich ueber ALLES und pausiert das Spiel */
   #matheBox { left:0; top:0; width:100%; height:100%; display:none;
     flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -394,6 +482,9 @@
     background:rgba(255,255,255,.08); border-radius:9px; padding:5px 9px; }
   .pHzeile span:first-child { flex:1 1 auto; }
   .pHzeile b { color:#ffe09a; }
+  .pHzeile.geld { background:rgba(120,220,150,.18); }
+  .pHzeile.geld b { color:#9ef0b4; }
+  #pHtrenn { height:2px; background:rgba(255,255,255,.22); margin:4px 0 2px; }
   #punkteHilfeZu { font-size:16px; font-weight:bold; padding:11px; border-radius:12px;
     border:none; background:#2e9e4a; color:#fff; cursor:pointer; }
   #rangNeu { display:none; gap:4px; }
@@ -1274,6 +1365,20 @@
 <div class="hud btn" id="kroneBtn" style="display:none" title="Krone auf- und absetzen">👑</div>
 <div class="hud btn" id="zepterBtn" style="display:none" title="Zauber-Zepter">🪄</div>
 <div class="hud btn" id="tpBtn" title="Teleport - wohin soll es gehen?">🛸</div>
+<div class="hud btn" id="menuBtn" title="Alle Knöpfe">⋯</div>
+<div class="hud" id="tippBox">
+  <div id="tippZahl"></div>
+  <div id="tippText"></div>
+  <div id="tippReihe">
+    <button id="tippWeiter">Weiter ▸</button>
+    <button id="tippSkip">Überspringen</button>
+  </div>
+</div>
+<div class="hud" id="kleinMenu">
+  <div id="kleinMenuKopf">⋯ Alle Knöpfe</div>
+  <div id="kleinMenuGitter"></div>
+  <button id="kleinMenuZu">✅ Zu – weiterspielen!</button>
+</div>
 <div class="hud btn" id="schlachtBtn" style="display:none" title="Die große Schlacht">⚔️</div>
 <div class="hud btn" id="halleBtn" style="display:none" title="Die Halle der Aufgaben">🏟️</div>
 <div class="hud btn" id="msgrBtn" title="Deine englischen Freunde">📱<span id="msgrPunkt">0</span></div>
@@ -1560,7 +1665,9 @@
 <div class="hud" id="tpBox">
   <h3>🛸 Teleport-Station</h3>
   <p id="tpText">Wohin soll es gehen, Jonah? Tipp ein Ziel an - zack, bist du da!</p>
+  <div id="tpSucheReihe"><input id="tpSuche" placeholder="🔎 Suchen … z. B. Burg"></div>
   <div id="tpListe"></div>
+  <button id="tpMehr">✏️ Eigene Koordinaten</button>
   <div id="tpEigen">
     <input id="tpX" type="number" step="1" inputmode="numeric" placeholder="X">
     <input id="tpZ" type="number" step="1" inputmode="numeric" placeholder="Z">
@@ -1907,6 +2014,7 @@
       <span>1–8: Block wählen</span>
     </div>
   </div>
+  <button id="tippNochmal">ℹ️ Hinweise noch mal zeigen</button>
   </div>
   <div id="startUnten">
     <div id="nameBox">
@@ -1921,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 306</div>
+    <div id="verZeile">Version 311</div>
   </div>
 </div>
 
@@ -1943,7 +2051,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 306;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 311;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -16341,6 +16449,7 @@ function freundeTick(dt) {
 function msgrKnopf() {
   const b = document.getElementById('msgrBtn'), p = document.getElementById('msgrPunkt');
   if (!b || !p) return;
+  if (!jonahsGeraet()) { b.style.display = 'none'; p.style.display = 'none'; return; }
   const n = engUngelesen().length;
   p.textContent = n;
   p.style.display = n ? 'flex' : 'none';
@@ -24164,6 +24273,36 @@ function teleportZu(zx, zz, label) {
   toast('🛸✨ ZACK! Du bist bei „' + label + '"  (X ' + bx + ' / Z ' + bz + ')', 3200);
   scheduleSave();
 }
+// 👆 TIPPEN UND WISCHEN AUSEINANDERHALTEN
+// Vorher hing am Ziel ein "touchstart" mit preventDefault: Es löste schon
+// beim BERÜHREN aus und verhinderte obendrein das Scrollen - genau Jonahs
+// Ärger ("ich muss auf diesen Dingen scrollen" / "drücke aus Versehen drauf").
+// Jetzt zählt nur ein kurzer Tipp, der sich kaum bewegt hat. Sobald der
+// Finger wischt, ist es Scrollen und es passiert gar nichts.
+const TIPP_WEG = 10, TIPP_ZEIT = 300;   // höchstens 10 Pixel, höchstens 300 ms
+function tippOhneWischen(el, tun) {
+  let sx = 0, sy = 0, st = 0, gewischt = false, letzterTouch = 0;
+  el.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    sx = t.clientX; sy = t.clientY; st = Date.now(); gewischt = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (Math.abs(t.clientX - sx) > TIPP_WEG || Math.abs(t.clientY - sy) > TIPP_WEG)
+      gewischt = true;
+  }, { passive: true });
+  el.addEventListener('touchcancel', () => { gewischt = true; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    letzterTouch = Date.now();
+    if (gewischt || letzterTouch - st > TIPP_ZEIT) return;   // gewischt = scrollen
+    e.preventDefault();                 // kein Geister-Klick hinterher
+    tun();
+  }, { passive: false });
+  el.addEventListener('click', () => {  // Maus am Rechner
+    if (Date.now() - letzterTouch < 700) return;
+    tun();
+  });
+}
 function openTeleport() {
   if (!started) return;
   const liste = document.getElementById('tpListe');
@@ -24172,21 +24311,44 @@ function openTeleport() {
   const px = Math.round(player.x), pz = Math.round(player.z);
   document.getElementById('tpText').textContent =
     'Du stehst bei X ' + px + ' / Z ' + pz + '. Wohin soll es gehen, Jonah?';
-  for (const [text, zx, zz] of ziele) {
-    const el = document.createElement('div');
-    el.className = 'senderRow';
-    const d = Math.round(Math.hypot(zx-px, zz-pz));
-    el.textContent = text + (d === 1 ? '  (1 Block)' : '  (' + d + ' Blöcke)');
-    const w = () => teleportZu(zx, zz, text);
-    el.addEventListener('click', w);
-    el.addEventListener('touchstart', e=>{ e.preventDefault(); w(); }, {passive:false});
-    liste.appendChild(el);
-  }
+  tpZiele = ziele; tpPx = px; tpPz = pz;
+  document.getElementById('tpSuche').value = '';
+  tpListeMalen();
   document.getElementById('tpX').value = px;
   document.getElementById('tpZ').value = pz;
-  document.getElementById('tpBox').style.display = 'flex';
+  const box = document.getElementById('tpBox');
+  // 📱 Auf flachen Bildschirmen ist die Koordinaten-Eingabe erst mal zu
+  box.classList.toggle('koordZu', innerHeight <= 540);
+  box.style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
   blip(700,0.06); blip(900,0.08);
+}
+// 🔎 Die Liste hinmalen - und bei vielen Zielen kann Jonah oben suchen.
+let tpZiele = [], tpPx = 0, tpPz = 0;
+function tpListeMalen() {
+  const liste = document.getElementById('tpListe');
+  liste.innerHTML = '';
+  const suche = (document.getElementById('tpSuche').value || '').trim().toLowerCase();
+  let n = 0;
+  for (const [text, zx, zz] of tpZiele) {
+    if (suche && text.toLowerCase().indexOf(suche) < 0) continue;
+    n++;
+    const el = document.createElement('div');
+    el.className = 'senderRow';
+    const d = Math.round(Math.hypot(zx - tpPx, zz - tpPz));
+    el.textContent = text + (d === 1 ? '  (1 Block)' : '  (' + d + ' Blöcke)');
+    tippOhneWischen(el, () => teleportZu(zx, zz, text));
+    liste.appendChild(el);
+  }
+  if (!n) {
+    const leer = document.createElement('div');
+    leer.id = 'tpLeer';
+    leer.textContent = '🔎 Dazu finde ich kein Ziel. Lösch die Suche, dann siehst du wieder alle!';
+    liste.appendChild(leer);
+  }
+  // Das Suchfeld kommt erst, wenn die Liste wirklich lang ist
+  document.getElementById('tpSucheReihe').style.display =
+    (tpZiele.length > 6 || suche) ? 'flex' : 'none';
 }
 
 const thronBox = document.getElementById('thronBox');
@@ -24714,6 +24876,9 @@ document.getElementById('thronClose').addEventListener('click', ()=>{ thronBox.s
 }
 // 🛸 der Teleport-Knopf und das eigene Wunsch-Ziel
 {
+  document.getElementById('tpSuche').addEventListener('input', tpListeMalen);
+  document.getElementById('tpMehr').addEventListener('click', () => {
+    document.getElementById('tpBox').classList.toggle('koordZu'); blip(620, 0.05); });
   const tb = document.getElementById('tpBtn');
   tb.addEventListener('touchstart', e=>{ e.preventDefault(); openTeleport(); }, {passive:false});
   tb.addEventListener('mousedown',  e=>{ e.preventDefault(); openTeleport(); });
@@ -27831,6 +27996,9 @@ function vokStufeCheck() {
   return false;
 }
 function matheTick(dt) {
+  // 🙋 Die Rechen- und Englisch-Aufgaben sind Jonahs Sache - die anderen
+  // Spieler sollen einfach bauen können.
+  if (!jonahsGeraet()) return;
   if (mathePause || !started || flugT > 0) return;   // nicht mitten im Raketenflug
   matheGespielt += dt;
   // Ist gerade eine neue Takt-Stufe erreicht? Dann sagen wir Bescheid - sonst
@@ -28375,7 +28543,7 @@ function hitEntity(a, dir) {
     if (flying) toggleFly();
     riding = a; a.walking = false;
     if (!a.tame) { a.tame=true; a.sit=false; missEvent('zaehm'); challEvent('tier');
-                   punkteGeben('tierGezaehmt'); scheduleSave(); }
+                   punkteGeben('tierGezaehmt'); tippGetan.tier++; scheduleSave(); }
     document.getElementById('rideBtn').style.display='flex';
     toast('🐴 Hüa! Absteigen mit dem 🐴-Knopf. Dein Pferd folgt dir jetzt!');
     blip(440,0.08); blip(587,0.08);
@@ -28481,7 +28649,7 @@ function hitEntity(a, dir) {
   if (isPet(a)) {                       // Tiere zähmen!
     if (!a.tame) {
       a.tame = true; a.sit = false; missEvent('zaehm'); challEvent('tier');
-      punkteGeben('tierGezaehmt');
+      punkteGeben('tierGezaehmt'); tippGetan.tier++;
       if (a.type!=='bird') { a.vy = 4.5; a.onGround = false; }
       toast(TAME_MSG[a.type]);
       const s = TAME_SOUND[a.type];
@@ -29993,8 +30161,8 @@ function touchEnd(e){
         if (placeMode) doPlace(dir); else doBreak(dir);
         if (bloeckeGeaendert > v && ersteAenderung) {
           const a2 = ersteAenderung;
-          if (placeMode) punkteBauen(a2[0], a2[1], a2[2]);
-          else           punkteAbbauen(a2[0], a2[1], a2[2]);
+          if (placeMode) { punkteBauen(a2[0], a2[1], a2[2]); tippGetan.bauen++; }
+          else           { punkteAbbauen(a2[0], a2[1], a2[2]); tippGetan.abbauen++; }
         }
       } else if (dt>=600 && look.moved<14) {   // langes Drücken = freilassen
         tryRelease(screenRay(t.clientX,t.clientY));
@@ -30504,6 +30672,64 @@ const PUNKTE_FUER = {
   raeuber:      { p: 15, t: '🦹 Einen Räuber besiegen' },
   riese:        { p: 50, t: '🗿 Einen Riesen besiegen' },
 };
+// ---- 💶 SPIELGELD ALS BELOHNUNG FÜR PUNKTE ----
+// Jonah: "Immer wenn man 100 Punkte mehr hat, kriegt man Geld - Spielgeld im
+// Spiel, kein richtiges Geld. Und wenn man zum Beispiel 1000 Punkte hat, dann
+// kriegt man etwas mehr Geld."
+// Auch das steht an EINER Stelle und wird im Fenster "So bekommst du Punkte"
+// mit angezeigt. Dieses Geld gibt selbst KEINE Punkte (sonst drehte sich das
+// im Kreis) - dafür sorgt geldNichtZaehlen().
+const PUNKTE_BELOHNUNG = {
+  hundert: { marke:  100, geld:  20, t: '💶 Für je 100 Punkte bekommst du' },
+  tausend: { marke: 1000, geld: 250, t: '💰 Und für je 1000 Punkte extra' },
+};
+const BELOHNT_KEY = 'jonahcraft_belohnt';
+let belohntH = 0, belohntT = 0;       // bis zu welcher Marke ist schon ausgezahlt?
+function belohnungLesen() {
+  try {
+    const b = JSON.parse(localStorage.getItem(BELOHNT_KEY) || 'null');
+    belohntH = (b && b.h) | 0; belohntT = (b && b.t) | 0;
+  } catch(e) { belohntH = belohntT = 0; }
+}
+function belohnungMerken() {
+  try { localStorage.setItem(BELOHNT_KEY, JSON.stringify({ h: belohntH, t: belohntT })); }
+  catch(e) {}
+}
+// Zahlt alle Marken aus, die seit dem letzten Mal dazugekommen sind. Jede
+// Marke gibt es genau EINMAL - auch wenn die Punkte nach dem Neuladen oder
+// aus der Datenbank zurückkommen.
+function belohnungPruefen() {
+  const H = PUNKTE_BELOHNUNG.hundert, T = PUNKTE_BELOHNUNG.tausend;
+  const h = Math.floor(punkte / H.marke), t = Math.floor(punkte / T.marke);
+  if (h <= belohntH && t <= belohntT) return 0;
+  const nh = Math.max(0, h - belohntH), nt = Math.max(0, t - belohntT);
+  const geld = nh * H.geld + nt * T.geld;
+  belohntH = Math.max(belohntH, h); belohntT = Math.max(belohntT, t);
+  belohnungMerken();
+  if (geld <= 0) return 0;
+  if (typeof money === 'number') {
+    money += geld;
+    geldNichtZaehlen(geld);           // 🛡️ Belohnungsgeld gibt keine Punkte
+    try { updateFoodHUD(); scheduleSave(); } catch(e) {}
+  }
+  // 🎉 Und jetzt freundlich Bescheid sagen
+  try {
+    if (nt > 0) {
+      toast('🏆💰 ' + (t * T.marke) + ' PUNKTE!!! Du bekommst ' + geld +
+            ' € Spielgeld – damit kannst du bauen und kaufen, was du willst! 🎉', 8000);
+      for (const f of [523, 659, 784, 1047, 1319]) blip(f, 0.12);
+    } else if (nh === 1) {
+      toast('🎉 ' + (h * H.marke) + ' Punkte! Du bekommst ' + geld + ' € Spielgeld! 💶', 5000);
+      blip(660, 0.08); blip(880, 0.09); blip(1047, 0.12);
+    } else {
+      toast('🎉 Super! Für deine ' + punkte + ' Punkte bekommst du ' + geld +
+            ' € Spielgeld! 💶', 7000);
+      for (const f of [523, 659, 784, 1047]) blip(f, 0.1);
+    }
+  } catch(e) {}
+  return geld;
+}
+
 // 🛡️ DAMIT DIE RANGLISTE FAIR BLEIBT
 // Pro Minute gibt es hoechstens so viele Punkte. Das passt zu der Regel in
 // firestore.rules ("punkte darf pro Schreibvorgang nur um 5000 steigen"):
@@ -30527,6 +30753,7 @@ function punkteLesen() {
   try { const n = parseInt(localStorage.getItem(RANG_PUNKTE_KEY) || '0', 10);
         punkte = (isFinite(n) && n > 0) ? n : 0; } catch(e) { punkte = 0; }
   punkteGesendet = punkte;
+  belohnungLesen();
 }
 function punkteGeben(was, mal) {
   const r = PUNKTE_FUER[was];
@@ -30539,6 +30766,7 @@ function punkteGeben(was, mal) {
   punkteMinute += p;
   punkte += p;
   try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
+  belohnungPruefen();                 // 💶 volle Hunderter geben Spielgeld
   return p;
 }
 // 🧱 Einen Block hingestellt: Punkte gibt es fuer die HOEHE des Bauwerks,
@@ -30758,6 +30986,7 @@ async function rangEigenesHolen() {
       try { localStorage.setItem(RANG_PUNKTE_KEY, String(punkte)); } catch(e) {}
     }
     punkteGesendet = Math.min(punkteGesendet < 0 ? punkte : punkteGesendet, punkte);
+    belohnungPruefen();               // 💶 verpasste Marken einmal nachzahlen
     rangZeichnen();
   } catch(e) { /* kein Netz? Dann gelten die Punkte vom Gerät. */ }
 }
@@ -30881,6 +31110,15 @@ function punkteHilfeZeigen() {
     const b2 = document.createElement('b'); b2.textContent = '+' + r.p;
     d.appendChild(a); d.appendChild(b2); l.appendChild(d);
   }
+  // 💶 ... und darunter, was es für die Punkte gibt
+  const tr = document.createElement('div'); tr.id = 'pHtrenn'; l.appendChild(tr);
+  for (const k in PUNKTE_BELOHNUNG) {
+    const r = PUNKTE_BELOHNUNG[k];
+    const d = document.createElement('div'); d.className = 'pHzeile geld';
+    const a = document.createElement('span'); a.textContent = r.t;
+    const b2 = document.createElement('b'); b2.textContent = r.geld + ' €';
+    d.appendChild(a); d.appendChild(b2); l.appendChild(d);
+  }
   document.getElementById('punkteHilfe').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
   blip(700, 0.05); blip(900, 0.06);
@@ -30965,8 +31203,12 @@ document.getElementById('playBtn').addEventListener('click',()=>{
         'Startbildschirm auf 🛟 Sicherung zurückholen!', 15000), 3000);
   } catch(e) {}
   saveGame();                           // beim Start sofort speichern
+  setTimeout(belohnungPruefen, 2200);   // 💶 alte Punkte einmal nachbelohnen
   rangSichtbar = true;                  // 🏆 ab jetzt steht die Rangliste am Rand
   rangStellen();
+  jonahSachenStellen();                 // 🙋 Englisch-Sachen nur auf Jonahs Gerät
+  kleinStellen();                       // ⋯ auf kleinen Bildschirmen aufräumen
+  tippPruefen();                        // 👋 Hinweise beim allerersten Spielen
   setTimeout(async () => { await rangEigenesHolen(); rangLaden(true); rangSenden(true); }, 1500);
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
@@ -32141,6 +32383,250 @@ kopfKnoepfeOrdnen();
 // ich automatisch direkt in der Englisch-Lern-App."
 // Vorher wird IMMER gespeichert, damit nichts verloren geht.
 const ENG_APP_URL = 'https://cj-prog.github.io/Englisch-App/';
+// ============== 👋 HINWEISE BEIM ERSTEN SPIELEN =========================
+// Jonah: "Wenn andere JonahCraft das erste Mal spielen, sollen ihnen Hinweise
+// gegeben werden."
+// Sie kommen NUR beim allerersten Mal auf einem Gerät. Wer schon einen
+// Spielstand hat (also Jonah), bekommt sie nicht von allein - er kann sie
+// aber auf der Startseite anfordern.
+// Wo es geht, geht der Hinweis von allein weiter, sobald der Spieler die
+// Sache wirklich gemacht hat. Zur Sicherheit steht überall auch "Weiter".
+const TIPP_KEY = 'jonahcraft_tipps_fertig';
+// ⚠️ GANZ WICHTIG hier nachzuschauen, BEVOR das Spiel losgeht: Beim Start
+// speichert es sofort - danach sähe jeder Spieler wie ein alter aus, und die
+// Hinweise kämen nie. (Genau das ist im Test passiert.)
+const tippWarSchonDa = (() => {
+  try { return !!localStorage.getItem(SAVE_KEY); } catch(e) { return false; }
+})();
+let tippNr = -1, tippStart = null, tippAn = false;
+const tippGetan = { abbauen:0, bauen:0, springen:0, tier:0 };
+function tippListe() {
+  const touch = isTouch;
+  return [
+    { t: touch ? '🕹️ Zieh mit dem Daumen auf der LINKEN Bildschirmhälfte – so läufst du!'
+               : '🕹️ Drück W, A, S, D – so läufst du!',
+      fertig: () => tippStart && Math.hypot(player.x - tippStart[0], player.z - tippStart[1]) > 4 },
+    { t: touch ? '👀 Wisch auf der RECHTEN Hälfte – so schaust du dich um!'
+               : '👀 Beweg die Maus – so schaust du dich um!',
+      fertig: () => tippStart && Math.abs(yaw - tippStart[2]) > 0.8 },
+    { t: touch ? '⛏️ Tipp einen Block an – zack, ist er abgebaut! Probier es mal.'
+               : '⛏️ Klick links auf einen Block – zack, ist er abgebaut!',
+      fertig: () => tippGetan.abbauen > 0 },
+    { t: touch ? '🧱 Tipp unten rechts auf ⛏️ – dann wird daraus 🧱, und du BAUST statt abzubauen!'
+               : '🧱 Klick rechts – so baust du einen Block hin!',
+      fertig: () => tippGetan.bauen > 0 },
+    { t: touch ? '⬆️ Der große Pfeil unten rechts lässt dich springen – und schwimmen!'
+               : '⬆️ Die Leertaste lässt dich springen – und schwimmen!',
+      fertig: () => tippGetan.springen > 0 },
+    { t: '🐶 Tipp ein Tier an – Hund, Katze oder Pferd. Dann wird es dein Freund und läuft dir hinterher!',
+      fertig: () => tippGetan.tier > 0 },
+    { t: '🏆 Links steht die Rangliste. Für alles, was du tust, gibt es Punkte – und für Punkte ' +
+         'bekommst du Spielgeld! Tipp dort auf „So bekommst du Punkte".',
+      fertig: () => getComputedStyle(document.getElementById('punkteHilfe')).display !== 'none' },
+    { t: '🎉 Das war\'s! Jetzt bau dir deine eigene Welt. Viel Spaß in JonahCraft!',
+      fertig: () => false, letzter: true },
+  ];
+}
+let tippAlle = [];
+function tippZeigen() {
+  const box = document.getElementById('tippBox');
+  if (!tippAn || tippNr < 0 || tippNr >= tippAlle.length) { box.style.display = 'none'; return; }
+  const t = tippAlle[tippNr];
+  document.getElementById('tippZahl').textContent =
+    'Tipp ' + (tippNr + 1) + ' von ' + tippAlle.length;
+  document.getElementById('tippText').textContent = t.t;
+  document.getElementById('tippWeiter').textContent = t.letzter ? '✅ Los geht\'s!' : 'Weiter ▸';
+  document.getElementById('tippSkip').style.display = t.letzter ? 'none' : '';
+  box.style.display = 'flex';
+  tippStellen();
+}
+function tippStellen() {               // unter die Knopfreihe - und unter die Rangliste
+  const box = document.getElementById('tippBox');
+  if (getComputedStyle(box).display === 'none') return;
+  let oben = 56;
+  const m = document.getElementById('menuBtn');
+  if (m && getComputedStyle(m).display !== 'none') oben = 62;
+  const rb = document.getElementById('rangBox');
+  if (rb && getComputedStyle(rb).display !== 'none') {
+    const c = rb.getBoundingClientRect(), b = box.getBoundingClientRect();
+    // Liegen sie nebeneinander? Dann rutscht der Kasten darunter.
+    if (c.width > 2 && c.right > b.left && c.left < b.right)
+      oben = Math.max(oben, c.bottom + 8);
+  }
+  box.style.top = 'calc(' + oben + 'px + env(safe-area-inset-top))';
+}
+function tippWeiter() {
+  const t = tippAlle[tippNr];
+  if (t && t.letzter) { tippFertig(); return; }
+  tippNr++;
+  tippStart = [player.x, player.z, yaw];
+  blip(760, 0.05);
+  tippZeigen();
+}
+function tippFertig() {
+  tippAn = false; tippNr = -1;
+  document.getElementById('tippBox').style.display = 'none';
+  try { localStorage.setItem(TIPP_KEY, '1'); } catch(e) {}
+  blip(620, 0.06); blip(880, 0.08);
+}
+function tippStarten() {
+  tippAlle = tippListe();
+  tippNr = 0; tippAn = true;
+  tippStart = [player.x, player.z, yaw];
+  for (const k in tippGetan) tippGetan[k] = 0;
+  tippZeigen();
+}
+function tippTick() {                  // schaut nach, ob der Spieler es schon getan hat
+  if (!tippAn || tippNr < 0) return;
+  const t = tippAlle[tippNr];
+  if (!t || t.letzter) return;
+  let fertig = false;
+  try { fertig = !!t.fertig(); } catch(e) {}
+  if (fertig) { toast('👍 Super gemacht!', 1600); tippWeiter(); }
+}
+setInterval(tippTick, 400);
+document.getElementById('tippWeiter').addEventListener('click', tippWeiter);
+document.getElementById('tippSkip').addEventListener('click', tippFertig);
+document.getElementById('tippNochmal').addEventListener('click', () => {
+  try { localStorage.removeItem(TIPP_KEY); } catch(e) {}
+  const b = document.getElementById('tippNochmal');
+  b.textContent = '✅ Kommt gleich!'; b.disabled = true;
+  tippGewuenscht = true;
+});
+let tippGewuenscht = false;
+// Beim allerersten Spielen auf diesem Gerät kommen sie von allein.
+function tippPruefen() {
+  let fertigSchon = false;
+  try { fertigSchon = localStorage.getItem(TIPP_KEY) === '1'; } catch(e) {}
+  if (tippGewuenscht || (!fertigSchon && !tippWarSchonDa)) setTimeout(tippStarten, 1400);
+}
+addEventListener('resize', tippStellen);
+
+// ============== ⋯ KLEINER BILDSCHIRM: NUR DAS NÖTIGSTE ==================
+// Auf dem Handy bleiben nur Springen, Abbauen/Bauen und die Blockleiste
+// stehen. Alles andere liegt im ⋯-Menü - dort sind die Knöpfe DIESELBEN
+// Elemente (sie werden nur umgehängt), also funktioniert alles weiter.
+const KLEIN_BLEIBT = new Set(['jumpBtn', 'modeBtn', 'menuBtn', 'bowBtn']);
+let menuOffen = false;
+const menuMerk = new Map();             // Knopf -> wie er vorher aussah
+function kleinerSchirm() { return innerWidth < 760 || innerHeight < 560; }
+function kleinKnoepfe() {               // welche Knöpfe wandern ins Menü?
+  return [...document.querySelectorAll('.hud.btn')]
+    .filter(e => !KLEIN_BLEIBT.has(e.id));
+}
+function kleinStellen() {
+  const klein = kleinerSchirm();
+  document.body.classList.toggle('klein', klein);
+  document.getElementById('menuBtn').style.display = klein ? 'flex' : 'none';
+  if (!klein && menuOffen) menuZu();
+  for (const e of kleinKnoepfe()) {
+    if (menuMerk.has(e)) continue;      // steckt gerade im Menü
+    e.style.visibility = klein ? 'hidden' : '';
+    e.style.pointerEvents = klein ? 'none' : '';
+  }
+  if (klein) { rangOffen = false; try { rangStellen(); } catch(e) {} }
+}
+function menuAuf() {
+  const gitter = document.getElementById('kleinMenuGitter');
+  gitter.innerHTML = '';
+  for (const e of kleinKnoepfe()) {
+    // Nur Knoepfe, die gerade ueberhaupt zum Spiel gehoeren. Wichtig:
+    // getComputedStyle, nicht e.style - manche sind per CSS-Regel versteckt
+    // (z. B. der Feuer-Knopf, wenn man nichts Brennendes dabei hat).
+    if (getComputedStyle(e).display === 'none') continue;
+    menuMerk.set(e, { display: e.style.display, vis: e.style.visibility,
+                      pe: e.style.pointerEvents });
+    e.style.visibility = ''; e.style.pointerEvents = '';
+    e.classList.add('imMenu');
+    gitter.appendChild(e);
+  }
+  document.getElementById('kleinMenu').style.display = 'flex';
+  menuOffen = true;
+  if (document.exitPointerLock) document.exitPointerLock();
+  blip(700, 0.05); blip(900, 0.06);
+}
+function menuZu() {
+  for (const [e, alt] of menuMerk) {
+    e.classList.remove('imMenu');
+    document.body.appendChild(e);
+    e.style.display = alt.display;
+    e.style.visibility = kleinerSchirm() ? 'hidden' : alt.vis;
+    e.style.pointerEvents = kleinerSchirm() ? 'none' : alt.pe;
+  }
+  menuMerk.clear();
+  document.getElementById('kleinMenu').style.display = 'none';
+  menuOffen = false;
+  try { kopfKnoepfeOrdnen(); } catch(e) {}
+  blip(480, 0.05);
+}
+document.getElementById('menuBtn').addEventListener('touchstart',
+  e => { e.preventDefault(); menuOffen ? menuZu() : menuAuf(); }, { passive:false });
+document.getElementById('menuBtn').addEventListener('mousedown',
+  e => { e.preventDefault(); menuOffen ? menuZu() : menuAuf(); });
+document.getElementById('kleinMenuZu').addEventListener('click', menuZu);
+addEventListener('resize', () => { if (!menuOffen) kleinStellen(); });
+addEventListener('orientationchange', () => { if (!menuOffen) kleinStellen(); });
+
+// ============== 🙋 IST DAS JONAHS GERÄT? ================================
+// Jonah: "Wenn die anderen JonahCraft spielen, möchte ich nicht, dass die
+// auch mit meinen englischen Freunden reden können, weil die die ja gar
+// nicht kennen." Dazu sollen für alle anderen auch der 📚-Knopf und die
+// Mathe- und Englisch-Aufgaben verschwinden.
+//
+// Erkannt wird das auf drei Wegen - mit Absicht so, dass Jonah seine Sachen
+// NICHT aus Versehen verliert:
+//   1. Es liegt ein echter Englisch-Stand auf dem Gerät (Sticker, gelernte
+//      Wörter, Chats, Name oder KI-Schlüssel). Das ist Jonahs Englisch-App.
+//   2. Einmal erkannt, bleibt es gemerkt - auch wenn der Englisch-Stand
+//      später mal leer aussieht.
+//   3. Von Hand ein- und ausschalten: die Seite einmal mit ?jonah=1 am Ende
+//      der Adresse öffnen (bzw. ?jonah=0 zum Abschalten). Das braucht man
+//      nach dem Löschen der Browserdaten - oder wenn Jonah die Englisch-App
+//      auf diesem Gerät noch gar nicht benutzt hat.
+const JONAH_KEY = 'jonahcraft_jonahs_geraet';
+let jonahFlag = null;
+function jonahsGeraet() {
+  if (jonahFlag !== null) return jonahFlag;
+  try {                                 // 3) von Hand gesetzt?
+    const p = new URLSearchParams(location.search);
+    if (p.has('jonah')) {
+      jonahFlag = p.get('jonah') !== '0';
+      localStorage.setItem(JONAH_KEY, jonahFlag ? '1' : '0');
+      return jonahFlag;
+    }
+  } catch(e) {}
+  try {                                 // 2) schon einmal erkannt?
+    const g = localStorage.getItem(JONAH_KEY);
+    if (g === '1') return (jonahFlag = true);
+    if (g === '0') return (jonahFlag = false);
+  } catch(e) {}
+  let ja = false;                       // 1) liegt ein echter Englisch-Stand da?
+  try {
+    const e = engLaden();
+    ja = !!((e.stickers && e.stickers.length) ||
+            (e.learned && Object.keys(e.learned).length) ||
+            (e.chats && Object.keys(e.chats).length) ||
+            (e.apiKey && e.apiKey.trim()) || (e.name && e.name.trim()));
+  } catch(e2) {}
+  jonahFlag = ja;
+  try { if (ja) localStorage.setItem(JONAH_KEY, '1'); } catch(e3) {}
+  return jonahFlag;
+}
+// Alles, was nur Jonah sieht, an einer Stelle aus- und wieder einblenden.
+function jonahSachenStellen() {
+  const ja = jonahsGeraet();
+  for (const id of ['engBtn', 'msgrBtn']) {
+    const e = document.getElementById(id);
+    if (e) e.style.display = ja ? '' : 'none';
+  }
+  if (!ja) {                            // 📱 auch der Zähler am Messenger
+    const p = document.getElementById('msgrPunkt');
+    if (p) p.style.display = 'none';
+  }
+  try { kopfKnoepfeOrdnen(); } catch(e) {}
+}
+// Gleich beim Laden - sonst blitzt der 📚-Knopf auf dem Startbildschirm auf.
+jonahSachenStellen();
 function engWahlZeigen() {
   document.getElementById('engWahl').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
