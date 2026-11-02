@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 318</div>
+    <div id="verZeile">Version 319</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 318;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 319;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Der Rettungsdienst: Krankenhaus, Krankenwagen und Sanitäter! 🚑💗';
+const NEU_TEXT = 'Dein Geldspeicher hat jetzt einen eigenen Hausmeister! 🔧💰';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -15548,6 +15548,11 @@ function sucheLoch(mx, my, mz, r, hoch, tief) {
 // 🔧🤵 Wo wohnen Hausmeister und Diener? Auf der Erde in der Riesen-Festung -
 // und auf Jonahs geheimem Planeten im Königsschloss!
 function dienstHeim(a) {
+  // 💰 Der Hausmeister vom Geldspeicher bleibt in seiner Halle!
+  if (a && a.home === 'speicher') {
+    speicherHoehe();
+    return { hx: SP_X + SP_MITTE, hy: SP_HY, hz: SP_Z + SP_MITTE, r: SP_R - 2 };
+  }
   // 🏰 Das Personal der Riesenburg bleibt natürlich IN der Riesenburg!
   if (a && a.home === 'riesenburg') {
     riesenHoehe();
@@ -15557,10 +15562,72 @@ function dienstHeim(a) {
   const B = burgPos();
   return { hx: B.bx, hy: B.base, hz: B.bz, r: 26 };
 }
+// ============ 🔧💰 DER HAUSMEISTER IM GELDSPEICHER (Thema 22) ==============
+// Jonah: "Dass ich in meinem Geldspeicher auch einen Hausmeister habe."
+// Er geht seinen Rundgang: Geld-Sauger ölen, Schütte prüfen, Alarmanlage
+// kontrollieren, Gold polieren. Dabei rührt er NICHTS an - kein Geld, keine
+// Maschine, keine Tresortür. Er putzt und funkelt nur, und er flickt echte
+// Löcher in der Halle (die Wände selbst sind sowieso unzerstörbar).
+const SP_HM_SPRUECHE = [
+  'Hier blitzt alles, König Jonah! ✨', 'Der Geld-Sauger ist frisch geölt. 🌪️',
+  'Die Alarmanlage habe ich geprüft – alles in Ordnung! 🚨',
+  'Ich poliere gleich noch die Goldbarren. 🏅',
+  'Dein Geld fasse ich natürlich NICHT an. 💰',
+  'Die Schütte läuft wie geschmiert! 🪣', 'Einmal durchfegen, dann glänzt es wieder. 🧹',
+];
+// Seine Stationen im Rundgang: dieselben Plätze wie die festen Sachen
+const SP_HM_RUNDGANG = [
+  [-5, 10, '🌪️ Geld-Sauger geölt!'], [-2, 10, '🪣 Schütte geprüft!'],
+  [ 5, 10, '🚨 Alarmanlage kontrolliert!'], [ 0, -8, '🏅 Gold poliert!'],
+  [ 8, 10, '🔔 Glocke geputzt!'], [-10, 0, '🧹 Boden gefegt!'],
+];
+function speicherHausmeisterTick(a, dt) {
+  speicherHoehe();
+  const m = SP_MITTE, hy = SP_HY;
+  // 1) Steht er noch in seiner Halle? Sonst zurück!
+  const mx = SP_X + m, mz = SP_Z + m;
+  if (Math.abs(a.x - mx) > SP_R - 1 || Math.abs(a.z - mz) > SP_R - 1 || a.y < hy - 2) {
+    a.heimT = (a.heimT || 0) + dt;
+    a.yaw = Math.atan2(mx - a.x, -(mz - a.z));
+    a.walking = true; a.spd = 3.2;
+    if (a.heimT > 8) { a.x = mx + 6.5; a.z = mz + 8.5; a.y = hy + 1; a.vy = 0; a.heimT = 0; }
+    return;
+  }
+  a.heimT = 0;
+  // 2) Der Rundgang: immer zur nächsten Station
+  if (a.stationNr === undefined) a.stationNr = 0;
+  const st = SP_HM_RUNDGANG[a.stationNr % SP_HM_RUNDGANG.length];
+  const zx = mx + st[0] + 0.5, zz = mz + st[1] + 0.5;
+  const d = Math.hypot(zx - a.x, zz - a.z);
+  a.yaw = Math.atan2(zx - a.x, -(zz - a.z));
+  a.t = 9;
+  if (d > 1.8) {
+    a.walking = true; a.spd = 2.2;
+    a.wegT = (a.wegT || 0) + dt;
+    if (a.wegT > 14) { a.x = zx; a.z = zz; a.y = hy + 1; a.vy = 0; a.wegT = 0; }
+    return;
+  }
+  // 3) Angekommen: ein bisschen werkeln (ohne irgendetwas zu verändern!)
+  a.walking = false; a.wegT = 0;
+  a.werkT = (a.werkT || 0) + dt;
+  if (Math.random() < dt * 3)           // ✨ Putz-Funkeln
+    fireworks.push({ x: a.x + (Math.random()-0.5), y: a.y + 0.9 + Math.random()*0.8,
+      z: a.z + (Math.random()-0.5), vx:(Math.random()-0.5)*0.8, vy: 0.5+Math.random(),
+      vz:(Math.random()-0.5)*0.8, tile: 30, t: 0.6 });
+  if (a.werkT > 4.5) {
+    a.werkT = 0;
+    a.stationNr = (a.stationNr + 1) % SP_HM_RUNDGANG.length;
+    if (Math.hypot(player.x - a.x, player.z - a.z) < 22) {
+      sagen(a, st[2], 3);
+      blip(523, 0.07); blip(659, 0.09);
+    }
+  }
+}
 function hausmeisterTick(a, dt) {
   const B = dienstHeim(a);
   a.heim = a.heim || [B.hx+6, B.hy+1, B.hz+2];
   if (a.pause) return;                  // Jonah hat ihm Pause gegeben
+  if (a.home === 'speicher') { speicherHausmeisterTick(a, dt); return; }
   a.repT = (a.repT===undefined ? 1.5 : a.repT-dt);
   if (a.ziel) {                         // er ist auf dem Weg zu einem Loch
     const dx=a.ziel[0]+0.5-a.x, dz=a.ziel[2]+0.5-a.z, dp=Math.hypot(dx,dz);
@@ -16253,6 +16320,21 @@ function glockeNeuerDiener() {          // gar keiner da? Dann kommt einer angel
 }
 function glockeLaeuten() {
   glockeBimmeln();
+  // 💰 Im Geldspeicher ist der HAUSMEISTER im Dienst - er kommt statt eines Dieners
+  if (typeof imSpeicherHalle === 'function' && imSpeicherHalle()) {
+    speicherHausmeisterStellen();
+    const hm = animals.find(a => a.type === 'hausmeister' && a.home === 'speicher');
+    if (hm) {
+      hm.x = player.x + (Math.random()*3 - 1.5);
+      hm.z = player.z + (Math.random()*3 - 1.5);
+      hm.y = player.y; hm.vy = 0; hm.pause = false;
+      hm.stationNr = 0; hm.werkT = 0; hm.wegT = 0;
+      sagen(hm, 'Sie haben geläutet, König Jonah? 🔧', 4);
+      toast('🔔 Bim-bam! Dein Hausmeister ' + (hm.name || '') +
+            ' ist sofort zur Stelle. 🔧', 4500);
+      return hm;
+    }
+  }
   // 🤵 Ist schon einer unterwegs? Dann kommt KEIN zweiter dazu.
   const schon = animals.find(a => a.type === 'butler' && a.glocke > 0);
   if (schon) {
@@ -19719,6 +19801,7 @@ function speicherBlock(lx, lz, y) {
     if (dx === -2 && dz === 10 && y === hy + 1) return GELDSCHUETTE;   // 🪣 die Schütte
     if (dx === -5 && dz === 10 && y === hy + 1) return GELDSAUGER;     // 🌪️ der Sauger
     if (dx ===  5 && dz === 10 && y === hy + 1) return ALARM;          // 🚨 die Alarmanlage
+    if (dx ===  8 && dz === 10 && y === hy + 1) return GLOCKE;         // 🔔 die Hausmeister-Glocke
     if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
     if (dx === SPT_TR_X + 2 && dz === SPT_TR_Z0 && y === hy + 1) return SIGN;  // an der Treppe
     return AIR;
@@ -21153,8 +21236,22 @@ function eingangFreiRaeumen() {
 // Darum wird einmal pro Spielstart nachgeschaut und notfalls repariert.
 // Lag dort Geld, kommt es vorher in den Geldbeutel - es geht nichts verloren.
 const SP_FESTE_SACHEN = [[-5, 10, 'sauger'], [-2, 10, 'schuette'], [2, 10, 'schild'],
-                         [5, 10, 'alarm']];
+                         [5, 10, 'alarm'], [8, 10, 'glocke']];
 let saugerGeprueft = false;
+// 🔧 Sobald Jonah in seiner Geld-Halle ist, ist auch sein Hausmeister da
+function speicherHausmeisterStellen() {
+  if (weltDim !== 0) return;
+  if (!imSpeicherNah(40)) return;
+  if (animals.some(a => a.type === 'hausmeister' && a.home === 'speicher')) return;
+  speicherHoehe();
+  const m = SP_MITTE;
+  const wx = SP_X + m + 7, wz = SP_Z + m + 9;
+  const ch = getChunk(wx >> 4, wz >> 4);
+  if (!ch || !ch.data) return;
+  animals.push({ type:'hausmeister', name:'Hausmeister Kuno', friend:3, home:'speicher',
+    x: wx + 0.5, y: SP_HY + 1.1, z: wz + 0.5, yaw: Math.PI,
+    vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false });
+}
 function saugerPruefen() {
   if (saugerGeprueft || weltDim !== 0) return;
   speicherHoehe();
@@ -21162,7 +21259,7 @@ function saugerPruefen() {
   let repariert = 0, zurueck = 0;
   for (const [dx, dz, art] of SP_FESTE_SACHEN) {
     const soll = art === 'sauger' ? GELDSAUGER : art === 'schuette' ? GELDSCHUETTE
-               : art === 'alarm' ? ALARM : SIGN;
+               : art === 'alarm' ? ALARM : art === 'glocke' ? GLOCKE : SIGN;
     const wx = SP_X + m + dx, wy = hy + 1, wz = SP_Z + m + dz;
     const ch = getChunk(wx >> 4, wz >> 4);
     if (!ch || !ch.data) return;        // der Geldspeicher ist noch nicht geladen
@@ -21183,7 +21280,10 @@ function saugerPruefen() {
         (zurueck ? ' (' + zurueck + ' € sind zurück in deinem Geldbeutel.)' : ''), 8000);
   for (const f of [520, 660, 790, 990]) blip(f, 0.07);
 }
-setInterval(saugerPruefen, 2000);
+setInterval(() => {
+  try { saugerPruefen(); } catch(e) {}
+  try { speicherHausmeisterStellen(); } catch(e) {}   // 🔧 sein Hausmeister
+}, 2000);
 // ============== 🚨 EINBRECHER, ALARMANLAGE UND DIE POLIZEI ==============
 // Jonah: "Dass bei meinem Geldspeicher doch Einbrecher hinkommen können. Aber
 // dafür gibt es eine Alarmanlage: Wenn die einen Räuber bemerkt, schlägt sie
