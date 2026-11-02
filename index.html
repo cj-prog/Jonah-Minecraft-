@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 316</div>
+    <div id="verZeile">Version 317</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 316;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 317;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Polizeiwachen, Streifenwagen und Gefängnisse! 🚓🏢';
+const NEU_TEXT = 'Die Feuerwehr! Mit Feuerwache, Löschfahrzeug und Feuermelder. 🚒🔥';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -2237,7 +2237,9 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       GLOCKE=134,                       // 🔔 die Diener-Glocke in jedem Burgzimmer
       RB_TOR=135,                       // 🚪 das Riesentor vor jedem Zimmer der Riesenburg
       ALARM=136,                        // 🚨 die Alarmanlage im Geldspeicher
-      BLAULICHT=137;                    // 🔵 das Blaulicht auf dem Dach jeder Polizeiwache
+      BLAULICHT=137,                    // 🔵 das Blaulicht auf dem Dach jeder Polizeiwache
+      FEUER=138,                        // 🔥 ein kleines Feuer (breitet sich NICHT aus)
+      FEUERMELDER=139;                  // 🧯 der Feuermelder: antippen = Feuerwehr rufen
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
 const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF, RB_TOR, ALARM]);
@@ -2633,6 +2635,16 @@ const BLOCKS = {
     [0.18,0.00,0.30, 0.82,0.70,0.70, 128],              // der graue Kasten
     [0.30,0.70,0.36, 0.70,0.94,0.64, 182, 1.6],         // die rote Lampe obendrauf
     [0.40,0.94,0.44, 0.60,1.00,0.56, 55]] },            // der kleine Knauf
+  [FEUER]: { name:'Feuer 🔥 (die Feuerwehr löscht es - oder du mit Wasser!)',
+    tiles:[184,184,184], solid:false, model:[
+    [0.14,0.00,0.14, 0.86,0.52,0.86, 184, 2.0],         // der breite Flammenfuß
+    [0.26,0.45,0.26, 0.74,0.82,0.74, 27,  2.0],         // die mittlere Flamme
+    [0.40,0.75,0.40, 0.60,1.00,0.60, 30,  2.2]] },      // die helle Spitze
+  [FEUERMELDER]: { name:'Feuermelder 🧯 (antippen = die Feuerwehr kommt!)',
+    tiles:[185,185,185], solid:false, model:[
+    [0.20,0.00,0.34, 0.80,0.80,0.66, 25],               // der rote Kasten
+    [0.34,0.22,0.24, 0.66,0.56,0.36, 185, 1.4],         // die weiße Scheibe mit dem Knopf
+    [0.42,0.32,0.18, 0.58,0.46,0.26, 49]] },            // der Druckknopf
   [BLAULICHT]: { name:'Blaulicht 🔵 (steht auf dem Dach der Polizeiwache)',
     tiles:[183,183,183], solid:false, model:[
     [0.24,0.00,0.24, 0.76,0.22,0.76, 55],               // der schwarze Sockel
@@ -4874,26 +4886,35 @@ function bankNah(x, z, weite) {
 // Polizeiwache mit Blaulicht auf dem Dach - und gleich daneben ein Gefängnis
 // mit drei Zellen hinter Gitterstäben und einem Hof zum Spazierengehen.
 // Beides liegt nordwestlich der Dorfmitte, da ist bei jedem Dorf noch Platz.
-const WACHE_PLAETZE = [[-32,-30], [8,-42], [-42,-30]];   // Nordwesten, Nordosten, Westen
+// Mögliche Bauplätze rund um ein Dorf - der erste freie wird die POLIZEIWACHE,
+// der zweite die FEUERWACHE. (Alle liegen so, dass sie keinem Dorf-Bauwerk in
+// die Quere kommen; geprüft wird trotzdem jedes Mal.)
+const WACHE_PLAETZE = [[-32,-30], [8,-42], [-42,-30], [-20,-44],
+                       [22,-24], [22,12], [-46,20], [-20,34]];
+const PLAETZE_MAX = 2;                  // mehr als zwei brauchen wir nicht
 let _wCache = new Map(), _wCacheSeed = null;
-function wacheAt(v) {
+function dorfPlaetze(v) {               // die freien Bauplätze dieses Dorfes
   if (_wCacheSeed !== seed) { _wCache = new Map(); _wCacheSeed = seed; }
   const ck = v.vx + ',' + v.vz;
   if (_wCache.has(ck)) return _wCache.get(ck);
   // Immer in Jonahs normaler Welt rechnen (wie bei der Burg) - sonst käme beim
   // Nachschlagen aus einer anderen Welt eine ganz falsche Höhe heraus.
   const merk = weltDim; weltDim = 0;
-  let w = null;
-  try { w = wacheSuchen(v); } catch(e) { w = null; }
+  let liste = [];
+  try { liste = plaetzeSuchen(v); } catch(e) { liste = []; }
   weltDim = merk;
-  _wCache.set(ck, w);
-  return w;
+  _wCache.set(ck, liste);
+  return liste;
 }
-function wacheSuchen(v) {
-  if (terrainHeight(v.vx, v.vz) <= SEA) return null;
+function wacheAt(v) { return dorfPlaetze(v)[0] || null; }    // 🚓 Polizeiwache + Gefängnis
+function feuerAt(v) { return dorfPlaetze(v)[1] || null; }    // 🚒 Feuerwache
+function plaetzeSuchen(v) {
+  const out = [];
+  if (terrainHeight(v.vx, v.vz) <= SEA) return out;
   const WW = 23, WD = 13;
   const c0x = Math.floor(v.vx/VCELL), c0z = Math.floor(v.vz/VCELL);
   for (const [ox, oz] of WACHE_PLAETZE) {
+    if (out.length >= PLAETZE_MAX) break;
     const wx0 = v.vx + ox, wz0 = v.vz + oz;
     const x1 = wx0 + WW - 1, z1 = wz0 + WD - 1;
     // a) ist der Platz eben genug und nicht im Wasser?
@@ -4931,12 +4952,18 @@ function wacheSuchen(v) {
             belegt = true;                                    // die Wohnhäuser (mit Spielraum)
       }
     if (belegt) continue;
-    return { wx0, wz0, WW, WD, wy: mx, vx: v.vx, vz: v.vz,
+    // d) und nicht in einen Bauplatz hinein, der schon vergeben ist
+    let doppelt = false;
+    for (const o of out)
+      if (!(o.wx0 + o.WW - 1 < wx0 || o.wx0 > x1 || o.wz0 + o.WD - 1 < wz0 || o.wz0 > z1))
+        doppelt = true;
+    if (doppelt) continue;
+    out.push({ wx0, wz0, WW, WD, wy: mx, vx: v.vx, vz: v.vz,
       torX: wx0 + 4,  torZ: wz0 + 11,                      // vor dem Garagentor der Wache
       anzK: (wx0 + 4) + ',' + (mx + 2) + ',' + (wz0 + 1),  // die Anzeigetafel drinnen
-      hofX: wx0 + 17, hofZ: wz0 + 8 };                     // mitten im Gefängnishof
+      hofX: wx0 + 17, hofZ: wz0 + 8 });                    // mitten im Gefängnishof
   }
-  return null;
+  return out;
 }
 // die nächste Polizeiwache zu einem Punkt (oder null)
 function wacheNah(x, z, weite) {
@@ -6408,6 +6435,56 @@ function genChunkData(cx, cz, ohneEdits) {
         P2(15,wy+1,9,FENCE); P2(16,wy+1,9,FENCE);                      // Bank im Hof
         P2(13,wy+3,11,TORCH); P2(21,wy+3,11,TORCH);                    // Licht im Hof
         schild2(17, wy+4, 12, '🏢 GEFÄNGNIS');
+      }
+    }
+    // 🚒 DIE FEUERWACHE (auf dem zweiten freien Bauplatz des Dorfes)
+    {
+      const FW = feuerAt(pv);
+      if (FW) {
+        const wy = FW.wy, X = FW.wx0, Z = FW.wz0;
+        const P3 = (dx,y,dz,b) => put(X+dx, y, Z+dz, b, false);
+        const schild3 = (dx,y,dz,txt) => {
+          P3(dx,y,dz,SIGN);
+          const k3 = (X+dx)+','+y+','+(Z+dz);
+          if (!signTexts.has(k3)) signTexts.set(k3, txt);
+        };
+        // 1) Platz einebnen (der Schlauchturm ist hoch - darum weit frei räumen)
+        for (let dx=0; dx<FW.WW; dx++) for (let dz=0; dz<FW.WD; dz++) {
+          const wx=X+dx, wz=Z+dz, th7=terrainHeight(wx,wz);
+          for (let y=th7; y<wy; y++) put(wx,y,wz,DIRT,false);
+          put(wx,wy,wz, dx<14 ? STONE : GRASS, false);
+          for (let y=wy+1; y<=wy+13; y++) put(wx,y,wz,AIR,false);
+        }
+        // 2) DIE HALLE (dx 2-13): rote Ziegelwände, Steindach, großes Tor nach Süden
+        for (let dx=2; dx<=13; dx++) for (let dz=0; dz<=9; dz++) {
+          if (dx===2||dx===13||dz===0||dz===9)
+            for (let y=wy+1; y<=wy+4; y++) P3(dx,y,dz,BRICK);
+          P3(dx,wy+5,dz,STONE);
+        }
+        for (const [fx,fz] of [[2,3],[13,3],[2,6],[13,6],[5,0],[10,0]])   // Fenster
+          P3(fx,wy+3,fz,GLASS);
+        for (let dx=6; dx<=10; dx++)                                      // das große Tor
+          for (let y=wy+1; y<=wy+4; y++) P3(dx,y,9,AIR);
+        P3(7,wy+6,4,BLAULICHT); P3(8,wy+6,4,BLAULICHT);                   // 🔵 Blaulicht aufs Dach
+        P3(4,wy+1,2,TABLE); P3(5,wy+1,2,CHEST);                           // Tisch und Ausrüstung
+        P3(3,wy+4,1,TORCH); P3(12,wy+4,1,TORCH);                          // Licht in der Halle
+        schild3(8, wy+5, 10, '🚒 FEUERWEHR');                             // das große Schild
+        P3(12, wy+2, 10, FEUERMELDER);                                    // 🧯 der Feuermelder
+        schild3(13, wy+2, 10, '🧯 Feuermelder antippen = die Feuerwehr kommt!');
+        // 3) DER SCHLAUCHTURM (dx 15-17): hier werden die Schläuche getrocknet
+        for (let dx=15; dx<=17; dx++) for (let dz=1; dz<=3; dz++) {
+          if (dx===15||dx===17||dz===1||dz===3)
+            for (let y=wy+1; y<=wy+9; y++) P3(dx,y,dz,BRICK);
+          P3(dx,wy+10,dz,STONE);
+        }
+        for (let y=wy+1; y<=wy+2; y++) P3(16,y,3,AIR);                    // Tür zum Turm
+        P3(16,wy+6,1,GLASS); P3(16,wy+8,1,GLASS);                         // zwei Luken
+        P3(16,wy+11,2,TORCH);                                             // Licht ganz oben
+        // 4) DER HOF: Asphalt, damit das Löschfahrzeug gut herauskommt
+        for (let dx=15; dx<=21; dx++) for (let dz=6; dz<=11; dz++)
+          P3(dx,wy,dz, (dx===18) ? STRASSE_M : STRASSE);
+        for (let dx=3; dx<=12; dx++) for (let dz=10; dz<=12; dz++)
+          P3(dx,wy,dz, (dz===11) ? STRASSE_M : STRASSE);                  // Ausfahrt vorm Tor
       }
     }
     }
@@ -8762,6 +8839,17 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (d < 6) return vary(236, 60, 50, 18);                        // rotes Glas
     return vary(120, 26, 24, 14);                                   // dunkler Rand
   });
+  tile(184,(x,y)=>{                                                 // 🔥 Feuer
+    const w = Math.abs(x-7.5) + (15-y)*0.35;                        // unten breit, oben spitz
+    if (w < 3) return vary(255, 240, 160, 14);                      // gelber Kern
+    if (w < 6) return vary(250, 160, 40, 20);                       // orange
+    return vary(220, 70, 20, 22);                                   // roter Rand
+  });
+  tile(185,(x,y)=>{                                                 // 🧯 Feuermelder-Scheibe
+    const d = Math.hypot(x-7.5, y-7.5);
+    if (d < 4) return vary(245, 245, 248, 8);                       // weiße Scheibe
+    return vary(214, 48, 40, 16);                                   // roter Rahmen
+  });
   tile(183,(x,y)=>{                                                 // 🔵 Blaulicht
     const d = Math.hypot(x-7.5, y-7.5);
     if (d < 3) return vary(248, 252, 255, 8);                       // heller Kern
@@ -9659,6 +9747,8 @@ const ANIMAL_KIND = {
   engfreund:{ speed:1.1, half:0.28, height:1.7,  tile:131, face:139 },
   // 👮 schneller als der Räuber (2.0) - sonst könnte er nie einen einholen!
   polizist: { speed:2.6, half:0.3,  height:1.8,  tile:147, face:148 },
+  // 🚒 die Feuerwehrleute: rote Jacke, gelber Helm
+  feuerwehr:{ speed:2.5, half:0.3,  height:1.8,  tile:25,  face:21 },
   // 👽 die Aliens: klein, neugierig und immer ein bisschen am Schweben
   alien:    { speed:1.4, half:0.28, height:1.5,  tile:151, face:150 },
   ufo:      { speed:0,   half:1.6,  height:1.6,  tile:152, face:153 },   // 🛸 ihre Untertasse
@@ -11392,7 +11482,8 @@ function updateAnimals(dt) {
 
     // 👮 Polizisten schauen zuerst, ob ein Einbrecher in der Festung ist
     // 👮 Der Polizist vom Geldspeicher hat seinen eigenen Auftrag
-    if (a.type==='polizist' && a.speicherDienst) { speicherPolizistTick(a, dt); }
+    if (a.type==='feuerwehr' && a.feuerDienst) { feuerwehrTick(a, dt); }
+    else if (a.type==='polizist' && a.speicherDienst) { speicherPolizistTick(a, dt); }
     else if (a.type==='polizist' && polizeiJagd(a, dt)) { a.spd = 2.6; }
     // KI: abwechselnd stehen und in eine zufällige Richtung laufen
     a.t -= dt;
@@ -12380,6 +12471,20 @@ function drawAnimals() {
         if (a.jagt) {                                              // 🚨 Blaulicht bei der Jagd!
           const bl = Math.sin(performance.now()*0.012) > 0;
           pushBox(arr,a, 0,2.16,0, 0.16,0.12,0.16, bl?27:9);
+        }
+      }
+      if (a.type==='feuerwehr') {                                  // 🚒 Helm, Streifen, Schlauch
+        pushBox(arr,a, 0,1.93,0, 0.58,0.14,0.58, 73);              // gelber Helm
+        pushBox(arr,a, 0,2.03,0.02, 0.4,0.14,0.44, 73);
+        pushBox(arr,a, 0,1.9,-0.32, 0.44,0.06,0.14, 73);            // Nackenschutz vorne
+        pushBox(arr,a, 0,1.2,-0.16, 0.5,0.1,0.02, 49);              // weißer Leuchtstreifen
+        pushBox(arr,a, 0,0.9,-0.16, 0.5,0.1,0.02, 49);
+        if (a.loescht) {                                            // 💦 der Wasserstrahl!
+          pushBox(arr,a, 0.3,1.2,-0.46, 0.12,0.12,0.5, 55);         // das Strahlrohr
+          const l2 = 1.8 + Math.abs(Math.sin(performance.now()*0.02))*0.8;
+          pushBox(arr,a, 0.3,1.22,-0.7-l2*0.5, 0.22,0.22,l2, 48);   // der lange Wasserstrahl
+        } else {
+          pushBox(arr,a, 0.34,1.1,-0.18, 0.2,0.2,0.1, 7);           // aufgerollter Schlauch
         }
       }
       if (a.type==='butler') {                                     // 🤵 Hemd, Fliege, Tablett
@@ -21400,6 +21505,185 @@ function wachenTick(dt) {
     scheduleSave();
   }
 }
+// ================= 🚒🔥 FEUER UND DIE FEUERWEHR (Jonahs Thema 21) ===========
+// Es kann jetzt brennen - aber kindgerecht:
+//  • Feuer entsteht NUR durch eine TNT-Explosion neben etwas Brennbarem.
+//  • Es breitet sich NICHT aus und macht NICHTS kaputt: Die Flamme steht ÜBER
+//    dem Block, der Block selbst bleibt heil. Jonahs Bauwerke sind sicher.
+//  • Nach spätestens einer Minute geht es von allein aus.
+//  • Wasser daneben löscht sofort - und die Feuerwehr kommt mit Blaulicht.
+// Punkte gibt es nur, wenn JONAH hilft: selbst löschen oder den Feuermelder
+// an der Feuerwache drücken.
+const FEUER_MAX = 10;                   // nie mehr als zehn Flammen gleichzeitig
+const FEUER_DAUER = 60;                 // so lange brennt eine Flamme höchstens
+const BRENNBAR = new Set([WOOD, PLANK, LEAF, WOOL, FENCE, TABLE, CHAIR, BED,
+                          CABINET, BUCHREGAL, BUCHREGAL_V, BUCH, GATE, GATE_OPEN]);
+const FEUERWEHR_SPRUECHE = [
+  'Wir haben alles im Griff! 🚒', 'Gut, dass du uns gerufen hast!',
+  'Wasser marsch! 💦', 'Feuer ist nichts zum Spielen, Jonah!',
+  'Unser Schlauchturm ist 9 Blöcke hoch! 🚒', 'Alles gelöscht! 👍',
+];
+let feuerListe = [];                    // [{x,y,z,t}] - wo brennt es gerade?
+let feuerwehrUnterwegs = 0;             // Sekunden, solange ein Einsatz läuft
+// 🔥 Eine Flamme ÜBER einem brennbaren Block anzünden
+function feuerAnzuenden(x, y, z) {
+  if (feuerListe.length >= FEUER_MAX) return false;
+  if (!BRENNBAR.has(getBlock(x, y, z))) return false;
+  if (getBlock(x, y+1, z) !== AIR) return false;
+  if (feuerListe.some(f => f.x === x && f.y === y+1 && f.z === z)) return false;
+  // WICHTIG: flüchtig setzen! Flammen gehören NIE in den Spielstand - sonst
+  // würde ein Feuer nach dem Neuladen für immer dort stehen bleiben.
+  setBlockFluechtig(x, y+1, z, FEUER);
+  feuerListe.push({ x, y: y+1, z, t: FEUER_DAUER });
+  return true;
+}
+// 💦 Aus! (vonJonah = er hat selbst gelöscht, dafür gibt es Punkte)
+function feuerAus(f, vonJonah) {
+  if (getBlock(f.x, f.y, f.z) === FEUER) setBlockFluechtig(f.x, f.y, f.z, AIR);
+  const i = feuerListe.indexOf(f);
+  if (i >= 0) feuerListe.splice(i, 1);
+  for (let k = 0; k < 10; k++)          // 💨 weißer Dampf steigt auf
+    fireworks.push({ x: f.x+0.5, y: f.y+0.3+Math.random(), z: f.z+0.5,
+      vx:(Math.random()-0.5), vy:0.6+Math.random(), vz:(Math.random()-0.5),
+      tile: 49, t: 0.7 });
+  if (vonJonah) {
+    punkteGeben('feuerGeloescht');
+    toast('💦 Super gemacht! Du hast das Feuer selbst gelöscht. 🚒', 5000);
+    blip(523, 0.08); blip(659, 0.1);
+  }
+}
+function feuerNaechstes(x, z) {         // das nächste Feuer (oder null)
+  let best = null, bd = 1e9;
+  for (const f of feuerListe) {
+    const d = Math.hypot(f.x - x, f.z - z);
+    if (d < bd) { bd = d; best = f; }
+  }
+  return best;
+}
+// 🧯 Notruf! (vonJonah = er hat den Feuermelder gedrückt)
+function feuerwehrRufen(vonJonah) {
+  if (feuerwehrUnterwegs > 0) {
+    if (vonJonah) toast('🚒 Die Feuerwehr ist schon unterwegs – gleich sind sie da!', 4000);
+    return false;
+  }
+  const f = feuerNaechstes(player.x, player.z);
+  if (!f) {
+    if (vonJonah) {
+      toast('🧯 Du hast den Feuermelder gedrückt. Die Feuerwehr sagt: „Alles ruhig, ' +
+            'hier brennt gerade nichts. Aber gut, dass du weißt, wo der Melder ist!" 🚒', 7000);
+      blip(880, 0.08); blip(660, 0.1);
+    }
+    return false;
+  }
+  feuerwehrUnterwegs = 70;
+  toast('🚒🚨 Tatü-tata! In der Feuerwache geht der Alarm los – das Löschfahrzeug ' +
+        'kommt mit Blaulicht!', 6000);
+  for (const fr of [740, 988, 740, 988]) blip(fr, 0.12);
+  if (vonJonah) punkteGeben('notruf');
+  feuerwehrAusruecken(f);
+  return true;
+}
+// 🚒 Das Löschfahrzeug und zwei Feuerwehrleute kommen zum Feuer gefahren
+function feuerwehrAusruecken(ziel) {
+  const ang = Math.random() * Math.PI * 2;
+  const bx = Math.floor(ziel.x + Math.cos(ang) * 9);
+  const bz = Math.floor(ziel.z + Math.sin(ang) * 9);
+  const ch = getChunk(bx >> 4, bz >> 4);
+  if (!ch || !ch.data) return;
+  const by = Math.max(terrainHeight(bx, bz) + 1, ziel.y - 1);
+  const auto = { type:'car', name:'Löschfahrzeug', feuerAuto:true, polizeiAuto:true,
+    friend:3, col:25, x: bx + 0.5, y: by, z: bz + 0.5, yaw: 0,
+    vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false };
+  animals.push(auto);
+  blaulicht(auto);
+  const namen = ['Feuerwehrmann Max', 'Feuerwehrfrau Mia'];
+  for (let i = 0; i < 2; i++)
+    animals.push({ type:'feuerwehr', name: namen[i], friend:3, feuerDienst:true,
+      loeschZiel: ziel, autoRef: auto, spritzT: 0,
+      x: bx + 0.5 + (i ? 1.2 : -1.2), y: by, z: bz + 1.2, yaw: 0,
+      vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false });
+}
+// 🚒 Was ein Feuerwehrmann gerade tut: hinlaufen, löschen, Feierabend
+function feuerwehrTick(a, dt) {
+  a.t = 9;
+  const f = a.loeschZiel && feuerListe.indexOf(a.loeschZiel) >= 0 ? a.loeschZiel : null;
+  if (f) {
+    const zx = f.x + 0.5, zz = f.z + 0.5;
+    const d = Math.hypot(zx - a.x, zz - a.z);
+    a.yaw = Math.atan2(zx - a.x, -(zz - a.z));
+    if (d > 3.2) {                      // hin zum Feuer
+      a.walking = true; a.spd = 5.0; a.loescht = false;
+      a.hinT = (a.hinT || 0) + dt;
+      if (a.hinT > 5) {                 // notfalls direkt hinstellen (Zäune, Mauern ...)
+        // WICHTIG: nah genug, dass er von dort wirklich löschen kann (unter 3,2)
+        a.x = zx + 1.4; a.z = zz + 1.4; a.y = f.y; a.vy = 0; a.hinT = 0;
+      }
+      return true;
+    }
+    // 💦 Wasser marsch!
+    a.walking = false; a.loescht = true;
+    a.spritzT = (a.spritzT || 0) + dt;
+    for (let i = 0; i < 2; i++)
+      fireworks.push({ x: a.x, y: a.y + 1.2, z: a.z,
+        vx: (zx - a.x) * 0.9 + (Math.random()-0.5), vy: 0.8 + Math.random()*0.5,
+        vz: (zz - a.z) * 0.9 + (Math.random()-0.5), tile: 7, t: 0.6 });
+    if (a.spritzT > 2.2) {
+      feuerAus(f, false);
+      sagen(a, 'Feuer gelöscht! 🚒', 4);
+      toast('🚒 Feuer gelöscht! Die Feuerwehr war schnell da. 💦', 5000);
+      blip(659, 0.1); blip(523, 0.12);
+      a.loescht = false; a.loeschZiel = null; a.spritzT = 0;
+    }
+    return true;
+  }
+  // brennt es noch woanders in der Nähe? Sonst Feierabend.
+  const weiter = feuerListe.find(g => Math.hypot(g.x - a.x, g.z - a.z) < 60);
+  if (weiter) { a.loeschZiel = weiter; a.spritzT = 0; a.hinT = 0; return true; }
+  a.loescht = false; a.walking = false;
+  a.feierabend = (a.feierabend === undefined) ? 8 : a.feierabend - dt;
+  if (a.feierabend <= 0) {
+    for (const weg of [a.autoRef, a]) {
+      const i = animals.indexOf(weg);
+      if (i >= 0) animals.splice(i, 1);
+    }
+  }
+  return true;
+}
+// 👋 Jonah tippt einen Feuerwehrmann an
+function feuerwehrSpruch(a) {
+  sagen(a, zufallsSatz(FEUERWEHR_SPRUECHE), 4);
+  blip(659, 0.08); blip(523, 0.1);
+}
+// ⏱️ Einmal pro Bild: Flammen flackern, Wasser löscht, der Notruf geht raus
+function feuerTick(dt) {
+  if (feuerwehrUnterwegs > 0) feuerwehrUnterwegs -= dt;
+  if (!feuerListe.length) return;
+  for (let i = feuerListe.length - 1; i >= 0; i--) {
+    const f = feuerListe[i];
+    if (getBlock(f.x, f.y, f.z) !== FEUER) { feuerListe.splice(i, 1); continue; }
+    f.t -= dt;
+    const nass = getBlock(f.x+1, f.y, f.z) === WATER || getBlock(f.x-1, f.y, f.z) === WATER ||
+                 getBlock(f.x, f.y, f.z+1) === WATER || getBlock(f.x, f.y, f.z-1) === WATER ||
+                 getBlock(f.x, f.y+1, f.z) === WATER;
+    if (nass) {                         // 💦 Wasser daneben: sofort aus
+      feuerAus(f, Math.hypot(player.x - f.x, player.z - f.z) < 16);
+      continue;
+    }
+    if (f.t <= 0) { feuerAus(f, false); continue; }   // von allein ausgegangen
+    if (Math.hypot(player.x - f.x, player.z - f.z) < 40 && Math.random() < dt * 9)
+      fireworks.push({ x: f.x+0.5+(Math.random()-0.5)*0.5, y: f.y+0.6,
+        z: f.z+0.5+(Math.random()-0.5)*0.5, vx:(Math.random()-0.5)*0.4,
+        vy: 1.1+Math.random(), vz:(Math.random()-0.5)*0.4,
+        tile: Math.random() < 0.5 ? 184 : 30, t: 0.8 });
+  }
+  // Nach ein paar Sekunden ruft jemand von allein die Feuerwehr
+  const f0 = feuerListe[0];
+  if (f0 && feuerwehrUnterwegs <= 0 &&
+      Math.hypot(player.x - f0.x, player.z - f0.z) < 90) {
+    f0.alarmT = (f0.alarmT || 0) + dt;
+    if (f0.alarmT > 5) feuerwehrRufen(false);
+  }
+}
 function saugAnzeigen() {
   const info = speicherGeldInfo();
   document.getElementById('saugInfo').innerHTML =
@@ -26617,6 +26901,7 @@ const MAP_BLOCK_COL = {
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
   [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c', [ALARM]:'#e04040', [BLAULICHT]:'#3a7ae0',
+  [FEUER]:'#ff8c28', [FEUERMELDER]:'#d63028',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -26675,6 +26960,8 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
     const wv = wacheAt(v);                                         // 🚓🏢 Wache und Gefängnis
     if (wv) { marks.push({x:wv.wx0+4, z:wv.wz0+5, e:'🚓'});
               marks.push({x:wv.hofX, z:wv.hofZ, e:'🏢'}); }
+    const fv = feuerAt(v);                                         // 🚒 die Feuerwache
+    if (fv) marks.push({x:fv.wx0+8, z:fv.wz0+5, e:'🚒'});
   }
   for (const f of scan(FCELL,fieldAt)) marks.push({x:f.fx, z:f.fz, e:'⚽'});
   for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
@@ -29091,6 +29378,13 @@ function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
 function hitEntity(a, dir) {
   if (a.dorfKnast) { knastSpruch(a); return; }        // 🏢 ein Gefangener erzählt etwas
   if (a.type==='car' && a.streife) { streifeSpruch(a); return; }   // 🚓 Streifenwagen
+  if (a.type==='feuerwehr') { feuerwehrSpruch(a); return; }        // 🚒 Feuerwehrleute
+  if (a.type==='car' && a.feuerAuto) {                             // 🚒 das Löschfahrzeug
+    toast('🚒 Das ist das Löschfahrzeug der Feuerwehr – da fahren nur die ' +
+          'Feuerwehrleute mit. Aber schau ihnen beim Löschen zu! 💦', 5000);
+    blip(659, 0.08);
+    return;
+  }
   if (a.type==='surfbrett') {           // 🏄 rauf aufs Brett!
     if (surfRiding || riding || jetRiding || carRiding || heliRiding ||
         dragonRiding || baggerRiding || boatRiding || ufoRiding) return;
@@ -29810,6 +30104,10 @@ function doPlace(dir) {
     rbTorSchalten(hit.x, hit.y, hit.z);
     return;
   }
+  if (hit.block===FEUERMELDER) {          // 🧯 Feuermelder: die Feuerwehr rufen
+    feuerwehrRufen(true);
+    return;
+  }
   if (hit.block===ALARM) {                // 🚨 die Alarmanlage an- und ausschalten
     alarmSchalten();
     return;
@@ -30374,6 +30672,19 @@ function explode(cx,cy,cz) {
     weckeFluessigkeit(x,y,z,exCtr);     // Wasser und Lava strömen in den Krater!
     pruefeNachbarn(x,y,z);              // lose Blöcke am Kraterrand fallen nach
   }
+  // 🔥 Nach einer Explosion kann es brennen - aber nur ein paar kleine Flammen,
+  // und immer nur ÜBER dem Block. Kaputt geht davon nichts.
+  let brennt = 0;
+  for (let dx=-R-1; dx<=R+1 && brennt<3; dx++)
+    for (let dy=-R-1; dy<=R+1 && brennt<3; dy++)
+      for (let dz=-R-1; dz<=R+1 && brennt<3; dz++) {
+        const x2=cx+dx, y2=cy+dy, z2=cz+dz;
+        if (y2<=CH_MIN || y2>=CH-1) continue;
+        if (Math.random() < 0.3) { try { if (feuerAnzuenden(x2,y2,z2)) brennt++; } catch(e) {} }
+      }
+  if (brennt)
+    toast('🔥 Es brennt! Lösch es selbst mit Wasser 💦 – oder drück den Feuermelder 🧯 ' +
+          'an der Feuerwache, dann kommt die Feuerwehr.', 7000);
   boom();
   shake = 0.45;
   // Rückstoß nach oben, wenn man nah dran steht
@@ -30971,6 +31282,7 @@ function frame(now) {
   matheTick(dt);                        // 🧮 ist wieder eine Rechen-Pause dran?
   try { speicherAlarmTick(dt); } catch(e) {}   // 🚨 Einbrecher und Alarmanlage
   try { wachenTick(dt); } catch(e) {}          // 🚓🏢 Wachen, Streifen und Gefängnisse
+  try { feuerTick(dt); } catch(e) {}           // 🔥🚒 Feuer und die Feuerwehr
   // Während der Rechen-Aufgabe bleibt die ganze Welt stehen: nichts bewegt
   // sich, nichts fällt, kein Monster kommt näher. Nur das Bild läuft weiter.
   if (mathePause) dt = 0;
@@ -31332,6 +31644,8 @@ const PUNKTE_FUER = {
   monster:      { p: 10, t: '👾 Ein Monster besiegen' },
   raeuber:      { p: 15, t: '🦹 Einen Räuber besiegen' },
   riese:        { p: 50, t: '🗿 Einen Riesen besiegen' },
+  feuerGeloescht:{p:  8, t: '💦 Ein Feuer selbst löschen (mit Wasser)' },
+  notruf:       { p:  3, t: '🧯 Die Feuerwehr rufen (Feuermelder drücken)' },
 };
 // ---- 💶 SPIELGELD ALS BELOHNUNG FÜR PUNKTE ----
 // Jonah: "Immer wenn man 100 Punkte mehr hat, kriegt man Geld - Spielgeld im
