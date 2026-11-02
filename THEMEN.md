@@ -112,8 +112,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **20 – Einbrecher, Alarmanlage und Polizei** · in Arbeit · Wunsch von Jonah
   (02.11.): ab und zu kommt ein Einbrecher, die Alarmanlage schlägt Alarm; geändert (Jonah,
   02.11.): Johann ruft die Polizei – mehrere Polizeistationen, Polizisten fahren mit Polizeiautos
-  durch die Welt und kommen ganz schnell zum Festnehmen; mit Alarmanlage wird nichts gestohlen ·
-  an Session 1 (nach 19).
+  durch die Welt und kommen ganz schnell zum Festnehmen; mit Alarmanlage wird nichts gestohlen.
+  Ergänzung (Jonah, 02.11.): Alarm auch in den Polizeistationen; viele Gefängnisse, Einbrecher
+  kommen dorthin und werden nach längerer Zeit entlassen – als nette Dorfbewohner · an Session 1
+  (nach 19).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
