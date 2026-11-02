@@ -14,7 +14,12 @@ oder Schlüssel hier.
 
 Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fertige Antwort.
 
-– keine –
+**02.11-1 – Sicherungs-Datei höchstens einmal am Tag?** (an Christian)
+- Problem: Bei jeder neuen Version lädt JonahCraft eine Datei `jonahcraft-sicherung-v….txt` in den
+  Download-Ordner – bei vielen Versionen am Tag sammeln sich viele an.
+- Weg A: so lassen. Weg B: höchstens eine Datei pro Tag; die eigentlichen Sicherungen im Spiel
+  (4 Auto-Sicherungen + Sicherung beim Versionswechsel) bleiben unverändert.
+- Empfehlung: Weg B (laut Session 1 ohne Verlust an Sicherheit). Fertige Antwort: „02.11-1: Weg B"
 
 ## Entschieden
 
@@ -73,8 +78,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 313 (02.11., Tipp-Kasten
-  nicht mehr bei Jonah) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 314 (02.11., Update-Kasten
+  sagt, was neu ist) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -106,9 +111,6 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Eintrag oben, nur wer in den letzten 2 Minuten gespielt hat, Punkte bleiben (pro Gerät) ·
   Geräte-Wechsel: Session 1 empfiehlt „nichts tun" (sonst Umzugs-Code) – nur auf Nachfrage.
   Offen: nur noch Christians Schritt in der Konsole.
-- **19 – Update-Kasten sagt, was neu ist** · in Arbeit · Wunsch von Jonah (02.11.): statt immer
-  „Version N ist fertig" ein kurzer Satz, was neu ist (NEU_TEXT) · an Session 1 gegeben; dazu
-  Frage, ob die Sicherungsdatei im Download-Ordner seltener angelegt werden kann.
 - **20 – Einbrecher, Alarmanlage und Polizei** · in Arbeit · Wunsch von Jonah
   (02.11.): ab und zu kommt ein Einbrecher, die Alarmanlage schlägt Alarm; geändert (Jonah,
   02.11.): Johann ruft die Polizei – mehrere Polizeistationen, Polizisten fahren mit Polizeiautos
@@ -126,6 +128,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **19 – Update-Kasten sagt, was neu ist** · Session 1 · v314 (02.11.): `NEU_TEXT` neben
+  GAME_VERSION, der Kasten zeigt „Version N: <was neu ist>" (wirkt ab dem nächsten Update nach
+  v314, weil die laufende Version den Kasten zeichnet).
 - **18 – Tipp-Kasten erschien bei Jonah** · Session 1 · v312/v313 (02.11.): Tipps kommen nur noch
   auf wirklich neuen Geräten (keine Spur vom Spielen, nicht Jonahs Gerät); offene Tipps gehen auf
   Jonahs Gerät sofort zu.
