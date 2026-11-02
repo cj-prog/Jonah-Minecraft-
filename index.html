@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 315</div>
+    <div id="verZeile">Version 316</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 315;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 316;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Einbrecher, Alarmanlage und die Polizei! 🚨🚓';
+const NEU_TEXT = 'Polizeiwachen, Streifenwagen und Gefängnisse! 🚓🏢';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -2236,7 +2236,8 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       BUCHREGAL_OBEN_V=133,             // 📚 (unten und oben)
       GLOCKE=134,                       // 🔔 die Diener-Glocke in jedem Burgzimmer
       RB_TOR=135,                       // 🚪 das Riesentor vor jedem Zimmer der Riesenburg
-      ALARM=136;                        // 🚨 die Alarmanlage im Geldspeicher
+      ALARM=136,                        // 🚨 die Alarmanlage im Geldspeicher
+      BLAULICHT=137;                    // 🔵 das Blaulicht auf dem Dach jeder Polizeiwache
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
 const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF, RB_TOR, ALARM]);
@@ -2632,6 +2633,11 @@ const BLOCKS = {
     [0.18,0.00,0.30, 0.82,0.70,0.70, 128],              // der graue Kasten
     [0.30,0.70,0.36, 0.70,0.94,0.64, 182, 1.6],         // die rote Lampe obendrauf
     [0.40,0.94,0.44, 0.60,1.00,0.56, 55]] },            // der kleine Knauf
+  [BLAULICHT]: { name:'Blaulicht 🔵 (steht auf dem Dach der Polizeiwache)',
+    tiles:[183,183,183], solid:false, model:[
+    [0.24,0.00,0.24, 0.76,0.22,0.76, 55],               // der schwarze Sockel
+    [0.18,0.22,0.18, 0.82,0.78,0.82, 183, 1.8],         // das blaue Leuchtglas
+    [0.30,0.78,0.30, 0.70,0.88,0.70, 49]] },            // die weiße Kappe
   [GLOCKE]: { name:'Diener-Glocke 🔔 (antippen = ein Diener kommt!)',
     tiles:[115,115,115], solid:false, model:[
     [0.06,0.00,0.40, 0.20,0.92,0.60, 5],                // linker Pfosten
@@ -4862,6 +4868,95 @@ function bankNah(x, z, weite) {
   }
   return best;
 }
+// ============ 🚓🏢 POLIZEIWACHE UND GEFÄNGNIS IN JEDEM DORF =================
+// Jonah hat sich nach der Polizei am Geldspeicher noch mehr Polizei gewünscht.
+// Darum steht jetzt in JEDEM Dorf (dort, wo der Platz eben genug ist) eine
+// Polizeiwache mit Blaulicht auf dem Dach - und gleich daneben ein Gefängnis
+// mit drei Zellen hinter Gitterstäben und einem Hof zum Spazierengehen.
+// Beides liegt nordwestlich der Dorfmitte, da ist bei jedem Dorf noch Platz.
+const WACHE_PLAETZE = [[-32,-30], [8,-42], [-42,-30]];   // Nordwesten, Nordosten, Westen
+let _wCache = new Map(), _wCacheSeed = null;
+function wacheAt(v) {
+  if (_wCacheSeed !== seed) { _wCache = new Map(); _wCacheSeed = seed; }
+  const ck = v.vx + ',' + v.vz;
+  if (_wCache.has(ck)) return _wCache.get(ck);
+  // Immer in Jonahs normaler Welt rechnen (wie bei der Burg) - sonst käme beim
+  // Nachschlagen aus einer anderen Welt eine ganz falsche Höhe heraus.
+  const merk = weltDim; weltDim = 0;
+  let w = null;
+  try { w = wacheSuchen(v); } catch(e) { w = null; }
+  weltDim = merk;
+  _wCache.set(ck, w);
+  return w;
+}
+function wacheSuchen(v) {
+  if (terrainHeight(v.vx, v.vz) <= SEA) return null;
+  const WW = 23, WD = 13;
+  const c0x = Math.floor(v.vx/VCELL), c0z = Math.floor(v.vz/VCELL);
+  for (const [ox, oz] of WACHE_PLAETZE) {
+    const wx0 = v.vx + ox, wz0 = v.vz + oz;
+    const x1 = wx0 + WW - 1, z1 = wz0 + WD - 1;
+    // a) ist der Platz eben genug und nicht im Wasser?
+    let mn = 999, mx = -999;
+    for (const [px2, pz2] of [[wx0,wz0],[x1,wz0],[wx0,z1],[x1,z1],[wx0+5,wz0+5],[wx0+17,wz0+6]]) {
+      const h2 = terrainHeight(px2, pz2);
+      mn = Math.min(mn, h2); mx = Math.max(mx, h2);
+    }
+    if (!(mn > SEA && mx - mn <= 8)) continue;
+    // b) durch den Bauplatz darf keine Straße laufen - sonst wäre sie abgeschnitten
+    let strasse = false;
+    for (let dx = 0; dx < WW && !strasse; dx++)
+      if (Math.abs(((((wx0+dx) % VCELL) + VCELL) % VCELL) - 40) <= STR_BREIT + 1) strasse = true;
+    for (let dz = 0; dz < WD && !strasse; dz++)
+      if (Math.abs(((((wz0+dz) % VCELL) + VCELL) % VCELL) - 40) <= STR_BREIT + 1) strasse = true;
+    if (strasse) continue;
+    // c) steht hier schon etwas vom eigenen Dorf oder vom Nachbardorf?
+    const ueber = (kx,kz,kw,kd) => !(kx+kw-1 < wx0 || kx > x1 || kz+kd-1 < wz0 || kz > z1);
+    let belegt = false;
+    for (let cx2 = c0x-1; cx2 <= c0x+1 && !belegt; cx2++)
+      for (let cz2 = c0z-1; cz2 <= c0z+1 && !belegt; cz2++) {
+        const n = villageAt(cx2, cz2);
+        if (!n) continue;
+        if (n.vx !== v.vx || n.vz !== v.vz) {            // Nachbardorf: großzügig Abstand halten
+          if (ueber(n.vx-36, n.vz-36, 73, 73)) belegt = true;
+          continue;
+        }
+        if (ueber(n.vx-6,  n.vz-6,  13, 13)) belegt = true;   // Brunnen und Gemüsegarten
+        if (ueber(n.vx-2,  n.vz-9,   5,  4)) belegt = true;   // Marktstand
+        if (ueber(n.vx-5,  n.vz+14, 11,  8)) belegt = true;   // Schule / Kindergarten
+        if (ueber(n.vx+8,  n.vz+8,   7,  7)) belegt = true;   // Hochhaus
+        if (ueber(n.vx-22, n.vz+20, 15, 13)) belegt = true;   // die Dorf-Bank
+        for (let i = 0; i < HOUSE_SPOTS.length && !belegt; i++)
+          if (ueber(n.vx + HOUSE_SPOTS[i][0] - 6, n.vz + HOUSE_SPOTS[i][1] - 6, 13, 13))
+            belegt = true;                                    // die Wohnhäuser (mit Spielraum)
+      }
+    if (belegt) continue;
+    return { wx0, wz0, WW, WD, wy: mx, vx: v.vx, vz: v.vz,
+      torX: wx0 + 4,  torZ: wz0 + 11,                      // vor dem Garagentor der Wache
+      anzK: (wx0 + 4) + ',' + (mx + 2) + ',' + (wz0 + 1),  // die Anzeigetafel drinnen
+      hofX: wx0 + 17, hofZ: wz0 + 8 };                     // mitten im Gefängnishof
+  }
+  return null;
+}
+// die nächste Polizeiwache zu einem Punkt (oder null)
+function wacheNah(x, z, weite) {
+  let best = null, bd = weite || 400;
+  const c0x = Math.floor(x/VCELL), c0z = Math.floor(z/VCELL);
+  for (let cx2 = c0x-3; cx2 <= c0x+3; cx2++) for (let cz2 = c0z-3; cz2 <= c0z+3; cz2++) {
+    const v = villageAt(cx2, cz2);
+    if (!v) continue;
+    const w = wacheAt(v);
+    if (!w) continue;
+    const d = Math.hypot(w.torX - x, w.torZ - z);
+    if (d < bd) { bd = d; best = w; }
+  }
+  return best;
+}
+// wo steht der Gefangene in Zelle Nr. nr (0, 1 oder 2)?
+function knastPlatz(w, nr) {
+  return { x: w.wx0 + 14 + nr*3, y: w.wy + 1, z: w.wz0 + 2.5,
+           tx: w.wx0 + 13 + nr*3, tz: w.wz0 + 4 };       // dazu seine Zellentür
+}
 // 🛣️ DAS STRASSENNETZ: alle 80 Blöcke eine Straße, quer durch die Dörfer.
 // Auf ihr fahren die Autos doppelt so schnell!
 const STR_BREIT = 2;                    // 2 Blöcke links und rechts der Mitte = 5 breit
@@ -6248,6 +6343,75 @@ function genChunkData(cx, cz, ohneEdits) {
       }
     }
   }
+  // 🚓🏢 DIE POLIZEIWACHEN UND GEFÄNGNISSE: eigener Durchlauf mit größerem Rand.
+  // Sie stehen bis zu 42 Blöcke neben der Dorfmitte - weiter, als die Dorf-Schleife
+  // oben schaut. Darum werden sie hier noch einmal eigens gestempelt.
+  {
+    const q0x=Math.floor((x0-48)/VCELL), q1x=Math.floor((x0+CS+48)/VCELL);
+    const q0z=Math.floor((z0-48)/VCELL), q1z=Math.floor((z0+CS+48)/VCELL);
+    for (let qvz=q0z; qvz<=q1z; qvz++) for (let qvx=q0x; qvx<=q1x; qvx++) {
+      const pv = villageAt(qvx,qvz);
+      if (!pv) continue;
+    // 🚓🏢 DIE POLIZEIWACHE UND DAS GEFÄNGNIS
+    {
+      const PW = wacheAt(pv);
+      if (PW) {
+        const wy = PW.wy, X = PW.wx0, Z = PW.wz0;
+        const P2 = (dx,y,dz,b) => put(X+dx, y, Z+dz, b, false);
+        const schild2 = (dx,y,dz,txt) => {
+          P2(dx,y,dz,SIGN);
+          const k2 = (X+dx)+','+y+','+(Z+dz);
+          if (!signTexts.has(k2)) signTexts.set(k2, txt);
+        };
+        // 1) Platz einebnen: unten auffüllen, oben frei räumen (auch Bäume)
+        for (let dx=0; dx<PW.WW; dx++) for (let dz=0; dz<PW.WD; dz++) {
+          const wx=X+dx, wz=Z+dz, th6=terrainHeight(wx,wz);
+          for (let y=th6; y<wy; y++) put(wx,y,wz,DIRT,false);
+          put(wx,wy,wz, dx<10 ? PLANK : (dz>=5 ? GRASS : STONE), false);
+          for (let y=wy+1; y<=wy+9; y++) put(wx,y,wz,AIR,false);   // auch Äste über dem Dach weg
+        }
+        // 2) DIE WACHE (dx 0-9): weiße Wände, Steindach, Garagentor nach Süden
+        for (let dx=0; dx<=9; dx++) for (let dz=0; dz<=9; dz++) {
+          if (dx===0||dx===9||dz===0||dz===9)
+            for (let y=wy+1; y<=wy+3; y++) P2(dx,y,dz,WOOL);
+          P2(dx,wy+4,dz,STONE);
+        }
+        for (const [fx,fz] of [[0,4],[9,4],[3,0],[6,0],[0,6],[9,6]])   // Fenster
+          P2(fx,wy+2,fz,GLASS);
+        for (let dx=3; dx<=5; dx++)                                    // das Tor bleibt offen
+          for (let y=wy+1; y<=wy+3; y++) P2(dx,y,9,AIR);
+        P2(4,wy+5,4,BLAULICHT); P2(5,wy+5,4,BLAULICHT);                // 🔵 Blaulicht aufs Dach
+        P2(2,wy+1,2,TABLE); P2(3,wy+1,2,TABLE);                        // Schreibtisch
+        P2(7,wy+1,2,CHEST);                                            // Schrank für die Akten
+        P2(1,wy+3,1,TORCH); P2(8,wy+3,1,TORCH);                        // Licht drinnen
+        schild2(4, wy+4, 10, '🚓 POLIZEI');                            // das große Schild vorm Tor
+        schild2(4, wy+2, 1, '🚓 Anzeigetafel: Alles ruhig im Revier. ✅');
+        // 3) DAS GEFÄNGNIS (dx 12-22): Gitter rundherum, drei Zellen, Hof
+        for (let dx=12; dx<=22; dx++) for (let dz=0; dz<=12; dz++) {
+          if (dx===12||dx===22||dz===0||dz===12)
+            for (let y=wy+1; y<=wy+2; y++) P2(dx,y,dz,GITTER);   // nur 2 hoch: man sieht hinein
+        }
+        for (let y=wy+1; y<=wy+2; y++) P2(17,y,12,GTUER_AUF);          // Hof-Tor (offen)
+        for (const dx of [15,18,21])                                   // Wände zwischen den Zellen
+          for (let dz=1; dz<=3; dz++) for (let y=wy+1; y<=wy+3; y++) P2(dx,y,dz,BRICK);
+        for (let dx=13; dx<=21; dx++)                                  // die Gitterfront der Zellen
+          for (let y=wy+1; y<=wy+2; y++) P2(dx,y,4,GITTER);            // 2 hoch: gute Sicht hinein
+        for (let k=0; k<3; k++) {
+          for (let y=wy+1; y<=wy+2; y++) P2(13+k*3, y, 4, GTUER);      // Zellentür (zu)
+          P2(14+k*3, wy+2, 4, AIR);                                    // Guckfenster zur Zelle
+          P2(13+k*3, wy+3, 4, AIR); P2(14+k*3, wy+3, 4, AIR);           // darüber ist alles offen
+          P2(14+k*3, wy+3, 1, TORCH);                                  // Licht in der Zelle
+          schild2(14+k*3, wy+3, 4, 'Zelle ' + (k+1));
+        }
+        for (let dx=12; dx<=22; dx++) for (let dz=0; dz<=4; dz++)      // Dach über den Zellen
+          P2(dx,wy+4,dz,PLANK);
+        P2(15,wy+1,9,FENCE); P2(16,wy+1,9,FENCE);                      // Bank im Hof
+        P2(13,wy+3,11,TORCH); P2(21,wy+3,11,TORCH);                    // Licht im Hof
+        schild2(17, wy+4, 12, '🏢 GEFÄNGNIS');
+      }
+    }
+    }
+  }
   // Ritterburgen bauen 🏰
   {
     const k0x=Math.floor((x0-24)/KCELL), k1x=Math.floor((x0+CS+24)/KCELL);
@@ -7460,6 +7624,8 @@ function baueSpielstand() {
       // 👽 deine Alien-Diener bleiben dir erhalten
       aliens: alienSpeicher(),           // 👽 nach Welten sortiert: wer wohnt wo?
       alarmAn,                           // 🚨 ist die Alarmanlage scharf?
+      knaste: knastListe,                // 🏢 wer sitzt in den Dorf-Gefängnissen?
+      spielSek: Math.round(spielSek),    // ⏱️ Spielzeit (danach wird entlassen)
       zellen: zellenAnzahl,              // 🔨 so viele Zellen hat die Polizei gebaut
       ziele: customTargets,
       jet: jetSave,
@@ -7642,6 +7808,11 @@ function loadGame() {
         if (Array.isArray(st)) challStand[c.id] = [Math.max(0, st[0]|0), Math.max(0, st[1]|0)];
       }
     if (Array.isArray(s.knast)) savedKnast = s.knast;      // 🚔 die Gefangenen im Keller
+    if (Array.isArray(s.knaste))                           // 🏢 die Gefangenen in den Dörfern
+      knastListe = s.knaste.filter(e => e && typeof e.vx === 'number' &&
+        typeof e.vz === 'number' && typeof e.nr === 'number' &&
+        typeof e.start === 'number').slice(0, 60);
+    if (typeof s.spielSek === 'number') spielSek = Math.max(0, s.spielSek);
     if (typeof s.zellen === 'number')                      // 🔨 die angebauten Zellen
       zellenAnzahl = Math.max(3, Math.min(ZELL_ALLE.length, s.zellen));
     if (Array.isArray(s.ziele)) customTargets = s.ziele.filter(t=>t && typeof t.x==='number');
@@ -8590,6 +8761,12 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (d < 3) return vary(255, 240, 230, 10);                      // heller Kern
     if (d < 6) return vary(236, 60, 50, 18);                        // rotes Glas
     return vary(120, 26, 24, 14);                                   // dunkler Rand
+  });
+  tile(183,(x,y)=>{                                                 // 🔵 Blaulicht
+    const d = Math.hypot(x-7.5, y-7.5);
+    if (d < 3) return vary(248, 252, 255, 8);                       // heller Kern
+    if (d < 6) return vary(60, 120, 236, 20);                       // blaues Glas
+    return vary(24, 50, 128, 14);                                   // dunkler Rand
   });
   tile(181,(x,y)=>{                                                 // 🚪 Riesentor
     const band = (y>=2 && y<=3) || (y>=12 && y<=13);                // zwei Goldbaender
@@ -10426,7 +10603,7 @@ function spawnTick() {
     spawnMob('zombie', Math.floor(player.x+Math.cos(fang)*fd),
              Math.floor(player.z+Math.sin(fang)*fd), {hp:2, friedlich:true});
   }
-  if (!isNight() && countType(a=>a.type==='raeuber') < 2 && Math.random() < 0.1) {
+  if (!isNight() && countType(a=>a.type==='raeuber' && !a.gefangen) < 2 && Math.random() < 0.1) {
     const rang=Math.random()*Math.PI*2, rd=20+Math.random()*20;   // tagsüber schleichen Räuber umher!
     const rx=Math.floor(player.x+Math.cos(rang)*rd), rz=Math.floor(player.z+Math.sin(rang)*rd);
     let rfrei=true;                      // aber nie mitten in den Dörfern
@@ -11033,6 +11210,10 @@ function updateAnimals(dt) {
         !a.diener &&                      // 👽 dein Alien-Diener geht nie verloren
         a !== ufoRiding && !a.eigen &&    // 🛸 und das UFO, das du fliegst, erst recht nicht
         Math.hypot(a.x-player.x, a.z-player.z) > 72) { animals.splice(i,1); continue; }
+    if (a.dorfKnast) {                  // 🏢 sitzt in einer Dorf-Zelle
+      dorfKnastTick(a, dt);
+      continue;
+    }
     if (a.gefangen) {                   // 🚔 sitzt im Königs-Gefängnis und bleibt da
       a.kx = a.kz = 0; a.jagt = null;
       const chG = getChunk(Math.floor(a.x)>>4, Math.floor(a.z)>>4);
@@ -11648,6 +11829,12 @@ function drawAnimals() {
       pushBox(arr,a,  0.52,0.24, 0.6, 0.14,0.42,0.42, 55);
       pushBox(arr,a, -0.3,0.5,-0.98, 0.2,0.14,0.08, 37);           // Scheinwerfer
       pushBox(arr,a,  0.3,0.5,-0.98, 0.2,0.14,0.08, 37);
+      if (a.polizeiAuto) {                                         // 🚓 Blaulicht und blauer Streifen
+        const bl = (Math.floor(performance.now()/260) % 2) ? 35 : 49;
+        pushBox(arr,a, 0,1.12,0.12, 0.52,0.12,0.3, bl);
+        pushBox(arr,a, -0.54,0.55,0.1, 0.04,0.16,1.1, 35);
+        pushBox(arr,a,  0.54,0.55,0.1, 0.04,0.16,1.1, 35);
+      }
     } else if (a.type==='yacht') {                                 // 🛥️ DIE RIESEN-YACHT!
       const wippe2 = Math.sin(performance.now()*0.0011 + a.x)*0.06;
       pushBox(arr,a, 0,0.5+wippe2,0, 4.6,0.9,14.0, 49);            // der weiße Rumpf
@@ -20857,6 +21044,7 @@ function alarmAusloesen(dieb) {
     } catch(e) {}
   }, 900);
   setTimeout(() => { try { polizeiKommt(dieb); } catch(e) {} }, 2400);
+  try { wachenAlarm(); } catch(e) {}      // 🚓 die Anzeigetafel in der Wache
 }
 let alarmLaeuft = false;
 // 🤵 Wer ist Johann? Der Butler, der am nächsten steht - sonst kommt einer.
@@ -20882,7 +21070,7 @@ function polizeiKommt(dieb) {
   const m = SP_MITTE;
   const wx = SP_X + m + 3, wz = SP_Z + m + SP_R + 10;
   const by = Math.max(terrainHeight(wx, wz) + 1, SP_HY + 1);
-  const auto = { type:'car', name:'Polizeiauto', polizeiAuto:true, friend:3,
+  const auto = { type:'car', name:'Polizeiauto', polizeiAuto:true, friend:3, col:49,
     x: wx + 0.5, y: by + 0.2, z: wz + 0.5, yaw: Math.PI,
     vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false };
   const pol = { type:'polizist', name:'Polizist Jan', friend:3, speicherDienst:true,
@@ -20899,7 +21087,7 @@ function blaulicht(auto) {              // 🔵 Blaulicht auf dem Dach
   for (let i = 0; i < 14; i++)
     fireworks.push({ x: auto.x, y: auto.y + 1.1 + Math.random()*0.4, z: auto.z,
       vx:(Math.random()-0.5)*1.2, vy:0.5+Math.random(), vz:(Math.random()-0.5)*1.2,
-      tile: 52, t: 0.6 });
+      tile: (i % 2) ? 35 : 49, t: 0.6 });
 }
 // 👮 Der Polizist vom Geldspeicher: hin zum Dieb, festnehmen, abfahren
 function speicherPolizistTick(a, dt) {
@@ -20921,8 +21109,14 @@ function speicherPolizistTick(a, dt) {
     const i = animals.indexOf(dieb);
     if (i >= 0) animals.splice(i, 1);
     sagen(a, 'Festgenommen! Danke für den Anruf! 👮', 5);
-    toast('👮🚓 Festgenommen! Der Einbrecher fährt jetzt mit der Polizei mit. ' +
-          'Danke, Johann! 🤵', 7000);
+    // 🏢 Er fährt nicht einfach weg: Er kommt ins Gefängnis beim nächsten Dorf -
+    // dort kann Jonah ihn in seiner Zelle besuchen und antippen.
+    let knastE = null;
+    try { knastE = inKnastBringen(dieb.name || 'Einbrecher'); } catch(e) {}
+    toast('👮🚓 Festgenommen! Der Einbrecher kommt ins Gefängnis' +
+          (knastE ? ' beim nächsten Dorf – in Zelle ' + (knastE.nr + 1) +
+                    '. Da kannst du ihn besuchen! 🏢' : '.') +
+          ' Danke, Johann! 🤵', 8000);
     for (const f of [740, 988, 1175]) blip(f, 0.12);
     a.jagt = null; a.abfahrt = 3.5;
     alarmLaeuft = false;
@@ -20999,6 +21193,212 @@ function speicherAlarmTick(dt) {
   if (einbrechZeit > 0) return;
   einbrechZeit = EINBRUCH_PAUSE_MIN + Math.random() * EINBRUCH_PAUSE_EXTRA;
   einbrecherSchicken();
+}
+// ============ 🚓🏢 DIE POLIZEI IM GANZEN LAND (Jonahs Thema 20b) ===========
+// Zu jeder Dorf-Polizeiwache gehört:
+//  • 🔵 ein Blaulicht auf dem Dach, das blitzt, wenn Jonah in der Nähe ist
+//  • 🚓 Streifenwagen, die in der Gegend herumfahren (antippen = Spruch)
+//  • 🚨 eine Anzeigetafel drinnen: Bricht jemand bei Jonahs Geldspeicher ein,
+//       steht dort „Einbruch bei Jonahs Geldspeicher!" - und ein Streifenwagen
+//       fährt aus dem Tor los
+//  • 🏢 ein Gefängnis nebenan: Wer erwischt wird, sitzt dort WIRKLICH ein.
+//       Jonah kann ihn in seiner Zelle sehen und antippen. Nach 25 Minuten
+//       Spielzeit wird er entlassen - und ist dann ein freundlicher
+//       Dorfbewohner, der sich gebessert hat. 🕊️
+const KNAST_SEK = 25 * 60;              // so lange sitzt ein Einbrecher ein
+const STREIFE_MAX = 2;                  // nie mehr als zwei Streifenwagen auf einmal
+const ANZ_RUHIG = '🚓 Anzeigetafel: Alles ruhig im Revier. ✅';
+const KNAST_SPRUECHE = [
+  'Ich will hier raus! 😭', 'Das war bestimmt ein Missverständnis!',
+  'Nie wieder klaue ich etwas, versprochen!', 'Das Essen hier ist langweilig. 🥣',
+  'Wie lange muss ich denn noch bleiben?', 'Butler Johann hat mich verpetzt! 🤵',
+  'Deine Alarmanlage ist echt gut. 🚨',
+];
+const STREIFE_SPRUECHE = [
+  'Alles ruhig hier! 👮', 'Wir passen auf dein Geld auf, Jonah! 💰',
+  'Sag Bescheid, wenn du etwas Verdächtiges siehst!', 'Tatü-tata! 🚓',
+  'Einen schönen Tag noch! 👋', 'Wir fahren einmal um den Block.',
+];
+const zufallsSatz = (l) => l[Math.floor(Math.random()*l.length)];
+let spielSek = 0;                       // Spielzeit insgesamt - danach wird entlassen
+let knastListe = [];                    // [{vx,vz,nr,name,start}]: wer sitzt wo ein?
+let wacheAnzeigeK = null, wacheAnzeigeBis = 0;
+function knastKey(e) { return e.vx + ',' + e.vz + ',' + e.nr + ',' + Math.round(e.start); }
+// 🚔 Festgenommen: ab in die nächste freie Zelle
+function inKnastBringen(name) {
+  const w = wacheNah(player.x, player.z, 600);
+  if (!w) return null;
+  const belegt = knastListe.filter(e => e.vx === w.vx && e.vz === w.vz).map(e => e.nr);
+  let nr = -1;
+  for (let i = 0; i < 3; i++) if (belegt.indexOf(i) < 0) { nr = i; break; }
+  if (nr < 0) nr = Math.floor(Math.random() * 3);        // alles voll: zusammenrücken
+  const e = { vx: w.vx, vz: w.vz, nr, name: name || 'Einbrecher', start: spielSek };
+  knastListe.push(e);
+  scheduleSave();
+  return e;
+}
+// 🚨 Alarm im Geldspeicher: in der nächsten Wache leuchtet die Anzeigetafel
+function wachenAlarm() {
+  const w = wacheNah(player.x, player.z, 600);
+  if (!w) return;
+  if (signTexts.has(w.anzK)) {
+    setSignText(w.anzK, '🚨 Einbruch bei Jonahs Geldspeicher! Sofort hinfahren!');
+    wacheAnzeigeK = w.anzK; wacheAnzeigeBis = spielSek + 90;
+  }
+  if (Math.hypot(w.torX - player.x, w.torZ - player.z) < 150) {
+    toast('🚓 In der Polizeiwache leuchtet die Anzeigetafel: „🚨 Einbruch bei Jonahs ' +
+          'Geldspeicher!" – die Polizisten rücken sofort aus! 🚨', 7000);
+    wacheAusruecken(w);
+  }
+}
+// 🚓 Ein Streifenwagen fährt aus dem Tor der Wache
+function wacheAusruecken(w) {
+  const bx = w.torX, bz = w.torZ, by = w.wy + 1;
+  const ch = getChunk(bx >> 4, bz >> 4);
+  if (!ch || !ch.data) return;
+  const auto = { type:'car', name:'Streifenwagen', polizeiAuto:true, streife:true,
+    friend:3, col:49, x: bx + 0.5, y: by, z: bz + 0.5, yaw: Math.PI,
+    vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false };
+  animals.push(auto);
+  blaulicht(auto);
+  for (const f of [988, 740, 988]) blip(f, 0.12);
+}
+// 🚓 Ein Streifenwagen taucht in der Gegend auf (nur in der Nähe einer Wache)
+function streifeSchicken() {
+  for (let i = 0; i < 6; i++) {         // ein paar Plätze probieren: Wasser und
+    const ang = Math.random() * Math.PI * 2;   // Häuser gehen nicht, und das Stück
+    const d = 14 + Math.random() * 14;         // Welt muss auch geladen sein
+    const x = Math.floor(player.x + Math.cos(ang)*d), z = Math.floor(player.z + Math.sin(ang)*d);
+    if (spawnMob('car', x, z, { name:'Streifenwagen', polizeiAuto:true, streife:true,
+                                friend:3, col:49, hp:5 })) return true;
+  }
+  return false;
+}
+// 👋 Jonah tippt einen Streifenwagen an: Spruch statt Einsteigen
+function streifeSpruch(a) {
+  sagen(a, zufallsSatz(STREIFE_SPRUECHE), 4);
+  blaulicht(a);
+  blip(988, 0.08); blip(740, 0.1);
+  if (!a.gesagt) {
+    a.gesagt = true;
+    toast('🚓 Das ist ein Streifenwagen der Polizei – den fahren nur die Polizisten. ' +
+          'Winken darfst du aber! 👋', 5000);
+  }
+}
+// 👉 Jonah tippt einen Gefangenen an
+function knastSpruch(a) {
+  const e = knastListe.find(x => knastKey(x) === a.dorfKnast);
+  const rest = e ? Math.max(1, Math.ceil((KNAST_SEK - (spielSek - e.start)) / 60)) : 1;
+  sagen(a, zufallsSatz(KNAST_SPRUECHE), 4);
+  toast('🏢 ' + (a.name || 'Der Einbrecher') + ' sitzt im Gefängnis. Noch ungefähr ' +
+        rest + ' Minuten Spielzeit, dann wird er entlassen – und hat sich gebessert. 🕊️', 6000);
+  blip(330, 0.08);
+}
+// 🚶 Ein Gefangener in einer Dorf-Zelle: bleibt drin, läuft ein bisschen herum
+function dorfKnastTick(a, dt) {
+  a.kx = a.kz = 0; a.jagt = null; a.walking = false;
+  const ch = getChunk(Math.floor(a.x) >> 4, Math.floor(a.z) >> 4);
+  if (ch && ch.data) {
+    a.vy = Math.max(a.vy - 25*dt, -30);
+    const ny = a.y + a.vy*dt;
+    if (!collideBox(a.x, ny, a.z, 0.32, 1.8)) a.y = ny; else a.vy = 0;
+  } else { a.vy = 0; return; }
+  a.zielT = (a.zielT || 0) - dt;
+  if (a.zielT <= 0) {                   // alle paar Sekunden ein neues Eckchen
+    a.zielT = 1.5 + Math.random() * 3;
+    a.zx = a.heimX + (Math.random() - 0.5) * 1.1;
+    a.zz = a.heimZ + (Math.random() - 0.5) * 1.1;
+  }
+  const dx = (a.zx === undefined ? a.x : a.zx) - a.x;
+  const dz = (a.zz === undefined ? a.z : a.zz) - a.z;
+  const d = Math.hypot(dx, dz);
+  if (d > 0.12) {
+    const s2 = Math.min(d, dt * 1.1);
+    a.x += dx/d * s2; a.z += dz/d * s2;
+    a.yaw = Math.atan2(dx, -dz); a.walking = true;
+  }
+  if (Math.hypot(player.x - a.x, player.z - a.z) < 12 && Math.random() < dt * 0.22)
+    sagen(a, zufallsSatz(KNAST_SPRUECHE), 3);
+}
+// 🕊️ Entlassung: aus dem Einbrecher wird ein freundlicher Dorfbewohner
+function knastEntlassen(e) {
+  const w = wacheAt({ vx: e.vx, vz: e.vz });
+  const a = animals.find(x => x.dorfKnast === knastKey(e));
+  if (a && w) {
+    const pz2 = knastPlatz(w, e.nr);
+    try { setBlock(pz2.tx, w.wy + 1, pz2.tz, GTUER_AUF); } catch(err) {}   // Tür auf!
+    a.type = 'villager'; a.gefangen = false; a.dorfKnast = null;
+    a.friend = 3; a.hp = 5; a.gebessert = true;
+    a.x = w.hofX + 0.5; a.z = w.hofZ + 0.5; a.y = w.wy + 1;
+    a.name = (e.name && e.name !== 'Einbrecher') ? e.name : 'Der gebesserte Nachbar';
+    sagen(a, 'Ich habe mich gebessert! 😊', 6);
+    toast('🕊️ Die Polizei hat ' + a.name + ' entlassen: „Ich habe mich gebessert!" – ' +
+          'jetzt ist er ein freundlicher Dorfbewohner. 😊', 7000);
+    blip(660, 0.1); blip(880, 0.12);
+  }
+}
+// ⏱️ Einmal pro Bild: Blaulicht, Streifenwagen, Gefangene, Entlassungen.
+// Alles Schwere nur zweimal pro Sekunde - und nur, wenn Jonah in der Nähe ist.
+let wacheT = 0;
+function wachenTick(dt) {
+  spielSek += dt;
+  if (wacheAnzeigeK && spielSek > wacheAnzeigeBis) {
+    if (signTexts.get(wacheAnzeigeK) !== undefined) setSignText(wacheAnzeigeK, ANZ_RUHIG);
+    wacheAnzeigeK = null;
+  }
+  wacheT -= dt;
+  if (wacheT > 0) return;
+  wacheT = 0.5;
+  if (weltDim !== 0) {                  // in anderen Welten sitzt hier niemand
+    for (let i = animals.length - 1; i >= 0; i--)
+      if (animals[i].dorfKnast) animals.splice(i, 1);
+    return;
+  }
+  const w = wacheNah(player.x, player.z, 220);
+  if (w) {
+    const d = Math.hypot(w.torX - player.x, w.torZ - player.z);
+    if (d < 70)                         // 🔵 das Blaulicht blitzt auf dem Dach
+      for (let i = 0; i < 3; i++)
+        fireworks.push({ x: w.wx0 + 4.5 + Math.random(), y: w.wy + 5.7 + Math.random()*0.3,
+          z: w.wz0 + 4.5, vx:(Math.random()-0.5), vy:0.3+Math.random()*0.6,
+          vz:(Math.random()-0.5), tile: 35, t: 0.5 });
+    if (d < 150 && countType(a => a.streife) < STREIFE_MAX && Math.random() < 0.1)
+      streifeSchicken();                // 🚓 eine Streife fährt vorbei
+  }
+  // 🧹 Erst aufräumen: Gefangene, zu denen es KEINEN Eintrag mehr gibt, dürfen
+  // nicht in der Zelle stehen bleiben - sonst säße da für immer jemand, den die
+  // Polizei längst entlassen hat.
+  for (let i = animals.length - 1; i >= 0; i--) {
+    const a = animals[i];
+    if (a.dorfKnast && !knastListe.some(e => knastKey(e) === a.dorfKnast))
+      animals.splice(i, 1);
+  }
+  // 🏢 die Gefangenen: in der Nähe sichtbar machen, weit weg wieder wegräumen
+  for (const e of knastListe) {
+    const key = knastKey(e);
+    const da = animals.find(a => a.dorfKnast === key);
+    const nah = Math.hypot(e.vx - player.x, e.vz - player.z) < 120;
+    if (nah && !da) {
+      const wv = wacheAt({ vx: e.vx, vz: e.vz });
+      if (!wv) continue;
+      const pz2 = knastPlatz(wv, e.nr);
+      const ch = getChunk(Math.floor(pz2.x) >> 4, Math.floor(pz2.z) >> 4);
+      if (!ch || !ch.data) continue;
+      animals.push({ type:'raeuber', name: e.name, friend:0, gefangen:true, dorfKnast:key,
+        x: pz2.x, y: pz2.y, z: pz2.z, heimX: pz2.x, heimZ: pz2.z, yaw: Math.PI,
+        vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false });
+    } else if (!nah && da) {
+      animals.splice(animals.indexOf(da), 1);
+    }
+  }
+  // 🕊️ und wer lange genug gesessen hat, darf wieder raus
+  for (let i = knastListe.length - 1; i >= 0; i--) {
+    const e = knastListe[i];
+    if (spielSek - e.start < KNAST_SEK) continue;
+    knastEntlassen(e);
+    knastListe.splice(i, 1);
+    scheduleSave();
+  }
 }
 function saugAnzeigen() {
   const info = speicherGeldInfo();
@@ -25865,7 +26265,7 @@ function openLied() {
 const KANONE_REICHWEITE = 24;
 let kanonenTipp = false;
 function istFeind(a) {
-  return !a.friedlich && !a.tame &&
+  return !a.friedlich && !a.tame && !a.gefangen &&
     (a.type==='raeuber' || a.type==='zombie' || a.type==='slime' || a.type==='boss' || a.type==='riese');
 }
 function kanonenTick(dt) {
@@ -26216,7 +26616,7 @@ const MAP_BLOCK_COL = {
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
-  [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c', [ALARM]:'#e04040',
+  [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c', [ALARM]:'#e04040', [BLAULICHT]:'#3a7ae0',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -26272,6 +26672,9 @@ function collectMarks(cx0, cz0, r) {    // alle Orte im Umkreis einsammeln
   for (const v of scan(VCELL,villageAt)) {
     marks.push({x:v.vx, z:v.vz, e:'🏠'});
     if (bankSteht(v)) marks.push({x:v.vx-15, z:v.vz+26, e:'🏦'});   // die große Bank
+    const wv = wacheAt(v);                                         // 🚓🏢 Wache und Gefängnis
+    if (wv) { marks.push({x:wv.wx0+4, z:wv.wz0+5, e:'🚓'});
+              marks.push({x:wv.hofX, z:wv.hofZ, e:'🏢'}); }
   }
   for (const f of scan(FCELL,fieldAt)) marks.push({x:f.fx, z:f.fz, e:'⚽'});
   for (const c of scan(CAVE_CELL,caveAt)) marks.push({x:c.ex, z:c.ez, e:'🕳️'});
@@ -28631,6 +29034,10 @@ function werdeStatue(a) {               // Monster erstarren zu Stein-Statuen! �
   scheduleSave();
 }
 function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
+  // 🏢 Wer im Dorf-Gefängnis sitzt, ist tabu: Die Polizei passt auf ihn auf.
+  // Sonst könnte man ihn mit Kanone, Roboter oder Bagger immer wieder besiegen
+  // (er käme ja gleich wieder) und dabei endlos Punkte sammeln.
+  if (a.dorfKnast) return false;
   a.hp -= dmg;
   a.kx += dir[0]*6; a.kz += dir[2]*6; a.vy=4; a.onGround=false;
   blip(150,0.08);
@@ -28682,6 +29089,8 @@ function slimeDamage(a, dmg, dir) {     // Monster verletzen; true = besiegt
   return false;
 }
 function hitEntity(a, dir) {
+  if (a.dorfKnast) { knastSpruch(a); return; }        // 🏢 ein Gefangener erzählt etwas
+  if (a.type==='car' && a.streife) { streifeSpruch(a); return; }   // 🚓 Streifenwagen
   if (a.type==='surfbrett') {           // 🏄 rauf aufs Brett!
     if (surfRiding || riding || jetRiding || carRiding || heliRiding ||
         dragonRiding || baggerRiding || boatRiding || ufoRiding) return;
@@ -30561,6 +30970,7 @@ function frame(now) {
 
   matheTick(dt);                        // 🧮 ist wieder eine Rechen-Pause dran?
   try { speicherAlarmTick(dt); } catch(e) {}   // 🚨 Einbrecher und Alarmanlage
+  try { wachenTick(dt); } catch(e) {}          // 🚓🏢 Wachen, Streifen und Gefängnisse
   // Während der Rechen-Aufgabe bleibt die ganze Welt stehen: nichts bewegt
   // sich, nichts fällt, kein Monster kommt näher. Nur das Bild läuft weiter.
   if (mathePause) dt = 0;
