@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 314</div>
+    <div id="verZeile">Version 315</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 314;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 315;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Der Update-Kasten sagt jetzt, was neu ist! 🆕';
+const NEU_TEXT = 'Einbrecher, Alarmanlage und die Polizei! 🚨🚓';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -2235,10 +2235,11 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, SAND=4, WOOD=5, LEAF=6, WATER=7, PLANK=8,
       BUCHREGAL_V=132,                  // 📚 dasselbe Regal, aber voller Bücher
       BUCHREGAL_OBEN_V=133,             // 📚 (unten und oben)
       GLOCKE=134,                       // 🔔 die Diener-Glocke in jedem Burgzimmer
-      RB_TOR=135;                       // 🚪 das Riesentor vor jedem Zimmer der Riesenburg
+      RB_TOR=135,                       // 🚪 das Riesentor vor jedem Zimmer der Riesenburg
+      ALARM=136;                        // 🚨 die Alarmanlage im Geldspeicher
 // 🛡️ Diese Blöcke kriegt NIEMAND kaputt - auch Jonah nicht. Kein Abbauen, kein
 // TNT, kein Bagger, kein Laser: der Safe bleibt ganz.
-const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF, RB_TOR]);
+const UNZERSTOERBAR = new Set([SAFE, SAFE_TUER, SAFE_RAD, SAFE_AUF, RB_TOR, ALARM]);
 // 💵🪙 alles, was echtes Geld ist: hinstellen kostet 1 €, abbauen gibt 1 € zurück
 // 💶 Was ist welcher Geld-Block wert? Scheine und Münzen je 1 €, ein
 // Goldbarren gleich 100 € - damit passt in den Geldspeicher 100-mal so viel.
@@ -2624,6 +2625,13 @@ const BLOCKS = {
   // Antippen zieht es hoch wie ein Fallgitter - oben bleibt ein Stueck stehen,
   // und das tippt man an, damit es wieder herunterfaellt.
   [RB_TOR]: { name:'Riesentor 🚪 (antippen = auf und zu!)', tiles:[181,181,181], solid:true },
+  // 🚨 DIE ALARMANLAGE: ein Kasten mit Sirene und roter Lampe an der Wand des
+  // Geldspeichers. Antippen schaltet sie an und aus.
+  [ALARM]: { name:'Alarmanlage 🚨 (antippen = an und aus)', tiles:[182,182,182],
+    solid:false, model:[
+    [0.18,0.00,0.30, 0.82,0.70,0.70, 128],              // der graue Kasten
+    [0.30,0.70,0.36, 0.70,0.94,0.64, 182, 1.6],         // die rote Lampe obendrauf
+    [0.40,0.94,0.44, 0.60,1.00,0.56, 55]] },            // der kleine Knauf
   [GLOCKE]: { name:'Diener-Glocke 🔔 (antippen = ein Diener kommt!)',
     tiles:[115,115,115], solid:false, model:[
     [0.06,0.00,0.40, 0.20,0.92,0.60, 5],                // linker Pfosten
@@ -7451,6 +7459,7 @@ function baueSpielstand() {
       knast: animals.filter(a=>a.gefangen && typeof a.zelle==='number').map(a=>a.zelle),
       // 👽 deine Alien-Diener bleiben dir erhalten
       aliens: alienSpeicher(),           // 👽 nach Welten sortiert: wer wohnt wo?
+      alarmAn,                           // 🚨 ist die Alarmanlage scharf?
       zellen: zellenAnzahl,              // 🔨 so viele Zellen hat die Polizei gebaut
       ziele: customTargets,
       jet: jetSave,
@@ -7667,6 +7676,7 @@ function loadGame() {
     }
     if (Array.isArray(s.kanonen)) for (const k of s.kanonen) kanonen.set(k, 0);
     if (typeof s.konto==='number') kontoStand = s.konto;      // 🏦 Konto-Stand
+    if (typeof s.alarmAn === 'boolean') alarmAn = s.alarmAn;  // 🚨 die Alarmanlage
     if (typeof s.rbStufe==='number') rbStufe = s.rbStufe;    // 🔮 Riesenburg-Rätsel
     if (Array.isArray(s.rbCodes))                            // 🔮 die vier eigenen Codes
       for (let i = 0; i < rbCodes.length; i++)
@@ -8574,6 +8584,12 @@ atlas.width = atlas.height = T*ATLAS_N;
     if (r < 5.0 && Math.min(Math.abs(dx),Math.abs(dy)) < 0.8) return vary(200,208,220,10);  // Speichen
     if (r > 6.8) return vary(96,104,118,10);                        // Rahmen
     return vary(140,150,166,12);                                    // Lukendeckel
+  });
+  tile(182,(x,y)=>{                                                 // 🚨 Alarm-Lampe
+    const d = Math.hypot(x-7.5, y-7.5);
+    if (d < 3) return vary(255, 240, 230, 10);                      // heller Kern
+    if (d < 6) return vary(236, 60, 50, 18);                        // rotes Glas
+    return vary(120, 26, 24, 14);                                   // dunkler Rand
   });
   tile(181,(x,y)=>{                                                 // 🚪 Riesentor
     const band = (y>=2 && y<=3) || (y>=12 && y<=13);                // zwei Goldbaender
@@ -11194,7 +11210,9 @@ function updateAnimals(dt) {
     }
 
     // 👮 Polizisten schauen zuerst, ob ein Einbrecher in der Festung ist
-    if (a.type==='polizist' && polizeiJagd(a, dt)) { a.spd = 2.6; }
+    // 👮 Der Polizist vom Geldspeicher hat seinen eigenen Auftrag
+    if (a.type==='polizist' && a.speicherDienst) { speicherPolizistTick(a, dt); }
+    else if (a.type==='polizist' && polizeiJagd(a, dt)) { a.spd = 2.6; }
     // KI: abwechselnd stehen und in eine zufällige Richtung laufen
     a.t -= dt;
     if (a.t<=0) {
@@ -19307,6 +19325,7 @@ function speicherBlock(lx, lz, y) {
     if (dx === 2 && dz === 10 && y === hy + 1) return SIGN;
     if (dx === -2 && dz === 10 && y === hy + 1) return GELDSCHUETTE;   // 🪣 die Schütte
     if (dx === -5 && dz === 10 && y === hy + 1) return GELDSAUGER;     // 🌪️ der Sauger
+    if (dx ===  5 && dz === 10 && y === hy + 1) return ALARM;          // 🚨 die Alarmanlage
     if (dx === 2 && dz === SPT_SCHACHT + 3 && y === hy + 1) return SIGN;
     if (dx === SPT_TR_X + 2 && dz === SPT_TR_Z0 && y === hy + 1) return SIGN;  // an der Treppe
     return AIR;
@@ -20740,7 +20759,8 @@ function eingangFreiRaeumen() {
 //
 // Darum wird einmal pro Spielstart nachgeschaut und notfalls repariert.
 // Lag dort Geld, kommt es vorher in den Geldbeutel - es geht nichts verloren.
-const SP_FESTE_SACHEN = [[-5, 10, 'sauger'], [-2, 10, 'schuette'], [2, 10, 'schild']];
+const SP_FESTE_SACHEN = [[-5, 10, 'sauger'], [-2, 10, 'schuette'], [2, 10, 'schild'],
+                         [5, 10, 'alarm']];
 let saugerGeprueft = false;
 function saugerPruefen() {
   if (saugerGeprueft || weltDim !== 0) return;
@@ -20748,7 +20768,8 @@ function saugerPruefen() {
   const m = SP_MITTE, hy = SP_HY;
   let repariert = 0, zurueck = 0;
   for (const [dx, dz, art] of SP_FESTE_SACHEN) {
-    const soll = art === 'sauger' ? GELDSAUGER : art === 'schuette' ? GELDSCHUETTE : SIGN;
+    const soll = art === 'sauger' ? GELDSAUGER : art === 'schuette' ? GELDSCHUETTE
+               : art === 'alarm' ? ALARM : SIGN;
     const wx = SP_X + m + dx, wy = hy + 1, wz = SP_Z + m + dz;
     const ch = getChunk(wx >> 4, wz >> 4);
     if (!ch || !ch.data) return;        // der Geldspeicher ist noch nicht geladen
@@ -20770,6 +20791,215 @@ function saugerPruefen() {
   for (const f of [520, 660, 790, 990]) blip(f, 0.07);
 }
 setInterval(saugerPruefen, 2000);
+// ============== 🚨 EINBRECHER, ALARMANLAGE UND DIE POLIZEI ==============
+// Jonah: "Dass bei meinem Geldspeicher doch Einbrecher hinkommen können. Aber
+// dafür gibt es eine Alarmanlage: Wenn die einen Räuber bemerkt, schlägt sie
+// Alarm." Und danach: "Mein Butler soll die Einbrecher nicht mehr rauswerfen,
+// sondern er ruft die Polizei, und die kommt ganz schnell her."
+//
+// Ablauf: ab und zu schleicht ein Einbrecher zum Geldspeicher -> die Anlage
+// bemerkt ihn -> Sirene und rotes Blinken -> Butler Johann ruft die Polizei ->
+// ein Polizeiauto kommt mit Blaulicht -> der Polizist nimmt ihn fest und fährt
+// mit ihm weg. Punkte gibt es nur, wenn JONAH ihn selbst besiegt.
+let alarmAn = true;                     // die Anlage ist von Anfang an scharf
+let einbrechZeit = 300 + Math.random() * 300;   // erst nach 5-10 Minuten der erste
+let alarmBlink = 0, alarmSirene = 0;
+const EINBRUCH_PAUSE_MIN = 600, EINBRUCH_PAUSE_EXTRA = 300;   // 10 bis 15 Minuten
+function alarmSchalten() {
+  alarmAn = !alarmAn;
+  if (alarmAn) {
+    toast('🚨 Alarmanlage AN! Wenn ein Einbrecher kommt, schlägt sie sofort Alarm ' +
+          'und Johann ruft die Polizei. 👮', 5000);
+    blip(880, 0.08); blip(1047, 0.1);
+  } else {
+    toast('🔕 Alarmanlage AUS. Vorsicht: Jetzt merkt niemand, wenn ein Einbrecher ' +
+          'kommt! Tipp sie noch mal an, dann ist sie wieder scharf.', 6000);
+    blip(400, 0.08); blip(260, 0.12);
+  }
+  scheduleSave();
+}
+// Ist Jonah in der Nähe seines Geldspeichers?
+function imSpeicherNah(r) {
+  speicherHoehe();
+  return weltDim === 0 &&
+         Math.hypot(player.x - (SP_X + SP_MITTE), player.z - (SP_Z + SP_MITTE)) < (r || 90);
+}
+// 😈 Ein Einbrecher macht sich auf den Weg
+function einbrecherSchicken() {
+  speicherHoehe();
+  const m = SP_MITTE;
+  const wx = SP_X + m, wz = SP_Z + m + SP_R + 14;      // draußen vor dem Eingang
+  const ch = getChunk(wx >> 4, wz >> 4);
+  if (!ch || !ch.data) return null;
+  const a = { type:'raeuber', name:'Einbrecher', friend:0, speicherDieb:true,
+    x: wx + 0.5, y: Math.max(terrainHeight(wx, wz) + 1, SP_HY + 1), z: wz + 0.5,
+    yaw: Math.PI, vy:0, kx:0, kz:0, hp:5, beute:0,
+    walking:false, t:2, ph:0, onGround:false };
+  animals.push(a);
+  if (imSpeicherNah(60))
+    toast('👀 Da schleicht jemand um deinen Geldspeicher herum …', 4000);
+  return a;
+}
+// 🚨 Die Anlage bemerkt ihn
+function alarmAusloesen(dieb) {
+  if (alarmLaeuft) return;
+  alarmLaeuft = true;
+  alarmBlink = 9; alarmSirene = 6;
+  toast('🚨🚨 ALARM! Ein Einbrecher im Geldspeicher!', 6000);
+  for (const f of [880, 587, 880, 587, 880]) blip(f, 0.14);
+  // 🤵 Johann ruft die Polizei
+  const johann = butlerJohann();
+  setTimeout(() => {
+    try {
+      if (johann) sagen(johann, 'Ich rufe sofort die Polizei! 🤵📞', 4);
+      toast('🤵 Johann: „Ich rufe sofort die Polizei!"', 4500);
+      blip(660, 0.08); blip(520, 0.1);
+    } catch(e) {}
+  }, 900);
+  setTimeout(() => { try { polizeiKommt(dieb); } catch(e) {} }, 2400);
+}
+let alarmLaeuft = false;
+// 🤵 Wer ist Johann? Der Butler, der am nächsten steht - sonst kommt einer.
+function butlerJohann() {
+  let best = null, bd = 1e9;
+  for (const a of animals) {
+    if (a.type !== 'butler' || a.fremd) continue;
+    const d = Math.hypot(a.x - player.x, a.z - player.z);
+    if (d < bd) { bd = d; best = a; }
+  }
+  if (best && bd < 60) { best.name = best.name || 'Butler Johann'; return best; }
+  const a = { type:'butler', name:'Butler Johann', friend:3,
+    x: player.x + (Math.random()*3 - 1.5), y: player.y + 1,
+    z: player.z + (Math.random()*3 - 1.5),
+    yaw: Math.random()*6, vy:0, kx:0, kz:0, hp:5,
+    walking:false, t:2, ph:0, onGround:false };
+  animals.push(a);
+  return a;
+}
+// 🚓 Das Polizeiauto kommt - ganz schnell, damit es garantiert da ist
+function polizeiKommt(dieb) {
+  speicherHoehe();
+  const m = SP_MITTE;
+  const wx = SP_X + m + 3, wz = SP_Z + m + SP_R + 10;
+  const by = Math.max(terrainHeight(wx, wz) + 1, SP_HY + 1);
+  const auto = { type:'car', name:'Polizeiauto', polizeiAuto:true, friend:3,
+    x: wx + 0.5, y: by + 0.2, z: wz + 0.5, yaw: Math.PI,
+    vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false };
+  const pol = { type:'polizist', name:'Polizist Jan', friend:3, speicherDienst:true,
+    jagt: dieb && animals.includes(dieb) ? dieb : null,
+    x: wx + 1.5, y: by, z: wz + 0.5, yaw: Math.PI,
+    vy:0, kx:0, kz:0, hp:5, walking:false, t:2, ph:0, onGround:false };
+  animals.push(auto); animals.push(pol);
+  blaulicht(auto);
+  toast('🚓🚨 Das Polizeiauto ist da – mit Blaulicht und Sirene!', 5000);
+  for (const f of [988, 740, 988, 740]) blip(f, 0.13);
+  pol.autoRef = auto;
+}
+function blaulicht(auto) {              // 🔵 Blaulicht auf dem Dach
+  for (let i = 0; i < 14; i++)
+    fireworks.push({ x: auto.x, y: auto.y + 1.1 + Math.random()*0.4, z: auto.z,
+      vx:(Math.random()-0.5)*1.2, vy:0.5+Math.random(), vz:(Math.random()-0.5)*1.2,
+      tile: 52, t: 0.6 });
+}
+// 👮 Der Polizist vom Geldspeicher: hin zum Dieb, festnehmen, abfahren
+function speicherPolizistTick(a, dt) {
+  a.t = 9;
+  const dieb = a.jagt && animals.includes(a.jagt) && !a.jagt.festgenommen ? a.jagt : null;
+  if (dieb) {
+    const d = Math.hypot(dieb.x - a.x, dieb.z - a.z);
+    a.yaw = Math.atan2(dieb.x - a.x, -(dieb.z - a.z));
+    if (d > 1.8) {
+      a.walking = true; a.spd = 5.2;
+      a.festT = (a.festT || 0) + dt;
+      if (a.festT > 4) {                // sicher ankommen, auch durch Tore hindurch
+        a.x = dieb.x + 1.2; a.z = dieb.z + 0.4; a.y = dieb.y; a.vy = 0; a.festT = 0;
+      }
+      return true;
+    }
+    // 🖐️ Festgenommen!
+    dieb.festgenommen = true;
+    const i = animals.indexOf(dieb);
+    if (i >= 0) animals.splice(i, 1);
+    sagen(a, 'Festgenommen! Danke für den Anruf! 👮', 5);
+    toast('👮🚓 Festgenommen! Der Einbrecher fährt jetzt mit der Polizei mit. ' +
+          'Danke, Johann! 🤵', 7000);
+    for (const f of [740, 988, 1175]) blip(f, 0.12);
+    a.jagt = null; a.abfahrt = 3.5;
+    alarmLaeuft = false;
+    scheduleSave();
+    return true;
+  }
+  // 🚗 Wieder wegfahren
+  if (a.abfahrt !== undefined) {
+    a.abfahrt -= dt;
+    if (a.autoRef) blaulicht(a.autoRef);
+    if (a.abfahrt <= 0) {
+      for (const weg of [a.autoRef, a]) {
+        const i = animals.indexOf(weg);
+        if (i >= 0) animals.splice(i, 1);
+      }
+    }
+    return true;
+  }
+  a.walking = false;
+  return true;
+}
+// ⏱️ Einmal pro Bild: Zeit bis zum nächsten Einbruch, Alarm und Blinken
+function speicherAlarmTick(dt) {
+  if (alarmBlink > 0) {                 // 🔴 rotes Blinken an der Anlage
+    alarmBlink -= dt;
+    if (imSpeicherNah(70) && Math.random() < dt * 14) {
+      speicherHoehe();
+      const m = SP_MITTE;
+      for (let i = 0; i < 4; i++)
+        fireworks.push({ x: SP_X + m + 5.5, y: SP_HY + 1.9 + Math.random()*0.5,
+          z: SP_Z + m + 10.5, vx:(Math.random()-0.5)*1.4, vy:0.4+Math.random(),
+          vz:(Math.random()-0.5)*1.4, tile: 30, t: 0.5 });
+    }
+  }
+  if (alarmSirene > 0) {                // 📢 die Sirene heult
+    alarmSirene -= dt;
+    if (Math.random() < dt * 2.2) { blip(880, 0.1); setTimeout(() => blip(587, 0.1), 130); }
+  }
+  if (weltDim !== 0) return;
+  // Bemerkt die Anlage gerade einen Einbrecher in der Halle?
+  for (const a of animals) {
+    if (a.type !== 'raeuber' || a.festgenommen) continue;
+    speicherHoehe();
+    const m = SP_MITTE;
+    const drin = Math.abs(a.x - (SP_X + m)) < SP_R && Math.abs(a.z - (SP_Z + m)) < SP_R;
+    if (!drin) continue;
+    if (alarmAn) { if (!a.gemeldet) { a.gemeldet = true; alarmAusloesen(a); } }
+    else if (!a.geklaut) {              // 🔕 Anlage aus: er schnappt sich etwas
+      a.geklaut = true;
+      const n = geldSaugen ? 0 : 0;
+      let beute = 0;
+      try {
+        for (let dy = 1; dy <= 3 && !beute; dy++)
+          for (let dz2 = -6; dz2 <= 8 && !beute; dz2++)
+            for (let dx2 = -8; dx2 <= 8 && !beute; dx2++) {
+              const bx = SP_X+m+dx2, byy = SP_HY+dy, bz = SP_Z+m+dz2;
+              const b = getBlock(bx, byy, bz);
+              if (GELD_BLOCK.has(b)) { setBlock(bx, byy, bz, AIR); beute = GELD_WERT[b] || 1; }
+            }
+      } catch(e) {}
+      a.beute = beute;
+      toast('🔕😈 Oje! Die Alarmanlage war AUS – der Einbrecher hat ' + (beute || 0) +
+            ' € geschnappt und rennt weg! Schalt sie wieder an (🚨 an der Wand).', 8000);
+      blip(300, 0.12); blip(200, 0.14);
+      a.flieht = 14;
+      scheduleSave();
+    }
+  }
+  // Ab und zu kommt einer - aber nur, wenn Jonah auch da ist und nichts offen hat
+  if (!imSpeicherNah()) return;
+  if (chatOpen || alarmLaeuft) return;
+  if (animals.some(a => a.type === 'raeuber' && a.speicherDieb)) return;
+  einbrechZeit -= dt;
+  if (einbrechZeit > 0) return;
+  einbrechZeit = EINBRUCH_PAUSE_MIN + Math.random() * EINBRUCH_PAUSE_EXTRA;
+  einbrecherSchicken();
+}
 function saugAnzeigen() {
   const info = speicherGeldInfo();
   document.getElementById('saugInfo').innerHTML =
@@ -25986,7 +26216,7 @@ const MAP_BLOCK_COL = {
   [BONBON]:'#fa8abe', [ZUCKERSTANGE]:'#e63448', [LUTSCHER]:'#ff5678', [SCHOKO]:'#684024',
   [GELD]:'#4a9e6a', [MUENZEN]:'#eec43a', [KANONE]:'#3a3e48', [RADIO]:'#926238', [BANK]:'#68707e', [RAKETE]:'#a6acba', [STEUER]:'#3a4050', [GOLD]:'#f0c83c', [STRASSE]:'#3e4046', [STRASSE_M]:'#5a5c62', [KRONE]:'#f6ce42', [ZEPTER]:'#8a6640', [THRON]:'#c4283a',
   [TREP_N]:'#b08a58', [TREP_S]:'#b08a58', [TREP_E]:'#b08a58', [TREP_W]:'#b08a58',
-  [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c',
+  [GLOCKE]:'#f0c83c', [RB_TOR]:'#8a6a3c', [ALARM]:'#e04040',
 };
 function topColor(x,z) {                // echte Draufsicht: zeigt auch Häuser und Bäume!
   const ch = getChunk(x>>4, z>>4);
@@ -29171,6 +29401,10 @@ function doPlace(dir) {
     rbTorSchalten(hit.x, hit.y, hit.z);
     return;
   }
+  if (hit.block===ALARM) {                // 🚨 die Alarmanlage an- und ausschalten
+    alarmSchalten();
+    return;
+  }
   if (hit.block===HOLOKNOPF) {            // 🔴 der Startknopf an der Hallenwand
     halleProgrammStarten();
     return;
@@ -30326,6 +30560,7 @@ function frame(now) {
   if (!started) return;
 
   matheTick(dt);                        // 🧮 ist wieder eine Rechen-Pause dran?
+  try { speicherAlarmTick(dt); } catch(e) {}   // 🚨 Einbrecher und Alarmanlage
   // Während der Rechen-Aufgabe bleibt die ganze Welt stehen: nichts bewegt
   // sich, nichts fällt, kein Monster kommt näher. Nur das Bild läuft weiter.
   if (mathePause) dt = 0;
