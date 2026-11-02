@@ -3,7 +3,7 @@
 Register des „Session Manager für Jonah's Kiste". **Nur er schreibt in diese Datei.**
 Regeln: `.claude/skills/session-manager/SKILL.md` und `SESSION-MANAGER.md`.
 
-Letztes Lagebild: 01.11.2026
+Letztes Lagebild: 02.11.2026
 
 **Für Entwickler-Sessions:** Beim Start die Regeln lesen (Abschnitte Befugnisrahmen und
 Entwickler). Dieses Register nur lesen. Meldungen per Nachricht an den Manager und in
@@ -73,8 +73,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 306 (01.11., Geld-Sauger
-  zurück) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 311 (01.11., Hinweise
+  für neue Spieler) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -106,26 +106,21 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Eintrag oben, nur wer in den letzten 2 Minuten gespielt hat, Punkte bleiben (pro Gerät) ·
   Geräte-Wechsel: Session 1 empfiehlt „nichts tun" (sonst Umzugs-Code) – nur auf Nachfrage.
   Offen: nur noch Christians Schritt in der Konsole.
-- **12 – Hinweise beim ersten Spielen** · in Arbeit · Wunsch von Jonah (01.11.): neue Spieler
-  bekommen beim ersten Mal Schritt-für-Schritt-Hinweise (überspringbar, später wieder abrufbar)
-  · an Session 1 gegeben (nach Thema 11) · Meldung in `meldungen/1.md` abwarten.
-- **13 – Jonahs Sachen nur für Jonah** (englische Freunde, 📚-Knopf, Lern-Aufgaben) · in Arbeit · Wunsch von Jonah (01.11.): andere Spieler
-  sollen nicht mit Jonahs englischen Freunden reden können; dazu (Jonah, 01.11.) für andere auch
-  kein 📚-Knopf und keine Mathe-/Englisch-Aufgaben · an Session 1 gegeben.
-- **14 – Knöpfe auf kleinen Handys** · in Arbeit · Meldung von Jonah (01.11.): auf kleinen Handys
-  versperren die Knöpfe die Sicht → nur wichtige Knöpfe sichtbar, Rest im „⋯"-Menü · an Session 1.
-- **16 – Spielgeld für Punkte** · in Arbeit · Wunsch von Jonah (01.11.): je 100 Punkte Spielgeld,
-  bei 1000 Punkten mehr (Vorschlag 20 € / +250 €, änderbar); Belohnungsgeld bringt keine Punkte
-  · an Session 1 gegeben.
-- **17 – Teleport-Liste schlecht scrollbar** · in Arbeit · Meldung von Jonah (01.11.): in der
-  🛸 Teleport-Station kann man nur auf den dünnen Einträgen scrollen und tippt aus Versehen falsche
-  Ziele an · an Session 1 mit Vorrang gegeben (Wischen löst nie aus, größere Liste/Einträge).
+- **18 – Hinweise erscheinen bei Jonah** · in Arbeit · Meldung von Jonah (02.11.): ihm wird
+  direkt angezeigt, wie man spielt – das will er nicht · an Session 1 (Hinweise auf Jonahs Gerät
+  nie automatisch) · Rückfrage an Jonah: Meint er die Hinweise oder den Startseiten-Kasten?
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
   Tageszeit-Wechsel in der eigenen Welt.
 
 ## Erledigt
+
+- **12 – Hinweise beim ersten Spielen** · Session 1 · v311: acht Tipps beim allerersten Spielen, überspringbar, auf der Startseite wieder abrufbar (01.11.).
+- **13 – Jonahs Sachen nur für Jonah** · Session 1 · v307: englische Freunde, 📚-Knopf und Lern-Aufgaben nur auf Jonahs Gerät (01.11.).
+- **14 – Knöpfe auf kleinen Handys** · Session 1 · v309: auf kleinen Handys nur die wichtigsten Knöpfe, Rest im ⋯-Menü (01.11.).
+- **16 – Spielgeld für Punkte** · Session 1 · v310: je 100 Punkte 20 €, je 1000 Punkte +250 € Spielgeld, Belohnung bringt keine Punkte (01.11.).
+- **17 – Teleport-Liste schlecht scrollbar** · Session 1 · v308: Teleport-Liste scrollt überall, Wischen löst nie aus (01.11.).
 
 - **15 – Geld-Sauger fehlt** · Session 1 · v306 (01.11.): Ursache war Jonahs alter Spielstand
   (Stelle wurde vor v264 mit Geld belegt und in v265 zu Luft geräumt); Sauger, Schütte und
