@@ -73,8 +73,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 311 (01.11., Hinweise
-  für neue Spieler) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 313 (02.11., Tipp-Kasten
+  nicht mehr bei Jonah) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
   (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -106,10 +106,6 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Eintrag oben, nur wer in den letzten 2 Minuten gespielt hat, Punkte bleiben (pro Gerät) ·
   Geräte-Wechsel: Session 1 empfiehlt „nichts tun" (sonst Umzugs-Code) – nur auf Nachfrage.
   Offen: nur noch Christians Schritt in der Konsole.
-- **18 – Hinweise erscheinen bei Jonah** · in Arbeit · Meldung von Jonah (02.11.): ihm wird
-  direkt angezeigt, wie man spielt – das will er nicht · an Session 1 (Hinweise auf Jonahs Gerät
-  nie automatisch) · Jonah (02.11.): gemeint ist der Tipp-Kasten im Spiel (v311), der
-  Startseiten-Kasten bleibt.
 - **19 – Update-Kasten sagt, was neu ist** · in Arbeit · Wunsch von Jonah (02.11.): statt immer
   „Version N ist fertig" ein kurzer Satz, was neu ist (NEU_TEXT) · an Session 1 gegeben; dazu
   Frage, ob die Sicherungsdatei im Download-Ordner seltener angelegt werden kann.
@@ -120,6 +116,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **18 – Tipp-Kasten erschien bei Jonah** · Session 1 · v312/v313 (02.11.): Tipps kommen nur noch
+  auf wirklich neuen Geräten (keine Spur vom Spielen, nicht Jonahs Gerät); offene Tipps gehen auf
+  Jonahs Gerät sofort zu.
 - **12 – Hinweise beim ersten Spielen** · Session 1 · v311: acht Tipps beim allerersten Spielen, überspringbar, auf der Startseite wieder abrufbar (01.11.).
 - **13 – Jonahs Sachen nur für Jonah** · Session 1 · v307: englische Freunde, 📚-Knopf und Lern-Aufgaben nur auf Jonahs Gerät (01.11.).
 - **14 – Knöpfe auf kleinen Handys** · Session 1 · v309: auf kleinen Handys nur die wichtigsten Knöpfe, Rest im ⋯-Menü (01.11.).
