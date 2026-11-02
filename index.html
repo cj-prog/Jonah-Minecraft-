@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 311</div>
+    <div id="verZeile">Version 312</div>
   </div>
 </div>
 
@@ -2051,7 +2051,7 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 311;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 312;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -32395,8 +32395,32 @@ const TIPP_KEY = 'jonahcraft_tipps_fertig';
 // ⚠️ GANZ WICHTIG hier nachzuschauen, BEVOR das Spiel losgeht: Beim Start
 // speichert es sofort - danach sähe jeder Spieler wie ein alter aus, und die
 // Hinweise kämen nie. (Genau das ist im Test passiert.)
+//
+// 🛡️ Und ebenso wichtig: Jonah hat gemeldet, dass die Hinweise bei IHM
+// aufgegangen sind, obwohl er längst einen Spielstand hat. Nur auf den
+// Spielstand zu schauen, hat offenbar nicht gereicht. Darum wird jetzt nach
+// JEDER Spur gesucht, die das Spielen hinterlässt. Die rein technischen
+// Einträge (Offline-Merker, zuletzt gestartete Version) zählen ausdrücklich
+// NICHT - die gibt es auch beim allerersten Öffnen schon.
+const TIPP_SPUREN = [
+  SAVE_KEY,                     // der Spielstand selbst
+  'jonahcraft_save_backup',     // die Sicherung beim Versionswechsel
+  'jonahcraft_spitzname',       // der Name für die Rangliste
+  'jonahcraft_punkte',          // gesammelte Punkte
+  'jonahcraft_belohnt',         // schon ausgezahltes Spielgeld
+  'jonahcraft_rang_anmeldung',  // die Anmeldung für die Rangliste
+  'jonahcraft_wesen_entwurf',   // ein angefangenes Wesen
+];
 const tippWarSchonDa = (() => {
-  try { return !!localStorage.getItem(SAVE_KEY); } catch(e) { return false; }
+  try {
+    for (const k of TIPP_SPUREN) if (localStorage.getItem(k)) return true;
+    if (localStorage.getItem('jonahcraft_jonahs_geraet') === '1') return true;
+    for (let i = 0; i < localStorage.length; i++) {   // und alle Sicherungen
+      const k = localStorage.key(i) || '';
+      if (k.indexOf('jonahcraft_bk') === 0) return true;
+    }
+  } catch(e) {}
+  return false;
 })();
 let tippNr = -1, tippStart = null, tippAn = false;
 const tippGetan = { abbauen:0, bauen:0, springen:0, tier:0 };
@@ -32496,9 +32520,14 @@ document.getElementById('tippNochmal').addEventListener('click', () => {
 let tippGewuenscht = false;
 // Beim allerersten Spielen auf diesem Gerät kommen sie von allein.
 function tippPruefen() {
+  if (tippGewuenscht) { setTimeout(tippStarten, 1400); return; }   // ausdrücklich gewünscht
   let fertigSchon = false;
   try { fertigSchon = localStorage.getItem(TIPP_KEY) === '1'; } catch(e) {}
-  if (tippGewuenscht || (!fertigSchon && !tippWarSchonDa)) setTimeout(tippStarten, 1400);
+  // 🙋 Auf Jonahs Gerät kommen sie NIE von allein - nur über den Knopf auf
+  // der Startseite. (Sein Wunsch: "Das möchte ich nicht in JonahCraft.")
+  let jonah = false;
+  try { jonah = jonahsGeraet(); } catch(e) {}
+  if (!fertigSchon && !tippWarSchonDa && !jonah) setTimeout(tippStarten, 1400);
 }
 addEventListener('resize', tippStellen);
 
