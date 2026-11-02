@@ -110,6 +110,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   direkt angezeigt, wie man spielt – das will er nicht · an Session 1 (Hinweise auf Jonahs Gerät
   nie automatisch) · Jonah (02.11.): gemeint ist der Tipp-Kasten im Spiel (v311), der
   Startseiten-Kasten bleibt.
+- **19 – Update-Kasten sagt, was neu ist** · in Arbeit · Wunsch von Jonah (02.11.): statt immer
+  „Version N ist fertig" ein kurzer Satz, was neu ist (NEU_TEXT) · an Session 1 gegeben; dazu
+  Frage, ob die Sicherungsdatei im Download-Ordner seltener angelegt werden kann.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),

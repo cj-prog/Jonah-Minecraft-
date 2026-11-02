@@ -80,7 +80,8 @@ Getestet am 23.10.: Cloud-Sessions können einander Nachrichten schicken. Darum 
   3. Einen Playwright-Test im Scratchpad schreiben, der die Funktion wirklich ausprobiert.
   4. Screenshots machen und selbst anschauen – seltsame Testergebnisse oder Bilder sind fast
      immer echte Fehler, ihnen nachgehen.
-  5. Version auf dem Startbildschirm **und** `GAME_VERSION` erhöhen.
+  5. `GAME_VERSION` erhöhen und `NEU_TEXT` (ein kurzer Satz, was neu ist – erscheint im
+     Update-Kasten) anpassen.
   6. Einen deutschen Stichpunkt oben in die Liste „Was das Spiel kann" der `README.md` setzen.
   7. Committen und pushen, keine Pull Requests (Session 1: direkt auf den Hauptzweig, 23.10-2).
   8. Kam der Wunsch über den Manager: Ergebnis per `send_message` an den Manager melden (was neu
