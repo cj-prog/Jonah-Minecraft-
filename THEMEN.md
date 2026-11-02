@@ -78,8 +78,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 314 (02.11., Update-Kasten
-  sagt, was neu ist) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 315 (02.11., Einbrecher,
+  Alarmanlage, Polizei) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v3.0
   (02.11., Freunde bleiben im Gespräch) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -116,8 +116,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   02.11.): Johann ruft die Polizei – mehrere Polizeistationen, Polizisten fahren mit Polizeiautos
   durch die Welt und kommen ganz schnell zum Festnehmen; mit Alarmanlage wird nichts gestohlen.
   Ergänzung (Jonah, 02.11.): Alarm auch in den Polizeistationen; viele Gefängnisse, Einbrecher
-  kommen dorthin und werden nach längerer Zeit entlassen – als nette Dorfbewohner · an Session 1
-  (nach 19).
+  kommen dorthin und werden nach längerer Zeit entlassen – als nette Dorfbewohner.
+  **v315 (02.11.):** Alarmanlage neben Rutsche und Geld-Sauger (an/aus per Tippen), Einbrecher
+  alle 10–20 Min., Johann ruft die Polizei, Polizeiauto kommt, Festnahme; nichts gestohlen bei
+  scharfer Anlage · in Arbeit: 20b (Polizeiwachen, Streifenwagen, Gefängnisse, Freilassung).
 - **21 – Feuerwehr und Rettungsdienst** · in Arbeit · Wunsch von Jonah (02.11.): wie die Polizei,
   aber mit Feuerwachen/Feuerwehrautos (löschen Brände) und Krankenhaus/Krankenwagen (helfen
   Verletzten) · an Session 1 (nach 20).
