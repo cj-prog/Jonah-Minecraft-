@@ -82,7 +82,7 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   sagt, was neu ist) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v2.9
-  (31.10., Knopf zu JonahCraft) · Session läuft wieder (nach dem Anlegen von `main`,
+  (31.10., Knopf zu JonahCraft; Thema 4b erledigt) · Session läuft wieder (nach dem Anlegen von `main`,
   23.10-3) · Meldung 31.10.: Version 2.8 online – v2.7 eigene Gesprächsthemen, v2.8 Schutz der
   Sticker (eigene Sicherung „fredapp1_schatz"). Jonahs verlorene Sticker hat Jonah selbst
   schon wiederhergestellt (laut Christian, 31.10.).
@@ -126,6 +126,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **23 – Geheimräume in Jonahs Burg und in der Riesenburg** · in Arbeit · Wunsch von Jonah
   (02.11.): richtig versteckt, Eingang nur über einen Trick; den Trick sagt der Manager Jonah
   persönlich · an Session 1 (nach 20/21).
+- **24 – Englisch-App: Freunde gehen von selbst weg** · in Arbeit · Meldung von Jonah (02.11.):
+  beim Sprechen gehen die Freunde irgendwann einfach weg (war in v2.4 schon einmal behoben) ·
+  an Session 2 gegeben.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
