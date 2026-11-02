@@ -116,6 +116,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Ergänzung (Jonah, 02.11.): Alarm auch in den Polizeistationen; viele Gefängnisse, Einbrecher
   kommen dorthin und werden nach längerer Zeit entlassen – als nette Dorfbewohner · an Session 1
   (nach 19).
+- **21 – Feuerwehr und Rettungsdienst** · in Arbeit · Wunsch von Jonah (02.11.): wie die Polizei,
+  aber mit Feuerwachen/Feuerwehrautos (löschen Brände) und Krankenhaus/Krankenwagen (helfen
+  Verletzten) · an Session 1 (nach 20).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
