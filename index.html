@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 313</div>
+    <div id="verZeile">Version 314</div>
   </div>
 </div>
 
@@ -2051,7 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 313;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 314;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+// 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
+// Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
+// dass da jedes Mal dasselbe stand.
+// WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
+const NEU_TEXT = 'Der Update-Kasten sagt jetzt, was neu ist! 🆕';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -30598,9 +30603,19 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
     try {
       const r = await fetch(location.pathname + '?frisch=' + Date.now(), {cache:'no-store'});
       if (!r.ok) return;
-      const m = (await r.text()).match(/GAME_VERSION = (\d+)/);
+      const datei = await r.text();
+      const m = datei.match(/GAME_VERSION = (\d+)/);
       if (!m) return;
       const online = +m[1];
+      // 🆕 Und was ist daran neu? Steht gleich daneben in der Datei.
+      let neuText = '';
+      try {
+        // ⚠️ Am ZEILENANFANG suchen! Ohne das ^ findet dieses Suchmuster sich
+        // selbst im Quelltext wieder (es steht ja auch in der Datei) und holt
+        // Kauderwelsch heraus. Im Test aufgefallen.
+        const n = datei.match(/^const NEU_TEXT = '((?:[^'\\]|\\.)*)';/m);
+        if (n) neuText = n[1].replace(/\\'/g, "'").replace(/\\\\/g, '\\').trim().slice(0, 90);
+      } catch(e) {}
       if (online > GAME_VERSION) {
         const versuche = +(sessionStorage.getItem('upTry') || 0);
         if (sofort && versuche < 2) {             // höchstens zwei automatische Neustarts
@@ -30611,8 +30626,9 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
         if (online !== updateGemeldet) {          // klappt es nicht von allein:
           updateGemeldet = online;                // ein dicker Knopf zum Antippen
           const box = document.getElementById('updateBox');
-          document.getElementById('updateText').textContent =
-            '🆕 Version ' + online + ' ist fertig! (Alles bleibt gespeichert.)';
+          document.getElementById('updateText').textContent = neuText
+            ? '🆕 Version ' + online + ': ' + neuText
+            : '🆕 Version ' + online + ' ist fertig! (Alles bleibt gespeichert.)';
           box.style.display = 'flex';
         }
       } else {
