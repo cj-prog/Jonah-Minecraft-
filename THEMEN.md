@@ -109,6 +109,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **19 – Update-Kasten sagt, was neu ist** · in Arbeit · Wunsch von Jonah (02.11.): statt immer
   „Version N ist fertig" ein kurzer Satz, was neu ist (NEU_TEXT) · an Session 1 gegeben; dazu
   Frage, ob die Sicherungsdatei im Download-Ordner seltener angelegt werden kann.
+- **20 – Einbrecher, Alarmanlage und Butler im Geldspeicher** · in Arbeit · Wunsch von Jonah
+  (02.11.): ab und zu kommt ein Einbrecher, die Alarmanlage schlägt Alarm, Butler Johann wirft
+  ihn raus oder besiegt ihn; mit Alarmanlage wird nichts gestohlen · an Session 1 (nach 19).
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
