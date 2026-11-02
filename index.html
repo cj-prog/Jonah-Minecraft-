@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 319</div>
+    <div id="verZeile">Version 320</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 319;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 320;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Dein Geldspeicher hat jetzt einen eigenen Hausmeister! 🔧💰';
+const NEU_TEXT = 'Etwas Geheimes ist in deinen Burgen versteckt … frag deinen Papa! 🤫';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -7177,6 +7177,13 @@ function genChunkData(cx, cz, ohneEdits) {
       P(21,by+1,3,SIGN);
       const kks=(B.bx+21)+','+(by+1)+','+(B.bz+3);
       if (!signTexts.has(kks)) signTexts.set(kks,'⬇️ Hier geht es in den RIESEN-KELLER!');
+      // --- ein Kämmerchen tief unter dem Keller (ohne Zugang im Bauplan) ---
+      for (let dx=KA_X0; dx<=KA_X1; dx++) for (let dz=KA_Z0; dz<=KA_Z1; dz++)
+        for (let y=by-10; y<=by-6; y++) {
+          const innen = dx>KA_X0 && dx<KA_X1 && dz>KA_Z0 && dz<KA_Z1 && y>by-10 && y<by-6;
+          P(dx, y, dz, innen ? AIR : S_);
+        }
+      kammerStellen((dx,y,dz,b) => P(dx,y,dz,b), by-9, B.bx, B.bz, by);
       // 🔐 DER GROSSE SAFE unten im Keller: ein Panzerkasten, den NIEMAND
       // kaputt kriegt - auch Jonah nicht. Auf geht er nur mit sechs Codes.
       for (let sx=-SAFE_R; sx<=SAFE_R; sx++) for (let sz=-SAFE_R; sz<=SAFE_R; sz++) {
@@ -19928,6 +19935,8 @@ function riesenHoehe() {
 function rbKellerBlock(dx, dz, dy) {
   const adx = Math.abs(dx), adz = Math.abs(dz);
   if (adx > RB_KELLER_R || adz > RB_KELLER_R) return null;
+  const kam = rbKammerBlock(dx, dz, dy);
+  if (kam !== null) return kam;
   // 🪜 DIE KELLERTREPPE: die oberste Stufe liegt genau im Boden der Portal-Halle,
   // so steigt Jonah einfach hinab, statt in ein Loch zu fallen.
   if (dx === RB_K_TR_X && dz >= RB_K_TR_Z && dz < RB_K_TR_Z + RB_KELLER_T) {
@@ -22042,6 +22051,129 @@ function rettungTick(dt) {
   } else {
     sturzHoch = (sturzHoch === null) ? player.y : Math.max(sturzHoch, player.y);
   }
+}
+// ===================== 🤫 DAS KAEMMERCHEN ==================================
+// Ein Raum, der im Bauplan nirgends auftaucht: kein Schild, keine Marke auf der
+// Karte, kein Eintrag in der Teleport-Liste. Er liegt tief unter dem Keller und
+// ist rundherum aus unzerstoerbaren Bloecken - man kommt nur durch den
+// richtigen Griff hinein. Wie der geht, steht nicht hier.
+const KA_X0 = 14, KA_X1 = 22, KA_Z0 = -22, KA_Z1 = -14;
+const KA_SCHILD = [18, -21];            // wo das Schild drinnen haengt
+const KA_BILD = [[16, -21], [20, -21]]; // zwei Bilder an der Wand
+const KA_DEKO = [                       // was auf dem Teppich steht
+  [16, -20, CHEST], [20, -20, CHEST], [18, -20, THRON],
+  [16, -16, TABLE], [17, -16, CHAIR], [20, -16, BUCHREGAL],
+  [15, -18, GOLD], [21, -18, GOLD], [18, -17, POKAL],
+];
+const KA_FACKELN = [[15, -20], [21, -20], [15, -15], [21, -15]];
+// dyRel: 0 = Boden, 1-3 = innen, 4 = Decke. null = hier gehoert nichts hin.
+function kammerBlockRel(dx, dz, dyRel) {
+  if (dx < KA_X0 || dx > KA_X1 || dz < KA_Z0 || dz > KA_Z1) return null;
+  if (dyRel < 0 || dyRel > 4) return null;
+  const innen = dx > KA_X0 && dx < KA_X1 && dz > KA_Z0 && dz < KA_Z1;
+  if (!innen) return SCHUTZ;
+  if (dyRel === 0) return WOOL;                        // weicher Teppich
+  if (dyRel === 4) return SCHUTZ;
+  if (dyRel === 1) {
+    for (const d of KA_DEKO) if (d[0] === dx && d[2] !== undefined && d[1] === dz) return d[2];
+    for (const f of KA_FACKELN) if (f[0] === dx && f[1] === dz) return TORCH;
+    return AIR;
+  }
+  if (dyRel === 2) {
+    if (KA_SCHILD[0] === dx && KA_SCHILD[1] === dz) return SIGN;
+    for (const b of KA_BILD) if (b[0] === dx && b[1] === dz) return PIC;
+    return AIR;
+  }
+  return AIR;
+}
+// in der Riesenburg liegt der Boden bei dy = -15
+function rbKammerBlock(dx, dz, dy) { return kammerBlockRel(dx, dz, dy + 15); }
+// die Einrichtung in der Riesen-Festung (P stempelt relativ zur Burgmitte)
+function kammerStellen(P4, bodenY, mx, mz, by) {
+  for (let dx = KA_X0; dx <= KA_X1; dx++) for (let dz = KA_Z0; dz <= KA_Z1; dz++)
+    for (let r = 0; r <= 4; r++) {
+      const b = kammerBlockRel(dx, dz, r);
+      if (b !== null) P4(dx, bodenY - 1 + r, dz, b);
+    }
+}
+const GEHEIM_SEK = 30;                  // so lange bleibt der Weg offen
+let geheimAuf = null;                   // { welt, zellen, zeit }
+function geheimOrt() {                  // wo liegt das Kaemmerchen dieser Welt?
+  if (weltDim === 0) {
+    const B = burgPos();
+    return { x: B.bx, z: B.bz, bodenY: B.base - 10, luft: B.base - 4,
+             griff: [B.bx + 16, B.base - 2, B.bz - 10] };
+  }
+  if (weltDim === RB_DIM) {
+    riesenHoehe();
+    return { x: RB_X, z: RB_Z, bodenY: RB_Y - 15, luft: RB_Y - 9,
+             griff: [RB_X + 29, RB_Y - 6, RB_Z - 23] };
+  }
+  return null;
+}
+function geheimGriff(x, y, z) {         // gehoert dieser Block dazu?
+  const o = geheimOrt();
+  if (!o) return false;
+  if (o.griff[0] === x && o.griff[1] === y && o.griff[2] === z) return true;
+  for (const f of KA_FACKELN)           // drinnen kommt man damit wieder heraus
+    if (x === o.x + f[0] && z === o.z + f[1] && y === o.bodenY + 1) return true;
+  return false;
+}
+function geheimZellen(o) {
+  const out = [];
+  for (let i = 0; i <= 3; i++) {
+    const dz = -11 - i, sy = o.bodenY + 4 - i;
+    out.push([o.x + 18, sy, o.z + dz, TREP_N]);
+    for (let y = sy + 1; y <= o.luft; y++) out.push([o.x + 18, y, o.z + dz, AIR]);
+  }
+  return out;
+}
+function geheimOeffnen() {
+  const o = geheimOrt();
+  if (!o) return false;
+  if (geheimAuf) { geheimAuf.zeit = GEHEIM_SEK; return true; }
+  const zellen = [];
+  for (const z4 of geheimZellen(o)) {
+    zellen.push([z4[0], z4[1], z4[2], getBlock(z4[0], z4[1], z4[2])]);
+    setBlockFluechtig(z4[0], z4[1], z4[2], z4[3]);
+  }
+  geheimAuf = { welt: weltDim, zellen, zeit: GEHEIM_SEK };
+  const sk = (o.x + KA_SCHILD[0]) + ',' + (o.bodenY + 2) + ',' + (o.z + KA_SCHILD[1]);
+  if (!signTexts.has(sk)) signTexts.set(sk, '🤫 Jonahs Geheimraum');
+  toast('🤫 Grrrrrr … im Boden öffnet sich eine Treppe! Geh hinunter – solange du ' +
+        'unten bist, bleibt sie offen. Oben schließt sie sich nach einer halben ' +
+        'Minute wieder.', 9000);
+  for (const f of [180, 150, 130, 110]) blip(f, 0.16);
+  for (let i = 0; i < 18; i++)
+    fireworks.push({ x: o.x + 18.5 + (Math.random()-0.5)*1.4, y: o.luft + 0.5,
+      z: o.z - 12.5 + (Math.random()-0.5)*4, vx:(Math.random()-0.5)*0.8,
+      vy: 0.4+Math.random()*0.8, vz:(Math.random()-0.5)*0.8, tile: 3, t: 0.8 });
+  return true;
+}
+function geheimSchliessen() {
+  if (!geheimAuf) return;
+  for (const z4 of geheimAuf.zellen)    // 🙋 Steht Jonah gerade im Weg? Dann warten!
+    if (Math.abs(player.x - (z4[0] + 0.5)) < 1.2 && Math.abs(player.z - (z4[2] + 0.5)) < 1.2 &&
+        player.y > z4[1] - 1.3 && player.y < z4[1] + 2.3) { geheimAuf.zeit = 3; return; }
+  for (const z4 of geheimAuf.zellen) setBlockFluechtig(z4[0], z4[1], z4[2], z4[3]);
+  geheimAuf = null;
+  blip(120, 0.18); blip(100, 0.2);
+}
+function geheimTick(dt) {
+  if (!geheimAuf) return;
+  if (weltDim !== geheimAuf.welt) {     // andere Welt: einfach wieder zu
+    for (const z4 of geheimAuf.zellen) setBlockFluechtig(z4[0], z4[1], z4[2], z4[3]);
+    geheimAuf = null;
+    return;
+  }
+  const o = geheimOrt();
+  if (o && player.y < o.bodenY + 5.5 &&
+      Math.abs(player.x - (o.x + 18)) < 16 && Math.abs(player.z - (o.z - 18)) < 16) {
+    geheimAuf.zeit = Math.max(geheimAuf.zeit, 8);   // er ist unten - es bleibt offen
+    return;
+  }
+  geheimAuf.zeit -= dt;
+  if (geheimAuf.zeit <= 0) geheimSchliessen();
 }
 function saugAnzeigen() {
   const info = speicherGeldInfo();
@@ -30472,6 +30604,10 @@ function doPlace(dir) {
     rbTorSchalten(hit.x, hit.y, hit.z);
     return;
   }
+  if (hit.block===TORCH && geheimGriff(hit.x, hit.y, hit.z)) {
+    geheimOeffnen();
+    return;
+  }
   if (hit.block===NOTRUF) {               // 🚑 Notruf: den Krankenwagen rufen
     rettungRufen(true);
     return;
@@ -31665,6 +31801,7 @@ function frame(now) {
   try { wachenTick(dt); } catch(e) {}          // 🚓🏢 Wachen, Streifen und Gefängnisse
   try { feuerTick(dt); } catch(e) {}           // 🔥🚒 Feuer und die Feuerwehr
   try { rettungTick(dt); } catch(e) {}         // 🚑 der Rettungsdienst
+  try { geheimTick(dt); } catch(e) {}          // 🤫 das Kämmerchen
   // Während der Rechen-Aufgabe bleibt die ganze Welt stehen: nichts bewegt
   // sich, nichts fällt, kein Monster kommt näher. Nur das Bild läuft weiter.
   if (mathePause) dt = 0;
