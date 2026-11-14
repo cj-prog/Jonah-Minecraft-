@@ -114,15 +114,12 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   veröffentlicht.
   14.11. später: Christian hat die Regeln veröffentlicht – Lesen klappt jetzt (Rangliste noch leer).
   QR-Code für den Spiel-Link an Jonah geschickt.
-- **25 – Jonahs Sachen erscheinen auf fremdem Gerät** · in Arbeit, dringend · Test von Jonah und
-  Christian (14.11.): auf einem zweiten Gerät waren 📚-Knopf und englische Freunde („Hi Jona") da ·
-  an Session 1: Erkennung nur noch über gesetzten Merker oder ?jonah=1, keine Jonah-Texte für
-  andere · Sofort-Abhilfe auf dem Testgerät: Link mit ?jonah=0 öffnen.
 - **26 – Umzug ins Konto jonahs-kiste** · in Arbeit · Christian hat am 14.11. ein eigenes
   GitHub-Konto `jonahs-kiste` angelegt (läuft auf Christian) und entschieden: beide Repos ziehen
   um. Neue Adressen: `https://jonahs-kiste.github.io/Jonah-Minecraft-/` und `…/Englisch-App/`.
-  Session 1 baut zuerst eine Umzugshilfe (relative Links, Empfänger-Seite, Weiterleitungs-Seiten
-  für die alten Links, die Spielstände und Sticker mitnehmen) – noch nichts übertragen.
+  ✅ Umzugshilfe fertig: v322 (Session 1, 14.11., 26/26 Tests grün, online): `umzug-empfang.html`,
+  `umzug-alt/…/index.html`, keine festen Adressen mehr im Spiel. Christians Schritte stehen in
+  `meldungen/1.md`. Noch nichts übertragen – nächster Schritt: Umzug mit Christian.
   26b an Session 2: ✅ erledigt 14.11., Englisch-App v3.1 (⛏️-Knopf leitet Adresse ab; nur
   localStorage `fredapp1`, `fredapp1_schatz`; `fredapp1` enthält Eltern-Schlüssel → 1:1 mitnehmen,
   an Session 1 weitergegeben).
@@ -137,6 +134,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **25 – Jonahs Sachen auf fremdem Gerät** · Session 1 · v321 (14.11.): Ursache: einmal geöffnete
+  Englisch-App (Name/Schlüssel) reichte für „Jonahs Gerät" und setzte den Merker dauerhaft. Jetzt nur
+  noch Merker oder `?jonah=1`; `?jonah=0` löscht ihn; keine Jonah-Anrede und keine englischen
+  Freunde auf fremden Geräten.
 - **20 – Einbrecher, Alarmanlage und Polizei** · Session 1 · v315 (Alarmanlage, Einbrecher, Polizei
   holt ab) und v316 (02.11.: Polizeiwachen, Streifenwagen, Gefängnisse, Freilassung).
 - **21 – Feuerwehr und Rettungsdienst** · Session 1 · v317 (Feuerwache, Löschfahrzeug, Feuermelder)
