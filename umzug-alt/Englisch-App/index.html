@@ -88,7 +88,9 @@ function lsLesen() {
 }
 function dbNamen() {
   return new Promise(function (ja) {
-    var bekannt = ['jonahcraft_kino', 'fredapp1', 'fredapp1_schatz', 'englischapp'];
+    // Die Englisch-App benutzt KEINE IndexedDB (nur localStorage) - hier steht
+    // darum nur die Bilder-Kiste von JonahCraft als Rückfall.
+    var bekannt = ['jonahcraft_kino'];
     if (!window.indexedDB) { ja([]); return; }
     if (!indexedDB.databases) { ja(bekannt); return; }
     indexedDB.databases().then(function (l) {
@@ -224,7 +226,8 @@ function klemmt(e, p) {
   document.getElementById('fehlerText').textContent =
     'Hmm, der Umzugswagen klemmt (' + (e && e.message ? e.message : e) + '). ' +
     'Deine Sachen sind aber NICHT weg – sie liegen noch an der alten Adresse. ' +
-    'Du kannst sie hier als Datei sichern. In 45 Sekunden geht es von allein weiter.';
+    'Du kannst sie hier als Datei sichern (die gehört auf dieses Gerät und sonst ' +
+    'nirgendwohin). In 45 Sekunden geht es von allein weiter.';
   fehlerK.style.display = 'block';
   zeige('⚠️ Es hat nicht geklappt.', 100);
   document.getElementById('sichern').onclick = function () { sicherungDatei(p); };
