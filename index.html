@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 320</div>
+    <div id="verZeile">Version 321</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 320;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 321;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Etwas Geheimes ist in deinen Burgen versteckt … frag deinen Papa! 🤫';
+const NEU_TEXT = 'Jetzt kann jeder mitspielen – ohne Jonahs Sachen zu sehen. 🙋';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -9927,7 +9927,7 @@ const REPLIES_DEFAULT = ['Ach so!','Wirklich? Erzähl mal mehr!','Da hast du rec
 
 // --------- Sprechblasen: Bewohner reden über ihren Köpfen! 💬 ----------------
 function sagen(a, text, dauer) {        // schwebt als Blase über dem Kopf
-  a.sagText = text;
+  a.sagText = anredeText(text);
   a.sagT = dauer || 3.5;
 }
 function jobToast(a, msg) { sagen(a, msg); }   // alte Aufrufe reden jetzt in Blasen
@@ -10242,7 +10242,8 @@ let geldBad = false, geldBadT = 0, geldFxT = 0;
 let jub100 = false;                     // wurde das große 100er-Fest schon gefeiert?
 function feiereJubilaeum() {            // 🎉 100 Versionen JonahCraft!
   const box = document.getElementById('jubel');
-  box.querySelector('p').textContent = 'Danke, dass du JonahCraft spielst, Jonah! 💚';
+  box.querySelector('p').textContent =
+    anredeText('Danke, dass du JonahCraft spielst, Jonah! 💚');
   box.style.display = 'block';
   setTimeout(()=>box.style.display='none', 9000);
   money += 100; geldNichtZaehlen(100);  // 🎁 ein Geschenk, kein Fund
@@ -16039,9 +16040,9 @@ function butlerTick(a, dt) {
 let butlerAktiv = null;
 function openButler(a) {
   butlerAktiv = a;
-  document.getElementById('butlerBox').querySelector('h3').textContent =
+  document.getElementById('butlerBox').querySelector('h3').textContent = anredeText(
     a.type === 'alien' ? '👽 ' + a.name + ', dein Alien-Diener'
-                       : '🤵 Was soll ich tun, König Jonah?';
+                       : '🤵 Was soll ich tun, König Jonah?');
   const list = document.getElementById('butlerList');
   list.innerHTML = '';
   const BEFEHLE = [
@@ -16095,7 +16096,7 @@ function openButlerAuftrag(a) {
 function openMenschAuftrag(a) {
   butlerTarget = a;                     // dieselbe Eingabe wie beim Butler
   chatInput.value = '';
-  chatInput.placeholder = 'Was soll ich tun, König Jonah?';
+  chatInput.placeholder = anredeText('Was soll ich tun, König Jonah?');
   document.getElementById('chatSend').textContent = '👑 Auftrag!';
   openChat();
   const wer = a.name || MENSCH_NAME[a.type] || 'Ich';
@@ -17435,6 +17436,14 @@ let engSpawnT = 6;                      // die ersten kommen kurz nach dem Start
 function engFiguren() { return animals.filter(a => a.type === "engfreund"); }
 function engFigur(fid) { return engFiguren().find(a => a.fid === fid); }
 function engSpawnTick(dt) {
+  // 🙋 Jonahs englische Freunde sind Jonahs Sache: Auf einem fremden Gerät
+  // kommen sie gar nicht erst - und wenn doch welche da sind (alter
+  // Spielstand), gehen sie wieder.
+  if (!jonahsGeraet()) {
+    for (let i = animals.length - 1; i >= 0; i--)
+      if (animals[i].type === 'engfreund') animals.splice(i, 1);
+    return;
+  }
   if (mathePause || halleAn || weltDim !== 0) return;
   // Ums Weggehen kümmert sich updateAnimals für alle gleich: wer weiter als
   // 72 Blöcke weg ist, verschwindet - außer er soll mitkommen.
@@ -25719,8 +25728,8 @@ function openTeleport() {
   liste.innerHTML = '';
   const ziele = teleportZiele();
   const px = Math.round(player.x), pz = Math.round(player.z);
-  document.getElementById('tpText').textContent =
-    'Du stehst bei X ' + px + ' / Z ' + pz + '. Wohin soll es gehen, Jonah?';
+  document.getElementById('tpText').textContent = anredeText(
+    'Du stehst bei X ' + px + ' / Z ' + pz + '. Wohin soll es gehen, Jonah?');
   tpZiele = ziele; tpPx = px; tpPz = pz;
   document.getElementById('tpSuche').value = '';
   tpListeMalen();
@@ -25775,10 +25784,10 @@ function openThron(x, y, z) {
     traegtKrone = true; koenigsHUD();
     toast('👑 Der König setzt seine Krone auf!', 2500);
   }
-  document.getElementById('thronText').textContent = hatKrone
+  document.getElementById('thronText').textContent = anredeText(hatKrone
     ? 'Du sitzt auf deinem goldenen Thron. Was befiehlst du, König Jonah?'
     : 'Du sitzt auf dem Thron. (Ohne Krone bist du noch kein richtiger König - ' +
-      'sie liegt gleich neben deinem Thron! Tipp sie an. 👑)';
+      'sie liegt gleich neben deinem Thron! Tipp sie an. 👑)');
   const BEFEHLE = [
     ['fest',   '🎉 Ein großes FEST feiern!'],
     ['steuern','💰 Steuern einsammeln'],
@@ -26325,8 +26334,8 @@ function openBank(a) {
   const frage = document.getElementById('bankFrage');
   if (a && a.name) {
     kopf.textContent = '🏦 ' + a.name + ' am Schalter';
-    frage.textContent = '„Guten Tag, König Jonah! Wie viel möchtest du einzahlen oder abheben? '
-      + 'Schreib die Zahl hier hinein.“';
+    frage.textContent = anredeText('„Guten Tag, König Jonah! Wie viel möchtest du einzahlen oder abheben? '
+      + 'Schreib die Zahl hier hinein.“');
     sagen(a, ['Guten Tag, König Jonah! 🏦','Wie viel darf es sein?','Ihr Geld ist bei uns sicher! 🔒'][Math.floor(Math.random()*3)], 4);
   } else {
     kopf.textContent = '🏦 Deine Bank';
@@ -31254,8 +31263,23 @@ function boom() {
 // ------------------------------ HUD -----------------------------------------
 const toastEl=document.getElementById('toast');
 let toastTimer=null;
+// 🏷️ Spielt jemand anderes, steht in keiner Meldung und keiner Sprechblase
+// mehr Jonahs Name: Dort kommt der Spitzname des Spielers hin (oder eine
+// neutrale Anrede, solange er noch keinen hat). Auf Jonahs Gerät bleibt alles,
+// wie es war. Das passiert an EINER Stelle - für alle Texte auf einmal.
+function anredeText(t) {
+  if (typeof t !== 'string' || t.indexOf('Jonah') < 0) return t;
+  try { if (jonahsGeraet()) return t; } catch(e) { return t; }
+  let n = '';
+  try { n = spitzname(); } catch(e) {}
+  return t
+    .replace(/wie Jonah(?!s|Craft)/g, 'wie du')
+    .replace(/König Jonah(?!s|Craft)/g, n ? 'König ' + n : 'Majestät')
+    .replace(/,\s*Jonah(?!s|Craft)/g, n ? ', ' + n : '')
+    .replace(/\bJonah(?!s|Craft|-)/g, n || 'du');
+}
 function toast(msg, ms) {
-  toastEl.textContent=msg; toastEl.style.opacity=1;
+  toastEl.textContent=anredeText(msg); toastEl.style.opacity=1;
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.style.opacity=0, ms||1200);
 }
 function tileImg(tile) {
@@ -32775,7 +32799,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
       yaw:0, vy:0, kx:0, kz:0, hp:3, walking:false, t:9, ph:0, onGround:false });
   }
   // 🦊 die englischen Freunde, die mitkommen sollten, stehen wieder bereit
-  for (const fid of savedEngFolgt) {
+  for (const fid of (jonahsGeraet() ? savedEngFolgt : [])) {
     if (!FREUNDE.some(f => f.id === fid) || animals.some(a=>a.fid===fid)) continue;
     animals.push({ type:'engfreund', fid, name: freundVon(fid).name, friend:3,
       befehl:'folgen', x: player.x + (Math.random()*3-1.5), y: player.y,
@@ -34106,44 +34130,52 @@ addEventListener('orientationchange', () => { if (!menuOffen) kleinStellen(); })
 // nicht kennen." Dazu sollen für alle anderen auch der 📚-Knopf und die
 // Mathe- und Englisch-Aufgaben verschwinden.
 //
-// Erkannt wird das auf drei Wegen - mit Absicht so, dass Jonah seine Sachen
-// NICHT aus Versehen verliert:
-//   1. Es liegt ein echter Englisch-Stand auf dem Gerät (Sticker, gelernte
-//      Wörter, Chats, Name oder KI-Schlüssel). Das ist Jonahs Englisch-App.
-//   2. Einmal erkannt, bleibt es gemerkt - auch wenn der Englisch-Stand
-//      später mal leer aussieht.
-//   3. Von Hand ein- und ausschalten: die Seite einmal mit ?jonah=1 am Ende
-//      der Adresse öffnen (bzw. ?jonah=0 zum Abschalten). Das braucht man
-//      nach dem Löschen der Browserdaten - oder wenn Jonah die Englisch-App
-//      auf diesem Gerät noch gar nicht benutzt hat.
+// WICHTIG (ab v321): Es wird NICHTS MEHR automatisch erkannt.
+// Vorher galt ein Gerät schon dann als Jonahs, wenn dort ein Stand der
+// Englisch-App lag. Das ging schief: Beide Apps liegen auf derselben Adresse
+// und teilen sich denselben Speicher. Wurde die Englisch-App auf einem
+// fremden Gerät auch nur einmal geöffnet (zum Beispiel um den KI-Schlüssel
+// einzutragen), hielt JonahCraft dieses Gerät für Jonahs - und ein anderes
+// Kind sah plötzlich den 📚-Knopf und Jonahs englische Freunde.
+//
+// Jetzt gibt es nur noch ZWEI Wege, und beide sind Absicht:
+//   1. Auf dem Gerät steht der Merker schon (Jonahs Tablet hat ihn).
+//   2. Die Seite wird einmal mit ?jonah=1 am Ende der Adresse geöffnet.
+//      Mit ?jonah=0 wird der Merker wieder gelöscht.
+// Von allein entsteht der Merker NIE mehr.
 const JONAH_KEY = 'jonahcraft_jonahs_geraet';
 let jonahFlag = null;
 function jonahsGeraet() {
   if (jonahFlag !== null) return jonahFlag;
-  try {                                 // 3) von Hand gesetzt?
+  try {                                 // 2) von Hand ein- oder ausgeschaltet?
     const p = new URLSearchParams(location.search);
     if (p.has('jonah')) {
       jonahFlag = p.get('jonah') !== '0';
-      localStorage.setItem(JONAH_KEY, jonahFlag ? '1' : '0');
+      if (jonahFlag) localStorage.setItem(JONAH_KEY, '1');
+      else localStorage.removeItem(JONAH_KEY);      // ?jonah=0 räumt sicher auf
       return jonahFlag;
     }
   } catch(e) {}
-  try {                                 // 2) schon einmal erkannt?
-    const g = localStorage.getItem(JONAH_KEY);
-    if (g === '1') return (jonahFlag = true);
-    if (g === '0') return (jonahFlag = false);
-  } catch(e) {}
-  let ja = false;                       // 1) liegt ein echter Englisch-Stand da?
-  try {
-    const e = engLaden();
-    ja = !!((e.stickers && e.stickers.length) ||
-            (e.learned && Object.keys(e.learned).length) ||
-            (e.chats && Object.keys(e.chats).length) ||
-            (e.apiKey && e.apiKey.trim()) || (e.name && e.name.trim()));
-  } catch(e2) {}
-  jonahFlag = ja;
-  try { if (ja) localStorage.setItem(JONAH_KEY, '1'); } catch(e3) {}
+  try {                                 // 1) steht der Merker schon da?
+    jonahFlag = localStorage.getItem(JONAH_KEY) === '1';
+  } catch(e) { jonahFlag = false; }
   return jonahFlag;
+}
+// 🏷️ Wie spricht das Spiel den Spieler an? Auf Jonahs Gerät "Jonah", sonst
+// sein Spitzname aus der Rangliste - und wenn es den noch nicht gibt, gar
+// kein Name. So steht bei anderen Kindern nirgends mehr Jonahs Name.
+function spielerAnrede() {
+  if (jonahsGeraet()) return 'Jonah';
+  try { const n = spitzname(); if (n) return n; } catch(e) {}
+  return '';
+}
+function koenigAnrede() {               // "König Jonah" / "König Blitz" / "Majestät"
+  const n = spielerAnrede();
+  return n ? 'König ' + n : 'Majestät';
+}
+function duAnrede(vor) {                // ", Jonah" / ", Blitz" / "" (gar nichts)
+  const n = spielerAnrede();
+  return n ? (vor === undefined ? ', ' : vor) + n : '';
 }
 // Alles, was nur Jonah sieht, an einer Stelle aus- und wieder einblenden.
 function jonahSachenStellen() {
@@ -34160,6 +34192,17 @@ function jonahSachenStellen() {
 }
 // Gleich beim Laden - sonst blitzt der 📚-Knopf auf dem Startbildschirm auf.
 jonahSachenStellen();
+// 🏷️ Und die festen Texte auf den Tafeln bekommen gleich die richtige Anrede
+function festeTexteAnreden() {
+  for (const id of ['thronText', 'tpText']) {
+    const e = document.getElementById(id);
+    if (e) e.textContent = anredeText(e.textContent);
+  }
+  const bb = document.getElementById('butlerBox');
+  const h = bb && bb.querySelector('h3');
+  if (h) h.textContent = anredeText(h.textContent);
+}
+try { festeTexteAnreden(); } catch(e) {}
 function engWahlZeigen() {
   document.getElementById('engWahl').style.display = 'flex';
   if (document.exitPointerLock) document.exitPointerLock();
