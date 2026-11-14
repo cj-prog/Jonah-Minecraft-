@@ -114,6 +114,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   veröffentlicht.
   14.11. später: Christian hat die Regeln veröffentlicht – Lesen klappt jetzt (Rangliste noch leer).
   QR-Code für den Spiel-Link an Jonah geschickt.
+- **25 – Jonahs Sachen erscheinen auf fremdem Gerät** · in Arbeit, dringend · Test von Jonah und
+  Christian (14.11.): auf einem zweiten Gerät waren 📚-Knopf und englische Freunde („Hi Jona") da ·
+  an Session 1: Erkennung nur noch über gesetzten Merker oder ?jonah=1, keine Jonah-Texte für
+  andere · Sofort-Abhilfe auf dem Testgerät: Link mit ?jonah=0 öffnen.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
