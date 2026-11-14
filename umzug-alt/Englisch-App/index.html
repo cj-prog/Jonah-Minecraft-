@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>🚚 Die Englisch-App ist umgezogen!</title>
+<style>
+  html,body { margin:0; height:100%; background:linear-gradient(#0b1220,#16233b);
+    color:#eef2ff; font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+  #k { max-width:620px; margin:0 auto; padding:26px 20px; text-align:center; }
+  h1 { font-size:26px; margin:14px 0 6px; }
+  p  { font-size:17px; line-height:1.5; margin:10px 0; }
+  #lkw { font-size:54px; animation:fahr 1.6s ease-in-out infinite; }
+  @keyframes fahr { 0%,100% { transform:translateX(-10px);} 50% { transform:translateX(10px);} }
+  #balkenAussen { height:14px; background:#22304d; border-radius:9px; overflow:hidden; margin:16px 0 6px; }
+  #balken { height:100%; width:4%; background:linear-gradient(90deg,#4dabf7,#8ce99a); transition:width .3s; }
+  #stand { font-size:15px; color:#cfd8ff; min-height:22px; }
+  button { font-size:17px; padding:11px 18px; margin:8px 6px 0; border:0; border-radius:12px;
+    background:#4dabf7; color:#07203a; font-weight:700; cursor:pointer; }
+  button.zweit { background:#2b3a57; color:#eef2ff; }
+  #fehlerK { display:none; background:#2a1e26; border-radius:14px; padding:14px; margin-top:16px; }
+</style>
+</head>
+<body>
+<div id="k">
+  <div id="lkw">🚚</div>
+  <h1>Die Englisch-App ist umgezogen! 🚚</h1>
+  <p id="satz">Deine Sachen werden mitgenommen – Welt, Geld, Filme, Bücher und Sticker.
+     Das dauert nur einen Moment.</p>
+  <div id="balkenAussen"><div id="balken"></div></div>
+  <div id="stand">… wird eingepackt …</div>
+  <div id="fehlerK">
+    <p id="fehlerText">Hmm, der Umzugswagen klemmt.</p>
+    <button id="sichern">💾 Sicherung speichern</button>
+    <button id="weiter" class="zweit">➡️ Trotzdem weiter</button>
+  </div>
+</div>
+<script>
+// ============================================================================
+// 🚚 DIE ABSENDER-SEITE (Thema 26)
+//
+// Sie kommt an die ALTE Adresse. Wer den alten Link öffnet, landet hier:
+// Die Seite packt alles ein, was an dieser Herkunft gespeichert ist
+// (localStorage + IndexedDB), schickt es über ein verstecktes iframe an die
+// Empfänger-Seite der NEUEN Adresse und leitet danach weiter.
+//
+// Wichtig: Gelöscht wird hier NICHTS. Falls beim Umzug etwas klemmt, bleibt
+// der alte Stand an der alten Adresse liegen - und es gibt zusätzlich eine
+// Sicherungsdatei zum Herunterladen.
+// ============================================================================
+var ZIEL_BASIS = 'https://jonahs-kiste.github.io/';   // die neue Adresse
+var APP_PFAD   = 'Englisch-App/';                      // welche App hier gemeint ist
+var EMPFANG    = ZIEL_BASIS + 'Jonah-Minecraft-/umzug-empfang.html';
+// Beide Apps teilen sich eine Herkunft - darum reicht EIN Empfänger für beide.
+var SAETZE_PRO_PAKET = 4;                 // so viele Filme/Bücher auf einmal
+var WARTE_MS = 20000;                     // so lange warten wir auf die Antwort
+var MERKER = 'jonahcraft_umzug_erledigt';
+
+var balken = document.getElementById('balken');
+var stand  = document.getElementById('stand');
+var fehlerK = document.getElementById('fehlerK');
+var paket = null, iframeFenster = null, fertig = false, wartet = null;
+
+function zeige(t, p) {
+  stand.textContent = t;
+  if (p !== undefined) balken.style.width = Math.max(4, Math.min(100, p)) + '%';
+}
+function zielAdresse() {
+  return ZIEL_BASIS + APP_PFAD + (location.search || '') + (location.hash || '');
+}
+function weiterGehen() {
+  zeige('✅ Fertig! Es geht weiter …', 100);
+  setTimeout(function () { location.replace(zielAdresse()); }, 700);
+}
+
+// ---- 1) alles einpacken ----------------------------------------------------
+function lsLesen() {
+  var o = {}, n = 0;
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k === MERKER) continue;
+      o[k] = localStorage.getItem(k);
+      n++;
+    }
+  } catch (e) {}
+  return { daten: o, zahl: n };
+}
+function dbNamen() {
+  return new Promise(function (ja) {
+    // Die Englisch-App benutzt KEINE IndexedDB (nur localStorage) - hier steht
+    // darum nur die Bilder-Kiste von JonahCraft als Rückfall.
+    var bekannt = ['jonahcraft_kino'];
+    if (!window.indexedDB) { ja([]); return; }
+    if (!indexedDB.databases) { ja(bekannt); return; }
+    indexedDB.databases().then(function (l) {
+      var namen = (l || []).map(function (d) { return d && d.name; }).filter(Boolean);
+      bekannt.forEach(function (b) { if (namen.indexOf(b) < 0) namen.push(b); });
+      ja(namen);
+    }).catch(function () { ja(bekannt); });
+  });
+}
+function dbLesen(name) {                  // alle Regale einer Datenbank auslesen
+  return new Promise(function (ja) {
+    var q = indexedDB.open(name);
+    var schonFertig = false;
+    q.onupgradeneeded = function () { try { q.transaction.abort(); } catch (e) {} };
+    q.onerror = function () { if (!schonFertig) { schonFertig = true; ja(null); } };
+    q.onsuccess = function () {
+      var db = q.result;
+      var regale = Array.prototype.slice.call(db.objectStoreNames);
+      if (!regale.length) { db.close(); ja(null); return; }
+      var raus = { name: name, regale: [], inhalt: {} };
+      var offen = regale.length;
+      regale.forEach(function (r) {
+        try {
+          var tx = db.transaction(r, 'readonly');
+          var st = tx.objectStore(r);
+          raus.regale.push({ name: r, keyPath: st.keyPath, autoIncrement: !!st.autoIncrement });
+          var liste = [];
+          var cur = st.openCursor();
+          cur.onsuccess = function () {
+            var c = cur.result;
+            if (c) { liste.push({ schluessel: c.key, wert: c.value }); c.continue(); return; }
+            raus.inhalt[r] = liste;
+            if (--offen === 0) { db.close(); ja(raus); }
+          };
+          cur.onerror = function () {
+            raus.inhalt[r] = [];
+            if (--offen === 0) { db.close(); ja(raus); }
+          };
+        } catch (e) {
+          raus.inhalt[r] = [];
+          if (--offen === 0) { db.close(); ja(raus); }
+        }
+      });
+    };
+  });
+}
+function einpacken() {
+  var ls = lsLesen();
+  zeige('📦 ' + ls.zahl + ' Sachen eingepackt …', 15);
+  return dbNamen().then(function (namen) {
+    var dbs = [];
+    var kette = Promise.resolve();
+    namen.forEach(function (nm) {
+      kette = kette.then(function () {
+        return dbLesen(nm).then(function (d) { if (d) dbs.push(d); });
+      });
+    });
+    return kette.then(function () { return { ls: ls.daten, lsZahl: ls.zahl, dbs: dbs }; });
+  });
+}
+
+// ---- 2) losschicken --------------------------------------------------------
+function schicke(nachricht) {
+  iframeFenster.postMessage(nachricht, new URL(EMPFANG).origin);
+}
+function wartenAuf(pruef) {               // auf eine Antwort warten
+  return new Promise(function (ja, nein) {
+    var zeit = setTimeout(function () { nein(new Error('keine Antwort')); }, WARTE_MS);
+    wartet = function (d) {
+      if (!pruef(d)) return;
+      clearTimeout(zeit); wartet = null; ja(d);
+    };
+  });
+}
+addEventListener('message', function (ev) {
+  if (ev.origin !== new URL(EMPFANG).origin) return;
+  if (wartet) wartet(ev.data || {});
+});
+function schicken(p) {
+  var schritte = 1 + p.dbs.reduce(function (s, d) {
+    return s + Object.keys(d.inhalt).reduce(function (t, r) {
+      return t + Math.ceil(d.inhalt[r].length / SAETZE_PRO_PAKET) || 0; }, 0);
+  }, 0);
+  var getan = 0;
+  var tick = function () { getan++; zeige('🚚 unterwegs …', 20 + 75 * getan / Math.max(1, schritte)); };
+
+  schicke({ typ: 'umzug-hallo' });
+  return wartenAuf(function (d) { return d.typ === 'umzug-bereit'; })
+    .then(function () {
+      schicke({ typ: 'umzug-ls', daten: p.ls });
+      return wartenAuf(function (d) { return d.typ === 'umzug-ok' && d.was === 'ls'; });
+    })
+    .then(function () {
+      tick();
+      schicke({ typ: 'umzug-plan', dbs: p.dbs.map(function (d) {
+        return { name: d.name, regale: d.regale }; }) });
+      return wartenAuf(function (d) { return d.typ === 'umzug-ok' && d.was === 'plan'; });
+    })
+    .then(function () {
+      var kette = Promise.resolve();
+      p.dbs.forEach(function (d) {
+        Object.keys(d.inhalt).forEach(function (r) {
+          var liste = d.inhalt[r];
+          for (var i = 0; i < liste.length; i += SAETZE_PRO_PAKET) {
+            (function (teil) {
+              kette = kette.then(function () {
+                schicke({ typ: 'umzug-saetze', db: d.name, regal: r, saetze: teil });
+                return wartenAuf(function (x) {
+                  return x.typ === 'umzug-ok' && x.was === 'saetze'; }).then(tick);
+              });
+            })(liste.slice(i, i + SAETZE_PRO_PAKET));
+          }
+        });
+      });
+      return kette;
+    })
+    .then(function () {
+      schicke({ typ: 'umzug-ende' });
+      return wartenAuf(function (d) { return d.typ === 'umzug-fertig'; });
+    });
+}
+
+// ---- 3) wenn etwas klemmt: Sicherung anbieten ------------------------------
+function sicherungDatei(p) {
+  var o = { wann: new Date().toISOString(), herkunft: location.origin, ls: p ? p.ls : {} };
+  var txt = JSON.stringify(o);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], { type: 'application/json' }));
+  a.download = 'jonahcraft-sicherung.json';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function klemmt(e, p) {
+  document.getElementById('fehlerText').textContent =
+    'Hmm, der Umzugswagen klemmt (' + (e && e.message ? e.message : e) + '). ' +
+    'Deine Sachen sind aber NICHT weg – sie liegen noch an der alten Adresse. ' +
+    'Du kannst sie hier als Datei sichern (die gehört auf dieses Gerät und sonst ' +
+    'nirgendwohin). In 45 Sekunden geht es von allein weiter.';
+  fehlerK.style.display = 'block';
+  zeige('⚠️ Es hat nicht geklappt.', 100);
+  document.getElementById('sichern').onclick = function () { sicherungDatei(p); };
+  document.getElementById('weiter').onclick = function () { location.replace(zielAdresse()); };
+  setTimeout(function () { if (!fertig) location.replace(zielAdresse()); }, 45000);
+}
+
+// ---- 4) der Ablauf ---------------------------------------------------------
+function los() {
+  var schonMal = false;
+  try { schonMal = localStorage.getItem(MERKER) === '1'; } catch (e) {}
+  if (schonMal) { zeige('Alles schon umgezogen – weiter geht\'s!', 100); weiterGehen(); return; }
+
+  einpacken().then(function (p) {
+    paket = p;
+    var leer = p.lsZahl === 0 && !p.dbs.some(function (d) {
+      return Object.keys(d.inhalt).some(function (r) { return d.inhalt[r].length; }); });
+    if (leer) {                            // hier war noch nie jemand: sofort weiter
+      zeige('Hier gibt es nichts zu packen – weiter geht\'s!', 100);
+      weiterGehen();
+      return;
+    }
+    var f = document.createElement('iframe');
+    f.style.display = 'none';
+    f.src = EMPFANG;
+    f.onload = function () {
+      iframeFenster = f.contentWindow;
+      schicken(p).then(function () {
+        fertig = true;
+        try { localStorage.setItem(MERKER, '1'); } catch (e) {}
+        weiterGehen();
+      }).catch(function (e) { klemmt(e, p); });
+    };
+    f.onerror = function () { klemmt(new Error('Seite nicht erreichbar'), p); };
+    document.body.appendChild(f);
+  }).catch(function (e) { klemmt(e, null); });
+}
+los();
+</script>
+</body>
+</html>

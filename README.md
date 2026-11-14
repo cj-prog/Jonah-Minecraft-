@@ -57,6 +57,7 @@ Leertaste springen · Tasten 1–8 Block wählen
 
 ## 🌍 Was das Spiel kann
 
+- 🚚 **Umzug vorbereitet:** Das Spiel hängt an keiner festen Adresse mehr (der 📚-Knopf findet die Englisch-App jetzt von selbst). Dazu gibt es `umzug-empfang.html` und die fertigen Weiterleitungs-Seiten in `umzug-alt/` – damit beim Wechsel zu einer neuen Adresse **Welt, Geld, Filme, Bücher, Punkte und Sticker mitkommen**
 - 🙋 **Jeder kann mitspielen:** Auf einem fremden Gerät gibt es keine Englisch-App, keinen Messenger und keine englischen Freunde mehr – die gehören nur Jonah. Und das Spiel nennt dort auch nicht mehr Jonahs Namen: Die Leute sagen deinen **Spitznamen** („König BlitzBagger") oder einfach „Majestät". Jonahs Tablet bleibt genau wie vorher
 - 🤫 **Etwas Geheimes:** In Jonahs Burgen ist etwas versteckt, das man von außen nicht sehen kann – kein Schild, keine Marke auf der Karte, kein Eintrag in der Teleport-Liste. Wie man hineinkommt, steht absichtlich nirgends hier (Jonah weiß es)
 - 🔧 **Ein Hausmeister für deinen Geldspeicher:** In der Geld-Halle arbeitet jetzt **Hausmeister Kuno**. Er geht seinen Rundgang: Geld-Sauger ölen, Schütte prüfen, Alarmanlage kontrollieren, Gold polieren, Boden fegen – und dabei funkelt es ✨. Dein Geld und deine Maschinen fasst er **nie** an. Neu ist auch eine **Glocke 🔔** neben der Alarmanlage: antippen, und er steht sofort neben dir
