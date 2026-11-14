@@ -123,7 +123,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   um. Neue Adressen: `https://jonahs-kiste.github.io/Jonah-Minecraft-/` und `…/Englisch-App/`.
   Session 1 baut zuerst eine Umzugshilfe (relative Links, Empfänger-Seite, Weiterleitungs-Seiten
   für die alten Links, die Spielstände und Sticker mitnehmen) – noch nichts übertragen.
-  26b an Session 2: feste Links relativ machen, weitere Speicher melden.
+  26b an Session 2: ✅ erledigt 14.11., Englisch-App v3.1 (⛏️-Knopf leitet Adresse ab; nur
+  localStorage `fredapp1`, `fredapp1_schatz`; `fredapp1` enthält Eltern-Schlüssel → 1:1 mitnehmen,
+  an Session 1 weitergegeben).
   Danach mit Christian: Konto-Einstellungen (E-Mail privat, Profil ohne persönliche Daten),
   Repos übertragen, cj-prog als Mitarbeiter, Claude-App installieren, Pages einschalten,
   Weiterleitung an den alten Adressen, neuer QR-Code, Adressen in Regeln/Register anpassen.
