@@ -2029,7 +2029,7 @@
       <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 321</div>
+    <div id="verZeile">Version 322</div>
   </div>
 </div>
 
@@ -2051,12 +2051,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 321;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 322;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Jetzt kann jeder mitspielen – ohne Jonahs Sachen zu sehen. 🙋';
+const NEU_TEXT = 'Alles für den Umzug vorbereitet – deine Sachen ziehen mit um! 🚚';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -33901,7 +33901,13 @@ kopfKnoepfeOrdnen();
 // Englisch-Lern-App - oder Abbrechen. Wenn ich Englisch-Lern-App drücke, bin
 // ich automatisch direkt in der Englisch-Lern-App."
 // Vorher wird IMMER gespeichert, damit nichts verloren geht.
-const ENG_APP_URL = 'https://cj-prog.github.io/Englisch-App/';
+// 📚 Der Weg zur Englisch-App wird aus der eigenen Adresse abgeleitet - NICHT
+// mehr fest eingetragen. So funktioniert der Knopf unter jeder Adresse, unter
+// der die beiden Apps nebeneinander liegen (Thema 26: Umzug).
+const ENG_APP_URL = (function () {
+  try { return new URL('../Englisch-App/', location.href).href; }
+  catch (e) { return '/Englisch-App/'; }
+})();
 // ============== 👋 HINWEISE BEIM ERSTEN SPIELEN =========================
 // Jonah: "Wenn andere JonahCraft das erste Mal spielen, sollen ihnen Hinweise
 // gegeben werden."

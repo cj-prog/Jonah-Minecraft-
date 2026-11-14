@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>🚚 Umzug – Sachen auspacken</title>
+<style>
+  html,body { margin:0; height:100%; background:#101828; color:#eef2ff;
+    font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+  #k { max-width:620px; margin:0 auto; padding:22px 18px; }
+  h1 { font-size:21px; margin:0 0 10px; }
+  p { font-size:15px; line-height:1.45; margin:8px 0; }
+  #stand { font-size:15px; background:#1b2436; border-radius:12px; padding:12px 14px;
+    white-space:pre-wrap; }
+  .gut { color:#8ce99a; } .schlecht { color:#ffa8a8; }
+</style>
+</head>
+<body>
+<div id="k">
+  <h1>🚚 Umzugswagen</h1>
+  <p>Diese Seite packt Jonahs Sachen an der neuen Adresse wieder aus.
+     Sie läuft von allein – einfach offen lassen.</p>
+  <div id="stand">… wartet auf das Paket …</div>
+</div>
+<script>
+// ============================================================================
+// 🚚 DIE EMPFÄNGER-SEITE (Thema 26)
+//
+// Sie liegt an der NEUEN Adresse und nimmt das Umzugspaket der ALTEN Adresse
+// entgegen. Weil localStorage und IndexedDB an der Herkunft (Domain) hängen,
+// wäre sonst bei einem Umzug alles weg: Jonahs Welt, sein Geld, die Filme,
+// die Bücher, die Rangliste-Anmeldung und die Englisch-Sticker.
+//
+// Sie wird in einem versteckten iframe von der alten Adresse geöffnet. Dabei
+// gilt:
+//   • Es werden NUR Pakete von erlaubten Herkünften angenommen.
+//   • Nichts wird blind überschrieben: Ist an der neuen Adresse schon etwas
+//     da, gewinnt der NEUERE bzw. GRÖSSERE Stand - und der andere wird
+//     vorher zur Sicherheit weggelegt.
+//   • Gelöscht wird NIE etwas. Die alte Adresse behält ihre Daten sowieso.
+// ============================================================================
+var ERLAUBT = ['https://cj-prog.github.io'];     // von dort darf das Paket kommen
+var SICHER_MAX = 300000;                         // so große Werte werden vorher weggelegt
+
+function lokalerTest(o) {                        // für Tests auf dem eigenen Rechner
+  var r = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+  return r.test(o) && r.test(location.origin);
+}
+function herkunftOk(o) {
+  return ERLAUBT.indexOf(o) >= 0 || lokalerTest(o);
+}
+var standEl = document.getElementById('stand');
+var bericht = { ls: 0, lsSchon: 0, lsErsetzt: 0, idb: 0, idbSchon: 0, fehler: [] };
+function zeige(t, art) {
+  standEl.textContent = t;
+  standEl.className = art || '';
+}
+function melde(ziel, herkunft, nachricht) {
+  try { ziel.postMessage(nachricht, herkunft); } catch (e) {}
+}
+
+// ---- localStorage: zusammenführen statt überschreiben ----------------------
+function wertZeit(roh) {                 // wie frisch ist dieser Eintrag?
+  try {
+    var o = JSON.parse(roh);
+    if (o && typeof o.t === 'number') return o.t;             // Sicherungen
+    if (o && typeof o.zuletzt === 'number') return o.zuletzt; // der Spielstand
+  } catch (e) {}
+  return 0;
+}
+function besser(neu, alt) {              // soll der ankommende Wert gewinnen?
+  var zn = wertZeit(neu), za = wertZeit(alt);
+  if (zn !== za) return zn > za;
+  return String(neu).length >= String(alt).length;
+}
+function lsSchreiben(daten) {
+  for (var k in daten) {
+    if (!Object.prototype.hasOwnProperty.call(daten, k)) continue;
+    var neu = daten[k], alt = null;
+    try { alt = localStorage.getItem(k); } catch (e) {}
+    if (alt === null) {                                  // noch gar nichts da
+      try { localStorage.setItem(k, neu); bericht.ls++; }
+      catch (e) { bericht.fehler.push(k + ': ' + e); }
+      continue;
+    }
+    if (alt === neu) { bericht.lsSchon++; continue; }    // schon genau so da
+    if (!besser(neu, alt)) {
+      // Der Stand hier ist neuer - er bleibt. Aber der mitgebrachte wird
+      // NICHT weggeworfen: Er liegt daneben, falls doch etwas fehlen sollte.
+      try {
+        if (neu.length <= SICHER_MAX) localStorage.setItem('umzug_mitgebracht_' + k, neu);
+      } catch (e) {}
+      bericht.lsSchon++;
+      continue;
+    }
+    try {                                                // erst wegpacken ...
+      if (alt.length <= SICHER_MAX) localStorage.setItem('umzug_vorher_' + k, alt);
+    } catch (e) {}
+    try { localStorage.setItem(k, neu); bericht.lsErsetzt++; }
+    catch (e2) { bericht.fehler.push(k + ': ' + e2); }
+  }
+}
+
+// ---- IndexedDB: Datenbanken und Regale anlegen und füllen ------------------
+var dbOffen = {};
+function dbHolen(name, regale) {
+  if (dbOffen[name]) return dbOffen[name];
+  dbOffen[name] = new Promise(function (ja, nein) {
+    if (!window.indexedDB) { nein(new Error('keine IndexedDB')); return; }
+    var q1 = indexedDB.open(name);
+    q1.onerror = function () { nein(q1.error || new Error('open')); };
+    q1.onsuccess = function () {
+      var db = q1.result;
+      var fehlt = regale.filter(function (r) { return !db.objectStoreNames.contains(r.name); });
+      if (!fehlt.length) { ja(db); return; }
+      var v = db.version + 1;
+      db.close();
+      var q2 = indexedDB.open(name, v);
+      q2.onupgradeneeded = function () {
+        var d2 = q2.result;
+        fehlt.forEach(function (r) {
+          try {
+            d2.createObjectStore(r.name, r.keyPath
+              ? { keyPath: r.keyPath, autoIncrement: !!r.autoIncrement }
+              : { autoIncrement: !!r.autoIncrement });
+          } catch (e) {}
+        });
+      };
+      q2.onsuccess = function () { ja(q2.result); };
+      q2.onerror = function () { nein(q2.error || new Error('upgrade')); };
+    };
+  });
+  dbOffen[name].catch(function () {});
+  return dbOffen[name];
+}
+function saetzeSchreiben(dbName, regal, regale, saetze) {
+  return dbHolen(dbName, regale).then(function (db) {
+    return new Promise(function (ja, nein) {
+      var tx = db.transaction(regal, 'readwrite');
+      var st = tx.objectStore(regal);
+      saetze.forEach(function (s) {
+        try {
+          var k = st.keyPath ? undefined : s.schluessel;
+          var pruef = st.keyPath ? st.get(s.wert[st.keyPath]) : st.get(s.schluessel);
+          pruef.onsuccess = function () {
+            if (pruef.result !== undefined) { bericht.idbSchon++; return; }  // nichts überschreiben
+            try {
+              if (k === undefined) st.put(s.wert); else st.put(s.wert, k);
+              bericht.idb++;
+            } catch (e) { bericht.fehler.push(dbName + '/' + regal + ': ' + e); }
+          };
+        } catch (e) { bericht.fehler.push(dbName + '/' + regal + ': ' + e); }
+      });
+      tx.oncomplete = function () { ja(true); };
+      tx.onerror = function () { nein(tx.error || new Error('tx')); };
+      tx.onabort = function () { nein(tx.error || new Error('abort')); };
+    });
+  });
+}
+
+// ---- Das Gespräch mit der alten Adresse ------------------------------------
+var plan = {};                           // dbName -> Regale
+addEventListener('message', function (ev) {
+  if (!herkunftOk(ev.origin)) return;    // fremde Post wandert in den Müll
+  var n = ev.data;
+  if (!n || typeof n !== 'object') return;
+  var antwort = function (o) { melde(ev.source, ev.origin, o); };
+
+  if (n.typ === 'umzug-hallo') {
+    zeige('🚚 Verbindung steht – das Paket darf kommen.');
+    antwort({ typ: 'umzug-bereit' });
+    return;
+  }
+  if (n.typ === 'umzug-ls') {
+    try { lsSchreiben(n.daten || {}); } catch (e) { bericht.fehler.push('ls: ' + e); }
+    zeige('📦 Spielstand, Punkte und Sticker sind ausgepackt …');
+    antwort({ typ: 'umzug-ok', was: 'ls' });
+    return;
+  }
+  if (n.typ === 'umzug-plan') {
+    plan = {};
+    (n.dbs || []).forEach(function (d) { plan[d.name] = d.regale || []; });
+    antwort({ typ: 'umzug-ok', was: 'plan' });
+    return;
+  }
+  if (n.typ === 'umzug-saetze') {
+    saetzeSchreiben(n.db, n.regal, plan[n.db] || [], n.saetze || []).then(function () {
+      zeige('🎬 Filme und Bücher werden ausgepackt … (' + bericht.idb + ')');
+      antwort({ typ: 'umzug-ok', was: 'saetze' });
+    }).catch(function (e) {
+      bericht.fehler.push(n.db + '/' + n.regal + ': ' + e);
+      antwort({ typ: 'umzug-ok', was: 'saetze', fehler: String(e) });
+    });
+    return;
+  }
+  if (n.typ === 'umzug-ende') {
+    var txt = '✅ Fertig ausgepackt!\n' +
+      '• ' + bericht.ls + ' Sachen neu angekommen\n' +
+      '• ' + bericht.lsErsetzt + ' durch den neueren Stand ersetzt\n' +
+      '• ' + bericht.lsSchon + ' waren hier schon genauso da\n' +
+      '• ' + bericht.idb + ' Filme/Bücher-Teile angekommen (' + bericht.idbSchon + ' schon da)';
+    if (bericht.fehler.length) txt += '\n⚠️ ' + bericht.fehler.length + ' Kleinigkeit(en) klemmten.';
+    zeige(txt, bericht.fehler.length ? '' : 'gut');
+    antwort({ typ: 'umzug-fertig', ok: true, bericht: bericht });
+    return;
+  }
+});
+// Wer diese Seite direkt öffnet, soll wissen, wozu sie da ist.
+if (window.parent === window) {
+  zeige('Diese Seite gehört zum Umzug. Sie macht von allein nichts – ' +
+        'sie wartet nur auf das Paket von der alten Adresse.');
+}
+</script>
+</body>
+</html>
