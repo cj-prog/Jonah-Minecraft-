@@ -118,6 +118,15 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Christian (14.11.): auf einem zweiten Gerät waren 📚-Knopf und englische Freunde („Hi Jona") da ·
   an Session 1: Erkennung nur noch über gesetzten Merker oder ?jonah=1, keine Jonah-Texte für
   andere · Sofort-Abhilfe auf dem Testgerät: Link mit ?jonah=0 öffnen.
+- **26 – Umzug ins Konto jonahs-kiste** · in Arbeit · Christian hat am 14.11. ein eigenes
+  GitHub-Konto `jonahs-kiste` angelegt (läuft auf Christian) und entschieden: beide Repos ziehen
+  um. Neue Adressen: `https://jonahs-kiste.github.io/Jonah-Minecraft-/` und `…/Englisch-App/`.
+  Session 1 baut zuerst eine Umzugshilfe (relative Links, Empfänger-Seite, Weiterleitungs-Seiten
+  für die alten Links, die Spielstände und Sticker mitnehmen) – noch nichts übertragen.
+  26b an Session 2: feste Links relativ machen, weitere Speicher melden.
+  Danach mit Christian: Konto-Einstellungen (E-Mail privat, Profil ohne persönliche Daten),
+  Repos übertragen, cj-prog als Mitarbeiter, Claude-App installieren, Pages einschalten,
+  Weiterleitung an den alten Adressen, neuer QR-Code, Adressen in Regeln/Register anpassen.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
