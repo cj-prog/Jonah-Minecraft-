@@ -3,7 +3,7 @@
 Register des „Session Manager für Jonah's Kiste". **Nur er schreibt in diese Datei.**
 Regeln: `.claude/skills/session-manager/SKILL.md` und `SESSION-MANAGER.md`.
 
-Letztes Lagebild: 02.11.2026
+Letztes Lagebild: 14.11.2026
 
 **Für Entwickler-Sessions:** Beim Start die Regeln lesen (Abschnitte Befugnisrahmen und
 Entwickler). Dieses Register nur lesen. Meldungen per Nachricht an den Manager und in
@@ -78,8 +78,7 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 ## Offen und in Arbeit
 
 - **1 – JonahCraft** · in Arbeit · Session „1 Jonahcraft" (seit 14.07.) · Repo
-  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 315 (02.11., Einbrecher,
-  Alarmanlage, Polizei) · Arbeitsweise von Session 1 ins Delta übernommen.
+  `cj-prog/Jonah-Minecraft-`, direkt auf dem Hauptzweig · Stand: Version 320 (02.11., Geheimräume) · Arbeitsweise von Session 1 ins Delta übernommen.
 - **2 – Englisch-Lern-App** · in Arbeit · Session „2 Englisch-Lern-App" (seit 30.08.) · Repo
   `cj-prog/Englisch-App`, Branch `claude/english-learning-app-kids-lp7lj4` · Stand: v3.0
   (02.11., Freunde bleiben im Gespräch) · Session läuft wieder (nach dem Anlegen von `main`,
@@ -110,24 +109,9 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   **v305 (01.11.):** Jonahs Punkte-Tabelle mit Schutz gegen Tricksen, breiter Streifen, eigener
   Eintrag oben, nur wer in den letzten 2 Minuten gespielt hat, Punkte bleiben (pro Gerät) ·
   Geräte-Wechsel: Session 1 empfiehlt „nichts tun" (sonst Umzugs-Code) – nur auf Nachfrage.
-  Offen: nur noch Christians Schritt in der Konsole.
-- **20 – Einbrecher, Alarmanlage und Polizei** · in Arbeit · Wunsch von Jonah
-  (02.11.): ab und zu kommt ein Einbrecher, die Alarmanlage schlägt Alarm; geändert (Jonah,
-  02.11.): Johann ruft die Polizei – mehrere Polizeistationen, Polizisten fahren mit Polizeiautos
-  durch die Welt und kommen ganz schnell zum Festnehmen; mit Alarmanlage wird nichts gestohlen.
-  Ergänzung (Jonah, 02.11.): Alarm auch in den Polizeistationen; viele Gefängnisse, Einbrecher
-  kommen dorthin und werden nach längerer Zeit entlassen – als nette Dorfbewohner.
-  **v315 (02.11.):** Alarmanlage neben Rutsche und Geld-Sauger (an/aus per Tippen), Einbrecher
-  alle 10–20 Min., Johann ruft die Polizei, Polizeiauto kommt, Festnahme; nichts gestohlen bei
-  scharfer Anlage · in Arbeit: 20b (Polizeiwachen, Streifenwagen, Gefängnisse, Freilassung).
-- **21 – Feuerwehr und Rettungsdienst** · in Arbeit · Wunsch von Jonah (02.11.): wie die Polizei,
-  aber mit Feuerwachen/Feuerwehrautos (löschen Brände) und Krankenhaus/Krankenwagen (helfen
-  Verletzten) · an Session 1 (nach 20).
-- **22 – Hausmeister im Geldspeicher** · in Arbeit · Wunsch von Jonah (02.11.) · an Session 1
-  (nach 20/21).
-- **23 – Geheimräume in Jonahs Burg und in der Riesenburg** · in Arbeit · Wunsch von Jonah
-  (02.11.): richtig versteckt, Eingang nur über einen Trick; den Trick sagt der Manager Jonah
-  persönlich · an Session 1 (nach 20/21).
+  Offen: nur noch Christians Schritt in der Konsole. Geprüft 14.11.: Lesen der Rangliste wird
+  von Firestore noch abgelehnt („Missing or insufficient permissions") → Regeln noch nicht
+  veröffentlicht.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
@@ -135,6 +119,13 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **20 – Einbrecher, Alarmanlage und Polizei** · Session 1 · v315 (Alarmanlage, Einbrecher, Polizei
+  holt ab) und v316 (02.11.: Polizeiwachen, Streifenwagen, Gefängnisse, Freilassung).
+- **21 – Feuerwehr und Rettungsdienst** · Session 1 · v317 (Feuerwache, Löschfahrzeug, Feuermelder)
+  und v318 (02.11.: Krankenhaus, Krankenwagen, Sanitäter).
+- **22 – Hausmeister im Geldspeicher** · Session 1 · v319 (02.11.).
+- **23 – Geheimräume in Burg und Riesenburg** · Session 1 · v320 (02.11.); den Trick zum Öffnen
+  sagt der Manager Jonah persönlich (steht absichtlich nicht im Repo).
 - **24 – Englisch-App: Freunde gehen von selbst weg** · Session 2 · v3.0 (02.11.): Ursache war ein
   API-Fehler ab Runde ~10 (gekürzte Geschichte begann mit der Freund-Nachricht), der den Freund
   still durch den Übungsmodus ersetzte; jetzt geht ein Freund nur noch, wenn Jonah es will.
