@@ -126,7 +126,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   26b an Session 2: ✅ erledigt 14.11., Englisch-App v3.1 (⛏️-Knopf leitet Adresse ab; nur
   localStorage `fredapp1`, `fredapp1_schatz`; `fredapp1` enthält Eltern-Schlüssel → 1:1 mitnehmen,
   an Session 1 weitergegeben).
-  Danach mit Christian: Konto-Einstellungen (E-Mail privat, Profil ohne persönliche Daten),
+  14.11.: Konto-Einstellungen gemacht; von außen geprüft: nur Name `jonahs-kiste`, kein
+  Bio/Ort/E-Mail, Aktivität privat, 0 Repos. Danach mit Christian: Konto-Einstellungen (E-Mail privat, Profil ohne persönliche Daten),
   Repos übertragen, cj-prog als Mitarbeiter, Claude-App installieren, Pages einschalten,
   Weiterleitung an den alten Adressen, neuer QR-Code, Adressen in Regeln/Register anpassen.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
