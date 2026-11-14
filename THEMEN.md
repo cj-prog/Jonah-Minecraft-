@@ -112,6 +112,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Offen: nur noch Christians Schritt in der Konsole. Geprüft 14.11.: Lesen der Rangliste wird
   von Firestore noch abgelehnt („Missing or insufficient permissions") → Regeln noch nicht
   veröffentlicht.
+  14.11. später: Christian hat die Regeln veröffentlicht – Lesen klappt jetzt (Rangliste noch leer).
+  QR-Code für den Spiel-Link an Jonah geschickt.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
