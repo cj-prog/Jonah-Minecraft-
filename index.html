@@ -1257,10 +1257,17 @@
     box-shadow:0 2px 6px rgba(0,0,0,.25); }
   .sprech::after { content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px;
     border:7px solid transparent; border-top-color:rgba(255,255,255,.96); border-bottom:none; }
+  /* Die Meldung muss AUCH auf dem Startbildschirm zu sehen sein (der liegt auf 50),
+     aber unter den Kaesten und Fenstern (die liegen ab 55). */
   #toast { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    z-index:51;
     background:rgba(0,0,0,.55); color:#fff; padding:6px 14px; border-radius:8px; font-size:14px;
     opacity:0; transition:opacity .25s; pointer-events:none;
     white-space:normal; text-align:center; max-width:min(82vw,440px); width:max-content; }
+
+  /* Auf dem Startbildschirm wuerde die Meldung den gruenen Spielen-Knopf verdecken -
+     dort steht sie deshalb oben. */
+  #toast.obenAn { bottom:auto; top:calc(10px + env(safe-area-inset-top)); }
 
   #waterFx { inset:0; background:rgba(20,60,160,.35); display:none; pointer-events:none; }
   #lavaFx { inset:0; background:rgba(255,90,10,.4); display:none; pointer-events:none; }
@@ -2029,7 +2036,7 @@
       <label id="impBtn">📥 Sicherung laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 323</div>
+    <div id="verZeile">Version 324</div>
   </div>
 </div>
 
@@ -2051,12 +2058,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 323;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 324;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Der Sicher-Knopf nimmt jetzt ALLES mit – auch deine Filme! 🛟🎬';
+const NEU_TEXT = 'Die Sicherungsdatei bringt jetzt auch Papas Schlüssel zurück. 🔐';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -31280,6 +31287,11 @@ function anredeText(t) {
 }
 function toast(msg, ms) {
   toastEl.textContent=anredeText(msg); toastEl.style.opacity=1;
+  // Startbildschirm offen? Dann nach oben, damit der Spielen-Knopf frei bleibt.
+  try {
+    const st = document.getElementById('start');
+    toastEl.classList.toggle('obenAn', !!st && getComputedStyle(st).display !== 'none');
+  } catch (e) {}
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.style.opacity=0, ms||1200);
 }
 function tileImg(tile) {
@@ -34321,10 +34333,12 @@ setInterval(()=>{ if (started) saveGame(); }, 30000);
 //   • die ganze Bilder-Kiste mit den Filmen (IndexedDB)
 //   • die Englisch-App (fredapp1 und fredapp1_schatz)
 //
-// WICHTIG: Die SCHLÜSSEL DER ELTERN (KI-Schlüssel, Stimm-Schlüssel) werden
-// vor dem Herunterladen herausgenommen. Die Datei kann also gefahrlos
-// herumliegen oder weitergegeben werden. Beim Einspielen bleiben die
-// Schlüssel, die auf dem Gerät stehen, unangetastet.
+// WICHTIG: In der Datei stecken AUCH die Schlüssel der Eltern (KI-Schlüssel,
+// Stimm-Schlüssel) - so hat Christian es entschieden, damit er sie nach einem
+// Unglück nicht neu eintragen muss. Beim Herunterladen steht ein Hinweis dabei,
+// dass die Datei gut aufgehoben und nicht weitergegeben werden soll.
+// Beim Einspielen gilt: Ein Schlüssel, der auf dem Gerät schon steht, bleibt;
+// fehlt er, wird der aus der Datei eingetragen.
 const SICHER_TYP = 'jonahcraft-sicherung';
 const SICHER_AUS = new Set([              // rein technisch - braucht niemand
   'jonahcraft_lastversion', 'jonahcraft_offline_ok', 'jonahcraft_stamp',
@@ -34334,15 +34348,16 @@ const ENG_DATEI_KEYS = ['fredapp1', 'fredapp1_schatz'];
 function geheimFeld(name) {               // sieht das nach einem Schlüssel aus?
   return /key|schl(ü|ue)ssel|token|secret|passwo|api/i.test(name);
 }
-function engFuerDatei(roh) {              // dasselbe, nur ohne die Schlüssel
-  if (!roh) return null;
+function engFuerDatei(roh) {              // 1:1 - auch mit den Schlüsseln
+  return roh || null;
+}
+// Stecken in der Datei Schlüssel der Eltern? (nur für den Hinweis beim Sichern)
+function engHatSchluessel(o) {
   try {
-    const o = JSON.parse(roh);
-    if (!o || typeof o !== 'object') return roh;
-    const kopie = Array.isArray(o) ? o.slice() : Object.assign({}, o);
-    for (const k of Object.keys(kopie)) if (geheimFeld(k)) delete kopie[k];
-    return JSON.stringify(kopie);
-  } catch (e) { return null; }            // unlesbar? Dann lieber gar nicht mitnehmen
+    const e = JSON.parse((o.eng && o.eng.fredapp1) || 'null');
+    if (!e || typeof e !== 'object') return false;
+    return Object.keys(e).some(k => geheimFeld(k) && e[k]);
+  } catch (err) { return false; }
 }
 async function sicherungBauen(mitFilmen) {
   const ls = {};
@@ -34419,8 +34434,8 @@ function sicherSchreiben(k, neu) {
   } catch (e) {}
   return nimm ? 'ersetzt' : 'behalten';
 }
-// 📚 Die Englisch-App: Felder aus der Datei einspielen, aber die Schlüssel,
-// die auf DIESEM Gerät stehen, auf keinen Fall überschreiben.
+// 📚 Die Englisch-App: Felder aus der Datei einspielen. Ein Schlüssel, der auf
+// DIESEM Gerät schon steht, bleibt stehen - fehlt er, kommt der aus der Datei.
 function engEinspielen(k, ausDatei) {
   let hier = null;
   try { hier = localStorage.getItem(k); } catch (e) {}
@@ -34429,7 +34444,10 @@ function engEinspielen(k, ausDatei) {
     const a = JSON.parse(hier) || {}, b = JSON.parse(ausDatei) || {};
     if (typeof a !== 'object' || typeof b !== 'object') return;
     const raus = Object.assign({}, a);
-    for (const f of Object.keys(b)) if (!geheimFeld(f)) raus[f] = b[f];
+    for (const f of Object.keys(b)) {
+      if (geheimFeld(f) && raus[f]) continue;   // der Schlüssel vom Gerät gewinnt
+      raus[f] = b[f];
+    }
     localStorage.setItem(k, JSON.stringify(raus));
   } catch (e) {}
 }
@@ -34465,8 +34483,10 @@ document.getElementById('expBtn').addEventListener('click', async () => {
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   const mb = text.length / (1024 * 1024);
   const gross = mb >= 1 ? ' (' + mb.toFixed(1) + ' MB)' : '';
-  toast('🛟 Gesichert: ' + sicherungWasDrin(o) + gross + '. (Die Schlüssel der Eltern sind ' +
-        'absichtlich NICHT in der Datei.)', 8000);
+  toast('🛟 Gesichert: ' + sicherungWasDrin(o) + gross + '.' +
+        (engHatSchluessel(o)
+          ? ' 🔐 In dieser Datei steckt auch Papas Schlüssel – gut aufheben, nicht weitergeben!'
+          : ''), 9000);
 });
 document.getElementById('impFile').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
