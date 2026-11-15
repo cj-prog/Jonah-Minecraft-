@@ -14,22 +14,13 @@ oder Schlüssel hier.
 
 Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fertige Antwort.
 
-**02.11-1 – Sicherungs-Datei höchstens einmal am Tag?** (an Christian)
-- Problem: Bei jeder neuen Version lädt JonahCraft eine Datei `jonahcraft-sicherung-v….txt` in den
-  Download-Ordner – bei vielen Versionen am Tag sammeln sich viele an.
-- Weg A: so lassen. Weg B: höchstens eine Datei pro Tag; die eigentlichen Sicherungen im Spiel
-  (4 Auto-Sicherungen + Sicherung beim Versionswechsel) bleiben unverändert.
-- Empfehlung: Weg B (laut Session 1 ohne Verlust an Sicherheit). Fertige Antwort: „02.11-1: Weg B"
-
-**15.11-1 – Schlüssel der Eltern in der Sicherungsdatei?** (an Christian)
-- Problem: Die Englisch-App speichert die Schlüssel für KI und Stimme zusammen mit den Stickern.
-- Weg A: Schlüssel nicht in die Datei (empfohlen): Wer die Datei findet, kann sie nicht nutzen.
-  Folge: auf neuem Gerät einmal im Elternbereich neu eintragen.
-- Weg B: Schlüssel mit hinein: bequemer, aber die Datei muss dann wie ein Passwort behandelt werden.
-- Fertige Antwort: „15.11-1: Weg A"
-
 ## Entschieden
 
+- 15.11 – Christian – 15.11-1: Weg B – die Schlüssel der Eltern kommen mit in die
+  Sicherungsdatei (beim Herunterladen Hinweis „gut aufheben, nicht weitergeben").
+- 15.11 – Christian – 02.11-1: so lassen (eine Sicherungsdatei pro Version). Später evtl.
+  Spielstände in Firebase, auch mehrere – Session 1 schätzt nach Thema 27 ein (Größe, Kosten,
+  Wiederfinden auf anderem Gerät).
 - 23.10 – Christian – **23.10-1 Weg B:** Der Manager startet Entwickler-Sessions selbst, sie
   melden sich per Nachricht (Test vom 23.10.: Rückmeldung kam nach ca. 10 Sekunden) und
   zusätzlich in `meldungen/`. Steht im Delta unter „Zusammenarbeit".
@@ -137,7 +128,7 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 - **27 – Komplette Spielstand-Sicherung** · in Arbeit (Session 1, beauftragt 15.11.) · Wunsch von
   Christian: die Datei von „Spielstand speichern" enthält bisher nur die Welt. Neu soll sie auch
   Filme mit Bildern, Punkte, Rangliste-Anmeldung, Spitzname, Bücher und Englisch-Sticker enthalten.
-  Schlüssel der Eltern nicht (Frage 15.11-1). Damit geht auch der Umzug ohne Weiterleitung.
+  Schlüssel der Eltern kommen mit (15.11-1, Weg B). Damit geht auch der Umzug ohne Weiterleitung.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
