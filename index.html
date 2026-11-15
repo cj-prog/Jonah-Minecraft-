@@ -1257,10 +1257,17 @@
     box-shadow:0 2px 6px rgba(0,0,0,.25); }
   .sprech::after { content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px;
     border:7px solid transparent; border-top-color:rgba(255,255,255,.96); border-bottom:none; }
+  /* Die Meldung muss AUCH auf dem Startbildschirm zu sehen sein (der liegt auf 50),
+     aber unter den Kaesten und Fenstern (die liegen ab 55). */
   #toast { left:50%; bottom:calc(70px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+    z-index:51;
     background:rgba(0,0,0,.55); color:#fff; padding:6px 14px; border-radius:8px; font-size:14px;
     opacity:0; transition:opacity .25s; pointer-events:none;
     white-space:normal; text-align:center; max-width:min(82vw,440px); width:max-content; }
+
+  /* Auf dem Startbildschirm wuerde die Meldung den gruenen Spielen-Knopf verdecken -
+     dort steht sie deshalb oben. */
+  #toast.obenAn { bottom:auto; top:calc(10px + env(safe-area-inset-top)); }
 
   #waterFx { inset:0; background:rgba(20,60,160,.35); display:none; pointer-events:none; }
   #lavaFx { inset:0; background:rgba(255,90,10,.4); display:none; pointer-events:none; }
@@ -2025,11 +2032,11 @@
     <button id="playBtn">▶ Spielen</button>
     <div id="saveRow">
       <button id="restoreBtn" style="display:none">🛟 Sicherung zurückholen</button>
-      <button id="expBtn">📤 Spielstand sichern</button>
-      <label id="impBtn">📥 Spielstand laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
+      <button id="expBtn">📤 Alles sichern</button>
+      <label id="impBtn">📥 Sicherung laden<input id="impFile" type="file" accept=".txt,.json" hidden></label>
     </div>
     <div id="err"></div>
-    <div id="verZeile">Version 322</div>
+    <div id="verZeile">Version 324</div>
   </div>
 </div>
 
@@ -2051,12 +2058,12 @@ const GRAVITY = 25, JUMP_V = 8.4, WALK_SPEED = 4.4;
 const P_HALF = 0.3, P_HEIGHT = 1.8, P_EYE = 1.62;
 const REACH = 5.5;
 const SAVE_KEY = 'jonahcraft_save_v1';
-const GAME_VERSION = 322;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
+const GAME_VERSION = 324;              // WICHTIG: bei jeder neuen Version +1 (wie auf dem Startbildschirm)
 // 🆕 WAS IST IN DIESER VERSION NEU? Ein kurzer Satz für Jonah - er steht im
 // Update-Kasten, wenn eine neue Version bereitliegt. Jonah fand es komisch,
 // dass da jedes Mal dasselbe stand.
 // WICHTIG: bei JEDER neuen Version mit anpassen! (höchstens ~60 Zeichen)
-const NEU_TEXT = 'Alles für den Umzug vorbereitet – deine Sachen ziehen mit um! 🚚';
+const NEU_TEXT = 'Die Sicherungsdatei bringt jetzt auch Papas Schlüssel zurück. 🔐';
 // 🚀🌌 ab dieser Höhe beginnt das Weltall (schwarzer Himmel, Sterne, schwerelos)
 const RAUM_START = 120, RAUM_VOLL = 152;
 let hatAnzug = false;                  // 👨‍🚀 trägt Jonah gerade den Astronautenanzug?
@@ -31280,6 +31287,11 @@ function anredeText(t) {
 }
 function toast(msg, ms) {
   toastEl.textContent=anredeText(msg); toastEl.style.opacity=1;
+  // Startbildschirm offen? Dann nach oben, damit der Spielen-Knopf frei bleibt.
+  try {
+    const st = document.getElementById('start');
+    toastEl.classList.toggle('obenAn', !!st && getComputedStyle(st).display !== 'none');
+  } catch (e) {}
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.style.opacity=0, ms||1200);
 }
 function tileImg(tile) {
@@ -32732,18 +32744,23 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   if (!jub100) { jub100 = true; setTimeout(feiereJubilaeum, 2500); }   // 🎉 die Überraschung!
   if (newVersionBackup) {
     // ... und als richtige Datei herunterladen – die ist sicher, egal was passiert!
-    try {
-      const bk = JSON.parse(localStorage.getItem('jonahcraft_save_backup') || 'null');
-      if (bk && bk.save) {
-        const blob = new Blob([bk.save], {type:'application/json'});
+    // Dieselbe Datei wie beim Knopf - nur OHNE die Filme. Die sind viele
+    // Megabyte groß, und diese Datei lädt sich bei jeder neuen Version von
+    // allein herunter. Über den 📤-Knopf gibt es alles inklusive Filme.
+    (async () => {
+      try {
+        const o = await sicherungBauen(false);
+        if (!o.ls || !o.ls[SAVE_KEY]) return;
+        const blob = new Blob([JSON.stringify(o)], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         const d = new Date();
-        a.download = 'jonahcraft-sicherung-v'+(bk.v||'x')+'-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.txt';
+        a.download = 'jonahcraft-sicherung-v' + GAME_VERSION + '-' +
+                     d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + '.txt';
         a.click();
-        setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
-      }
-    } catch(e) {}
+        setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+      } catch (e) {}
+    })();
     toast('🛟 Neue Version! Dein Spielstand wurde gesichert UND als Datei heruntergeladen.', 5000);
     newVersionBackup = false;
   }
@@ -34306,35 +34323,188 @@ document.getElementById('bkClose').addEventListener('click', ()=>{
 });
 // Sicherheitsnetz: alle 30 Sekunden automatisch speichern
 setInterval(()=>{ if (started) saveGame(); }, 30000);
-document.getElementById('expBtn').addEventListener('click',()=>{
+// ============== 🛟 DIE KOMPLETTE SICHERUNG (Thema 27) =====================
+// Vorher lud der Knopf nur den Spielstand herunter. Wer die Datei später
+// zurückspielte, verlor seine Filme, seine Punkte, den Spitznamen und die
+// Englisch-Sticker. Jetzt steckt ALLES in einer Datei:
+//   • alle jonahcraft_*-Schlüssel (Spielstand, Sicherungen, Punkte,
+//     Ranglisten-Anmeldung, Spitzname, Belohnungen, Bücher, Wesen-Entwurf,
+//     Geräte-Merker) - nur die rein technischen bleiben draußen
+//   • die ganze Bilder-Kiste mit den Filmen (IndexedDB)
+//   • die Englisch-App (fredapp1 und fredapp1_schatz)
+//
+// WICHTIG: In der Datei stecken AUCH die Schlüssel der Eltern (KI-Schlüssel,
+// Stimm-Schlüssel) - so hat Christian es entschieden, damit er sie nach einem
+// Unglück nicht neu eintragen muss. Beim Herunterladen steht ein Hinweis dabei,
+// dass die Datei gut aufgehoben und nicht weitergegeben werden soll.
+// Beim Einspielen gilt: Ein Schlüssel, der auf dem Gerät schon steht, bleibt;
+// fehlt er, wird der aus der Datei eingetragen.
+const SICHER_TYP = 'jonahcraft-sicherung';
+const SICHER_AUS = new Set([              // rein technisch - braucht niemand
+  'jonahcraft_lastversion', 'jonahcraft_offline_ok', 'jonahcraft_stamp',
+  'jonahcraft_aktiv', 'jonahcraft_umzug_erledigt',
+]);
+const ENG_DATEI_KEYS = ['fredapp1', 'fredapp1_schatz'];
+function geheimFeld(name) {               // sieht das nach einem Schlüssel aus?
+  return /key|schl(ü|ue)ssel|token|secret|passwo|api/i.test(name);
+}
+function engFuerDatei(roh) {              // 1:1 - auch mit den Schlüsseln
+  return roh || null;
+}
+// Stecken in der Datei Schlüssel der Eltern? (nur für den Hinweis beim Sichern)
+function engHatSchluessel(o) {
+  try {
+    const e = JSON.parse((o.eng && o.eng.fredapp1) || 'null');
+    if (!e || typeof e !== 'object') return false;
+    return Object.keys(e).some(k => geheimFeld(k) && e[k]);
+  } catch (err) { return false; }
+}
+async function sicherungBauen(mitFilmen) {
+  const ls = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || k.indexOf('jonahcraft_') !== 0 || SICHER_AUS.has(k)) continue;
+      if (k.indexOf('umzug_') === 0) continue;
+      ls[k] = localStorage.getItem(k);
+    }
+  } catch (e) {}
+  const eng = {};
+  for (const k of ENG_DATEI_KEYS) {
+    let roh = null;
+    try { roh = localStorage.getItem(k); } catch (e) {}
+    const sauber = engFuerDatei(roh);
+    if (sauber) eng[k] = sauber;
+  }
+  let kino = [];
+  if (mitFilmen) {
+    try { kino = (await filmDbTun('readonly', st => st.getAll())) || []; } catch (e) { kino = []; }
+  }
+  return { typ: SICHER_TYP, version: 2, spielVersion: GAME_VERSION,
+           wann: new Date().toISOString(), ohneFilme: !mitFilmen, ls: ls, eng: eng, kino: kino };
+}
+// 🧒 Was steckt in der Datei? In Worten, die Jonah versteht.
+function sicherungWasDrin(o) {
+  const t = [];
+  try {
+    if (o.ls && o.ls[SAVE_KEY]) t.push('🌍 deine Welt');
+    if (o.kino && o.kino.length)
+      t.push('🎬 ' + o.kino.length + ' Film' + (o.kino.length === 1 ? '' : 'e'));
+    if (o.ls && o.ls['jonahcraft_punkte']) t.push('🏆 ' + o.ls['jonahcraft_punkte'] + ' Punkte');
+    if (o.ls && o.ls['jonahcraft_spitzname']) t.push('🏷️ ' + o.ls['jonahcraft_spitzname']);
+    const bk = Object.keys(o.ls || {}).filter(k => /^jonahcraft_bk\d$/.test(k)).length;
+    if (bk) t.push('🛟 ' + bk + ' Sicherung' + (bk === 1 ? '' : 'en'));
+    const e = JSON.parse((o.eng && o.eng.fredapp1) || 'null');
+    if (e && e.stickers && e.stickers.length) t.push('⭐ ' + e.stickers.length + ' Sticker');
+  } catch (err) {}
+  return t.length ? t.join(', ') : 'ein paar Kleinigkeiten';
+}
+// Alte Dateien (nur der Spielstand) sehen anders aus - auch die gehen weiter.
+function sicherungLesen(text) {
+  let o = null;
+  try { o = JSON.parse(text); } catch (e) { return null; }
+  if (!o || typeof o !== 'object') return null;
+  if (o.typ === SICHER_TYP && o.ls) return o;                 // die neue Datei
+  if (typeof o.seed === 'number') {                           // die alte Datei
+    const ls = {}; ls[SAVE_KEY] = text;
+    return { typ: SICHER_TYP, version: 1, alt: true, ls: ls, eng: {}, kino: [] };
+  }
+  return null;
+}
+function standZeit(roh) {                 // wie frisch ist dieser Eintrag?
+  try {
+    const o = JSON.parse(roh);
+    if (o && typeof o.t === 'number') return o.t;
+    if (o && typeof o.zuletzt === 'number') return o.zuletzt;
+  } catch (e) {}
+  return 0;
+}
+// Beim Einspielen gilt dasselbe wie bei der Umzugshilfe: Der neuere Stand
+// gewinnt, der andere wird daneben aufgehoben - verloren geht nie etwas.
+function sicherSchreiben(k, neu) {
+  let alt = null;
+  try { alt = localStorage.getItem(k); } catch (e) {}
+  if (alt === null) { try { localStorage.setItem(k, neu); } catch (e) {} return 'neu'; }
+  if (alt === neu) return 'gleich';
+  const zn = standZeit(neu), za = standZeit(alt);
+  const nimm = zn !== za ? zn > za : String(neu).length >= String(alt).length;
+  try {
+    if (nimm) { localStorage.setItem('datei_vorher_' + k, alt); localStorage.setItem(k, neu); }
+    else localStorage.setItem('datei_mitgebracht_' + k, neu);
+  } catch (e) {}
+  return nimm ? 'ersetzt' : 'behalten';
+}
+// 📚 Die Englisch-App: Felder aus der Datei einspielen. Ein Schlüssel, der auf
+// DIESEM Gerät schon steht, bleibt stehen - fehlt er, kommt der aus der Datei.
+function engEinspielen(k, ausDatei) {
+  let hier = null;
+  try { hier = localStorage.getItem(k); } catch (e) {}
+  if (!hier) { try { localStorage.setItem(k, ausDatei); } catch (e) {} return; }
+  try {
+    const a = JSON.parse(hier) || {}, b = JSON.parse(ausDatei) || {};
+    if (typeof a !== 'object' || typeof b !== 'object') return;
+    const raus = Object.assign({}, a);
+    for (const f of Object.keys(b)) {
+      if (geheimFeld(f) && raus[f]) continue;   // der Schlüssel vom Gerät gewinnt
+      raus[f] = b[f];
+    }
+    localStorage.setItem(k, JSON.stringify(raus));
+  } catch (e) {}
+}
+async function sicherungEinspielen(o) {
+  sicherungMachen('vor dem Laden einer Datei', true);
+  for (const k of Object.keys(o.ls || {})) {
+    if (SICHER_AUS.has(k)) continue;
+    sicherSchreiben(k, o.ls[k]);
+  }
+  for (const k of ENG_DATEI_KEYS) if (o.eng && o.eng[k]) engEinspielen(k, o.eng[k]);
+  let filme = 0;
+  for (const satz of (o.kino || [])) {
+    try { await filmDbTun('readwrite', st => st.put(satz)); filme++; } catch (e) {}
+  }
+  return filme;
+}
+document.getElementById('expBtn').addEventListener('click', async () => {
   if (started) saveGame();
-  const raw = localStorage.getItem(SAVE_KEY);
-  if (!raw) { alert('Es gibt noch keinen Spielstand. Spiel erst eine Runde!'); return; }
-  const blob = new Blob([raw], {type:'application/json'});
+  if (!localStorage.getItem(SAVE_KEY)) {
+    alert('Es gibt noch keinen Spielstand. Spiel erst eine Runde!');
+    return;
+  }
+  let o = null;
+  try { o = await sicherungBauen(true); }
+  catch (e) { alert('Die Sicherung hat nicht geklappt. 🤔'); return; }
+  const text = JSON.stringify(o);
+  const blob = new Blob([text], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   const d = new Date();
-  a.download = 'jonahcraft-spielstand-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.txt';
+  a.download = 'jonahcraft-alles-' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + '.txt';
   a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  const mb = text.length / (1024 * 1024);
+  const gross = mb >= 1 ? ' (' + mb.toFixed(1) + ' MB)' : '';
+  toast('🛟 Gesichert: ' + sicherungWasDrin(o) + gross + '.' +
+        (engHatSchluessel(o)
+          ? ' 🔐 In dieser Datei steckt auch Papas Schlüssel – gut aufheben, nicht weitergeben!'
+          : ''), 9000);
 });
-document.getElementById('impFile').addEventListener('change', e=>{
+document.getElementById('impFile').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
   const r = new FileReader();
-  r.onload = ()=>{
-    try {
-      const s = JSON.parse(r.result);
-      if (typeof s.seed !== 'number') throw new Error('kein Spielstand');
-      if (!confirm('Diesen Spielstand laden? Der aktuelle wird dabei ersetzt!')) return;
-      sicherungMachen('vor dem Laden einer Datei', true);
-      speichernGesperrt = true;                 // nichts darf jetzt noch drüberschreiben
-      localStorage.setItem(SAVE_KEY, r.result);
-      alert('✅ Spielstand geladen! Das Spiel startet jetzt neu.');
-      location.reload();
-    } catch(err) {
-      alert('Das ist leider keine JonahCraft-Spielstand-Datei. 🤔');
-    }
+  r.onload = async () => {
+    const o = sicherungLesen(r.result);
+    if (!o) { alert('Das ist leider keine JonahCraft-Datei. 🤔'); return; }
+    if (!confirm('In dieser Datei steckt: ' + sicherungWasDrin(o) + '.\n\n' +
+                 'Soll das jetzt geladen werden? Dein jetziger Stand wird vorher ' +
+                 'gesichert – verloren geht nichts.')) return;
+    speichernGesperrt = true;                 // nichts darf jetzt noch drüberschreiben
+    let filme = 0;
+    try { filme = await sicherungEinspielen(o); }
+    catch (err) { alert('Beim Laden hat etwas geklemmt. 🤔'); return; }
+    alert('✅ Geladen' + (filme ? ' – auch ' + filme + ' Film(e)' : '') +
+          '! Das Spiel startet jetzt neu.');
+    location.reload();
   };
   r.readAsText(f);
 });
