@@ -21,6 +21,13 @@ Jeder Punkt mit fester ID (`TT.MM-N`): Problem, Wege mit Folge, Empfehlung, fert
   (4 Auto-Sicherungen + Sicherung beim Versionswechsel) bleiben unverändert.
 - Empfehlung: Weg B (laut Session 1 ohne Verlust an Sicherheit). Fertige Antwort: „02.11-1: Weg B"
 
+**15.11-1 – Schlüssel der Eltern in der Sicherungsdatei?** (an Christian)
+- Problem: Die Englisch-App speichert die Schlüssel für KI und Stimme zusammen mit den Stickern.
+- Weg A: Schlüssel nicht in die Datei (empfohlen): Wer die Datei findet, kann sie nicht nutzen.
+  Folge: auf neuem Gerät einmal im Elternbereich neu eintragen.
+- Weg B: Schlüssel mit hinein: bequemer, aber die Datei muss dann wie ein Passwort behandelt werden.
+- Fertige Antwort: „15.11-1: Weg A"
+
 ## Entschieden
 
 - 23.10 – Christian – **23.10-1 Weg B:** Der Manager startet Entwickler-Sessions selbst, sie
@@ -127,6 +134,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Bio/Ort/E-Mail, Aktivität privat, 0 Repos. Danach mit Christian: Konto-Einstellungen (E-Mail privat, Profil ohne persönliche Daten),
   Repos übertragen, cj-prog als Mitarbeiter, Claude-App installieren, Pages einschalten,
   Weiterleitung an den alten Adressen, neuer QR-Code, Adressen in Regeln/Register anpassen.
+- **27 – Komplette Spielstand-Sicherung** · in Arbeit (Session 1, beauftragt 15.11.) · Wunsch von
+  Christian: die Datei von „Spielstand speichern" enthält bisher nur die Welt. Neu soll sie auch
+  Filme mit Bildern, Punkte, Rangliste-Anmeldung, Spitzname, Bücher und Englisch-Sticker enthalten.
+  Schlüssel der Eltern nicht (Frage 15.11-1). Damit geht auch der Umzug ohne Weiterleitung.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
