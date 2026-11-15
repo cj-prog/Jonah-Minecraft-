@@ -118,6 +118,8 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   ✅ Umzugshilfe fertig: v322 (Session 1, 14.11., 26/26 Tests grün, online): `umzug-empfang.html`,
   `umzug-alt/…/index.html`, keine festen Adressen mehr im Spiel. Christians Schritte stehen in
   `meldungen/1.md`. Noch nichts übertragen – nächster Schritt: Umzug mit Christian.
+  15.11.: Mit Thema 27 geht der Umzug auch per Datei („Alles sichern" → neu „Sicherung laden");
+  die Weiterleitung (Repo `cj-prog.github.io`) ist dann nur noch Komfort für alte Links.
   26b an Session 2: ✅ erledigt 14.11., Englisch-App v3.1 (⛏️-Knopf leitet Adresse ab; nur
   localStorage `fredapp1`, `fredapp1_schatz`; `fredapp1` enthält Eltern-Schlüssel → 1:1 mitnehmen,
   an Session 1 weitergegeben).
@@ -125,10 +127,10 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
   Bio/Ort/E-Mail, Aktivität privat, 0 Repos. Danach mit Christian: Konto-Einstellungen (E-Mail privat, Profil ohne persönliche Daten),
   Repos übertragen, cj-prog als Mitarbeiter, Claude-App installieren, Pages einschalten,
   Weiterleitung an den alten Adressen, neuer QR-Code, Adressen in Regeln/Register anpassen.
-- **27 – Komplette Spielstand-Sicherung** · in Arbeit (Session 1, beauftragt 15.11.) · Wunsch von
-  Christian: die Datei von „Spielstand speichern" enthält bisher nur die Welt. Neu soll sie auch
-  Filme mit Bildern, Punkte, Rangliste-Anmeldung, Spitzname, Bücher und Englisch-Sticker enthalten.
-  Schlüssel der Eltern kommen mit (15.11-1, Weg B). Damit geht auch der Umzug ohne Weiterleitung.
+- **28 – Spielstände in Firebase (Idee von Christian)** · offen, nach dem Umzug · Einschätzung
+  Session 1 (15.11.): Spielstand 4–400 KB passt in Firestore (1 MiB/Dokument), Filme nicht
+  (bräuchten Cloud Storage, vermutlich kostenpflichtiger Blaze-Tarif – noch nachprüfen). Anderes
+  Gerät geht nur mit Anmeldung oder Spielstand-Code. Empfehlung: vorerst bei der Datei bleiben.
 - **Ideen-Liste (von Session 1, „Das kann das Spiel noch nicht")** · offen · für Jonahs Auswahl:
   Fahrzeuge/Achterbahnen in der eigenen Welt, reitbare Drachen, Gebäude mit Innenräumen nach
   Wunsch, Jahreszeiten, mehrere Zonen gleichzeitig („im Norden Winter, im Süden Wüste"),
@@ -136,6 +138,11 @@ Nur weitere Tools und Dienste (Budget 5 € pro Tag). Claude-Sessions zählen ni
 
 ## Erledigt
 
+- **27 – Komplette Spielstand-Sicherung** · Session 1 · v323/v324 (15.11.): „📤 Alles sichern"
+  nimmt Welt, Sicherungen, Punkte, Rangliste-Anmeldung, Spitzname, Bücher, Filme mit Bildern,
+  Englisch-Sticker und (Weg B) die Eltern-Schlüssel mit; „📥 Sicherung laden" führt zusammen,
+  löscht nie. Automatische Datei je Version im gleichen Format ohne Filme (~1 KB). Nebenbei:
+  Meldungen auf dem Startbildschirm waren unsichtbar – behoben.
 - **25 – Jonahs Sachen auf fremdem Gerät** · Session 1 · v321 (14.11.): Ursache: einmal geöffnete
   Englisch-App (Name/Schlüssel) reichte für „Jonahs Gerät" und setzte den Merker dauerhaft. Jetzt nur
   noch Merker oder `?jonah=1`; `?jonah=0` löscht ihn; keine Jonah-Anrede und keine englischen
